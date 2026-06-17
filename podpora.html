@@ -46,7 +46,7 @@
       gap: 20px;
       max-width: 860px;
       margin: 0 auto 88px;
-      padding: 0 24px;
+      padding: 90px 24px 0;
     }
     .sup-card {
       background: var(--card);
@@ -198,18 +198,52 @@
 
     <!-- Hero -->
     <section class="sup-hero">
-      <span class="section-tag">Podpora</span>
       <h1>Jak ti můžeme <span class="gradient-text">pomoci?</span></h1>
       <p>Odpovědi na časté otázky nebo nás rovnou kontaktuj — jsme tu pro tebe.</p>
     </section>
 
     <!-- Contact cards -->
     <div class="sup-cards">
-      <div class="sup-card">
-        <span class="sup-card-icon">💬</span>
-        <h3>Live chat</h3>
-        <p>Napiš nám přímo v aplikaci. Odpovídáme obvykle do 15 minut v pracovní době.</p>
-        <a href="#">Otevřít chat</a>
+      <!-- Live chat s Doktorem Makačem -->
+      <div style="position:relative;">
+        <!-- Doktor Makač peeker -->
+        <div id="doc-peeker" style="
+          position:absolute; top:-48px; left:50%; transform:translateX(-50%); z-index:1;
+          pointer-events:none; z-index:3;
+          filter: drop-shadow(0 14px 36px rgba(0,0,60,0.65));
+        ">
+          <div style="position:relative; display:inline-block;">
+            <!-- Čepička sestřičky -->
+            <div style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:46px;z-index:6;margin-bottom:-2px;">
+              <div style="width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-bottom:14px solid white;margin:0 auto;"></div>
+              <div style="background:white;height:10px;border-radius:2px 2px 0 0;margin-top:-1px;position:relative;">
+                <div style="position:absolute;top:1px;left:50%;transform:translateX(-50%);width:3px;height:8px;background:#e53935;border-radius:1px;"></div>
+                <div style="position:absolute;top:3px;left:50%;transform:translateX(-50%);width:8px;height:3px;background:#e53935;border-radius:1px;"></div>
+              </div>
+            </div>
+            <!-- Obličej (stejný jako main-peeker) -->
+            <div style="width:88px;height:76px;background:linear-gradient(160deg,#4848c4 0%,#1c1c7a 100%);border-radius:50% 50% 44% 44%;position:relative;box-shadow:0 14px 36px rgba(0,0,60,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:2px solid rgba(140,140,255,0.3);">
+              <div id="doc-browL" style="position:absolute;left:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
+              <div id="doc-browR" style="position:absolute;right:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
+              <div id="doc-eyeL" style="position:absolute;left:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
+                <div id="doc-pupilL" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
+                <div id="doc-lidL" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+              </div>
+              <div id="doc-eyeR" style="position:absolute;right:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
+                <div id="doc-pupilR" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
+                <div id="doc-lidR" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+              </div>
+              <div style="position:absolute;bottom:11px;left:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
+              <div style="position:absolute;bottom:11px;right:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
+            </div>
+          </div>
+        </div>
+        <div class="sup-card" style="position:relative; z-index:2;">
+          <span class="sup-card-icon">💬</span>
+          <h3>Live chat</h3>
+          <p>Napiš nám přímo v aplikaci. Odpovídáme obvykle do 15 minut v pracovní době.</p>
+          <a href="#">Otevřít chat</a>
+        </div>
       </div>
       <div class="sup-card">
         <span class="sup-card-icon">📧</span>
@@ -401,6 +435,51 @@
       document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
       if (!isOpen) item.classList.add('open');
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var eyeL   = document.getElementById('doc-eyeL');
+      var eyeR   = document.getElementById('doc-eyeR');
+      var pupilL = document.getElementById('doc-pupilL');
+      var pupilR = document.getElementById('doc-pupilR');
+      var lidL   = document.getElementById('doc-lidL');
+      var lidR   = document.getElementById('doc-lidR');
+      if (!eyeL) return;
+
+      function movePupil(pupilEl, eyeEl, mx, my) {
+        var rect = eyeEl.getBoundingClientRect();
+        if (!rect.width) return;
+        var cx = rect.left + rect.width  / 2;
+        var cy = rect.top  + rect.height / 2;
+        var dx = mx - cx, dy = my - cy;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var r = 4.5;
+        var s = Math.min(dist, r) / Math.max(dist, 0.001);
+        pupilEl.style.transform = 'translate(' + (dx*s).toFixed(2) + 'px,' + (dy*s).toFixed(2) + 'px)';
+      }
+
+      document.addEventListener('mousemove', function(e) {
+        movePupil(pupilL, eyeL, e.clientX, e.clientY);
+        movePupil(pupilR, eyeR, e.clientX, e.clientY);
+      });
+
+      function setLid(speed) {
+        lidL.style.transition = 'height ' + speed + ' ease';
+        lidR.style.transition = 'height ' + speed + ' ease';
+      }
+
+      function scheduleBlink() {
+        setTimeout(function() {
+          setLid('0.08s');
+          lidL.style.height = '21px'; lidR.style.height = '21px';
+          setTimeout(function() {
+            lidL.style.height = '0'; lidR.style.height = '0';
+            setTimeout(function() { setLid('0.28s'); scheduleBlink(); }, 120);
+          }, 100);
+        }, 3000 + Math.random() * 3000);
+      }
+
+      scheduleBlink();
+    });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/script.js"></script>
