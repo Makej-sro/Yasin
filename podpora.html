@@ -345,12 +345,48 @@
     #mcp-status { transition: color .4s; }
     #mcp-status.joining { color: #f97316; }
     #mcp-status.online  { color: #22c55e; }
+    .mcp-new-chat {
+      display: flex; align-items: center; gap: 4px;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(167,139,250,.2);
+      border-radius: 6px; color: #a0a0d0; cursor: pointer;
+      font-size: .72rem; font-weight: 600; padding: 4px 8px;
+      transition: background .15s, color .15s; font-family: inherit;
+    }
+    .mcp-new-chat:hover { background: rgba(255,255,255,.13); color: #fff; }
     .mcp-close {
       background: none; border: none; color: #7070a0;
       cursor: pointer; font-size: 1.1rem; line-height: 1;
       padding: 2px 4px; transition: color .15s;
     }
     .mcp-close:hover { color: #fff; }
+    .mcp-confirm-overlay {
+      position: absolute; inset: 0; background: rgba(10,10,30,.85);
+      backdrop-filter: blur(4px); z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 20px;
+    }
+    .mcp-confirm-box {
+      background: #161640; border: 1.5px solid rgba(167,139,250,.3);
+      border-radius: 16px; padding: 24px 20px; text-align: center;
+      max-width: 240px;
+    }
+    .mcp-confirm-icon { font-size: 2rem; margin-bottom: 10px; }
+    .mcp-confirm-title { font-weight: 700; color: #e0e0ff; font-size: .95rem; margin-bottom: 6px; }
+    .mcp-confirm-sub { font-size: .78rem; color: #7070a0; margin-bottom: 18px; line-height: 1.4; }
+    .mcp-confirm-btns { display: flex; gap: 8px; }
+    .mcp-confirm-cancel {
+      flex: 1; padding: 8px; border-radius: 8px; border: 1px solid rgba(167,139,250,.25);
+      background: none; color: #a0a0d0; cursor: pointer; font-size: .82rem;
+      font-family: inherit; transition: background .15s;
+    }
+    .mcp-confirm-cancel:hover { background: rgba(255,255,255,.07); }
+    .mcp-confirm-ok {
+      flex: 1; padding: 8px; border-radius: 8px; border: none;
+      background: linear-gradient(135deg,#4848c4,#292978); color: #fff;
+      cursor: pointer; font-size: .82rem; font-weight: 700;
+      font-family: inherit; transition: opacity .15s;
+    }
+    .mcp-confirm-ok:hover { opacity: .85; }
     .mcp-messages {
       flex: 1;
       overflow-y: auto;
@@ -532,13 +568,13 @@
         <!-- Speech bubble -->
         <div id="makac-bubble">
           <p>Jmenuji se <strong>Makač</strong> a jsem tvůj AI pomocník. Jsem tady pro tebe <strong>24/7</strong> a pomůžu ti s tvým dotazem.</p>
-          <button id="makac-chat-btn">Zeptat se Makače</button>
+          <button id="makac-chat-btn" onclick="window.openMakacChat && window.openMakacChat()">Zeptat se Makače</button>
         </div>
         <div class="sup-card" style="position:relative; z-index:2;">
           <span class="sup-card-icon">💬</span>
           <h3>Live chat</h3>
           <p>Napiš nám přímo v aplikaci. Odpovídáme obvykle do 15 minut v pracovní době.</p>
-          <a href="#">Otevřít chat</a>
+          <a href="javascript:void(0)" onclick="window.openMakacChat && window.openMakacChat()">Otevřít chat</a>
         </div>
       </div>
       <div class="sup-card">
@@ -653,38 +689,6 @@
       </div>
     </div>
   </footer>
-
-  <!-- ── Makač chat panel ── -->
-  <div id="makac-chat">
-    <div class="mcp-header">
-      <div class="mcp-avatar">
-        <div style="width:34px;height:34px;background:linear-gradient(160deg,#4848c4 0%,#1c1c7a 100%);border-radius:50%;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,40,.4);border:1.5px solid rgba(140,140,255,0.25);">
-          <div style="position:absolute;left:5px;top:7px;width:7px;height:2px;background:rgba(190,190,255,0.6);border-radius:1px;"></div>
-          <div style="position:absolute;right:5px;top:7px;width:7px;height:2px;background:rgba(190,190,255,0.6);border-radius:1px;"></div>
-          <div id="mcp-eyeL" style="position:absolute;left:5px;top:13px;width:9px;height:9px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-            <div id="mcp-pupilL" style="width:7px;height:7px;background:#16163c;border-radius:50%;position:relative;transition:transform 0.09s ease;"><div style="position:absolute;width:2px;height:2px;background:rgba(255,255,255,.9);border-radius:50%;top:0;right:0;"></div></div>
-          </div>
-          <div id="mcp-eyeR" style="position:absolute;right:5px;top:13px;width:9px;height:9px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-            <div id="mcp-pupilR" style="width:7px;height:7px;background:#16163c;border-radius:50%;position:relative;transition:transform 0.09s ease;"><div style="position:absolute;width:2px;height:2px;background:rgba(255,255,255,.9);border-radius:50%;top:0;right:0;"></div></div>
-          </div>
-          <div style="position:absolute;bottom:5px;left:2px;width:7px;height:3px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
-          <div style="position:absolute;bottom:5px;right:2px;width:7px;height:3px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
-        </div>
-      </div>
-      <div class="mcp-name">Makač
-        <div class="mcp-subtitle">
-          <span class="mcp-dot online" id="mcp-dot"></span>
-          <span id="mcp-status" class="online">online</span>
-        </div>
-      </div>
-      <button class="mcp-close" id="makac-chat-close">✕</button>
-    </div>
-    <div class="mcp-messages" id="mcp-messages"></div>
-    <div class="mcp-input-row">
-      <input type="text" id="mcp-input" placeholder="Napiš svůj dotaz..." autocomplete="off" />
-      <button class="mcp-send" id="mcp-send">Odeslat</button>
-    </div>
-  </div>
 
   <!-- Login modal (stejný jako na index.html) -->
   <div class="modal-overlay" id="modal-overlay">
@@ -931,77 +935,6 @@
       });
     });
 
-    // Makač chat
-    document.addEventListener('DOMContentLoaded', function() {
-      var chat    = document.getElementById('makac-chat');
-      var openBtn = document.getElementById('makac-chat-btn');
-      var closeBtn= document.getElementById('makac-chat-close');
-      var input   = document.getElementById('mcp-input');
-      var sendBtn = document.getElementById('mcp-send');
-      var msgs    = document.getElementById('mcp-messages');
-      if (!chat) return;
-
-      var replies = [
-        'Díky za dotaz! Pro rychlou odpověď nám napiš na podpora@makej.eu.',
-        'Skvělá otázka! Koukni do sekce Časté otázky výše — třeba tam najdeš odpověď hned.',
-        'Makej! je pro brigádníky zcela zdarma. Stačí se registrovat a začít swipovat.',
-        'Pokud máš problém s účtem, pomůžeme ti na podpora@makej.eu — obvykle do 24 hodin.',
-        'Na jakémkoliv zařízení s iOS nebo Androidem — spuštění brzy!',
-      ];
-      var ri = 0;
-
-      function addMsg(text, type) {
-        var el = document.createElement('div');
-        el.className = 'mcp-msg ' + type;
-        el.innerHTML = text;
-        msgs.appendChild(el);
-        msgs.scrollTop = msgs.scrollHeight;
-      }
-
-      function send() {
-        var val = input.value.trim();
-        if (!val) return;
-        addMsg(val, 'user');
-        input.value = '';
-        setTimeout(function() {
-          addMsg(replies[ri % replies.length], 'bot');
-          ri++;
-        }, 600);
-      }
-
-      var dot    = document.getElementById('mcp-dot');
-      var status = document.getElementById('mcp-status');
-
-      function setStatus(state) {
-        dot.className    = 'mcp-dot ' + state;
-        status.className = state;
-        status.textContent = state === 'joining' ? 'Už letím...' : 'online';
-      }
-
-      var welcomed = false;
-      openBtn.addEventListener('click', function() {
-        chat.classList.add('open');
-        input.focus();
-        if (!welcomed) {
-          welcomed = true;
-          setStatus('joining');
-          var typingEl = document.createElement('div');
-          typingEl.className = 'mcp-msg bot';
-          typingEl.innerHTML = '<div class="mcp-typing"><span></span><span></span><span></span></div>';
-          msgs.appendChild(typingEl);
-          msgs.scrollTop = msgs.scrollHeight;
-          setTimeout(function() {
-            typingEl.remove();
-            addMsg('Ahoj! 👋 Jsem <strong>Makač</strong>, tvůj AI pomocník. Na co se mě chceš zeptat?', 'bot');
-            setTimeout(function() { setStatus('online'); }, 400);
-          }, 2000);
-        }
-      });
-      closeBtn.addEventListener('click', function() { chat.classList.remove('open'); });
-      sendBtn.addEventListener('click', send);
-      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') send(); });
-    });
-
     function toggleFaq(el) {
       const item = el.parentElement;
       const isOpen = item.classList.contains('open');
@@ -1065,5 +998,6 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/script.js"></script>
+  <script src="/chat-widget.js"></script>
 </body>
 </html>
