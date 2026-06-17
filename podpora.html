@@ -178,7 +178,7 @@
       margin-bottom: 10px;
     }
     .sup-card p {
-      color: var(--muted-fg);
+      color: #fff;
       font-size: .88rem;
       line-height: 1.65;
       margin-bottom: 24px;
@@ -259,8 +259,36 @@
     .faq-a a:hover { text-decoration: underline; }
     .faq-item.open .faq-a { display: block; }
 
+    /* Makač speech bubble */
+    #makac-bubble {
+      position: absolute;
+      top: -130px;
+      right: calc(50% + 72px);
+      width: 188px;
+      background: linear-gradient(135deg, #2e2e62 0%, #1a1a3a 100%);
+      border: 1.5px solid rgba(167,139,250,.35);
+      border-radius: 14px;
+      padding: 11px 14px;
+      box-shadow: 0 10px 28px rgba(0,0,30,.55);
+      z-index: 10;
+      animation: bubble-in .4s cubic-bezier(.2,.8,.2,1) .5s both;
+    }
+    #makac-bubble p {
+      color: #e0e0ff;
+      font-size: .78rem;
+      line-height: 1.55;
+      margin: 0;
+    }
+    #makac-bubble strong { color: #fff; }
+    @keyframes bubble-in {
+      from { opacity: 0; transform: scale(.85) translateY(6px); }
+      to   { opacity: 1; transform: scale(1)   translateY(0); }
+    }
+
     @media (max-width: 700px) {
       .sup-cards { grid-template-columns: 1fr; max-width: 400px; }
+      #makac-bubble { right: auto; left: 50%; transform: translateX(-50%); top: -140px; }
+      #makac-bubble::before { display: none; }
     }
   </style>
 </head>
@@ -350,6 +378,10 @@
               <div style="position:absolute;bottom:11px;right:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
             </div>
           </div>
+        </div>
+        <!-- Speech bubble -->
+        <div id="makac-bubble">
+          <p>Jmenuji se <strong>Makač</strong> a jsem tvůj AI pomocník. Jsem tady pro tebe <strong>24/7</strong> a pomůžu ti s tvým dotazem.</p>
         </div>
         <div class="sup-card" style="position:relative; z-index:2;">
           <span class="sup-card-icon">💬</span>
