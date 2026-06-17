@@ -27,6 +27,74 @@
   <script src="/iconify-solar.js"></script>
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" async></script>
   <link rel="stylesheet" href="style.css?v=14" />
+  <style>
+    /* ── Podpora sekce ── */
+    .sup-page { padding: 100px 0 80px; }
+    .sup-hero {
+      text-align: center;
+      max-width: 580px;
+      margin: 0 auto 72px;
+      padding: 0 24px;
+    }
+    .sup-hero h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin: 16px 0 20px;
+    }
+    .sup-hero p { color: var(--muted-fg); font-size: 1.05rem; line-height: 1.65; max-width: 440px; margin: 0 auto; }
+    .sup-search { position: relative; max-width: 520px; margin: 28px auto 0; }
+    .sup-search svg { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #9090b0; pointer-events: none; flex-shrink: 0; z-index: 2; }
+    .sup-search input { width: 100%; box-sizing: border-box; padding: 16px 20px 16px 52px; border-radius: 14px; border: 1.5px solid rgba(208,208,255,.15); background: rgba(255,255,255,.07); color: #fff; font-size: 1rem; font-family: var(--font-body); outline: none; transition: border-color .2s, background .2s; }
+    .sup-search input::placeholder { color: transparent; }
+    .sup-search input:focus { border-color: rgba(91,107,255,.5); background: rgba(255,255,255,.1); }
+    .sup-search-ph { position: absolute; left: 52px; top: 50%; transform: translateY(-50%); color: #7070a0; font-size: 1rem; font-family: var(--font-body); pointer-events: none; white-space: nowrap; overflow: hidden; z-index: 1; }
+    .sup-search-ph .ph-cursor { display: inline-block; width: 2px; height: 1.1em; background: #7070a0; vertical-align: text-bottom; margin-left: 1px; animation: blink-cur .7s step-end infinite; }
+    @keyframes blink-cur { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .faq-no-results { text-align: center; padding: 40px 0; color: var(--muted-fg); font-size: .95rem; display: none; }
+    .sup-search-drop { position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: #1a1a3a; border: 1.5px solid rgba(208,208,255,.15); border-radius: 14px; overflow: hidden; z-index: 100; box-shadow: 0 16px 48px rgba(0,0,20,.5); display: none; }
+    .sup-search-drop.open { display: block; }
+    .ssd-item { display: flex; align-items: center; padding: 13px 18px; cursor: pointer; color: #c8c8f0; font-size: .93rem; transition: background .12s; border-bottom: 1px solid rgba(255,255,255,.05); }
+    .ssd-item:last-child { border-bottom: none; }
+    .ssd-item:hover, .ssd-item.active { background: rgba(91,107,255,.18); color: #fff; }
+    .ssd-item svg { flex-shrink: 0; color: #6060a0; }
+    .ssd-item mark { background: none; color: #a78bfa; font-weight: 700; }
+    .sup-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 860px; margin: 0 auto 88px; padding: 90px 24px 0; }
+    .sup-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 36px 28px 32px; text-align: center; transition: border-color .2s, transform .22s; }
+    .sup-card:hover { border-color: rgba(91,107,255,.45); transform: translateY(-4px); }
+    .sup-card-icon { font-size: 2.6rem; margin-bottom: 18px; display: block; }
+    .sup-card h3 { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .sup-card p { color: #fff; font-size: .88rem; line-height: 1.65; margin-bottom: 24px; }
+    .sup-card a { display: inline-block; padding: 9px 22px; border-radius: 100px; border: 1px solid rgba(208,208,255,.2); color: #d0d0ff; font-size: .85rem; font-weight: 600; text-decoration: none; transition: all .18s; }
+    .sup-card a:hover { border-color: rgba(91,107,255,.5); background: rgba(91,107,255,.12); color: #fff; }
+    .faq-section { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+    .faq-heading { text-align: center; margin-bottom: 48px; }
+    .faq-heading h2 { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800; margin-bottom: 12px; }
+    .faq-heading p { color: var(--muted-fg); font-size: .95rem; }
+    .faq-heading a { color: #a78bfa; text-decoration: none; }
+    .faq-heading a:hover { text-decoration: underline; }
+    .faq-list { border-top: 1px solid var(--border); }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 20px 4px; cursor: pointer; font-weight: 600; font-size: .97rem; color: var(--light); gap: 16px; transition: color .15s; user-select: none; }
+    .faq-q:hover { color: #d0d0ff; }
+    .faq-icon { color: var(--muted-fg); flex-shrink: 0; transition: transform .25s cubic-bezier(.2,.8,.2,1), color .15s; }
+    .faq-item.open .faq-icon { transform: rotate(45deg); color: #a78bfa; }
+    .faq-a { display: none; padding: 0 4px 20px; color: var(--muted-fg); font-size: .9rem; line-height: 1.75; }
+    .faq-a a { color: #a78bfa; text-decoration: none; }
+    .faq-a a:hover { text-decoration: underline; }
+    .faq-item.open .faq-a { display: block; }
+    #makac-bubble { position: absolute; top: -130px; right: calc(50% + 72px); width: 188px; background: linear-gradient(135deg, #2e2e62 0%, #1a1a3a 100%); border: 1.5px solid rgba(167,139,250,.35); border-radius: 14px; padding: 11px 14px; box-shadow: 0 10px 28px rgba(0,0,30,.55); z-index: 10; animation: bubble-in .4s cubic-bezier(.2,.8,.2,1) .5s both; }
+    #makac-bubble p { color: #e0e0ff; font-size: .78rem; line-height: 1.55; margin: 0 0 10px; }
+    #makac-bubble strong { color: #fff; }
+    #makac-chat-btn { display: block; width: 100%; padding: 7px 0; background: linear-gradient(135deg, #292978, #3a3a99); border: none; border-radius: 8px; color: #fff; font-size: .75rem; font-weight: 700; font-family: var(--font-body); cursor: pointer; transition: opacity .15s; }
+    #makac-chat-btn:hover { opacity: .85; }
+    @keyframes bubble-in { from { opacity: 0; transform: scale(.85) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    @media (max-width: 700px) {
+      .sup-cards { grid-template-columns: 1fr; max-width: 400px; }
+      #makac-bubble { right: auto; left: 50%; transform: translateX(-50%); top: -140px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -39,7 +107,7 @@
         <a href="#features">Funkce</a>
         <a href="#employers">Pro zaměstnavatele</a>
         <a href="#download">Stáhnout</a>
-        <a href="/podpora.html">Podpora</a>
+        <a href="#podpora">Podpora</a>
       </div>
       <div class="nav-actions" id="nav-actions">
         <a href="javascript:void(0)" class="btn-ghost" id="nav-login-btn">Přihlásit se</a>
@@ -55,7 +123,7 @@
       <a href="#features">Funkce</a>
       <a href="#employers">Pro zaměstnavatele</a>
       <a href="#download">Stáhnout</a>
-      <a href="/podpora.html">Podpora</a>
+      <a href="#podpora">Podpora</a>
       <div class="mobile-menu-actions">
         <a href="javascript:void(0)" class="btn-ghost" id="mobile-login-btn">Přihlásit se</a>
         <a href="javascript:void(0)" class="btn-primary" id="mobile-register-btn">Vytvořit účet</a>
@@ -559,6 +627,117 @@
     </div>
   </section>
 
+  <!-- ═══════════ PODPORA ═══════════ -->
+  <section id="podpora">
+    <div class="sup-page">
+
+      <!-- Hero -->
+      <div class="sup-hero">
+        <h1>Jak ti můžeme <span class="gradient-text">pomoci?</span></h1>
+        <div class="sup-search">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="faq-search" placeholder="" autocomplete="off" />
+          <span class="sup-search-ph" id="faq-ph"><span id="faq-ph-text"></span><span class="ph-cursor"></span></span>
+          <div class="sup-search-drop" id="faq-drop"></div>
+        </div>
+      </div>
+
+      <!-- Contact cards -->
+      <div class="sup-cards">
+        <div style="position:relative;">
+          <!-- Doktor Makač peeker -->
+          <div id="doc-peeker" style="position:absolute;top:-48px;left:50%;transform:translateX(-50%);z-index:3;pointer-events:none;filter:drop-shadow(0 14px 36px rgba(0,0,60,0.65));">
+            <div style="position:relative;display:inline-block;">
+              <div style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:46px;z-index:6;margin-bottom:-2px;">
+                <div style="width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-bottom:14px solid white;margin:0 auto;"></div>
+                <div style="background:white;height:10px;border-radius:2px 2px 0 0;margin-top:-1px;position:relative;">
+                  <div style="position:absolute;top:1px;left:50%;transform:translateX(-50%);width:3px;height:8px;background:#e53935;border-radius:1px;"></div>
+                  <div style="position:absolute;top:3px;left:50%;transform:translateX(-50%);width:8px;height:3px;background:#e53935;border-radius:1px;"></div>
+                </div>
+              </div>
+              <div style="width:88px;height:76px;background:linear-gradient(160deg,#4848c4 0%,#1c1c7a 100%);border-radius:50% 50% 44% 44%;position:relative;box-shadow:0 14px 36px rgba(0,0,60,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:2px solid rgba(140,140,255,0.3);">
+                <div id="doc-browL" style="position:absolute;left:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
+                <div id="doc-browR" style="position:absolute;right:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
+                <div id="doc-eyeL" style="position:absolute;left:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
+                  <div id="doc-pupilL" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
+                  <div id="doc-lidL" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+                </div>
+                <div id="doc-eyeR" style="position:absolute;right:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
+                  <div id="doc-pupilR" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
+                  <div id="doc-lidR" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+                </div>
+                <div style="position:absolute;bottom:11px;left:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
+                <div style="position:absolute;bottom:11px;right:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Speech bubble -->
+          <div id="makac-bubble">
+            <p>Jmenuji se <strong>Makač</strong> a jsem tvůj AI pomocník. Jsem tady pro tebe <strong>24/7</strong> a pomůžu ti s tvým dotazem.</p>
+            <button id="makac-chat-btn" onclick="window.openMakacChat && window.openMakacChat()">Zeptat se Makače</button>
+          </div>
+          <div class="sup-card" style="position:relative;z-index:2;">
+            <span class="sup-card-icon">💬</span>
+            <h3>Live chat</h3>
+            <p>Napiš nám přímo v aplikaci. Odpovídáme obvykle do 15 minut v pracovní době.</p>
+            <a href="javascript:void(0)" onclick="window.openMakacChat && window.openMakacChat()">Otevřít chat</a>
+          </div>
+        </div>
+        <div class="sup-card">
+          <span class="sup-card-icon">📧</span>
+          <h3>Email</h3>
+          <p>Složitější dotazy nebo problémy s účtem řeš s námi přes email.</p>
+          <a href="mailto:podpora@makej.eu">podpora@makej.eu</a>
+        </div>
+        <div class="sup-card">
+          <span class="sup-card-icon">📖</span>
+          <h3>Průvodce</h3>
+          <p>Podrobné návody a odpovědi na nejčastější otázky v naší databázi znalostí.</p>
+          <a href="#how-it-works">Jak to funguje</a>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <section class="faq-section">
+        <div class="faq-heading">
+          <h2>Časté <span class="gradient-text">otázky</span></h2>
+          <p>Nenašel jsi odpověď? Napiš nám na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a></p>
+        </div>
+        <div class="faq-list" id="faq-list">
+          <div class="faq-no-results" id="faq-no-results">Žádné výsledky pro tuto frázi 🙁</div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Je Makej! zdarma?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">Pro brigádníky je Makej! zcela zdarma — registrace, swipování i chat. Zaměstnavatelé mají základní plán dostupný po spuštění aplikace.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Jak probíhá výplata za práci?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">Výplata probíhá přímo mezi tebou a zaměstnavatelem — Makej! slouží jako platforma pro propojení, ne jako zprostředkovatel plateb. Podmínky si domluv přímo s firmou přes náš chat.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Je moje platební karta v bezpečí?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">Na Makej! nezadáváš žádné platební údaje — aplikace je zdarma a nepotřebujeme přístup k tvé kartě. Tvoje osobní data chráníme v souladu s GDPR.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Jak smažu svůj účet?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">V aplikaci jdi do Nastavení → Účet → Smazat účet. Nebo nám napiš na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a> a my to vyřídíme za tebe do 3 pracovních dnů. Data mažeme v souladu s GDPR.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Jak nahlásím problém se zaměstnavatelem nebo brigádníkem?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">V profilu každého uživatele najdeš tlačítko "Nahlásit". Každé hlášení prověřuje náš tým do 24 hodin. Při závažném porušení podmínek okamžitě blokujeme účet. Bezpečnost komunity je pro nás priorita.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Na jakých zařízeních Makej! funguje?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">Makej! bude dostupný na iOS (App Store) a Androidu (Google Play). Spuštění brzy — registruj se teď a budeš mezi prvními.</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </section>
+
   <!-- ═══════════ FOOTER ═══════════ -->
   <footer id="footer">
     <div class="container">
@@ -581,7 +760,7 @@
         </div>
         <div class="footer-col">
           <h4>Firma</h4>
-          <a href="/podpora.html">Podpora</a>
+          <a href="#podpora">Podpora</a>
           <a href="mailto:hello@makej.eu">Kontakt</a>
           <a href="/o-nas.html">O nás</a>
         </div>
@@ -889,6 +1068,90 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="script.js?v=2"></script>
   <script src="/chat-widget.js"></script>
+
+  <!-- ── Podpora: FAQ + typewriter ── -->
+  <script>
+  function toggleFaq(el) {
+    var item = el.parentElement;
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(function(i) { i.classList.remove('open'); });
+    if (!isOpen) item.classList.add('open');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Typewriter placeholder
+    var phText = document.getElementById('faq-ph-text');
+    var phWrap = document.getElementById('faq-ph');
+    var input  = document.getElementById('faq-search');
+    if (phText && input) {
+      var questions = ['Je Makej! zdarma?','Jak smažu svůj účet?','Jak probíhá výplata za práci?','Na jakých zařízeních Makej! funguje?','Jak nahlásím problém se zaměstnavatelem?','Je moje platební karta v bezpečí?'];
+      var qi = 0, ci = 0, deleting = false, paused = false;
+      function tick() {
+        if (input.value.length > 0 || document.activeElement === input) { phWrap.style.opacity='0'; setTimeout(tick,200); return; }
+        phWrap.style.opacity='1';
+        var q = questions[qi];
+        if (paused) { paused=false; deleting=true; setTimeout(tick,30); return; }
+        if (!deleting) { phText.textContent=q.slice(0,ci); ci++; if(ci>q.length){paused=true;setTimeout(tick,900);return;} setTimeout(tick,45); }
+        else { phText.textContent=q.slice(0,ci); ci--; if(ci<0){deleting=false;ci=0;qi=(qi+1)%questions.length;setTimeout(tick,280);return;} setTimeout(tick,28); }
+      }
+      input.addEventListener('input', function(){ phWrap.style.opacity=this.value.length?'0':'1'; });
+      input.addEventListener('focus', function(){ phWrap.style.opacity='0'; });
+      input.addEventListener('blur',  function(){ if(!this.value.length) phWrap.style.opacity='1'; });
+      setTimeout(tick, 600);
+    }
+
+    // FAQ live search + autocomplete
+    var noResults = document.getElementById('faq-no-results');
+    var drop      = document.getElementById('faq-drop');
+    if (!input || !drop) return;
+    var faqItems = Array.from(document.querySelectorAll('.faq-item'));
+    var activeIdx = -1;
+    function getQ(item){ return (item.querySelector('.faq-q span')||item).textContent.trim(); }
+    function hl(text,q){ if(!q) return text; return text.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>'); }
+    function showDrop(q){
+      if(!q){closeDrop();return;}
+      var m=faqItems.filter(function(i){return getQ(i).toLowerCase().includes(q);});
+      if(!m.length){closeDrop();return;}
+      drop.innerHTML=m.slice(0,5).map(function(i){return'<div class="ssd-item" data-idx="'+faqItems.indexOf(i)+'"><span>'+hl(getQ(i),q)+'</span></div>';}).join('');
+      drop.classList.add('open'); activeIdx=-1;
+      drop.querySelectorAll('.ssd-item').forEach(function(el){ el.addEventListener('mousedown',function(e){e.preventDefault();selectSug(parseInt(this.dataset.idx));}); });
+    }
+    function closeDrop(){drop.classList.remove('open');drop.innerHTML='';activeIdx=-1;}
+    function selectSug(idx){ var item=faqItems[idx]; if(!item) return; input.value=''; closeDrop(); filterFaq(''); setTimeout(function(){item.scrollIntoView({behavior:'smooth',block:'center'});if(!item.classList.contains('open'))item.classList.add('open');},80); }
+    function filterFaq(q){
+      var v=0;
+      faqItems.forEach(function(item){
+        var text=getQ(item).toLowerCase()+' '+((item.querySelector('.faq-a')||{textContent:''}).textContent.toLowerCase());
+        var m=!q||text.includes(q); item.style.display=m?'':'none'; if(m)v++;
+      });
+      if(noResults) noResults.style.display=v===0?'block':'none';
+      if(q) document.querySelectorAll('.faq-item.open').forEach(function(i){i.classList.remove('open');});
+    }
+    input.addEventListener('input',function(){ var q=this.value.trim().toLowerCase(); filterFaq(q); showDrop(q); });
+    input.addEventListener('keydown',function(e){
+      var items=drop.querySelectorAll('.ssd-item');
+      if(!items.length) return;
+      if(e.key==='ArrowDown'){e.preventDefault();activeIdx=Math.min(activeIdx+1,items.length-1);}
+      else if(e.key==='ArrowUp'){e.preventDefault();activeIdx=Math.max(activeIdx-1,0);}
+      else if(e.key==='Enter'&&activeIdx>=0){e.preventDefault();selectSug(parseInt(items[activeIdx].dataset.idx));return;}
+      else if(e.key==='Escape'){closeDrop();return;}
+      else return;
+      items.forEach(function(el,i){el.classList.toggle('active',i===activeIdx);});
+    });
+    document.addEventListener('click',function(e){if(!input.contains(e.target)&&!drop.contains(e.target))closeDrop();});
+
+    // Doc peeker eye tracking
+    var eyeL=document.getElementById('doc-eyeL'), eyeR=document.getElementById('doc-eyeR');
+    var pupilL=document.getElementById('doc-pupilL'), pupilR=document.getElementById('doc-pupilR');
+    var lidL=document.getElementById('doc-lidL'), lidR=document.getElementById('doc-lidR');
+    if(!eyeL) return;
+    function movePupil(pupilEl,eyeEl,mx,my){ var rect=eyeEl.getBoundingClientRect(); if(!rect.width) return; var cx=rect.left+rect.width/2,cy=rect.top+rect.height/2,dx=mx-cx,dy=my-cy,dist=Math.sqrt(dx*dx+dy*dy),r=4.5,s=Math.min(dist,r)/Math.max(dist,0.001); pupilEl.style.transform='translate('+(dx*s).toFixed(2)+'px,'+(dy*s).toFixed(2)+'px)'; }
+    document.addEventListener('mousemove',function(e){ movePupil(pupilL,eyeL,e.clientX,e.clientY); movePupil(pupilR,eyeR,e.clientX,e.clientY); });
+    function setLid(speed){ lidL.style.transition='height '+speed+' ease'; lidR.style.transition='height '+speed+' ease'; }
+    function scheduleBlink(){ setTimeout(function(){ setLid('0.08s'); lidL.style.height='21px'; lidR.style.height='21px'; setTimeout(function(){ lidL.style.height='0'; lidR.style.height='0'; setTimeout(function(){setLid('0.28s');scheduleBlink();},120); },100); },3000+Math.random()*3000); }
+    scheduleBlink();
+  });
+  </script>
 
   <!-- ── App Demo ── -->
   <script>
