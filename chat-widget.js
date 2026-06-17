@@ -20,14 +20,21 @@
       border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0;
     }
     .mw-avatar {
-      width:32px; height:32px; border-radius:50%; flex-shrink:0;
+      width:38px; height:33px; flex-shrink:0;
       background:linear-gradient(160deg,#4848c4 0%,#1c1c7a 100%);
-      position:relative; overflow:hidden;
+      border-radius:50% 50% 44% 44%;
+      position:relative;
+      box-shadow:0 4px 14px rgba(0,0,60,.5),inset 0 1px 0 rgba(255,255,255,.15);
+      border:1.5px solid rgba(140,140,255,.3);
     }
-    .mw-eye { position:absolute; width:8px; height:8px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-    .mw-eye.l { left:4px; top:11px; } .mw-eye.r { right:4px; top:11px; }
-    .mw-pupil { width:6px; height:6px; background:#16163c; border-radius:50%; transition:transform .09s ease; position:absolute; }
-    .mw-mouth { position:absolute; bottom:6px; left:50%; transform:translateX(-50%); width:10px; height:4px; border-bottom:2px solid rgba(255,255,255,.5); border-radius:0 0 5px 5px; }
+    .mw-brow { position:absolute; width:8px; height:1.5px; background:rgba(190,190,255,.6); border-radius:2px; top:6px; transition:transform .22s ease; }
+    .mw-brow.l { left:5px; } .mw-brow.r { right:5px; }
+    .mw-eye { position:absolute; width:9px; height:9px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:inset 0 1px 2px rgba(0,0,0,.12); top:12px; }
+    .mw-eye.l { left:5px; } .mw-eye.r { right:5px; }
+    .mw-pupil { width:5px; height:5px; background:#16163c; border-radius:50%; transition:transform .09s ease; position:absolute; }
+    .mw-lid { position:absolute; top:0; left:0; right:0; height:0; background:linear-gradient(180deg,#5050c8,#3030a0); transition:height .3s cubic-bezier(.4,0,.2,1); z-index:2; }
+    .mw-cheek { position:absolute; width:7px; height:3px; border-radius:50%; background:rgba(255,100,150,.22); bottom:4px; }
+    .mw-cheek.l { left:3px; } .mw-cheek.r { right:3px; }
     #makac-panel-info { flex:1; }
     #makac-panel-name { font-weight:700; font-size:.88rem; color:#e0e0ff; }
     #makac-panel-sub { display:flex; align-items:center; gap:4px; margin-top:1px; }
@@ -85,9 +92,12 @@
     <div id="makac-panel">
       <div id="makac-panel-header">
         <div class="mw-avatar">
-          <div class="mw-eye l"><div class="mw-pupil" id="mw-pl"></div></div>
-          <div class="mw-eye r"><div class="mw-pupil" id="mw-pr"></div></div>
-          <div class="mw-mouth"></div>
+          <div class="mw-brow l" id="mw-browL"></div>
+          <div class="mw-brow r" id="mw-browR"></div>
+          <div class="mw-eye l" id="mw-eyeL"><div class="mw-pupil" id="mw-pl"></div><div class="mw-lid" id="mw-lidL"></div></div>
+          <div class="mw-eye r" id="mw-eyeR"><div class="mw-pupil" id="mw-pr"></div><div class="mw-lid" id="mw-lidR"></div></div>
+          <div class="mw-cheek l"></div>
+          <div class="mw-cheek r"></div>
         </div>
         <div id="makac-panel-info">
           <div id="makac-panel-name">Makač</div>
@@ -233,17 +243,32 @@
   confirmCx.addEventListener('click', function () { confirm.classList.remove('show'); });
   confirmOk.addEventListener('click', function () { confirm.classList.remove('show'); resetChat(); });
 
-  // Eye tracking
+  // Eye tracking + blinking
+  var eyeL = document.getElementById('mw-eyeL'), eyeR = document.getElementById('mw-eyeR');
+  var lidL  = document.getElementById('mw-lidL'), lidR  = document.getElementById('mw-lidR');
   document.addEventListener('mousemove', function (e) {
-    movePupil(pl, document.querySelector('.mw-eye.l'), e.clientX, e.clientY);
-    movePupil(pr, document.querySelector('.mw-eye.r'), e.clientX, e.clientY);
+    movePupil(pl, eyeL, e.clientX, e.clientY);
+    movePupil(pr, eyeR, e.clientX, e.clientY);
   });
   function movePupil(p, eye, mx, my) {
     if (!p || !eye) return;
     var r = eye.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    var dx = mx - cx, dy = my - cy, dist = Math.sqrt(dx * dx + dy * dy), max = 1.2;
-    p.style.transform = 'translate(' + (dist > max ? (dx / dist) * max : dx) + 'px,' + (dist > max ? (dy / dist) * max : dy) + 'px)';
+    var dx = mx - cx, dy = my - cy, dist = Math.sqrt(dx * dx + dy * dy), max = 1.5;
+    p.style.transform = 'translate(' + (dist > max ? (dx / dist) * max : dx).toFixed(2) + 'px,' + (dist > max ? (dy / dist) * max : dy).toFixed(2) + 'px)';
   }
+  function mwBlink() {
+    if (!lidL || !lidR) return;
+    lidL.style.transition = lidR.style.transition = 'height .08s ease';
+    lidL.style.height = lidR.style.height = '9px';
+    setTimeout(function () {
+      lidL.style.height = lidR.style.height = '0';
+      setTimeout(function () {
+        lidL.style.transition = lidR.style.transition = 'height .28s ease';
+        setTimeout(mwBlink, 3000 + Math.random() * 3000);
+      }, 120);
+    }, 100);
+  }
+  setTimeout(mwBlink, 2000 + Math.random() * 2000);
 
   // Global opener — stránky mohou volat window.openMakacChat()
   window.openMakacChat = openPanel;
