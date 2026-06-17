@@ -662,10 +662,9 @@
       function selectSuggestion(idx) {
         var item = faqItems[idx];
         if (!item) return;
-        var q = getQuestion(item);
-        searchInput.value = q;
+        searchInput.value = '';
         closeDrop();
-        filterFaq(q.toLowerCase());
+        filterFaq('');
         // scroll + open that item
         setTimeout(function() {
           item.scrollIntoView({ behavior: 'smooth', block: 'center' });
