@@ -19,27 +19,59 @@
 
 html { scroll-behavior: smooth; }
 body {
-  background: #060912;
+  background: #0d0d2e;
   color: var(--fg);
   font-family: var(--font-sans);
   line-height: 1.6;
   overflow-x: hidden;
 }
+
+/* Aurora — vrstva 1: hlavní pomalá vlna */
+@keyframes auroraWave1 {
+  0%   { background-position: 50% 0%;   }
+  40%  { background-position: 50% 0%;   }
+  60%  { background-position: 50% 100%; }
+  100% { background-position: 50% 100%; }
+}
+/* Aurora — vrstva 2: opačná fáze, nikdy synchronizovaná */
+@keyframes auroraWave2 {
+  0%   { background-position: 50% 100%; }
+  45%  { background-position: 50% 100%; }
+  65%  { background-position: 50% 0%;   }
+  100% { background-position: 50% 0%;   }
+}
+
 body::before {
   content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(70% 50% at 50% 28%, rgba(110,140,255,0.20), transparent 70%),
-    radial-gradient(120% 90% at 50% -10%,
-      #1438ff 0%,
-      #0b1fc4 32%,
-      #0d1a8a 55%,
-      #121660 78%,
-      #0d1248 100%
-    );
+  position: fixed; inset: 0; z-index: -2;
+  background: linear-gradient(180deg,
+    #0d0d2e  0%,
+    #1a1a55 20%,
+    #292978 38%,
+    #3a3a99 55%,
+    #1e1e6a 72%,
+    #0d0d2e 100%
+  );
+  background-size: 100% 400%;
+  animation: auroraWave1 30s ease-in-out infinite;
   pointer-events: none;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: -1;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(58,58,153,.28) 25%,
+    rgba(208,208,255,.07) 50%,
+    rgba(41,41,120,.30) 75%,
+    transparent 100%
+  );
+  background-size: 100% 400%;
+  animation: auroraWave2 42s ease-in-out infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
 }
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
