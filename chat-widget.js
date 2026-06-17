@@ -131,7 +131,7 @@
         </button>
       </div>
     </div>
-    <button id="makac-toggle">💬</button>
+    <button id="makac-toggle"><img src="message.png" width="28" height="28" style="object-fit:contain;filter:invert(1)" alt=""></button>
   `;
   document.body.appendChild(widget);
 
