@@ -277,47 +277,134 @@ img { max-width: 100%; display: block; }
   font-weight: 700; letter-spacing: .03em;
 }
 
-/* ═══════════ HOW IT WORKS ═══════════ */
-#how-it-works { padding: 120px 0; }
-.steps-list { display: flex; flex-direction: column; gap: 64px; max-width: 1000px; margin: 0 auto; }
-.step-row { display: flex; align-items: center; gap: 64px; }
-.step-row.sr-reverse { flex-direction: row-reverse; }
+/* ═══════════ HOW IT WORKS — JOURNEY (HAD) ═══════════ */
+#how-it-works {
+  padding: 120px 0;
+  background: #fff;
+  position: relative;
+  z-index: 1;
+}
 
-.step-visual {
-  flex: 0 0 420px; height: 300px; border-radius: 28px;
+/* Přizpůsobení textu na bílém pozadí */
+#how-it-works .section-header h2 { color: #1a1a3a; }
+#how-it-works .section-header p { color: #5a6080; }
+#how-it-works .gradient-text {
+  -webkit-text-fill-color: #292978;
+  color: #292978;
+}
+#how-it-works .js-num {
+  color: #292978;
+  background: rgba(41,41,120,.08);
+  border-color: rgba(41,41,120,.2);
+}
+#how-it-works .js-card h3 { color: #1a1a3a; }
+#how-it-works .js-card p { color: #4a5070; }
+#how-it-works .js-media { box-shadow: 0 16px 48px rgba(0,0,60,.14); }
+
+.journey-list {
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Krok — 2 sloupce: media + text */
+.journey-step {
+  display: flex;
+  align-items: center;
+  gap: 56px;
+  padding: 48px 0;
+  position: relative;
+}
+.journey-step.js-flip { flex-direction: row-reverse; }
+
+/* js-snake = jen mezera pro SVG cestu */
+.js-snake { height: 80px; }
+
+/* Číslo kroku */
+.js-num {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-size: .78rem; font-weight: 900; letter-spacing: .1em;
+  color: rgba(208,208,255,.6);
+  background: rgba(41,41,120,.35);
+  border: 1px solid rgba(208,208,255,.14);
+  padding: 3px 12px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+
+/* Media karta (bílá) */
+.js-media {
+  flex: 0 0 420px;
+  background: #fff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,60,.32);
+}
+
+/* Phone mockup */
+.js-phone-wrap {
+  position: relative;
+  width: 100%; height: 360px;
+}
+.js-phone-wrap img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: top;
+  display: block;
+}
+.js-phone-notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 64px; height: 18px;
+  background: rgba(0,0,0,.1);
+  border-radius: 0 0 12px 12px;
+  z-index: 2;
+}
+
+/* Ikona wrap */
+.js-icon-wrap {
+  width: 100%; min-height: 210px;
   display: flex; align-items: center; justify-content: center;
-  position: relative; overflow: hidden;
-  background: linear-gradient(145deg, rgba(41,41,120,.85) 0%, rgba(20,20,72,.98) 100%);
-  border: 1px solid rgba(208,208,255,.12);
-  box-shadow: 0 24px 64px rgba(0,0,60,.45);
 }
-.step-visual::after {
-  content: attr(data-num);
-  position: absolute; font-family: var(--font-heading); font-size: 10rem;
-  font-weight: 900; color: rgba(208,208,255,.055); line-height: 1;
-  right: 12px; bottom: -8px; user-select: none; pointer-events: none;
-}
-.sv-blob {
-  position: absolute; border-radius: 50%;
-  background: radial-gradient(circle, rgba(58,58,200,.35) 0%, transparent 70%);
-  pointer-events: none;
-}
-.sv-blob.b1 { width: 220px; height: 220px; top: -60px; left: -60px; }
-.sv-blob.b2 { width: 140px; height: 140px; bottom: -40px; right: -30px; background: radial-gradient(circle, rgba(100,80,255,.25) 0%, transparent 70%); }
-.sv-icon { position: relative; z-index: 1; color: rgba(208,208,255,.92); filter: drop-shadow(0 4px 20px rgba(100,100,255,.4)); }
 
-.step-text { flex: 1; }
-.step-num-label {
-  font-family: var(--font-heading); font-size: 5rem; font-weight: 900;
-  color: rgba(208,208,255,.1); line-height: 1; display: block; margin-bottom: 2px;
+/* Text karta */
+.js-card { flex: 1; }
+.js-card h3 {
+  font-family: var(--font-heading);
+  font-size: 2rem; font-weight: 700;
+  margin-bottom: 14px; color: #fff;
 }
-.step-text h3 { font-family: var(--font-heading); font-size: 2rem; font-weight: 700; margin-bottom: 14px; }
-.step-text p { color: rgba(255,255,255,.75); font-size: 1.05rem; line-height: 1.7; max-width: 380px; }
+.js-card p { color: rgba(255,255,255,.72); font-size: 1.05rem; line-height: 1.7; }
 
-@media (max-width: 900px) {
-  .step-row, .step-row.sr-reverse { flex-direction: column; gap: 28px; }
-  .step-visual { flex: none; width: 100%; height: 220px; border-radius: 22px; }
-  .steps-list { gap: 48px; }
+/* Přepínač brigádník / firma */
+.jrole-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.jrole-btn {
+  padding: 8px 20px;
+  border-radius: 30px;
+  border: 1.5px solid rgba(41,41,120,.25);
+  background: transparent;
+  color: #5a6080;
+  font-size: .9rem; font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background .18s, color .18s, border-color .18s;
+}
+.jrole-btn.is-active {
+  background: #292978;
+  color: #fff;
+  border-color: #292978;
+}
+
+@media (max-width: 860px) {
+  .journey-step, .journey-step.js-flip { flex-direction: column; gap: 20px; padding: 28px 0; }
+  .journey-step.rail-right, .journey-step.rail-left { border: none; }
+  .journey-step.rail-right::after, .journey-step.rail-left::after { display: none; }
+  .js-snake { display: none; }
+  .js-media { flex: none; width: 100%; }
+  .js-phone-wrap { height: 240px; }
 }
 
 /* ═══════════ FEATURES ═══════════ */

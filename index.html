@@ -103,8 +103,7 @@
     <div class="nav-inner">
       <a href="#" class="nav-logo">Makej!</a>
       <div class="nav-links">
-        <a href="#how-it-works">Jak to funguje</a>
-        <a href="#features">Funkce</a>
+        <a href="#how-it-works">Hledám si práci</a>
         <a href="#employers">Pro zaměstnavatele</a>
         <a href="#download">Stáhnout</a>
         <a href="#podpora">Podpora</a>
@@ -119,8 +118,7 @@
     </div>
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobile-menu">
-      <a href="#how-it-works">Jak to funguje</a>
-      <a href="#features">Funkce</a>
+      <a href="#how-it-works">Hledám si práci</a>
       <a href="#employers">Pro zaměstnavatele</a>
       <a href="#download">Stáhnout</a>
       <a href="#podpora">Podpora</a>
@@ -164,57 +162,69 @@
         </div>
       </div>
     </div>
-    <div class="hero-scroll-indicator">
-      <iconify-icon icon="solar:alt-arrow-down-bold" width="24"></iconify-icon>
-    </div>
   </section>
 
   <!-- ═══════════ HOW IT WORKS ═══════════ -->
   <section id="how-it-works">
     <div class="container">
       <div class="section-header">
-        <h2>Brigáda za <span class="gradient-text">3 kroky</span></h2>
+        <h2>Tvoje cesta <span class="gradient-text">k výdělku</span></h2>
         <p>Jednodušší to být nemůže.</p>
       </div>
-      <div class="steps-list">
+      <div class="journey-list">
 
-        <!-- Krok 1 -->
-        <div class="step-row">
-          <div class="step-visual" data-num="01">
-            <div class="sv-blob b1"></div>
-            <div class="sv-blob b2"></div>
-            <iconify-icon class="sv-icon" icon="solar:hand-shake-bold" width="96"></iconify-icon>
+        <!-- Krok 0: text vlevo, místo na obrázek vpravo -->
+        <div class="journey-step rail-right">
+          <div class="js-card">
+            <h3>Stáhni aplikaci,<br>založ účet</h3>
+            <p>Stáhni Makej, vytvoř si profil brigádníka a za minutu začneš procházet nabídky přesně pro tebe.</p>
           </div>
-          <div class="step-text">
-            <span class="step-num-label">01</span>
+          <div class="js-media">
+            <div class="js-icon-wrap" style="min-height:260px;"></div>
+          </div>
+        </div>
+
+        <div class="js-snake"></div>
+
+        <!-- Krok 1: fotka vlevo, text vpravo -->
+        <div class="journey-step rail-left">
+          <div class="js-media">
+            <div class="js-phone-wrap">
+              <div class="js-phone-notch"></div>
+              <img src="swipe-mockup.jpg" alt="Makej app swipe">
+            </div>
+          </div>
+          <div class="js-card">
             <h3>Swajpni</h3>
             <p>Prohlížej nabídky brigád jako na Tinderu. Doprava = chci, doleva = nechci. Za pár sekund máš tip na brigádu, která tě baví.</p>
           </div>
         </div>
 
-        <!-- Krok 2 -->
-        <div class="step-row sr-reverse">
-          <div class="step-visual" data-num="02">
-            <div class="sv-blob b1"></div>
-            <div class="sv-blob b2"></div>
-            <img src="message (1).png" class="sv-icon" style="width:96px;height:96px;object-fit:contain;filter:invert(1)" alt="">
-          </div>
-          <div class="step-text">
-            <span class="step-num-label">02</span>
+        <div class="js-snake"></div>
+
+        <!-- Krok 2: text vlevo, ikona vpravo -->
+        <div class="journey-step rail-right">
+          <div class="js-card">
             <h3>Matchuj</h3>
             <p>Když tě firma přijme, vznikne match a otevře se chat. Domluv se na detailech přímo v aplikaci — žádné emaily, žádné volání.</p>
           </div>
+          <div class="js-media">
+            <div class="js-icon-wrap">
+              <img src="message (1).png" alt="Match" style="width:110px;height:110px;object-fit:contain;filter:invert(0.15) sepia(1) saturate(5) hue-rotate(210deg)">
+            </div>
+          </div>
         </div>
 
-        <!-- Krok 3 -->
-        <div class="step-row">
-          <div class="step-visual" data-num="03">
-            <div class="sv-blob b1"></div>
-            <div class="sv-blob b2"></div>
-            <iconify-icon class="sv-icon" icon="solar:wallet-money-bold" width="96"></iconify-icon>
+        <div class="js-snake"></div>
+
+        <!-- Krok 3: ikona vlevo, text vpravo -->
+        <div class="journey-step rail-left">
+          <div class="js-media">
+            <div class="js-icon-wrap">
+              <iconify-icon icon="solar:wallet-money-bold" width="110" style="color:#292978"></iconify-icon>
+            </div>
           </div>
-          <div class="step-text">
-            <span class="step-num-label">03</span>
+          <div class="js-card">
             <h3>Pracuj a vydělávej</h3>
             <p>Přijď na směnu, odveď práci a vydělanej jdi domů. Tak jednoduché to je.</p>
           </div>

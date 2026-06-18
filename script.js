@@ -613,3 +613,26 @@ function showToast(msg) {
   });
 })();
 
+
+
+/* ── Journey role toggle ── */
+(function () {
+  function init() {
+    var btns = document.querySelectorAll('.jrole-btn');
+    if (!btns.length) return;
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var role = btn.getAttribute('data-role');
+        btns.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
+        document.querySelectorAll('.jrole-text').forEach(function (t) {
+          t.style.display = t.getAttribute('data-role') === role ? '' : 'none';
+        });
+      });
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
