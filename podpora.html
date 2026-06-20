@@ -97,6 +97,25 @@
   
     /* Navbar: tlačítka vždy viditelná, Podpora aktivní */
     #navbar .nav-actions { opacity: 1 !important; pointer-events: all !important; }
+
+    /* Světlý navbar nad bílou sekcí — připraveno */
+    #navbar { transition: background .35s, box-shadow .35s; }
+    .nav-logo { transition: color .35s; }
+    .nav-links a { transition: color .25s, border-bottom-color .25s, font-weight .2s !important; }
+    #navbar.navbar-light {
+      background: rgba(255,255,255,.15) !important;
+      box-shadow: 0 1px 0 rgba(0,32,246,.1) !important;
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+    }
+    #navbar.navbar-light .nav-logo { -webkit-text-fill-color: #0020f6 !important; color: #0020f6 !important; }
+    #navbar.navbar-light .nav-links a { color: #0020f6 !important; }
+    #navbar.navbar-light .nav-links a.nav-active { color: #0020f6 !important; border-bottom-color: #0020f6 !important; }
+    #navbar.navbar-light .mobile-menu-btn { color: #1a1a3a; }
+    #navbar.navbar-light #nav-login-btn {
+      background: transparent; color: #0020f6; border-color: rgba(0,32,246,.3); font-weight: 600;
+    }
+    #navbar.navbar-light #nav-login-btn:hover { background: rgba(0,32,246,.06); border-color: #0020f6; }
 </style>
 </head>
 <body>
@@ -1177,5 +1196,22 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();
   })();
+  </script>
+
+  <script>
+    (function() {
+      /* navbar-light system — připraveno pro budoucí bílou sekci.
+         Nahraď 'dark-section' za skutečné ID tmavé sekce, která následuje po bílé. */
+      var navbar = document.getElementById('navbar');
+      var darkSection = document.getElementById('dark-section');
+      if (!navbar || !darkSection) return;
+      function updateNavbarTheme() {
+        var navH = navbar.offsetHeight;
+        var darkTop = darkSection.getBoundingClientRect().top;
+        navbar.classList.toggle('navbar-light', darkTop > navH);
+      }
+      window.addEventListener('scroll', updateNavbarTheme, { passive: true });
+      updateNavbarTheme();
+    })();
   </script>
 </body>
