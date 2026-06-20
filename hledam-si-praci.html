@@ -28,21 +28,6 @@
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" async></script>
   <link rel="stylesheet" href="style.css?v=20" />
   <style>
-    /* Navbar na hledám si práci — záložky + logo s gradientem, tlačítka viditelná */
-    #navbar .nav-links a,
-    #navbar .nav-logo {
-      background: linear-gradient(135deg, #0020f6, #1a35ff) !important;
-      -webkit-background-clip: text !important;
-      background-clip: text !important;
-      -webkit-text-fill-color: transparent !important;
-      color: transparent !important;
-    }
-    #navbar .nav-links a.nav-active {
-      border-bottom-color: #0020f6 !important;
-    }
-    /* Tlačítka vždy viditelná */
-    #navbar .nav-actions { opacity: 1 !important; pointer-events: all !important; }
-
     /* ── Podpora sekce ── */
     .sup-page { padding: 100px 0 80px; }
     .sup-hero {
@@ -109,6 +94,28 @@
       .sup-cards { grid-template-columns: 1fr; max-width: 400px; }
       #makac-bubble { right: auto; left: 50%; transform: translateX(-50%); top: -140px; }
     }
+
+    /* Přihlásit se + Vytvořit účet vždy viditelné v navbaru */
+    #nav-actions { opacity: 1 !important; pointer-events: all !important; }
+
+    /* Světlý navbar nad bílou sekcí */
+    #navbar { transition: background .35s, box-shadow .35s; }
+    .nav-logo { transition: color .35s; }
+    .nav-links a { transition: color .25s, border-bottom-color .25s, font-weight .2s !important; }
+    #navbar.navbar-light {
+      background: rgba(255,255,255,.15) !important;
+      box-shadow: 0 1px 0 rgba(0,32,246,.1) !important;
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+    }
+    #navbar.navbar-light .nav-logo { -webkit-text-fill-color: #0020f6 !important; color: #0020f6 !important; }
+    #navbar.navbar-light .nav-links a { color: #0020f6 !important; }
+    #navbar.navbar-light .nav-links a.nav-active { color: #0020f6 !important; border-bottom-color: #0020f6 !important; }
+    #navbar.navbar-light .mobile-menu-btn { color: #1a1a3a; }
+    #navbar.navbar-light #nav-login-btn {
+      background: transparent; color: #0020f6; border-color: rgba(0,32,246,.3); font-weight: 600;
+    }
+    #navbar.navbar-light #nav-login-btn:hover { background: rgba(0,32,246,.06); border-color: #0020f6; }
   </style>
 </head>
 <body>
@@ -639,6 +646,23 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="script.js?v=4"></script>
   <script src="/chat-widget.js"></script>
+  <script>
+    (function() {
+      var navbar = document.getElementById('navbar');
+      var whiteSection = document.getElementById('how-it-works');
+      var darkSection = document.getElementById('features');
+      function updateNavbarTheme() {
+        if (!navbar || !whiteSection || !darkSection) return;
+        var navH = navbar.offsetHeight;
+        var featTop = darkSection.getBoundingClientRect().top;
+        // Světlý navbar: uživatel scrolloval a ještě nedosáhl temné sekce
+        var shouldBeLight = featTop > navH;
+        navbar.classList.toggle('navbar-light', shouldBeLight);
+      }
+      window.addEventListener('scroll', updateNavbarTheme, { passive: true });
+      updateNavbarTheme();
+    })();
+  </script>
 
   <!-- ── Podpora: FAQ + typewriter ── -->
   <script>
