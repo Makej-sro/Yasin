@@ -1,3 +1,19 @@
+// ═══════════ SCROLL RESTORATION ═══════════
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+
+// ═══════════ PAGE TRANSITIONS ═══════════
+document.addEventListener('click', function(e) {
+  const link = e.target.closest('a[href]');
+  if (!link) return;
+  const href = link.getAttribute('href');
+  if (!href || href.startsWith('#') || href.startsWith('javascript') || href.startsWith('mailto') || link.target === '_blank') return;
+  if (!href.startsWith('/') && !href.startsWith('http')) return;
+  if (href.startsWith('http') && !href.includes(location.hostname)) return;
+  e.preventDefault();
+  window.location.href = href;
+});
+
 // ═══════════ NAVBAR SCROLL + SCROLLSPY ═══════════
 const navbar    = document.getElementById('navbar');
 const navActions = document.getElementById('nav-actions') || document.querySelector('.nav-actions');
@@ -472,21 +488,19 @@ function showToast(msg) {
   const banner = document.getElementById('cookie-banner');
   if (!banner) return;
 
-  // Pokud uživatel už rozhodl, nezobrazuj banner
-  if (localStorage.getItem(COOKIE_KEY)) return;
+  if (localStorage.getItem(COOKIE_KEY)) { banner.style.display = 'none'; return; }
 
-  // Zobraz banner s malým zpožděním (po načtení stránky)
-  setTimeout(() => banner.classList.add('visible'), 800);
+  setTimeout(() => banner.classList.add('visible'), 600);
 
-  document.getElementById('cookie-accept').addEventListener('click', () => {
-    localStorage.setItem(COOKIE_KEY, 'accepted');
+  function dismiss() {
     banner.classList.remove('visible');
-  });
+    setTimeout(() => { banner.style.display = 'none'; }, 450);
+  }
 
-  document.getElementById('cookie-reject').addEventListener('click', () => {
-    localStorage.setItem(COOKIE_KEY, 'rejected');
-    banner.classList.remove('visible');
-  });
+  var acceptBtn = document.getElementById('cookie-accept');
+  var rejectBtn = document.getElementById('cookie-reject');
+  if (acceptBtn) acceptBtn.addEventListener('click', () => { localStorage.setItem(COOKIE_KEY, 'accepted'); dismiss(); });
+  if (rejectBtn) rejectBtn.addEventListener('click', () => { localStorage.setItem(COOKIE_KEY, 'rejected'); dismiss(); });
 })();
 
 // ═══════════ PEEKER (cursor-tracking face in login modal) ═══════════

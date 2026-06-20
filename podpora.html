@@ -4,21 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Podpora — Makej!</title>
-  <meta name="description" content="Potřebuješ pomoct? Najdi odpovědi na časté otázky nebo nás kontaktuj přímo." />
-  <script>window.location.replace('/#podpora');</script>
+  <meta name="description" content="Makej! je mobilní aplikace pro jednorázové brigády. Swajpuj nabídky, matchuj se zaměstnavateli a začni pracovat ještě dnes." />
   <meta name="theme-color" content="#0020f6" />
+  <link rel="canonical" href="https://makej.eu/" />
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://makej.eu/" />
+  <meta property="og:title" content="Makej! — Swajpuj. Matchuj. Pracuj." />
+  <meta property="og:description" content="Najdi si brigádu za pár sekund. Swajpni doprava, matchni se s firmou a začni vydělávat ještě dnes." />
+  <meta property="og:image" content="https://makej.eu/og-image.png" />
+  <meta property="og:locale" content="cs_CZ" />
+  <meta property="og:site_name" content="Makej!" />
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Makej! — Swajpuj. Matchuj. Pracuj." />
+  <meta name="twitter:description" content="Najdi si brigádu za pár sekund. Swajpni doprava, matchni se s firmou a začni vydělávat ještě dnes." />
+  <meta name="twitter:image" content="https://makej.eu/og-image.png" />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="/iconify-solar.js"></script>
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" async></script>
-  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="style.css?v=14" />
   <style>
-    /* ── Page-specific overrides ── */
-    .sup-page { padding: 80px 0 100px; }
-
-    /* Hero */
+    /* ── Podpora sekce ── */
+    .sup-page { padding: 100px 0 80px; }
     .sup-hero {
       text-align: center;
       max-width: 580px;
@@ -32,467 +43,76 @@
       line-height: 1.1;
       margin: 16px 0 20px;
     }
-    .sup-hero p {
-      color: var(--muted-fg);
-      font-size: 1.05rem;
-      line-height: 1.65;
-      max-width: 440px;
-      margin: 0 auto;
-    }
-
-    /* Search bar */
-    .sup-search {
-      position: relative;
-      max-width: 520px;
-      margin: 28px auto 0;
-    }
-    .sup-search svg {
-      position: absolute;
-      left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #9090b0;
-      pointer-events: none;
-      flex-shrink: 0;
-      z-index: 2;
-    }
-    .sup-search input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 16px 20px 16px 52px;
-      border-radius: 14px;
-      border: 1.5px solid rgba(208,208,255,.15);
-      background: rgba(255,255,255,.07);
-      color: #fff;
-      font-size: 1rem;
-      font-family: var(--font-body);
-      outline: none;
-      transition: border-color .2s, background .2s;
-    }
+    .sup-hero p { color: var(--muted-fg); font-size: 1.05rem; line-height: 1.65; max-width: 440px; margin: 0 auto; }
+    .sup-search { position: relative; max-width: 520px; margin: 28px auto 0; }
+    .sup-search svg { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #9090b0; pointer-events: none; flex-shrink: 0; z-index: 2; }
+    .sup-search input { width: 100%; box-sizing: border-box; padding: 16px 20px 16px 52px; border-radius: 14px; border: 1.5px solid rgba(208,208,255,.15); background: rgba(255,255,255,.07); color: #fff; font-size: 1rem; font-family: var(--font-body); outline: none; transition: border-color .2s, background .2s; }
     .sup-search input::placeholder { color: transparent; }
-    .sup-search input:focus {
-      border-color: rgba(91,107,255,.5);
-      background: rgba(255,255,255,.1);
-    }
-    /* Animated fake placeholder */
-    .sup-search-ph {
-      position: absolute;
-      left: 52px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #7070a0;
-      font-size: 1rem;
-      font-family: var(--font-body);
-      pointer-events: none;
-      white-space: nowrap;
-      overflow: hidden;
-      z-index: 1;
-    }
-    .sup-search-ph .ph-cursor {
-      display: inline-block;
-      width: 2px;
-      height: 1.1em;
-      background: #7070a0;
-      vertical-align: text-bottom;
-      margin-left: 1px;
-      animation: blink-cur .7s step-end infinite;
-    }
-    @keyframes blink-cur {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0; }
-    }
-    .faq-no-results {
-      text-align: center;
-      padding: 40px 0;
-      color: var(--muted-fg);
-      font-size: .95rem;
-      display: none;
-    }
-
-    /* Autocomplete dropdown */
-    .sup-search-drop {
-      position: absolute;
-      top: calc(100% + 8px);
-      left: 0; right: 0;
-      background: #1a1a3a;
-      border: 1.5px solid rgba(208,208,255,.15);
-      border-radius: 14px;
-      overflow: hidden;
-      z-index: 100;
-      box-shadow: 0 16px 48px rgba(0,0,20,.5);
-      display: none;
-    }
+    .sup-search input:focus { border-color: rgba(91,107,255,.5); background: rgba(255,255,255,.1); }
+    .sup-search-ph { position: absolute; left: 52px; top: 50%; transform: translateY(-50%); color: #7070a0; font-size: 1rem; font-family: var(--font-body); pointer-events: none; white-space: nowrap; overflow: hidden; z-index: 1; }
+    .sup-search-ph .ph-cursor { display: inline-block; width: 2px; height: 1.1em; background: #7070a0; vertical-align: text-bottom; margin-left: 1px; animation: blink-cur .7s step-end infinite; }
+    @keyframes blink-cur { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .faq-no-results { text-align: center; padding: 40px 0; color: var(--muted-fg); font-size: .95rem; display: none; }
+    .sup-search-drop { position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: #1a1a3a; border: 1.5px solid rgba(208,208,255,.15); border-radius: 14px; overflow: hidden; z-index: 100; box-shadow: 0 16px 48px rgba(0,0,20,.5); display: none; }
     .sup-search-drop.open { display: block; }
-    .ssd-item {
-      display: flex;
-      align-items: center;
-      padding: 13px 18px;
-      cursor: pointer;
-      color: #c8c8f0;
-      font-size: .93rem;
-      transition: background .12s;
-      border-bottom: 1px solid rgba(255,255,255,.05);
-    }
+    .ssd-item { display: flex; align-items: center; padding: 13px 18px; cursor: pointer; color: #c8c8f0; font-size: .93rem; transition: background .12s; border-bottom: 1px solid rgba(255,255,255,.05); }
     .ssd-item:last-child { border-bottom: none; }
-    .ssd-item:hover, .ssd-item.active {
-      background: rgba(91,107,255,.18);
-      color: #fff;
-    }
+    .ssd-item:hover, .ssd-item.active { background: rgba(91,107,255,.18); color: #fff; }
     .ssd-item svg { flex-shrink: 0; color: #6060a0; }
-    .ssd-item mark {
-      background: none;
-      color: #a78bfa;
-      font-weight: 700;
-    }
-
-    /* Contact cards */
-    .sup-cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      max-width: 860px;
-      margin: 0 auto 88px;
-      padding: 90px 24px 0;
-    }
-    .sup-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 36px 28px 32px;
-      text-align: center;
-      transition: border-color .2s, transform .22s;
-    }
-    .sup-card:hover {
-      border-color: rgba(91,107,255,.45);
-      transform: translateY(-4px);
-    }
-    .sup-card-icon {
-      font-size: 2.6rem;
-      margin-bottom: 18px;
-      display: block;
-    }
-    .sup-card h3 {
-      font-family: var(--font-heading);
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 10px;
-    }
-    .sup-card p {
-      color: #fff;
-      font-size: .88rem;
-      line-height: 1.65;
-      margin-bottom: 24px;
-    }
-    .sup-card a {
-      display: inline-block;
-      padding: 9px 22px;
-      border-radius: 100px;
-      border: 1px solid rgba(208,208,255,.2);
-      color: #d0d0ff;
-      font-size: .85rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all .18s;
-    }
-    .sup-card a:hover {
-      border-color: rgba(91,107,255,.5);
-      background: rgba(91,107,255,.12);
-      color: #fff;
-    }
-
-    /* FAQ */
-    .faq-section {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-    .faq-heading {
-      text-align: center;
-      margin-bottom: 48px;
-    }
-    .faq-heading h2 {
-      font-family: var(--font-heading);
-      font-size: clamp(1.8rem, 3.5vw, 2.5rem);
-      font-weight: 800;
-      margin-bottom: 12px;
-    }
-    .faq-heading p {
-      color: var(--muted-fg);
-      font-size: .95rem;
-    }
+    .ssd-item mark { background: none; color: #a78bfa; font-weight: 700; }
+    .sup-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 860px; margin: 0 auto 88px; padding: 90px 24px 0; }
+    .sup-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 36px 28px 32px; text-align: center; transition: border-color .2s, transform .22s; }
+    .sup-card:hover { border-color: rgba(91,107,255,.45); transform: translateY(-4px); }
+    .sup-card-icon { font-size: 2.6rem; margin-bottom: 18px; display: block; }
+    .sup-card h3 { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .sup-card p { color: #fff; font-size: .88rem; line-height: 1.65; margin-bottom: 24px; }
+    .sup-card a { display: inline-block; padding: 9px 22px; border-radius: 100px; border: 1px solid rgba(208,208,255,.2); color: #d0d0ff; font-size: .85rem; font-weight: 600; text-decoration: none; transition: all .18s; }
+    .sup-card a:hover { border-color: rgba(91,107,255,.5); background: rgba(91,107,255,.12); color: #fff; }
+    .faq-section { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+    .faq-heading { text-align: center; margin-bottom: 48px; }
+    .faq-heading h2 { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800; margin-bottom: 12px; }
+    .faq-heading p { color: var(--muted-fg); font-size: .95rem; }
     .faq-heading a { color: #a78bfa; text-decoration: none; }
     .faq-heading a:hover { text-decoration: underline; }
-
     .faq-list { border-top: 1px solid var(--border); }
     .faq-item { border-bottom: 1px solid var(--border); }
-    .faq-q {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 4px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: .97rem;
-      color: var(--light);
-      gap: 16px;
-      transition: color .15s;
-      user-select: none;
-    }
+    .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 20px 4px; cursor: pointer; font-weight: 600; font-size: .97rem; color: var(--light); gap: 16px; transition: color .15s; user-select: none; }
     .faq-q:hover { color: #d0d0ff; }
-    .faq-icon {
-      color: var(--muted-fg);
-      flex-shrink: 0;
-      transition: transform .25s cubic-bezier(.2,.8,.2,1), color .15s;
-    }
-    .faq-item.open .faq-icon {
-      transform: rotate(45deg);
-      color: #a78bfa;
-    }
-    .faq-a {
-      display: none;
-      padding: 0 4px 20px;
-      color: var(--muted-fg);
-      font-size: .9rem;
-      line-height: 1.75;
-    }
+    .faq-icon { color: var(--muted-fg); flex-shrink: 0; transition: transform .25s cubic-bezier(.2,.8,.2,1), color .15s; }
+    .faq-item.open .faq-icon { transform: rotate(45deg); color: #a78bfa; }
+    .faq-a { display: none; padding: 0 4px 20px; color: var(--muted-fg); font-size: .9rem; line-height: 1.75; }
     .faq-a a { color: #a78bfa; text-decoration: none; }
     .faq-a a:hover { text-decoration: underline; }
     .faq-item.open .faq-a { display: block; }
-
-    /* Makač speech bubble */
-    #makac-bubble {
-      position: absolute;
-      top: -130px;
-      right: calc(50% + 72px);
-      width: 188px;
-      background: linear-gradient(135deg, #2e2e62 0%, #1a1a3a 100%);
-      border: 1.5px solid rgba(167,139,250,.35);
-      border-radius: 14px;
-      padding: 11px 14px;
-      box-shadow: 0 10px 28px rgba(0,0,30,.55);
-      z-index: 10;
-      animation: bubble-in .4s cubic-bezier(.2,.8,.2,1) .5s both;
-    }
-    #makac-bubble p {
-      color: #e0e0ff;
-      font-size: .78rem;
-      line-height: 1.55;
-      margin: 0 0 10px;
-    }
+    #makac-bubble { position: absolute; top: -130px; right: calc(50% + 72px); width: 188px; background: linear-gradient(135deg, #2e2e62 0%, #1a1a3a 100%); border: 1.5px solid rgba(167,139,250,.35); border-radius: 14px; padding: 11px 14px; box-shadow: 0 10px 28px rgba(0,0,30,.55); z-index: 10; animation: bubble-in .4s cubic-bezier(.2,.8,.2,1) .5s both; }
+    #makac-bubble p { color: #e0e0ff; font-size: .78rem; line-height: 1.55; margin: 0 0 10px; }
     #makac-bubble strong { color: #fff; }
-    #makac-chat-btn {
-      display: block;
-      width: 100%;
-      padding: 7px 0;
-      background: linear-gradient(135deg, #292978, #3a3a99);
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-size: .75rem;
-      font-weight: 700;
-      font-family: var(--font-body);
-      cursor: pointer;
-      transition: opacity .15s;
-    }
+    #makac-chat-btn { display: block; width: 100%; padding: 7px 0; background: linear-gradient(135deg, #292978, #3a3a99); border: none; border-radius: 8px; color: #fff; font-size: .75rem; font-weight: 700; font-family: var(--font-body); cursor: pointer; transition: opacity .15s; }
     #makac-chat-btn:hover { opacity: .85; }
-
-    /* ── Chat panel ── */
-    #makac-chat {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 300px;
-      height: 380px;
-      background: #0e0e2a;
-      border: 1.5px solid rgba(167,139,250,.25);
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,30,.7);
-      display: flex;
-      flex-direction: column;
-      z-index: 9999;
-      overflow: hidden;
-      transform: translateY(20px);
-      opacity: 0;
-      pointer-events: none;
-      transition: transform .28s cubic-bezier(.2,.8,.2,1), opacity .28s ease;
-    }
-    #makac-chat.open {
-      transform: translateY(0);
-      opacity: 1;
-      pointer-events: all;
-    }
-    .mcp-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      flex-shrink: 0;
-    }
-    .mcp-avatar {
-      width: 34px; height: 34px;
-      flex-shrink: 0;
-      position: relative;
-    }
-    .mcp-name { font-weight: 700; color: #fff; font-size: .9rem; flex: 1; }
-    .mcp-name .mcp-subtitle { display: flex; align-items: center; gap: 5px; font-size: .7rem; font-weight: 400; color: #7070a0; margin-top: 1px; }
-    .mcp-dot {
-      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-      transition: background .4s, box-shadow .4s;
-    }
-    .mcp-dot.joining { background: #f97316; box-shadow: 0 0 6px rgba(249,115,22,.6); }
-    .mcp-dot.online  { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,.5); }
-    #mcp-status { transition: color .4s; }
-    #mcp-status.joining { color: #f97316; }
-    #mcp-status.online  { color: #22c55e; }
-    .mcp-new-chat {
-      display: flex; align-items: center; gap: 4px;
-      background: rgba(255,255,255,.07); border: 1px solid rgba(167,139,250,.2);
-      border-radius: 6px; color: #a0a0d0; cursor: pointer;
-      font-size: .72rem; font-weight: 600; padding: 4px 8px;
-      transition: background .15s, color .15s; font-family: inherit;
-    }
-    .mcp-new-chat:hover { background: rgba(255,255,255,.13); color: #fff; }
-    .mcp-close {
-      background: none; border: none; color: #7070a0;
-      cursor: pointer; font-size: 1.1rem; line-height: 1;
-      padding: 2px 4px; transition: color .15s;
-    }
-    .mcp-close:hover { color: #fff; }
-    .mcp-confirm-overlay {
-      position: absolute; inset: 0; background: rgba(10,10,30,.85);
-      backdrop-filter: blur(4px); z-index: 10;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 20px;
-    }
-    .mcp-confirm-box {
-      background: #161640; border: 1.5px solid rgba(167,139,250,.3);
-      border-radius: 16px; padding: 24px 20px; text-align: center;
-      max-width: 240px;
-    }
-    .mcp-confirm-icon { font-size: 2rem; margin-bottom: 10px; }
-    .mcp-confirm-title { font-weight: 700; color: #e0e0ff; font-size: .95rem; margin-bottom: 6px; }
-    .mcp-confirm-sub { font-size: .78rem; color: #7070a0; margin-bottom: 18px; line-height: 1.4; }
-    .mcp-confirm-btns { display: flex; gap: 8px; }
-    .mcp-confirm-cancel {
-      flex: 1; padding: 8px; border-radius: 8px; border: 1px solid rgba(167,139,250,.25);
-      background: none; color: #a0a0d0; cursor: pointer; font-size: .82rem;
-      font-family: inherit; transition: background .15s;
-    }
-    .mcp-confirm-cancel:hover { background: rgba(255,255,255,.07); }
-    .mcp-confirm-ok {
-      flex: 1; padding: 8px; border-radius: 8px; border: none;
-      background: linear-gradient(135deg,#4848c4,#292978); color: #fff;
-      cursor: pointer; font-size: .82rem; font-weight: 700;
-      font-family: inherit; transition: opacity .15s;
-    }
-    .mcp-confirm-ok:hover { opacity: .85; }
-    .mcp-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 14px 14px 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(167,139,250,.2) transparent;
-    }
-    .mcp-msg {
-      max-width: 82%;
-      padding: 8px 11px;
-      border-radius: 12px;
-      font-size: .8rem;
-      line-height: 1.5;
-    }
-    .mcp-msg.bot {
-      background: rgba(255,255,255,.07);
-      color: #d0d0ff;
-      align-self: flex-start;
-      border-bottom-left-radius: 4px;
-    }
-    .mcp-msg.user {
-      background: linear-gradient(135deg,#292978,#3a3a99);
-      color: #fff;
-      align-self: flex-end;
-      border-bottom-right-radius: 4px;
-    }
-    .mcp-input-row {
-      display: flex;
-      gap: 8px;
-      padding: 10px 12px 14px;
-      border-top: 1px solid rgba(255,255,255,.08);
-      flex-shrink: 0;
-    }
-    .mcp-input-row input {
-      flex: 1;
-      background: rgba(255,255,255,.07);
-      border: 1px solid rgba(208,208,255,.12);
-      border-radius: 10px;
-      padding: 8px 12px;
-      color: #fff;
-      font-size: .8rem;
-      font-family: var(--font-body);
-      outline: none;
-    }
-    .mcp-input-row input::placeholder { color: #5050a0; }
-    .mcp-input-row input:focus { border-color: rgba(91,107,255,.4); }
-    .mcp-send {
-      background: linear-gradient(135deg,#292978,#3a3a99);
-      border: none; border-radius: 10px;
-      color: #fff; font-size: .8rem; font-weight: 600;
-      padding: 8px 12px; cursor: pointer;
-      font-family: var(--font-body);
-      transition: opacity .15s;
-      white-space: nowrap;
-    }
-    .mcp-send:hover { opacity: .85; }
-
-    /* Typing indicator */
-    .mcp-typing {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 2px;
-    }
-    .mcp-typing span {
-      width: 7px; height: 7px;
-      background: #a78bfa;
-      border-radius: 50%;
-      animation: mcp-bounce 1.1s infinite;
-    }
-    .mcp-typing span:nth-child(2) { animation-delay: .18s; }
-    .mcp-typing span:nth-child(3) { animation-delay: .36s; }
-    @keyframes mcp-bounce {
-      0%, 60%, 100% { transform: translateY(0); opacity: .6; }
-      30%            { transform: translateY(-6px); opacity: 1; }
-    }
-    @keyframes bubble-in {
-      from { opacity: 0; transform: scale(.85) translateY(6px); }
-      to   { opacity: 1; transform: scale(1)   translateY(0); }
-    }
-
+    @keyframes bubble-in { from { opacity: 0; transform: scale(.85) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
     @media (max-width: 700px) {
       .sup-cards { grid-template-columns: 1fr; max-width: 400px; }
       #makac-bubble { right: auto; left: 50%; transform: translateX(-50%); top: -140px; }
-      #makac-bubble::before { display: none; }
     }
-  </style>
+  
+    /* Navbar: tlačítka vždy viditelná, Podpora aktivní */
+    #navbar .nav-actions { opacity: 1 !important; pointer-events: all !important; }
+</style>
 </head>
 <body>
+<body>
 
-  <!-- ═══════════ NAV ═══════════ -->
+    <!-- ═══════════ NAVBAR ═══════════ -->
   <nav id="navbar">
     <div class="nav-inner">
       <a href="/" class="nav-logo">Makej!</a>
       <div class="nav-links">
-        <a href="/#how-it-works">Jak to funguje</a>
-        <a href="/#features">Funkce</a>
-        <a href="/#employers">Pro zaměstnavatele</a>
+        <a href="/hledam-si-praci.html">Hledám si práci</a>
+        <a href="/pro-zamestnavatele.html">Pro zaměstnavatele</a>
         <a href="/#download">Stáhnout</a>
         <a href="/podpora.html" class="nav-active">Podpora</a>
       </div>
-      <div class="nav-actions nav-actions-visible" id="nav-actions">
+      <div class="nav-actions" id="nav-actions">
         <a href="javascript:void(0)" class="btn-ghost" id="nav-login-btn">Přihlásit se</a>
         <a href="javascript:void(0)" class="btn-primary" id="nav-register-btn">Vytvořit účet</a>
       </div>
@@ -500,10 +120,10 @@
         <iconify-icon icon="solar:hamburger-menu-bold" width="24"></iconify-icon>
       </button>
     </div>
+    <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobile-menu">
-      <a href="/#how-it-works">Jak to funguje</a>
-      <a href="/#features">Funkce</a>
-      <a href="/#employers">Pro zaměstnavatele</a>
+      <a href="/hledam-si-praci.html">Hledám si práci</a>
+      <a href="/pro-zamestnavatele.html">Pro zaměstnavatele</a>
       <a href="/#download">Stáhnout</a>
       <a href="/podpora.html" class="nav-active">Podpora</a>
       <div class="mobile-menu-actions">
@@ -513,168 +133,140 @@
     </div>
   </nav>
 
-  <!-- ═══════════ MAIN ═══════════ -->
-  <main class="sup-page">
+  <!-- ═══════════ PODPORA ═══════════ -->
+  <section id="podpora">
+    <div class="sup-page">
 
-    <!-- Hero -->
-    <section class="sup-hero">
-      <h1>Jak ti můžeme <span class="gradient-text">pomoci?</span></h1>
-      <div class="sup-search">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="7"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" id="faq-search" placeholder="" autocomplete="off" />
-        <span class="sup-search-ph" id="faq-ph"><span id="faq-ph-text"></span><span class="ph-cursor"></span></span>
-        <div class="sup-search-drop" id="faq-drop"></div>
+      <!-- Hero -->
+      <div class="sup-hero">
+        <h1>Jak ti můžeme <span class="gradient-text">pomoci?</span></h1>
+        <div class="sup-search">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="faq-search" placeholder="" autocomplete="off" />
+          <span class="sup-search-ph" id="faq-ph"><span id="faq-ph-text"></span><span class="ph-cursor"></span></span>
+          <div class="sup-search-drop" id="faq-drop"></div>
+        </div>
       </div>
-    </section>
 
-    <!-- Contact cards -->
-    <div class="sup-cards">
-      <!-- Live chat s Doktorem Makačem -->
-      <div style="position:relative;">
-        <!-- Doktor Makač peeker -->
-        <div id="doc-peeker" style="
-          position:absolute; top:-48px; left:50%; transform:translateX(-50%); z-index:1;
-          pointer-events:none; z-index:3;
-          filter: drop-shadow(0 14px 36px rgba(0,0,60,0.65));
-        ">
-          <div style="position:relative; display:inline-block;">
-            <!-- Čepička sestřičky -->
-            <div style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:46px;z-index:6;margin-bottom:-2px;">
-              <div style="width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-bottom:14px solid white;margin:0 auto;"></div>
-              <div style="background:white;height:10px;border-radius:2px 2px 0 0;margin-top:-1px;position:relative;">
-                <div style="position:absolute;top:1px;left:50%;transform:translateX(-50%);width:3px;height:8px;background:#e53935;border-radius:1px;"></div>
-                <div style="position:absolute;top:3px;left:50%;transform:translateX(-50%);width:8px;height:3px;background:#e53935;border-radius:1px;"></div>
+      <!-- Contact cards -->
+      <div class="sup-cards">
+        <div style="position:relative;">
+          <!-- Doktor Makač peeker -->
+          <div id="doc-peeker" style="position:absolute;top:-48px;left:50%;transform:translateX(-50%);z-index:3;pointer-events:none;filter:drop-shadow(0 14px 36px rgba(0,0,60,0.65));">
+            <div style="position:relative;display:inline-block;">
+              <div style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:46px;z-index:6;margin-bottom:-2px;">
+                <div style="width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-bottom:14px solid white;margin:0 auto;"></div>
+                <div style="background:white;height:10px;border-radius:2px 2px 0 0;margin-top:-1px;position:relative;">
+                  <div style="position:absolute;top:1px;left:50%;transform:translateX(-50%);width:3px;height:8px;background:#e53935;border-radius:1px;"></div>
+                  <div style="position:absolute;top:3px;left:50%;transform:translateX(-50%);width:8px;height:3px;background:#e53935;border-radius:1px;"></div>
+                </div>
               </div>
-            </div>
-            <!-- Obličej (stejný jako main-peeker) -->
-            <div style="width:88px;height:76px;background:linear-gradient(160deg,#4848c4 0%,#1c1c7a 100%);border-radius:50% 50% 44% 44%;position:relative;box-shadow:0 14px 36px rgba(0,0,60,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:2px solid rgba(140,140,255,0.3);">
-              <div id="doc-browL" style="position:absolute;left:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
-              <div id="doc-browR" style="position:absolute;right:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
-              <div id="doc-eyeL" style="position:absolute;left:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
-                <div id="doc-pupilL" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
-                <div id="doc-lidL" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+              <div style="width:88px;height:76px;background:linear-gradient(160deg,#4848c4 0%,#1c1c7a 100%);border-radius:50% 50% 44% 44%;position:relative;box-shadow:0 14px 36px rgba(0,0,60,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:2px solid rgba(140,140,255,0.3);">
+                <div id="doc-browL" style="position:absolute;left:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
+                <div id="doc-browR" style="position:absolute;right:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
+                <div id="doc-eyeL" style="position:absolute;left:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
+                  <div id="doc-pupilL" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
+                  <div id="doc-lidL" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+                </div>
+                <div id="doc-eyeR" style="position:absolute;right:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
+                  <div id="doc-pupilR" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
+                  <div id="doc-lidR" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+                </div>
+                <div style="position:absolute;bottom:11px;left:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
+                <div style="position:absolute;bottom:11px;right:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
               </div>
-              <div id="doc-eyeR" style="position:absolute;right:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
-                <div id="doc-pupilR" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
-                <div id="doc-lidR" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
-              </div>
-              <div style="position:absolute;bottom:11px;left:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
-              <div style="position:absolute;bottom:11px;right:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
             </div>
           </div>
+          <!-- Speech bubble -->
+          <div id="makac-bubble">
+            <p>Jmenuji se <strong>Makač</strong> a jsem tvůj AI pomocník. Jsem tady pro tebe <strong>24/7</strong> a pomůžu ti s tvým dotazem.</p>
+            <button id="makac-chat-btn" onclick="window.openMakacChat && window.openMakacChat()">Zeptat se Makače</button>
+          </div>
+          <div class="sup-card" style="position:relative;z-index:2;">
+            <span class="sup-card-icon">💬</span>
+            <h3>Live chat</h3>
+            <p>Napiš nám přímo v aplikaci. Odpovídáme obvykle do 15 minut v pracovní době.</p>
+            <a href="javascript:void(0)" onclick="window.openMakacChat && window.openMakacChat()">Otevřít chat</a>
+          </div>
         </div>
-        <!-- Speech bubble -->
-        <div id="makac-bubble">
-          <p>Jmenuji se <strong>Makač</strong> a jsem tvůj AI pomocník. Jsem tady pro tebe <strong>24/7</strong> a pomůžu ti s tvým dotazem.</p>
-          <button id="makac-chat-btn" onclick="window.openMakacChat && window.openMakacChat()">Zeptat se Makače</button>
+        <div class="sup-card">
+          <span class="sup-card-icon">📧</span>
+          <h3>Email</h3>
+          <p>Složitější dotazy nebo problémy s účtem řeš s námi přes email.</p>
+          <a href="mailto:podpora@makej.eu">podpora@makej.eu</a>
         </div>
-        <div class="sup-card" style="position:relative; z-index:2;">
-          <span class="sup-card-icon">💬</span>
-          <h3>Live chat</h3>
-          <p>Napiš nám přímo v aplikaci. Odpovídáme obvykle do 15 minut v pracovní době.</p>
-          <a href="javascript:void(0)" onclick="window.openMakacChat && window.openMakacChat()">Otevřít chat</a>
+        <div class="sup-card">
+          <span class="sup-card-icon">📖</span>
+          <h3>Průvodce</h3>
+          <p>Podrobné návody a odpovědi na nejčastější otázky v naší databázi znalostí.</p>
+          <a href="#how-it-works">Jak to funguje</a>
         </div>
       </div>
-      <div class="sup-card">
-        <span class="sup-card-icon">📧</span>
-        <h3>Email</h3>
-        <p>Složitější dotazy nebo problémy s účtem řeš s námi přes email.</p>
-        <a href="mailto:podpora@makej.eu">podpora@makej.eu</a>
-      </div>
-      <div class="sup-card">
-        <span class="sup-card-icon">📖</span>
-        <h3>Průvodce</h3>
-        <p>Podrobné návody a odpovědi na nejčastější otázky v naší databázi znalostí.</p>
-        <a href="/#how-it-works">Jak to funguje</a>
-      </div>
+
+      <!-- FAQ -->
+      <section class="faq-section">
+        <div class="faq-heading">
+          <h2>Časté <span class="gradient-text">otázky</span></h2>
+          <p>Nenašel jsi odpověď? Napiš nám na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a></p>
+        </div>
+        <div class="faq-list" id="faq-list">
+          <div class="faq-no-results" id="faq-no-results">Žádné výsledky pro tuto frázi 🙁</div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Je Makej! zdarma?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">Pro brigádníky je Makej! zcela zdarma — registrace, swipování i chat. Zaměstnavatelé mají základní plán dostupný po spuštění aplikace.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Jak probíhá výplata za práci?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">Výplata probíhá přímo mezi tebou a zaměstnavatelem — Makej! slouží jako platforma pro propojení, ne jako zprostředkovatel plateb. Podmínky si domluv přímo s firmou přes náš chat.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Je moje platební karta v bezpečí?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">Na Makej! nezadáváš žádné platební údaje — aplikace je zdarma a nepotřebujeme přístup k tvé kartě. Tvoje osobní data chráníme v souladu s GDPR.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Jak smažu svůj účet?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">V aplikaci jdi do Nastavení → Účet → Smazat účet. Nebo nám napiš na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a> a my to vyřídíme za tebe do 3 pracovních dnů. Data mažeme v souladu s GDPR.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Jak nahlásím problém se zaměstnavatelem nebo brigádníkem?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">V profilu každého uživatele najdeš tlačítko "Nahlásit". Každé hlášení prověřuje náš tým do 24 hodin. Při závažném porušení podmínek okamžitě blokujeme účet. Bezpečnost komunity je pro nás priorita.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)"><span>Na jakých zařízeních Makej! funguje?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
+            <div class="faq-a">Makej! bude dostupný na iOS (App Store) a Androidu (Google Play). Spuštění brzy — registruj se teď a budeš mezi prvními.</div>
+          </div>
+        </div>
+      </section>
+
     </div>
+  </section>
 
-    <!-- FAQ -->
-    <section class="faq-section">
-      <div class="faq-heading">
-        <h2>Časté <span class="gradient-text">otázky</span></h2>
-        <p>Nenašel jsi odpověď? Napiš nám na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a></p>
-      </div>
-
-      <div class="faq-list" id="faq-list">
-        <div class="faq-no-results" id="faq-no-results">Žádné výsledky pro tuto frázi 🙁</div>
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleFaq(this)">
-            <span>Je Makej! zdarma?</span>
-            <iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon>
-          </div>
-          <div class="faq-a">Pro brigádníky je Makej! zcela zdarma — registrace, swipování i chat. Zaměstnavatelé mají základní plán dostupný po spuštění aplikace.</div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleFaq(this)">
-            <span>Jak probíhá výplata za práci?</span>
-            <iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon>
-          </div>
-          <div class="faq-a">Výplata probíhá přímo mezi tebou a zaměstnavatelem — Makej! slouží jako platforma pro propojení, ne jako zprostředkovatel plateb. Podmínky si domluv přímo s firmou přes náš chat.</div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleFaq(this)">
-            <span>Je moje platební karta v bezpečí?</span>
-            <iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon>
-          </div>
-          <div class="faq-a">Na Makej! nezadáváš žádné platební údaje — aplikace je zdarma a nepotřebujeme přístup k tvé kartě. Tvoje osobní data chráníme v souladu s GDPR.</div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleFaq(this)">
-            <span>Jak smažu svůj účet?</span>
-            <iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon>
-          </div>
-          <div class="faq-a">V aplikaci jdi do Nastavení → Účet → Smazat účet. Nebo nám napiš na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a> a my to vyřídíme za tebe do 3 pracovních dnů. Data mažeme v souladu s GDPR.</div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleFaq(this)">
-            <span>Jak nahlásím problém se zaměstnavatelem nebo brigádníkem?</span>
-            <iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon>
-          </div>
-          <div class="faq-a">V profilu každého uživatele najdeš tlačítko "Nahlásit". Každé hlášení prověřuje náš tým do 24 hodin. Při závažném porušení podmínek okamžitě blokujeme účet. Bezpečnost komunity je pro nás priorita.</div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleFaq(this)">
-            <span>Na jakých zařízeních Makej! funguje?</span>
-            <iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon>
-          </div>
-          <div class="faq-a">Makej! bude dostupný na iOS (App Store) a Androidu (Google Play). Spuštění brzy — registruj se teď a budeš mezi prvními.</div>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ═══════════ FOOTER ═══════════ -->
+    <!-- ═══════════ FOOTER ═══════════ -->
   <footer id="footer">
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="/" class="footer-logo">Makej!</a>
-          <p>Pracovní platforma nové generace. Propojujeme lidi s příležitostmi.</p>
+          <p>Brigádní appka nové generace. Swajpuj, matchuj a pracuj.</p>
           <div class="footer-social">
-            <a href="#" aria-label="Instagram"><iconify-icon icon="mdi:instagram" width="22"></iconify-icon></a>
-            <a href="#" aria-label="TikTok"><iconify-icon icon="ic:baseline-tiktok" width="22"></iconify-icon></a>
-            <a href="#" aria-label="LinkedIn"><iconify-icon icon="mdi:linkedin" width="22"></iconify-icon></a>
+            <!-- Sociální sítě — doplň skutečné URL před launchem -->
+            <!-- <a href="https://instagram.com/makej.eu" aria-label="Instagram"><iconify-icon icon="mdi:instagram" width="22"></iconify-icon></a> -->
+            <!-- <a href="https://tiktok.com/@makej.eu" aria-label="TikTok"><iconify-icon icon="ic:baseline-tiktok" width="22"></iconify-icon></a> -->
           </div>
         </div>
         <div class="footer-col">
           <h4>Produkt</h4>
-          <a href="/#features">Funkce</a>
-          <a href="/#how-it-works">Jak to funguje</a>
+          <a href="#features">Funkce</a>
+          <a href="/hledam-si-praci.html">Jak to funguje</a>
+          <a href="/cenik.html">Ceník</a>
           <a href="/#download">Stáhnout</a>
         </div>
         <div class="footer-col">
           <h4>Firma</h4>
-          <a href="/podpora.html">Podpora</a>
+          <a href="/podpora.html" class="nav-active">Podpora</a>
           <a href="mailto:hello@makej.eu">Kontakt</a>
           <a href="/o-nas.html">O nás</a>
         </div>
@@ -691,13 +283,38 @@
     </div>
   </footer>
 
-  <!-- Login modal (stejný jako na index.html) -->
+  <!-- ═══════════ AUTH MODALS ═══════════ -->
   <div class="modal-overlay" id="modal-overlay">
-    <div class="modal" id="login-modal">
+
+    <!-- LOGIN MODAL -->
+    <div class="modal" id="login-modal" style="overflow:visible;">
+      <!-- Makač peeker -->
+      <div id="main-peeker" style="
+        position:absolute; top:-70px; left:50%; transform:translateX(-50%);
+        pointer-events:none; z-index:3;
+        filter: drop-shadow(0 14px 36px rgba(0,0,60,0.65));
+        transition: transform 0.4s cubic-bezier(.2,.8,.2,1);
+        animation: peekerIn 0.45s cubic-bezier(.2,.8,.2,1) both;
+      ">
+        <div style="width:88px;height:76px;background:linear-gradient(160deg,#4848c4 0%,#1c1c7a 100%);border-radius:50% 50% 44% 44%;position:relative;box-shadow:0 14px 36px rgba(0,0,60,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:2px solid rgba(140,140,255,0.3);">
+          <div id="main-browL" style="position:absolute;left:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
+          <div id="main-browR" style="position:absolute;right:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
+          <div id="main-eyeL" style="position:absolute;left:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
+            <div id="main-pupilL" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
+            <div id="main-lidL" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+          </div>
+          <div id="main-eyeR" style="position:absolute;right:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
+            <div id="main-pupilR" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
+            <div id="main-lidR" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+          </div>
+          <div style="position:absolute;bottom:11px;left:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
+          <div style="position:absolute;bottom:11px;right:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
+        </div>
+      </div>
       <button class="modal-close" id="login-close" aria-label="Zavřít">✕</button>
       <div class="modal-logo">Makej!</div>
       <h2 class="modal-title">Přihlásit se</h2>
-      <p class="modal-subtitle">Vítej zpět!</p>
+      <p class="modal-subtitle">Vítej zpět! Přihlaš se ke svému účtu.</p>
       <div class="modal-error" id="login-error"></div>
       <form id="login-form" novalidate>
         <div class="form-group">
@@ -712,293 +329,853 @@
       </form>
       <div class="modal-divider"><span>nebo</span></div>
       <button class="btn-google" id="login-google">
-        <iconify-icon icon="flat-color-icons:google" width="18"></iconify-icon>
-        Pokračovat přes Google
+        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.6 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
+          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+          <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.3C29.4 35.5 26.8 36.5 24 36.5c-5.2 0-9.6-3.4-11.2-8l-6.6 5C9.7 39.7 16.3 44 24 44z"/>
+          <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.7l6.2 5.3C37.5 39.7 44 35.4 44 24c0-1.3-.1-2.6-.4-3.9z"/>
+        </svg>
+        Pokračovat s Google
       </button>
-      <p class="modal-switch">Nemáš účet? <a href="javascript:void(0)" id="switch-to-register">Zaregistruj se</a></p>
+      <p class="modal-switch">Nemáš účet? <a href="#" id="switch-to-register">Zaregistruj se</a></p>
     </div>
 
-    <div class="modal" id="register-modal" style="display:none;">
+    <!-- REGISTER MODAL -->
+    <div class="modal" id="register-modal">
       <button class="modal-close" id="register-close" aria-label="Zavřít">✕</button>
       <div class="modal-logo">Makej!</div>
-      <h2 class="modal-title">Vytvořit účet</h2>
-      <p class="modal-subtitle">Začni swipovat práci ještě dnes.</p>
-      <div class="modal-error" id="register-error"></div>
-      <div id="register-step-1">
-        <div style="display:flex;gap:10px;margin-bottom:20px;">
-          <button type="button" class="role-btn" id="role-worker" onclick="selectRole('worker')">
-            <iconify-icon icon="solar:user-bold" width="20"></iconify-icon>
-            <span>Hledám práci</span>
+
+      <!-- Krok 1: výběr role -->
+      <div id="reg-step-1">
+        <h2 class="modal-title">Vytvořit účet</h2>
+        <p class="modal-subtitle">Kdo jsi?</p>
+        <div class="role-cards">
+          <button type="button" class="role-card" data-role="worker">
+            <iconify-icon icon="solar:user-bold" width="32"></iconify-icon>
+            <strong>Brigádník</strong>
+            <small>Hledám práci</small>
           </button>
-          <button type="button" class="role-btn" id="role-employer" onclick="selectRole('employer')">
-            <iconify-icon icon="solar:buildings-bold" width="20"></iconify-icon>
-            <span>Hledám lidi</span>
+          <button type="button" class="role-card" data-role="employer">
+            <iconify-icon icon="solar:buildings-bold" width="32"></iconify-icon>
+            <strong>Zaměstnavatel</strong>
+            <small>Hledám brigádníky</small>
           </button>
         </div>
-        <button type="button" class="btn-primary btn-full btn-lg" onclick="goToStep2()">Pokračovat</button>
       </div>
-      <div id="register-step-2" style="display:none;">
+
+      <!-- Krok 2: údaje -->
+      <div id="reg-step-2" style="display:none">
+        <button class="modal-back" id="reg-back">
+          <iconify-icon icon="solar:arrow-left-bold" width="16"></iconify-icon>
+          Zpět
+        </button>
+        <h2 class="modal-title">Tvoje údaje</h2>
+        <p class="modal-subtitle" id="reg-role-subtitle">Brigádník</p>
+        <div class="modal-error" id="register-error"></div>
         <form id="register-form" novalidate>
           <div class="form-group">
             <label class="form-label" for="reg-name">Jméno</label>
-            <input class="form-input" type="text" id="reg-name" placeholder="Jan Novák" required />
+            <input class="form-input" type="text" id="reg-name" placeholder="Tvoje jméno" autocomplete="name" required />
           </div>
-          <div class="form-group" id="reg-company-group" style="display:none;">
+          <div class="form-group" id="reg-company-group" style="display:none">
             <label class="form-label" for="reg-company">Název firmy</label>
-            <input class="form-input" type="text" id="reg-company" placeholder="Moje firma s.r.o." />
+            <input class="form-input" type="text" id="reg-company" placeholder="Název tvé firmy" />
           </div>
           <div class="form-group">
             <label class="form-label" for="reg-email">Email</label>
-            <input class="form-input" type="email" id="reg-email" placeholder="tvuj@email.cz" required />
+            <input class="form-input" type="email" id="reg-email" placeholder="tvuj@email.cz" autocomplete="email" required />
           </div>
           <div class="form-group">
             <label class="form-label" for="reg-password">Heslo</label>
-            <input class="form-input" type="password" id="reg-password" placeholder="Alespoň 8 znaků" required />
+            <div class="password-wrap">
+              <input class="form-input" type="password" id="reg-password" placeholder="Min. 6 znaků" autocomplete="new-password" required />
+              <button type="button" class="pw-toggle" id="reg-pw-toggle" aria-label="Zobrazit heslo" tabindex="-1">
+                <iconify-icon icon="solar:eye-bold" width="18" id="reg-pw-icon"></iconify-icon>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-password2">Heslo znovu</label>
+            <div class="password-wrap">
+              <input class="form-input" type="password" id="reg-password2" placeholder="Zopakuj heslo" autocomplete="new-password" required />
+              <button type="button" class="pw-toggle" id="reg-pw2-toggle" aria-label="Zobrazit heslo" tabindex="-1">
+                <iconify-icon icon="solar:eye-bold" width="18" id="reg-pw2-icon"></iconify-icon>
+              </button>
+            </div>
           </div>
           <button type="submit" class="btn-primary btn-full btn-lg" id="register-submit">Vytvořit účet</button>
+          <p style="font-size:.78rem;color:var(--muted-fg);text-align:center;margin-top:12px;line-height:1.5;">
+            Registrací souhlasíš s našimi <a href="/terms.html" target="_blank" style="color:var(--secondary)">Obchodními podmínkami</a>
+            a <a href="/privacy.html" target="_blank" style="color:var(--secondary)">Zásadami ochrany osobních údajů</a>.
+          </p>
         </form>
       </div>
-      <p class="modal-switch">Máš účet? <a href="javascript:void(0)" id="switch-to-login">Přihlásit se</a></p>
+
+      <p class="modal-switch">Už máš účet? <a href="#" id="switch-to-login">Přihlásit se</a></p>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ DASHBOARD PREVIEW MODAL ═══════════ -->
+  <div class="dash-overlay" id="dash-overlay">
+    <div class="dash-modal">
+      <button class="dash-close" id="dash-close" aria-label="Zavřít">✕</button>
+      <div class="dash-modal-header">
+        <span class="dash-modal-logo">Makej!</span>
+        <span class="dash-modal-tag">Dashboard zaměstnavatele — náhled</span>
+      </div>
+
+      <!-- Topbar mockup -->
+      <div class="dash-topbar">
+        <div class="dash-topbar-left">
+          <div class="dash-company-logo">KP</div>
+          <div>
+            <div class="dash-company-name">Kafe Punkt s.r.o.</div>
+            <div class="dash-company-plan">Standard tarif</div>
+          </div>
+        </div>
+        <div class="dash-topbar-right">
+          <div class="dash-notif"><iconify-icon icon="solar:bell-bold" width="16"></iconify-icon><span class="dash-notif-dot"></span></div>
+          <div class="dash-avatar-sm">AS</div>
+        </div>
+      </div>
+
+      <div class="dash-body">
+        <!-- Sidebar mockup -->
+        <div class="dash-sidebar">
+          <div class="dash-nav-item dash-nav-active"><iconify-icon icon="solar:chart-square-bold" width="16"></iconify-icon>Dashboard</div>
+          <div class="dash-nav-item"><iconify-icon icon="solar:document-text-bold" width="16"></iconify-icon>Inzeráty <span class="dash-nav-badge">5</span></div>
+          <div class="dash-nav-item"><iconify-icon icon="solar:users-group-rounded-bold" width="16"></iconify-icon>Kandidáti <span class="dash-nav-badge">3</span></div>
+          <div class="dash-nav-item"><iconify-icon icon="solar:chat-round-bold" width="16"></iconify-icon>Zprávy <span class="dash-nav-badge">2</span></div>
+          <div class="dash-nav-item"><iconify-icon icon="solar:chart-bold" width="16"></iconify-icon>Analytika</div>
+          <div class="dash-nav-item"><iconify-icon icon="solar:settings-bold" width="16"></iconify-icon>Nastavení</div>
+        </div>
+
+        <!-- Main content mockup -->
+        <div class="dash-main">
+          <!-- KPI cards -->
+          <div class="dash-kpi-row">
+            <div class="dash-kpi-card">
+              <div class="dash-kpi-icon"><iconify-icon icon="solar:document-text-bold" width="18"></iconify-icon></div>
+              <div class="dash-kpi-val">5</div>
+              <div class="dash-kpi-lbl">Aktivní inzeráty</div>
+              <div class="dash-kpi-spark">
+                <div class="dash-spark-bar" style="height:30%"></div><div class="dash-spark-bar" style="height:50%"></div>
+                <div class="dash-spark-bar" style="height:40%"></div><div class="dash-spark-bar" style="height:70%"></div>
+                <div class="dash-spark-bar" style="height:60%"></div><div class="dash-spark-bar dash-spark-active" style="height:100%"></div>
+              </div>
+            </div>
+            <div class="dash-kpi-card">
+              <div class="dash-kpi-icon"><iconify-icon icon="solar:heart-bold" width="18"></iconify-icon></div>
+              <div class="dash-kpi-val">312</div>
+              <div class="dash-kpi-lbl">Celkem zájemců</div>
+              <div class="dash-kpi-spark">
+                <div class="dash-spark-bar" style="height:20%"></div><div class="dash-spark-bar" style="height:35%"></div>
+                <div class="dash-spark-bar" style="height:45%"></div><div class="dash-spark-bar" style="height:55%"></div>
+                <div class="dash-spark-bar" style="height:70%"></div><div class="dash-spark-bar dash-spark-active" style="height:100%"></div>
+              </div>
+            </div>
+            <div class="dash-kpi-card">
+              <div class="dash-kpi-icon"><iconify-icon icon="solar:check-circle-bold" width="18"></iconify-icon></div>
+              <div class="dash-kpi-val">42</div>
+              <div class="dash-kpi-lbl">Najato</div>
+              <div class="dash-kpi-spark">
+                <div class="dash-spark-bar" style="height:25%"></div><div class="dash-spark-bar" style="height:40%"></div>
+                <div class="dash-spark-bar" style="height:35%"></div><div class="dash-spark-bar" style="height:60%"></div>
+                <div class="dash-spark-bar" style="height:75%"></div><div class="dash-spark-bar dash-spark-active" style="height:100%"></div>
+              </div>
+            </div>
+            <div class="dash-kpi-card">
+              <div class="dash-kpi-icon"><iconify-icon icon="solar:star-bold" width="18"></iconify-icon></div>
+              <div class="dash-kpi-val">4.8★</div>
+              <div class="dash-kpi-lbl">Hodnocení firmy</div>
+              <div class="dash-kpi-spark">
+                <div class="dash-spark-bar" style="height:80%"></div><div class="dash-spark-bar" style="height:85%"></div>
+                <div class="dash-spark-bar" style="height:82%"></div><div class="dash-spark-bar" style="height:88%"></div>
+                <div class="dash-spark-bar" style="height:90%"></div><div class="dash-spark-bar dash-spark-active" style="height:96%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Jobs + candidates -->
+          <div class="dash-content-row">
+            <div class="dash-panel" style="flex:1.4">
+              <div class="dash-panel-title">Aktivní inzeráty</div>
+              <div class="dash-job-row">
+                <div class="dash-job-dot" style="background:#F4A261"></div>
+                <div class="dash-job-info"><div class="dash-job-name">Barista — ranní směna</div><div class="dash-job-meta">180 Kč/h · 5 dní zbývá</div></div>
+                <div class="dash-job-count">142 zájemců</div>
+              </div>
+              <div class="dash-job-row">
+                <div class="dash-job-dot" style="background:#8AB4FF"></div>
+                <div class="dash-job-info"><div class="dash-job-name">Servírka — víkend</div><div class="dash-job-meta">165 Kč/h · 12 dní zbývá</div></div>
+                <div class="dash-job-count">41 zájemců</div>
+              </div>
+              <div class="dash-job-row">
+                <div class="dash-job-dot" style="background:#f43f5e"></div>
+                <div class="dash-job-info"><div class="dash-job-name">Pomocník kuchyně — ASAP</div><div class="dash-job-meta">200 Kč/h · 2 dny zbývají ⚡</div></div>
+                <div class="dash-job-count">98 zájemců</div>
+              </div>
+            </div>
+            <div class="dash-panel" style="flex:1">
+              <div class="dash-panel-title">Noví kandidáti</div>
+              <div class="dash-candidate">
+                <div class="dash-cand-avatar" style="background:#5B6BFF">TM</div>
+                <div class="dash-cand-info"><div class="dash-cand-name">Tomáš Marek</div><div class="dash-cand-meta">★ 4.9 · 23 brigád · L7</div></div>
+                <div class="dash-cand-actions">
+                  <button class="dash-btn-accept">✓</button>
+                  <button class="dash-btn-reject">✕</button>
+                </div>
+              </div>
+              <div class="dash-candidate">
+                <div class="dash-cand-avatar" style="background:#F4A261">KN</div>
+                <div class="dash-cand-info"><div class="dash-cand-name">Klára Novotná</div><div class="dash-cand-meta">★ 4.7 · 11 brigád · L4</div></div>
+                <div class="dash-cand-actions">
+                  <button class="dash-btn-accept">✓</button>
+                  <button class="dash-btn-reject">✕</button>
+                </div>
+              </div>
+              <div class="dash-candidate">
+                <div class="dash-cand-avatar" style="background:#5BD68A">PH</div>
+                <div class="dash-cand-info"><div class="dash-cand-name">Petr Hájek</div><div class="dash-cand-meta">★ 4.6 · 47 brigád · L9</div></div>
+                <div class="dash-cand-actions">
+                  <button class="dash-btn-accept">✓</button>
+                  <button class="dash-btn-reject">✕</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-modal-footer">
+        <a href="#" class="btn-primary" id="dash-register-btn">
+          <iconify-icon icon="solar:buildings-bold" width="18"></iconify-icon>
+          Chci takový dashboard — začít zdarma
+        </a>
+      </div>
     </div>
   </div>
 
+  <!-- ═══════════ COOKIE BANNER ═══════════ -->
+  <div id="cookie-banner" role="dialog" aria-label="Souhlas s cookies" aria-live="polite">
+    <div class="cookie-inner">
+      <p class="cookie-text">
+        🍪 Používáme pouze technicky nezbytné cookies a localStorage pro udržení přihlášení.
+        Žádné reklamní trackery. Více informací v naší <a href="/privacy.html#cookies">Politice ochrany soukromí</a>.
+      </p>
+      <div class="cookie-actions">
+        <button class="cookie-btn cookie-btn-reject" id="cookie-reject">Jen nezbytné</button>
+        <button class="cookie-btn cookie-btn-accept" id="cookie-accept">Rozumím, souhlasím</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="script.js?v=2"></script>
+  <script src="/chat-widget.js"></script>
+
+  <!-- ── Podpora: FAQ + typewriter ── -->
   <script>
-    // Typewriter placeholder animation
-    document.addEventListener('DOMContentLoaded', function() {
-      var phText   = document.getElementById('faq-ph-text');
-      var phWrap   = document.getElementById('faq-ph');
-      var input    = document.getElementById('faq-search');
-      if (!phText || !input) return;
+  function toggleFaq(el) {
+    var item = el.parentElement;
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(function(i) { i.classList.remove('open'); });
+    if (!isOpen) item.classList.add('open');
+  }
 
-      var questions = [
-        'Je Makej! zdarma?',
-        'Jak smažu svůj účet?',
-        'Jak probíhá výplata za práci?',
-        'Na jakých zařízeních Makej! funguje?',
-        'Jak nahlásím problém se zaměstnavatelem?',
-        'Je moje platební karta v bezpečí?',
-      ];
-
-      var qi = 0, ci = 0, deleting = false, paused = false, timer = null;
-
+  document.addEventListener('DOMContentLoaded', function() {
+    // Typewriter placeholder
+    var phText = document.getElementById('faq-ph-text');
+    var phWrap = document.getElementById('faq-ph');
+    var input  = document.getElementById('faq-search');
+    if (phText && input) {
+      var questions = ['Je Makej! zdarma?','Jak smažu svůj účet?','Jak probíhá výplata za práci?','Na jakých zařízeních Makej! funguje?','Jak nahlásím problém se zaměstnavatelem?','Je moje platební karta v bezpečí?'];
+      var qi = 0, ci = 0, deleting = false, paused = false;
       function tick() {
-        if (input.value.length > 0 || document.activeElement === input) {
-          phWrap.style.opacity = '0';
-          timer = setTimeout(tick, 200);
-          return;
-        }
-        phWrap.style.opacity = '1';
-
+        if (input.value.length > 0 || document.activeElement === input) { phWrap.style.opacity='0'; setTimeout(tick,200); return; }
+        phWrap.style.opacity='1';
         var q = questions[qi];
-
-        if (paused) {
-          paused = false;
-          deleting = true;
-          timer = setTimeout(tick, 30);
-          return;
-        }
-
-        if (!deleting) {
-          phText.textContent = q.slice(0, ci);
-          ci++;
-          if (ci > q.length) { paused = true; timer = setTimeout(tick, 900); return; }
-          timer = setTimeout(tick, 45);
-        } else {
-          phText.textContent = q.slice(0, ci);
-          ci--;
-          if (ci < 0) {
-            deleting = false;
-            ci = 0;
-            qi = (qi + 1) % questions.length;
-            timer = setTimeout(tick, 280);
-            return;
-          }
-          timer = setTimeout(tick, 28);
-        }
+        if (paused) { paused=false; deleting=true; setTimeout(tick,30); return; }
+        if (!deleting) { phText.textContent=q.slice(0,ci); ci++; if(ci>q.length){paused=true;setTimeout(tick,900);return;} setTimeout(tick,45); }
+        else { phText.textContent=q.slice(0,ci); ci--; if(ci<0){deleting=false;ci=0;qi=(qi+1)%questions.length;setTimeout(tick,280);return;} setTimeout(tick,28); }
       }
-
-      // Show/hide fake placeholder when user types
-      input.addEventListener('input', function() {
-        phWrap.style.opacity = this.value.length ? '0' : '1';
-      });
-      input.addEventListener('focus', function() { phWrap.style.opacity = '0'; });
-      input.addEventListener('blur',  function() {
-        if (!this.value.length) phWrap.style.opacity = '1';
-      });
-
-      timer = setTimeout(tick, 600);
-    });
-
-    // FAQ live search + autocomplete dropdown
-    document.addEventListener('DOMContentLoaded', function() {
-      var searchInput = document.getElementById('faq-search');
-      var noResults   = document.getElementById('faq-no-results');
-      var drop        = document.getElementById('faq-drop');
-      if (!searchInput) return;
-
-      var faqItems = Array.from(document.querySelectorAll('.faq-item'));
-      var activeIdx = -1;
-
-      function getQuestion(item) {
-        return (item.querySelector('.faq-q span') || item).textContent.trim();
-      }
-
-      function highlight(text, q) {
-        if (!q) return text;
-        var re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
-        return text.replace(re, '<mark>$1</mark>');
-      }
-
-      function showDrop(q) {
-        if (!q) { closeDrop(); return; }
-        var matches = faqItems.filter(function(item) {
-          return getQuestion(item).toLowerCase().includes(q);
-        });
-        if (!matches.length) { closeDrop(); return; }
-
-        drop.innerHTML = matches.slice(0, 5).map(function(item, i) {
-          return '<div class="ssd-item" data-idx="' + faqItems.indexOf(item) + '">' +
-            '<span>' + highlight(getQuestion(item), q) + '</span>' +
-          '</div>';
-        }).join('');
-
-        drop.classList.add('open');
-        activeIdx = -1;
-
-        drop.querySelectorAll('.ssd-item').forEach(function(el) {
-          el.addEventListener('mousedown', function(e) {
-            e.preventDefault();
-            selectSuggestion(parseInt(this.dataset.idx));
-          });
-        });
-      }
-
-      function closeDrop() {
-        drop.classList.remove('open');
-        drop.innerHTML = '';
-        activeIdx = -1;
-      }
-
-      function selectSuggestion(idx) {
-        var item = faqItems[idx];
-        if (!item) return;
-        searchInput.value = '';
-        closeDrop();
-        filterFaq('');
-        // scroll + open that item
-        setTimeout(function() {
-          item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          if (!item.classList.contains('open')) item.classList.add('open');
-        }, 80);
-      }
-
-      function filterFaq(q) {
-        var visible = 0;
-        faqItems.forEach(function(item) {
-          var text = getQuestion(item).toLowerCase()
-                   + ' ' + (item.querySelector('.faq-a') || {textContent:''}).textContent.toLowerCase();
-          var match = !q || text.includes(q);
-          item.style.display = match ? '' : 'none';
-          if (match) visible++;
-        });
-        noResults.style.display = visible === 0 ? 'block' : 'none';
-        if (q) document.querySelectorAll('.faq-item.open').forEach(function(i) { i.classList.remove('open'); });
-      }
-
-      searchInput.addEventListener('input', function() {
-        var q = this.value.trim().toLowerCase();
-        filterFaq(q);
-        showDrop(q);
-      });
-
-      // Keyboard navigation
-      searchInput.addEventListener('keydown', function(e) {
-        var items = drop.querySelectorAll('.ssd-item');
-        if (!items.length) return;
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          activeIdx = Math.min(activeIdx + 1, items.length - 1);
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          activeIdx = Math.max(activeIdx - 1, 0);
-        } else if (e.key === 'Enter' && activeIdx >= 0) {
-          e.preventDefault();
-          selectSuggestion(parseInt(items[activeIdx].dataset.idx));
-          return;
-        } else if (e.key === 'Escape') {
-          closeDrop(); return;
-        } else { return; }
-        items.forEach(function(el, i) { el.classList.toggle('active', i === activeIdx); });
-      });
-
-      document.addEventListener('click', function(e) {
-        if (!searchInput.contains(e.target) && !drop.contains(e.target)) closeDrop();
-      });
-    });
-
-    function toggleFaq(el) {
-      const item = el.parentElement;
-      const isOpen = item.classList.contains('open');
-      document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
-      if (!isOpen) item.classList.add('open');
+      input.addEventListener('input', function(){ phWrap.style.opacity=this.value.length?'0':'1'; });
+      input.addEventListener('focus', function(){ phWrap.style.opacity='0'; });
+      input.addEventListener('blur',  function(){ if(!this.value.length) phWrap.style.opacity='1'; });
+      setTimeout(tick, 600);
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-      var eyeL   = document.getElementById('doc-eyeL');
-      var eyeR   = document.getElementById('doc-eyeR');
-      var pupilL = document.getElementById('doc-pupilL');
-      var pupilR = document.getElementById('doc-pupilR');
-      var lidL   = document.getElementById('doc-lidL');
-      var lidR   = document.getElementById('doc-lidR');
-      if (!eyeL) return;
+    // FAQ live search + autocomplete
+    var noResults = document.getElementById('faq-no-results');
+    var drop      = document.getElementById('faq-drop');
+    if (!input || !drop) return;
+    var faqItems = Array.from(document.querySelectorAll('.faq-item'));
+    var activeIdx = -1;
+    function getQ(item){ return (item.querySelector('.faq-q span')||item).textContent.trim(); }
+    function hl(text,q){ if(!q) return text; return text.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>'); }
+    function showDrop(q){
+      if(!q){closeDrop();return;}
+      var m=faqItems.filter(function(i){return getQ(i).toLowerCase().includes(q);});
+      if(!m.length){closeDrop();return;}
+      drop.innerHTML=m.slice(0,5).map(function(i){return'<div class="ssd-item" data-idx="'+faqItems.indexOf(i)+'"><span>'+hl(getQ(i),q)+'</span></div>';}).join('');
+      drop.classList.add('open'); activeIdx=-1;
+      drop.querySelectorAll('.ssd-item').forEach(function(el){ el.addEventListener('mousedown',function(e){e.preventDefault();selectSug(parseInt(this.dataset.idx));}); });
+    }
+    function closeDrop(){drop.classList.remove('open');drop.innerHTML='';activeIdx=-1;}
+    function selectSug(idx){ var item=faqItems[idx]; if(!item) return; input.value=''; closeDrop(); filterFaq(''); setTimeout(function(){item.scrollIntoView({behavior:'smooth',block:'center'});if(!item.classList.contains('open'))item.classList.add('open');},80); }
+    function filterFaq(q){
+      var v=0;
+      faqItems.forEach(function(item){
+        var text=getQ(item).toLowerCase()+' '+((item.querySelector('.faq-a')||{textContent:''}).textContent.toLowerCase());
+        var m=!q||text.includes(q); item.style.display=m?'':'none'; if(m)v++;
+      });
+      if(noResults) noResults.style.display=v===0?'block':'none';
+      if(q) document.querySelectorAll('.faq-item.open').forEach(function(i){i.classList.remove('open');});
+    }
+    input.addEventListener('input',function(){ var q=this.value.trim().toLowerCase(); filterFaq(q); showDrop(q); });
+    input.addEventListener('keydown',function(e){
+      var items=drop.querySelectorAll('.ssd-item');
+      if(!items.length) return;
+      if(e.key==='ArrowDown'){e.preventDefault();activeIdx=Math.min(activeIdx+1,items.length-1);}
+      else if(e.key==='ArrowUp'){e.preventDefault();activeIdx=Math.max(activeIdx-1,0);}
+      else if(e.key==='Enter'&&activeIdx>=0){e.preventDefault();selectSug(parseInt(items[activeIdx].dataset.idx));return;}
+      else if(e.key==='Escape'){closeDrop();return;}
+      else return;
+      items.forEach(function(el,i){el.classList.toggle('active',i===activeIdx);});
+    });
+    document.addEventListener('click',function(e){if(!input.contains(e.target)&&!drop.contains(e.target))closeDrop();});
 
-      function movePupil(pupilEl, eyeEl, mx, my) {
-        var rect = eyeEl.getBoundingClientRect();
-        if (!rect.width) return;
-        var cx = rect.left + rect.width  / 2;
-        var cy = rect.top  + rect.height / 2;
-        var dx = mx - cx, dy = my - cy;
-        var dist = Math.sqrt(dx * dx + dy * dy);
-        var r = 4.5;
-        var s = Math.min(dist, r) / Math.max(dist, 0.001);
-        pupilEl.style.transform = 'translate(' + (dx*s).toFixed(2) + 'px,' + (dy*s).toFixed(2) + 'px)';
+    // Doc peeker eye tracking
+    var eyeL=document.getElementById('doc-eyeL'), eyeR=document.getElementById('doc-eyeR');
+    var pupilL=document.getElementById('doc-pupilL'), pupilR=document.getElementById('doc-pupilR');
+    var lidL=document.getElementById('doc-lidL'), lidR=document.getElementById('doc-lidR');
+    if(!eyeL) return;
+    function movePupil(pupilEl,eyeEl,mx,my){ var rect=eyeEl.getBoundingClientRect(); if(!rect.width) return; var cx=rect.left+rect.width/2,cy=rect.top+rect.height/2,dx=mx-cx,dy=my-cy,dist=Math.sqrt(dx*dx+dy*dy),r=4.5,s=Math.min(dist,r)/Math.max(dist,0.001); pupilEl.style.transform='translate('+(dx*s).toFixed(2)+'px,'+(dy*s).toFixed(2)+'px)'; }
+    document.addEventListener('mousemove',function(e){ movePupil(pupilL,eyeL,e.clientX,e.clientY); movePupil(pupilR,eyeR,e.clientX,e.clientY); });
+    function setLid(speed){ lidL.style.transition='height '+speed+' ease'; lidR.style.transition='height '+speed+' ease'; }
+    function scheduleBlink(){ setTimeout(function(){ setLid('0.08s'); lidL.style.height='21px'; lidR.style.height='21px'; setTimeout(function(){ lidL.style.height='0'; lidR.style.height='0'; setTimeout(function(){setLid('0.28s');scheduleBlink();},120); },100); },3000+Math.random()*3000); }
+    scheduleBlink();
+  });
+  </script>
+
+  <!-- ── App Demo ── -->
+  <script>
+  (function() {
+    var JOBS = [
+      { title:'Barista', company:'Kavárna Zlatý Jelen', location:'Praha 1', distance:'0.8 km', pay:'180', payUnit:'Kč/h', date:'So 8. 6.', time:'8:00 – 16:00', type:'Brigáda', tags:['Gastro','Víkendy'], grad:'linear-gradient(145deg,#0e1060,#1a3aff)' },
+      { title:'Číšník', company:'Restaurant Maxim', location:'Praha 2', distance:'1.4 km', pay:'170', payUnit:'Kč/h', date:'Ne 9. 6.', time:'16:00 – 24:00', type:'Brigáda', tags:['Gastro','Večery'], grad:'linear-gradient(145deg,#1a0a6e,#3d1fa3)' },
+      { title:'Skladník', company:'LogiPro s.r.o.', location:'Praha – Letňany', distance:'8.2 km', pay:'160', payUnit:'Kč/h', date:'Po 10. 6.', time:'6:00 – 14:00', type:'Jednorázová', tags:['Sklad','Fyzická práce'], grad:'linear-gradient(145deg,#0c2a4a,#1a5276)' },
+      { title:'Promotér', company:'Event Agency CZ', location:'Praha 3', distance:'2.1 km', pay:'165', payUnit:'Kč/h', date:'So 8. 6.', time:'10:00 – 18:00', type:'Brigáda', tags:['Marketing','Venkovní'], grad:'linear-gradient(145deg,#2d0a6e,#6b21a8)' },
+      { title:'Recepční', company:'Hotel Central', location:'Praha 1', distance:'1.0 km', pay:'190', payUnit:'Kč/h', date:'Po – Pá', time:'8:00 – 16:00', type:'Part-time', tags:['Hotely','Angličtina'], grad:'linear-gradient(145deg,#0c3a3a,#0f766e)' },
+      { title:'Pomocný kuchař', company:"McDonald's", location:'Praha 6', distance:'3.5 km', pay:'155', payUnit:'Kč/h', date:'So 8. 6.', time:'12:00 – 20:00', type:'Brigáda', tags:['Gastro','Flexibilní'], grad:'linear-gradient(145deg,#3a1a00,#7c3a00)' },
+    ];
+
+    var THREADS = [
+      { id:1, company:'Kavárna Zlatý Jelen', job:'Barista', initials:'KZ', color:'#0020f6', unread:true,
+        msgs:[
+          { from:'them', text:'Dobrý den! Zaujal nás váš profil, máte zájem o pozici baristu?' },
+          { from:'me',   text:'Dobrý den, moc děkuji za zájem! Ano, mám zájem.' },
+          { from:'them', text:'Super! Kdy byste mohl nastoupit?' },
+        ]},
+      { id:2, company:'Hotel Central', job:'Recepční', initials:'HC', color:'#292978', unread:false,
+        msgs:[
+          { from:'them', text:'Gratulujeme! Váš profil nás zaujal na pozici recepčního.' },
+          { from:'me',   text:'Výborně, mám zájem!' },
+          { from:'them', text:'Nastoupit byste mohl od pondělí. Hodí se to?' },
+        ]},
+    ];
+
+    // Deep-copy threads so messages persist only in session
+    var threads = THREADS.map(function(t) {
+      return { id:t.id, company:t.company, job:t.job, initials:t.initials, color:t.color, unread:t.unread,
+        msgs: t.msgs.map(function(m) { return { from:m.from, text:m.text }; }) };
+    });
+
+    var jobIdx = 0;
+    var activePanel = 'jobs';
+    var openThreadId = null;
+    var drag = { on:false, startX:0, dx:0, el:null };
+
+    // ── Tutorial state ──
+    var tutStep    = 0;          // 0=swipe hint | 1=match notify | 2=go to messages | 3=accept offer | 4=done
+    var tutEnabled = true;       // false = user skipped; re-enabled by swipe right
+    var tutPopupEl = null;
+    var tutRingEl  = null;
+    var tutHandEl  = null;
+    var tutBadgeEl = null;
+    var tutThreadAdded = false;
+    var TUT_THREAD = {
+      id:99, company:'Kavárna Zlatý Jelen', job:'Barista', initials:'KZ',
+      color:'#0020f6', unread:true,
+      msgs:[
+        { from:'them', text:'Gratulujeme! Váš profil se nám moc líbil. 🎉' },
+        { from:'them', text:'Nabízíme vám směnu v So 8. 6. od 8:00 do 16:00. Odměna 180 Kč/h. Přijmete nabídku?' },
+      ]
+    };
+
+    function $(id) { return document.getElementById(id); }
+
+    function showPanel(name) {
+      activePanel = name;
+      ['dp-jobs','dp-messages','dp-chat','dp-profile'].forEach(function(id) {
+        var el = $(id);
+        if (el) el.classList.remove('dp-active');
+      });
+      var target = name === 'chat' ? 'dp-chat' : 'dp-' + name;
+      var el = $(target);
+      if (el) el.classList.add('dp-active');
+      document.querySelectorAll('.demo-nav-btn').forEach(function(btn) {
+        var p = btn.getAttribute('data-panel');
+        btn.classList.toggle('nav-active', p === name || (name === 'chat' && p === 'messages'));
+      });
+      // Tutorial: navigating away from jobs at step 0 = user skipped → disable
+      if (tutStep === 0 && tutEnabled && name !== 'jobs') {
+        tutEnabled = false;
+        tutHide();
       }
+      // Tutorial: going to messages at step 1 → show step 2
+      if (tutEnabled && tutStep === 1 && name === 'messages') {
+        if (tutBadgeEl) tutBadgeEl.classList.remove('show');
+        renderThreads(); // re-render so tutorial thread appears
+        setTimeout(function() { tutShow(2); }, 250);
+      }
+    }
 
-      var mcpEyeL   = document.getElementById('mcp-eyeL');
-      var mcpEyeR   = document.getElementById('mcp-eyeR');
-      var mcpPupilL = document.getElementById('mcp-pupilL');
-      var mcpPupilR = document.getElementById('mcp-pupilR');
+    // ── Tutorial functions ──────────────────────────────────
+    function tutInit() {
+      var screen = document.querySelector('.demo-screen');
+      if (!screen) return;
 
-      document.addEventListener('mousemove', function(e) {
-        movePupil(pupilL, eyeL, e.clientX, e.clientY);
-        movePupil(pupilR, eyeR, e.clientX, e.clientY);
-        if (mcpEyeL) {
-          movePupil(mcpPupilL, mcpEyeL, e.clientX, e.clientY);
-          movePupil(mcpPupilR, mcpEyeR, e.clientX, e.clientY);
+      // Spotlight ring (transparent div; huge box-shadow creates dim overlay around it)
+      tutRingEl = document.createElement('div');
+      tutRingEl.className = 'tut-ring';
+      screen.appendChild(tutRingEl);
+
+      // Swipe-hand (step 0 only) — swipe gesture image
+      tutHandEl = document.createElement('div');
+      tutHandEl.className = 'tut-swipe-hand';
+      tutHandEl.innerHTML = '<img src="swipe-hand.png?v=1" alt="" draggable="false" />';
+      screen.appendChild(tutHandEl);
+
+      // Popup tooltip (steps 1-3)
+      tutPopupEl = document.createElement('div');
+      tutPopupEl.className = 'tut-popup tut-hide';
+      screen.appendChild(tutPopupEl);
+
+      // Unread badge on Messages nav button
+      document.querySelectorAll('.demo-nav-btn').forEach(function(btn) {
+        if (btn.getAttribute('data-panel') === 'messages') {
+          var badge = document.createElement('span');
+          badge.className = 'tut-nav-badge';
+          btn.appendChild(badge);
+          tutBadgeEl = badge;
         }
       });
 
-      function setLid(speed) {
-        lidL.style.transition = 'height ' + speed + ' ease';
-        lidR.style.transition = 'height ' + speed + ' ease';
+      tutShow(0);
+    }
+
+    // Position ring over a target element (coords relative to .demo-screen)
+    function tutRing(targetEl) {
+      if (!tutRingEl || !targetEl) return;
+      var screen = document.querySelector('.demo-screen');
+      if (!screen) return;
+      var sr = screen.getBoundingClientRect();
+      var tr = targetEl.getBoundingClientRect();
+      var P = 6;
+      tutRingEl.style.top    = (tr.top  - sr.top  - P) + 'px';
+      tutRingEl.style.left   = (tr.left - sr.left - P) + 'px';
+      tutRingEl.style.width  = (tr.width  + P * 2) + 'px';
+      tutRingEl.style.height = (tr.height + P * 2) + 'px';
+      tutRingEl.classList.remove('show');
+      void tutRingEl.offsetWidth; // re-trigger animation
+      tutRingEl.classList.add('show');
+    }
+
+    // Position popup near a target element, arrow pointing toward it
+    function tutPopupNear(targetEl, html) {
+      if (!tutPopupEl || !targetEl) return;
+      var screen = document.querySelector('.demo-screen');
+      if (!screen) return;
+      var sr = screen.getBoundingClientRect();
+      var tr = targetEl.getBoundingClientRect();
+
+      var W  = sr.width - 20;   // popup width
+      var H  = 54;               // estimated popup height
+      var G  = 10;               // gap between popup and target
+      var AH = 8;                // arrow height
+
+      var tTop = tr.top  - sr.top;
+      var tBot = tr.bottom - sr.top;
+      var tCX  = tr.left - sr.left + tr.width / 2;
+
+      // Prefer above; fall back to below
+      var popTop, arrowDir;
+      if (tTop - H - G - AH >= 46) {
+        popTop   = tTop - H - G - AH;
+        arrowDir = 'down';
+      } else {
+        popTop   = tBot + G;
+        arrowDir = 'up';
+      }
+      popTop = Math.max(8, Math.min(sr.height - H - 8, popTop));
+
+      tutPopupEl.innerHTML = html;
+      tutPopupEl.className = 'tut-popup arrow-' + arrowDir;
+      tutPopupEl.style.top   = popTop + 'px';
+      tutPopupEl.style.left  = '10px';
+      tutPopupEl.style.right = 'auto';
+      tutPopupEl.style.width = W + 'px';
+
+      // Arrow X: centered on target, clamped within popup
+      var arrowX = Math.max(16, Math.min(W - 16, tCX - 10));
+      tutPopupEl.style.setProperty('--arrow-x', arrowX + 'px');
+
+      // Re-trigger entrance animation
+      tutPopupEl.style.animation = 'none';
+      void tutPopupEl.offsetWidth;
+      tutPopupEl.style.animation = 'tut-in .32s cubic-bezier(.23,1,.32,1)';
+    }
+
+    var TUT_CONTENTS = [
+      '<span class="tut-popup-emoji">👆</span><div class="tut-popup-body"><div class="tut-popup-title">Swajpni doprava nebo klikni ♥</div><div class="tut-popup-sub">Dej like brigádě, která tě zaujala</div></div>',
+      '<span class="tut-popup-emoji">🎉</span><div class="tut-popup-body"><div class="tut-popup-title">Match! Kavárna tě přijala</div><div class="tut-popup-sub">Klikni na Zprávy a přečti si zprávu</div></div>',
+      '<span class="tut-popup-emoji">💬</span><div class="tut-popup-body"><div class="tut-popup-title">Nová zpráva!</div><div class="tut-popup-sub">Klikni na chat od Kavárny</div></div>',
+      '<span class="tut-popup-emoji">✅</span><div class="tut-popup-body"><div class="tut-popup-title">Nabídka směny!</div><div class="tut-popup-sub">Přijmi nabídku a brigádu máš</div></div>',
+    ];
+
+    function tutShow(step) {
+      tutStep = step;
+      if (!tutPopupEl) return;
+      if (step === 4) { tutHide(); tutShowSuccess(); return; }
+
+      var html = TUT_CONTENTS[step] || '';
+
+      if (step === 0) {
+        // Step 0: swipe-hand shows the gesture + card demonstrates the right-swipe
+        if (tutRingEl) tutRingEl.classList.remove('show');
+        tutPopupEl.className = 'tut-popup tut-hide';
+        if (tutHandEl) tutHandEl.classList.add('show');
+        var card0 = $('dp-card');
+        if (card0) card0.classList.add('dp-card-demo-swipe');
+        return;
       }
 
-      function scheduleBlink() {
-        setTimeout(function() {
-          setLid('0.08s');
-          lidL.style.height = '21px'; lidR.style.height = '21px';
+      // Steps 1-3: stop card demo + hide hand, show ring + popup
+      var cardX = $('dp-card');
+      if (cardX) cardX.classList.remove('dp-card-demo-swipe');
+      if (tutHandEl) tutHandEl.classList.remove('show');
+
+      // Steps 1-3: spotlight ring + popup positioned next to target
+      var targetEl = null;
+      if (step === 1) targetEl = document.querySelector('.demo-nav-btn[data-panel="messages"]');
+      if (step === 2) targetEl = document.querySelector('[data-tid="99"]');
+      if (step === 3) targetEl = document.querySelector('.dp-accept-offer');
+
+      if (targetEl) {
+        tutRing(targetEl);
+        tutPopupNear(targetEl, html);
+      }
+    }
+
+    function tutHide() {
+      if (tutPopupEl) tutPopupEl.className = 'tut-popup tut-hide';
+      if (tutRingEl)  tutRingEl.classList.remove('show');
+      if (tutHandEl)  tutHandEl.classList.remove('show');
+    }
+
+    function tutShowSuccess() {
+      var screen = document.querySelector('.demo-screen');
+      if (!screen) return;
+      var el = document.createElement('div');
+      el.className = 'tut-success';
+      el.innerHTML =
+        '<div class="tut-success-emoji">🎉</div>' +
+        '<div class="tut-success-title">Brigáda domluvena!</div>' +
+        '<div class="tut-success-sub">Makej! propojil tě se zaměstnavatelem za méně než minutu.</div>' +
+        '<div class="tut-success-divider"></div>' +
+        '<button class="tut-success-restart" id="tut-restart">Zkusit znovu →</button>';
+      screen.appendChild(el);
+      var rb = el.querySelector('#tut-restart');
+      if (rb) rb.addEventListener('click', function() { location.reload(); });
+    }
+    // ────────────────────────────────────────────────────────
+
+    function renderCard() {
+      var area = $('dp-cards-area');
+      if (!area) return;
+      if (jobIdx >= JOBS.length) {
+        area.innerHTML = '<div class="dp-empty"><div class="dp-empty-icon">✅</div><strong>Všechny nabídky prohlédnuty!</strong><div>Obnov stránku pro reset.</div></div>';
+        return;
+      }
+      var j = JOBS[jobIdx];
+      var card = document.createElement('div');
+      card.className = 'dp-job-card';
+      card.id = 'dp-card';
+      card.style.background = j.grad;
+      card.innerHTML =
+        '<div class="dp-card-overlay"></div>' +
+        '<div class="dp-stamp dp-stamp-like">SUPER ✓</div>' +
+        '<div class="dp-stamp dp-stamp-nope">NOPE ✕</div>' +
+        '<div class="dp-card-content">' +
+          '<div class="dp-card-tags">' +
+            '<span class="dp-card-tag dp-tag-type">' + j.type + '</span>' +
+            j.tags.map(function(t){ return '<span class="dp-card-tag">'+t+'</span>'; }).join('') +
+          '</div>' +
+          '<div class="dp-card-title-row">' +
+            '<div>' +
+              '<div class="dp-card-title">' + j.title + '</div>' +
+              '<div class="dp-card-company">@ ' + j.company + '</div>' +
+            '</div>' +
+            '<div class="dp-card-pay-col">' +
+              '<span class="dp-card-pay-num">' + j.pay + '</span>' +
+              '<span class="dp-card-pay-unit">' + j.payUnit + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="dp-card-infos">' +
+            '<div class="dp-info-pill">' +
+              '<span class="dp-info-icon">📍</span>' +
+              '<div><div class="dp-info-main">' + j.location + '</div><div class="dp-info-sub">' + j.distance + '</div></div>' +
+            '</div>' +
+            '<div class="dp-info-pill">' +
+              '<span class="dp-info-icon">📅</span>' +
+              '<div><div class="dp-info-main">' + j.date + '</div><div class="dp-info-sub">' + j.time + '</div></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="dp-card-btns">' +
+          '<button class="dp-reject-btn" id="dp-reject-btn"><iconify-icon icon="solar:close-circle-bold" width="56"></iconify-icon></button>' +
+          '<button class="dp-heart-btn" id="dp-heart-btn"><iconify-icon icon="solar:check-circle-bold" width="56"></iconify-icon></button>' +
+        '</div>';
+
+      card.addEventListener('mousedown', dragStart);
+      card.addEventListener('touchstart', dragStart, { passive: true });
+      area.innerHTML = '';
+      area.appendChild(card);
+
+      var rb = card.querySelector('#dp-reject-btn'), hb = card.querySelector('#dp-heart-btn');
+      if (rb) rb.addEventListener('click', function(e){ e.stopPropagation(); doSwipe('left'); });
+      if (hb) hb.addEventListener('click', function(e){ e.stopPropagation(); doSwipe('right'); });
+
+      // Tutorial step 0: pulse the heart button + auto-demo the swipe on the card
+      if (tutStep === 0 && hb) hb.classList.add('tut-pulse');
+      if (tutStep === 0 && tutEnabled) card.classList.add('dp-card-demo-swipe');
+    }
+
+    function dragStart(e) {
+      if (e.target && (e.target.id === 'dp-reject-btn' || e.target.id === 'dp-heart-btn')) return;
+      var card = $('dp-card');
+      if (!card) return;
+      // Remove pulse + stop auto-demo when user starts dragging
+      var hb = card.querySelector('.dp-heart-btn');
+      if (hb) hb.classList.remove('tut-pulse');
+      card.classList.remove('dp-card-demo-swipe');
+      drag.on = true; drag.el = card;
+      drag.startX = (e.touches ? e.touches[0].clientX : e.clientX);
+      drag.dx = 0;
+      card.style.transition = 'none';
+      document.addEventListener('mousemove', dragMove);
+      document.addEventListener('mouseup', dragEnd);
+      document.addEventListener('touchmove', dragMove, { passive: false });
+      document.addEventListener('touchend', dragEnd);
+    }
+
+    function dragMove(e) {
+      if (!drag.on || !drag.el) return;
+      if (e.cancelable) e.preventDefault();
+      var cx = e.touches ? e.touches[0].clientX : e.clientX;
+      drag.dx = cx - drag.startX;
+      var rot = drag.dx * 0.07;
+      drag.el.style.transform = 'translateX(' + drag.dx + 'px) rotate(' + rot + 'deg)';
+      var like = drag.el.querySelector('.dp-stamp-like');
+      var nope = drag.el.querySelector('.dp-stamp-nope');
+      if (drag.dx > 20)       { like.style.opacity = Math.min((drag.dx-20)/60,1); nope.style.opacity = 0; }
+      else if (drag.dx < -20) { nope.style.opacity = Math.min((-drag.dx-20)/60,1); like.style.opacity = 0; }
+      else                    { like.style.opacity = 0; nope.style.opacity = 0; }
+    }
+
+    function dragEnd() {
+      document.removeEventListener('mousemove', dragMove);
+      document.removeEventListener('mouseup', dragEnd);
+      document.removeEventListener('touchmove', dragMove);
+      document.removeEventListener('touchend', dragEnd);
+      if (!drag.on) return;
+      drag.on = false;
+      if (!drag.el) return;
+      if (drag.dx > 70)       doSwipe('right');
+      else if (drag.dx < -70) doSwipe('left');
+      else {
+        drag.el.style.transition = 'transform .3s cubic-bezier(.23,1,.32,1)';
+        drag.el.style.transform = 'none';
+        var like = drag.el.querySelector('.dp-stamp-like'), nope = drag.el.querySelector('.dp-stamp-nope');
+        if (like) like.style.opacity = 0;
+        if (nope) nope.style.opacity = 0;
+      }
+    }
+
+    function doSwipe(dir) {
+      var card = $('dp-card');
+      if (!card) return;
+      // Remove pulse + stop auto-demo before animating
+      var hb = card.querySelector('.dp-heart-btn');
+      if (hb) hb.classList.remove('tut-pulse');
+      card.classList.remove('dp-card-demo-swipe');
+      var tx = dir === 'right' ? 380 : -380;
+      card.style.transition = 'transform .32s ease';
+      card.style.transform = 'translateX(' + tx + 'px) rotate(' + (dir==='right'?22:-22) + 'deg)';
+      var stamp = card.querySelector(dir==='right' ? '.dp-stamp-like' : '.dp-stamp-nope');
+      if (stamp) stamp.style.opacity = '1';
+      setTimeout(function() {
+        jobIdx++;
+        renderCard();
+        // Tutorial: swipe right at step 0 → (re-)enable and advance to match notification
+        if (tutStep === 0 && dir === 'right') {
+          tutEnabled = true; // re-enable if user had previously skipped
+          if (!tutThreadAdded) {
+            tutThreadAdded = true;
+            threads.unshift({
+              id:99, company:'Kavárna Zlatý Jelen', job:'Barista', initials:'KZ',
+              color:'#0020f6', unread:true,
+              msgs: TUT_THREAD.msgs.map(function(m){ return { from:m.from, text:m.text }; })
+            });
+          }
           setTimeout(function() {
-            lidL.style.height = '0'; lidR.style.height = '0';
-            setTimeout(function() { setLid('0.28s'); scheduleBlink(); }, 120);
-          }, 100);
-        }, 3000 + Math.random() * 3000);
-      }
+            if (!tutEnabled) return; // user navigated away during the 900ms window
+            tutShow(1);
+            if (tutBadgeEl) tutBadgeEl.classList.add('show');
+          }, 900);
+        }
+      }, 320);
+    }
 
-      scheduleBlink();
-    });
+    function renderThreads() {
+      var list = $('dp-threads-list');
+      if (!list) return;
+      list.innerHTML = threads.map(function(t) {
+        var last = t.msgs[t.msgs.length-1];
+        return '<div class="dp-thread-item" data-tid="'+t.id+'">' +
+          '<div class="dp-thread-avatar" style="background:'+t.color+'">'+t.initials+'</div>' +
+          '<div class="dp-thread-body">' +
+            '<div class="dp-thread-name">'+t.company+'</div>' +
+            '<div class="dp-thread-job">'+t.job+'</div>' +
+            '<div class="dp-thread-preview">'+(last?last.text:'')+'</div>' +
+          '</div>' +
+          '<div class="dp-thread-meta">' +
+            '<div class="dp-thread-time">Dnes</div>' +
+            (t.unread ? '<div class="dp-thread-dot"></div>' : '') +
+          '</div>' +
+        '</div>';
+      }).join('');
+      list.querySelectorAll('.dp-thread-item').forEach(function(item) {
+        item.addEventListener('click', function() { openThread(parseInt(item.getAttribute('data-tid'))); });
+        // Highlight tutorial thread when at step 2
+        // (ring in tutShow handles highlight for step 2)
+      });
+    }
+
+    function openThread(id) {
+      openThreadId = id;
+      var t = threads.find(function(t){ return t.id===id; });
+      if (!t) return;
+      t.unread = false;
+      var cn = $('dp-chat-name'), cj = $('dp-chat-subjob');
+      if (cn) cn.textContent = t.company;
+      if (cj) cj.textContent = t.job;
+      renderMsgs(t);
+      showPanel('chat');
+      renderThreads();
+      // Tutorial: opening any thread at step 2 → show step 3
+      if (tutEnabled && tutStep === 2) {
+        setTimeout(function() { tutShow(3); }, 250);
+      }
+    }
+
+    function renderMsgs(t) {
+      var box = $('dp-chat-msgs');
+      if (!box) return;
+      box.innerHTML = t.msgs.map(function(m) {
+        return '<div class="dp-msg '+(m.from==='me'?'from-me':'from-them')+'">'+m.text+'</div>';
+      }).join('');
+      // Tutorial thread: inject accept offer card
+      if (t.id === 99 && tutStep >= 2 && tutEnabled) {
+        var offer = document.createElement('div');
+        offer.className = 'dp-accept-offer';
+        offer.innerHTML =
+          '<div class="dp-accept-offer-label">Nabídka směny</div>' +
+          '<button class="dp-accept-btn tut-glow" id="tut-accept-btn">✓ Přijmout nabídku</button>';
+        box.appendChild(offer);
+        var abtn = offer.querySelector('#tut-accept-btn');
+        if (abtn) abtn.addEventListener('click', function() {
+          if (tutEnabled && tutStep < 4) {
+            // Add acceptance message from me
+            t.msgs.push({ from:'me', text:'Super, přijímám! Těším se na spolupráci. 🙌' });
+            abtn.disabled = true;
+            abtn.textContent = '✓ Přijato!';
+            abtn.classList.remove('tut-glow');
+            abtn.style.background = 'rgba(41,41,120,.3)';
+            setTimeout(function() {
+              tutShow(4);
+            }, 800);
+          }
+        });
+      }
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function sendMsg() {
+      var inp = $('dp-chat-input');
+      if (!inp || !inp.value.trim()) return;
+      var t = threads.find(function(t){ return t.id===openThreadId; });
+      if (!t) return;
+      t.msgs.push({ from:'me', text: inp.value.trim() });
+      inp.value = '';
+      renderMsgs(t);
+      renderThreads();
+    }
+
+    function renderProfile() {
+      var el = $('dp-profile-scroll');
+      if (!el) return;
+      el.innerHTML =
+        '<div class="dp-prof-avatar-wrap">' +
+          '<div class="dp-prof-avatar">TN</div>' +
+          '<div class="dp-prof-name">Tomáš Novák</div>' +
+          '<div class="dp-prof-sub">Praha · Student · 22 let</div>' +
+          '<div class="dp-prof-stars">★★★★★ <span style="color:rgba(208,208,255,.45);font-size:.73rem">4.8</span></div>' +
+        '</div>' +
+        '<div class="dp-prof-stats">' +
+          '<div class="dp-prof-stat"><div class="dp-prof-stat-val">12</div><div class="dp-prof-stat-lbl">Brigád</div></div>' +
+          '<div class="dp-prof-stat"><div class="dp-prof-stat-val">4.8</div><div class="dp-prof-stat-lbl">Hodnocení</div></div>' +
+          '<div class="dp-prof-stat"><div class="dp-prof-stat-val">3</div><div class="dp-prof-stat-lbl">Matche</div></div>' +
+        '</div>' +
+        '<div class="dp-prof-sec-title">Dovednosti</div>' +
+        '<div class="dp-skills">' +
+          ['Gastro','Čeština','Angličtina','Fyzická práce','Flexibilní','Praha'].map(function(s){ return '<span class="dp-skill">'+s+'</span>'; }).join('') +
+        '</div>';
+    }
+
+    function init() {
+      renderCard();
+      renderThreads();
+      renderProfile();
+
+      var back = $('dp-chat-back');
+      if (back) back.addEventListener('click', function(){ showPanel('messages'); });
+
+      var send = $('dp-chat-send'), inp = $('dp-chat-input');
+      if (send) send.addEventListener('click', sendMsg);
+      if (inp) inp.addEventListener('keydown', function(e){ if (e.key==='Enter') sendMsg(); });
+
+      document.querySelectorAll('.demo-nav-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(){ showPanel(btn.getAttribute('data-panel')); });
+      });
+
+      tutInit();
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  })();
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="/script.js"></script>
-  <script src="/chat-widget.js"></script>
 </body>
-</html>
