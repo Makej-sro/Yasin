@@ -26,17 +26,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="/iconify-solar.js"></script>
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" async></script>
-  <link rel="stylesheet" href="style.css?v=19" />
+  <link rel="stylesheet" href="style.css?v=20" />
   <style>
-    /* Navbar na hledám si práci — záložky modré, tlačítka viditelná */
-    #navbar .nav-links a {
-      color: #292978 !important;
-      -webkit-text-fill-color: #292978 !important;
+    /* Navbar na hledám si práci — záložky + logo s gradientem, tlačítka viditelná */
+    #navbar .nav-links a,
+    #navbar .nav-logo {
+      background: linear-gradient(135deg, #0020f6, #1a35ff) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      color: transparent !important;
     }
     #navbar .nav-links a.nav-active {
-      color: #292978 !important;
-      -webkit-text-fill-color: #292978 !important;
-      border-bottom-color: #292978 !important;
+      border-bottom-color: #0020f6 !important;
     }
     /* Tlačítka vždy viditelná */
     #navbar .nav-actions { opacity: 1 !important; pointer-events: all !important; }

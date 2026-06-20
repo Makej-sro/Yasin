@@ -26,7 +26,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="/iconify-solar.js"></script>
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" async></script>
-  <link rel="stylesheet" href="style.css?v=19" />
+  <link rel="stylesheet" href="style.css?v=20" />
   <style>
     /* ── Podpora sekce ── */
     .sup-page { padding: 100px 0 80px; }
@@ -97,10 +97,77 @@
 
     .cn-page { padding: 80px 0 100px; }
 
+    /* Přihlásit se + Vytvořit účet vždy viditelné v navbaru */
+    #nav-actions { opacity: 1 !important; pointer-events: all !important; }
+
+    /* Světlý navbar nad ceníkovou sekcí */
+    #navbar { transition: background .35s, box-shadow .35s; }
+    .nav-logo { transition: color .35s; }
+    .nav-links a { transition: color .25s, border-bottom-color .25s, font-weight .2s !important; }
+    #navbar.navbar-light {
+      background: rgba(255,255,255,.15) !important;
+      box-shadow: 0 1px 0 rgba(0,32,246,.1) !important;
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+    }
+    #navbar.navbar-light .nav-logo { -webkit-text-fill-color: #0020f6 !important; color: #0020f6 !important; }
+    #navbar.navbar-light .nav-links a { color: #0020f6 !important; }
+    #navbar.navbar-light .nav-links a.nav-active { color: #0020f6 !important; border-bottom-color: #0020f6 !important; }
+    #navbar.navbar-light .mobile-menu-btn { color: #1a1a3a; }
+    #navbar.navbar-light #nav-login-btn {
+      background: transparent; color: #0020f6; border-color: rgba(0,32,246,.3); font-weight: 600;
+    }
+    #navbar.navbar-light #nav-login-btn:hover { background: rgba(0,32,246,.06); border-color: #0020f6; }
+
+
     /* ── Inline dashboard (pro-zamestnavatele) ── */
     .employer-split--wide { grid-template-columns: 1.45fr 1fr; gap: 48px; align-items: center; }
-    .cn-section { background: #05071a; padding: 0 0 80px; }
+    .cn-section { background: #fff; padding: 0 0 80px; }
     .cn-section .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── Ceník bílé téma — texty tmavé ── */
+    .cn-section .cn-hero h1 { color: #0d0d28; }
+    .cn-section .cn-hero p { color: #5a6080; }
+    .cn-section .section-tag { background: rgba(0,32,246,.08); border-color: rgba(0,32,246,.2); color: #0020f6; }
+    .cn-section .section-header h2 { color: #0d0d28; }
+    .cn-section .section-header p { color: #5a6080; }
+    .cn-section .cn-tab { color: #4a5070; border-color: rgba(0,0,0,.12); }
+    .cn-section .cn-tab.active { background: linear-gradient(135deg, #0020f6, #1a35ff); color: #fff; border-color: transparent; }
+    .cn-section .cn-toggle-label { color: #5a6080; }
+
+    /* ── Gradient border na kartách ── */
+    .cn-section .cn-plan {
+      background: linear-gradient(#fff, #fff) padding-box,
+                  linear-gradient(135deg, #0020f6, #1a35ff) border-box;
+      border: 2px solid transparent;
+    }
+    .cn-section .cn-plan.popular {
+      background: linear-gradient(rgba(0,32,246,.04), rgba(26,53,255,.02)) padding-box,
+                  linear-gradient(135deg, #0020f6, #1a35ff) border-box;
+      box-shadow: 0 8px 32px rgba(0,32,246,.14);
+    }
+    .cn-section .cn-plan-name { color: #6060a0; }
+    .cn-section .cn-plan-price { color: #0d0d28; }
+    .cn-section .cn-plan-price .kc { color: #4a5070; }
+    .cn-section .cn-plan-price .od { color: #6060a0; }
+    .cn-section .cn-plan-period { color: #6060a0; }
+    .cn-section .cn-plan-divider { border-top-color: rgba(0,0,0,.08); }
+    .cn-section .cn-feat { color: #2a2a4a; }
+    .cn-section .cn-feat iconify-icon { color: #0020f6; }
+    .cn-section .cn-feat.off { color: #b0b0c8; }
+    .cn-section .cn-feat.off iconify-icon { color: #c8c8dc; }
+    .cn-section .cn-expand-btn { color: #6060a0; border-color: rgba(0,0,0,.1); }
+    .cn-section .cn-expand-btn:hover { color: #0020f6; border-color: rgba(0,32,246,.4); background: rgba(0,32,246,.04); }
+    .cn-section .cn-plan-cta a.ghost { border-color: rgba(0,32,246,.3); color: #0020f6; background: transparent; }
+    .cn-section .cn-plan-cta a.ghost:hover { background: rgba(0,32,246,.06); border-color: #0020f6; }
+
+    /* ── Discount + notes na bílém ── */
+    .cn-section .cn-discount-card { background: #f4f4fc; border-color: rgba(0,32,246,.1); }
+    .cn-section .cn-discount-card strong { color: #0d0d28; }
+    .cn-section .cn-discount-card p { color: #5a6080; }
+    .cn-section .cn-notes { background: #f4f4fc; border-color: rgba(0,32,246,.1); }
+    .cn-section .cn-notes p, .cn-section .cn-notes li { color: #5a6080; }
+    .cn-section .cn-notes strong { color: #0d0d28; }
 
     .dash-inline-wrap {
       border-radius: 16px; overflow: hidden;
@@ -220,16 +287,19 @@
 
     /* ── Plans grid (5 columns) ── */
     .cn-plans-wrap {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 24px 60px;
-      overflow-x: auto;
+      width: 100vw;
+      position: relative;
+      left: 50%;
+      margin-left: -50vw;
+      padding: 0 40px 60px;
+      box-sizing: border-box;
     }
     .cn-plans {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 16px;
-      min-width: 960px;
+      gap: 24px;
+      width: 100%;
+      min-width: 860px;
       padding-top: 24px;
       align-items: stretch;
     }
@@ -445,7 +515,12 @@
     .cn-bottom-cta p { color: var(--muted-fg); margin-bottom: 36px; font-size: 1rem; }
     .cn-bottom-cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
-    @media (max-width: 920px) {
+    /* Explicit hover for white theme — ensures Enterprise and all cards respond */
+    .cn-section .cn-plan:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 36px rgba(0,32,246,.12), 0 4px 12px rgba(0,0,0,.06);
+    }
+    @media (max-width: 940px) {
       .cn-plans { grid-template-columns: repeat(3,1fr); min-width: 680px; }
       .cn-discounts { grid-template-columns: 1fr; }
       .cn-mak-packages { grid-template-columns: repeat(2,1fr); }
@@ -1856,4 +1931,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/script.js"></script>
   <script src="/chat-widget.js"></script>
+  <script>
+    (function() {
+      var navbar = document.getElementById('navbar');
+      var cnSection = document.querySelector('.cn-section');
+      function updateNavbarTheme() {
+        if (!navbar || !cnSection) return;
+        navbar.classList.toggle('navbar-light', cnSection.getBoundingClientRect().top <= navbar.offsetHeight);
+      }
+      window.addEventListener('scroll', updateNavbarTheme, { passive: true });
+      updateNavbarTheme();
+    })();
+  </script>
 </body>
