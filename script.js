@@ -185,6 +185,7 @@ function initAuth() {
   // ─── Modal open/close ───
   function openModal(type, role) {
     overlay.classList.add('active');
+    if (navbar) navbar.classList.add('modal-open');
     if (type === 'login') {
       loginModal.classList.add('active');
       registerModal.classList.remove('active');
@@ -208,6 +209,7 @@ function initAuth() {
     overlay.classList.remove('active');
     loginModal.classList.remove('active');
     registerModal.classList.remove('active');
+    if (navbar) navbar.classList.remove('modal-open');
     document.body.style.overflow = '';
     clearErrors();
   }

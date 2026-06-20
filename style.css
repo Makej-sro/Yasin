@@ -1,16 +1,11 @@
 /* ═══════════ PAGE TRANSITIONS ═══════════ */
 @keyframes pageFadeIn {
-  from { opacity: 0; transform: translateY(18px) scale(0.99); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes pageFadeOut {
-  from { opacity: 1; transform: translateY(0) scale(1); }
-  to   { opacity: 0; transform: translateY(-12px) scale(0.99); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 body {
-  animation: pageFadeIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: pageFadeIn 0.4s ease both;
 }
-body.is-leaving { pointer-events: none; }
 
 /* ═══════════ RESET & BASE ═══════════ */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -105,15 +100,20 @@ img { max-width: 100%; display: block; }
 
 /* ═══════════ NAVBAR ═══════════ */
 #navbar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  padding: 16px 24px; transition: all .3s;
-}
-#navbar.scrolled {
-  background: rgba(5,7,26,.15);
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  padding: 16px 24px; transition: background .3s, box-shadow .3s;
+  background: rgba(5, 7, 26, 0.15);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border-bottom: none;
-  box-shadow: none;
+}
+#navbar.scrolled {
+  background: rgba(5, 7, 26, 0.35);
+  box-shadow: 0 1px 0 rgba(255,255,255,.06);
+}
+#navbar.modal-open {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
 }
 .nav-inner {
   max-width: 1200px; margin: 0 auto;
