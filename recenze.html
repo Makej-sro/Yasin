@@ -143,29 +143,13 @@
     }
     .t-card.pos-2::before { opacity: 0; }
 
-    /* Hover on pos-0: reveal pos-0, push 1+2 down */
-    .t-stack:hover .t-card.pos-0,
-    .t-stack .t-card.pos-0:hover {
-      filter: grayscale(0%);
-    }
-    .t-stack .t-card.pos-0:hover::before { opacity: 0; }
-    .t-stack .t-card.pos-0:hover ~ .t-card.pos-1 {
-      transform: skewY(-8deg) translateX(56px) translateY(88px);
-    }
-    .t-stack .t-card.pos-0:hover ~ .t-card.pos-2 {
-      transform: skewY(-8deg) translateX(96px) translateY(136px);
+    /* Behind cards — pointer cursor */
+    .t-card.pos-0,
+    .t-card.pos-1 {
+      cursor: pointer;
     }
 
-    /* Hover on pos-1: reveal pos-1, push pos-2 down */
-    .t-card.pos-1:hover {
-      filter: grayscale(0%);
-    }
-    .t-card.pos-1:hover::before { opacity: 0; }
-    .t-card.pos-1:hover ~ .t-card.pos-2 {
-      transform: skewY(-8deg) translateX(96px) translateY(120px);
-    }
-
-    /* Hover on pos-2: subtle lift */
+    /* Front card hover: subtle lift */
     .t-card.pos-2:hover {
       transform: skewY(-8deg) translateX(56px) translateY(28px);
     }
@@ -192,17 +176,20 @@
       margin-bottom: 12px;
     }
     .t-avatar {
+      position: relative;
       width: 42px;
       height: 42px;
       border-radius: 50%;
       flex-shrink: 0;
-      overflow: hidden;
+      overflow: visible;
       border: 2px solid rgba(208,208,255,.15);
     }
-    .t-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .t-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     .t-avatar-fallback {
       width: 100%;
       height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -210,6 +197,20 @@
       font-weight: 700;
       color: #fff;
     }
+    .t-avatar-badge {
+      position: absolute;
+      bottom: -3px;
+      right: -3px;
+      width: 16px;
+      height: 16px;
+      background: #1d9bf0;
+      border-radius: 50%;
+      border: 2px solid #0a0d2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .t-avatar-badge svg { display: block; }
     .t-user { flex: 1; min-width: 0; }
     .t-username {
       display: flex;
@@ -371,8 +372,8 @@
   <!-- ═══════════ STACKS ═══════════ -->
   <section id="stacks-section">
     <div class="rev-section-header">
-      <h2>Hover na kartičku a <span class="gradient-text">odhal recenzi</span></h2>
-      <p>Najeď myší na kartu a odhal, co píšou skuteční uživatelé.</p>
+      <h2>Listuj recenzemi jako <span class="gradient-text">balíčkem karet</span></h2>
+      <p>Najeď na kteroukoli zadní kartičku nebo počkej 5 sekund — přejde na další automaticky.</p>
     </div>
 
     <div class="stacks-grid">
@@ -391,7 +392,6 @@
               <div class="t-user">
                 <div class="t-username">
                   Klára Nováková
-                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
                 </div>
                 <div class="t-handle">brigádnice</div>
               </div>
@@ -421,7 +421,6 @@
               <div class="t-user">
                 <div class="t-username">
                   Martin Volek
-                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
                 </div>
                 <div class="t-handle">brigádník</div>
               </div>
@@ -451,7 +450,6 @@
               <div class="t-user">
                 <div class="t-username">
                   Pavel Krejčí
-                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
                 </div>
                 <div class="t-handle">brigádník</div>
               </div>
@@ -489,7 +487,6 @@
               <div class="t-user">
                 <div class="t-username">
                   Tomáš Marek
-                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
                 </div>
                 <div class="t-handle">firmy.cz</div>
               </div>
@@ -520,7 +517,6 @@
               <div class="t-user">
                 <div class="t-username">
                   Eva Šimánková
-                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
                 </div>
                 <div class="t-handle">Google recenze</div>
               </div>
@@ -551,7 +547,6 @@
               <div class="t-user">
                 <div class="t-username">
                   Roman Novotný
-                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
                 </div>
                 <div class="t-handle">firmy.cz</div>
               </div>
@@ -700,7 +695,88 @@
       if (mobileReg) mobileReg.addEventListener('click', function() { openModal && openModal('register'); });
       var mobileLog = document.getElementById('mobile-login-btn');
       if (mobileLog) mobileLog.addEventListener('click', function() { openModal && openModal('login'); });
+
+      // Remove like/repost action rows
+      document.querySelectorAll('.t-actions').forEach(function(el) { el.remove(); });
+
+      // Add verified badge to each avatar
+      var badgeSVG = '<svg viewBox="0 0 22 22" fill="white" width="9" height="9"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>';
+      document.querySelectorAll('.t-avatar').forEach(function(av) {
+        var badge = document.createElement('span');
+        badge.className = 't-avatar-badge';
+        badge.innerHTML = badgeSVG;
+        av.appendChild(badge);
+      });
     });
+
+    // Deck cycling — front card flies up, snaps behind the stack, slides back down
+    (function() {
+      document.querySelectorAll('.t-stack').forEach(function(stackEl) {
+        var cards = Array.from(stackEl.querySelectorAll('.t-card'));
+        // order[0]=pos-0(back), order[1]=pos-1(mid), order[2]=pos-2(front)
+        var order = cards.slice();
+        var timer = null;
+        var animating = false;
+
+        function advance() {
+          if (animating) return;
+          animating = true;
+
+          var outCard  = order[2]; // front  → goes to back
+          var newMid   = order[0]; // back   → goes to middle
+          var newFront = order[1]; // middle → goes to front
+
+          // Phase 1 (~340ms): fly front card UP and fade out
+          outCard.style.transition = 'transform 0.34s cubic-bezier(.4,0,.2,1), opacity 0.34s ease';
+          outCard.style.transform  = 'skewY(-8deg) translateX(30px) translateY(-110px) scale(0.88)';
+          outCard.style.opacity    = '0';
+          outCard.style.zIndex     = '10';
+
+          setTimeout(function() {
+            // Snap outCard behind the stack (no transition) — elevated at pos-0 X
+            outCard.style.transition = 'none';
+            outCard.style.transform  = 'skewY(-8deg) translateX(0px) translateY(-110px) scale(0.88)';
+
+            // Rotate class assignments — newMid and newFront animate via their CSS transition
+            outCard.classList.remove('pos-2'); outCard.classList.add('pos-0');
+            newMid.classList.remove('pos-0');  newMid.classList.add('pos-1');
+            newFront.classList.remove('pos-1'); newFront.classList.add('pos-2');
+            outCard.style.zIndex = '';
+
+            void outCard.offsetWidth; // force reflow
+
+            // Phase 2 (~460ms): slide outCard DOWN to pos-0 resting position
+            outCard.style.transition = 'transform 0.46s cubic-bezier(.2,.8,.2,1), opacity 0.46s ease';
+            outCard.style.transform  = ''; // CSS pos-0 class takes over
+            outCard.style.opacity    = '';
+
+            order = [outCard, newMid, newFront];
+
+            setTimeout(function() {
+              outCard.style.transition = '';
+              animating = false;
+            }, 500);
+          }, 360);
+        }
+
+        function resetTimer() {
+          clearInterval(timer);
+          timer = setInterval(advance, 5000);
+        }
+
+        // Hover on a behind card (pos-0 or pos-1) → advance immediately
+        stackEl.addEventListener('mouseover', function(e) {
+          if (animating) return;
+          var card = e.target.closest && e.target.closest('.t-card');
+          if (card && (card === order[0] || card === order[1])) {
+            advance();
+            resetTimer();
+          }
+        });
+
+        resetTimer();
+      });
+    })();
   </script>
   <script src="/chat-widget.js"></script>
 </body>
