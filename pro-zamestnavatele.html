@@ -142,7 +142,7 @@
       border: 2px solid transparent;
     }
     .cn-section .cn-plan.popular {
-      background: linear-gradient(rgba(0,32,246,.04), rgba(26,53,255,.02)) padding-box,
+      background: linear-gradient(#fff, #fff) padding-box,
                   linear-gradient(135deg, #0020f6, #1a35ff) border-box;
       box-shadow: 0 8px 32px rgba(0,32,246,.14);
     }
@@ -515,11 +515,50 @@
     .cn-bottom-cta p { color: var(--muted-fg); margin-bottom: 36px; font-size: 1rem; }
     .cn-bottom-cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
-    /* Explicit hover for white theme — ensures Enterprise and all cards respond */
-    .cn-section .cn-plan:hover {
+    /* ── Hover fill effect — blue card + white text ── */
+    .cn-section .cn-plan { transition: background .25s, border-color .2s, transform .22s, box-shadow .22s; }
+    .cn-section .cn-plan:hover,
+    .cn-section .cn-plan.cn-hovered {
+      background: linear-gradient(135deg, #0020f6, #1a35ff) !important;
+      border-color: transparent !important;
       transform: translateY(-4px);
-      box-shadow: 0 12px 36px rgba(0,32,246,.12), 0 4px 12px rgba(0,0,0,.06);
+      box-shadow: 0 16px 48px rgba(0,32,246,.4) !important;
     }
+    .cn-section .cn-plan:hover .cn-plan-name,
+    .cn-section .cn-plan.cn-hovered .cn-plan-name { color: rgba(255,255,255,.7) !important; }
+    .cn-section .cn-plan:hover .cn-plan-price,
+    .cn-section .cn-plan.cn-hovered .cn-plan-price { color: #fff !important; }
+    .cn-section .cn-plan:hover .cn-plan-price .kc,
+    .cn-section .cn-plan.cn-hovered .cn-plan-price .kc { color: rgba(255,255,255,.8) !important; }
+    .cn-section .cn-plan:hover .cn-plan-price .od,
+    .cn-section .cn-plan.cn-hovered .cn-plan-price .od { color: rgba(255,255,255,.7) !important; }
+    .cn-section .cn-plan:hover .cn-plan-period,
+    .cn-section .cn-plan.cn-hovered .cn-plan-period { color: rgba(255,255,255,.65) !important; }
+    .cn-section .cn-plan:hover .cn-plan-divider,
+    .cn-section .cn-plan.cn-hovered .cn-plan-divider { border-top-color: rgba(255,255,255,.2) !important; }
+    .cn-section .cn-plan:hover .cn-feat,
+    .cn-section .cn-plan.cn-hovered .cn-feat { color: #fff !important; }
+    .cn-section .cn-plan:hover .cn-feat iconify-icon,
+    .cn-section .cn-plan.cn-hovered .cn-feat iconify-icon { color: #fff !important; }
+    .cn-section .cn-plan:hover .cn-feat.off,
+    .cn-section .cn-plan.cn-hovered .cn-feat.off { color: rgba(255,255,255,.45) !important; }
+    .cn-section .cn-plan:hover .cn-feat.off iconify-icon,
+    .cn-section .cn-plan.cn-hovered .cn-feat.off iconify-icon { color: rgba(255,255,255,.35) !important; }
+    .cn-section .cn-plan:hover .cn-expand-btn,
+    .cn-section .cn-plan.cn-hovered .cn-expand-btn { color: rgba(255,255,255,.75) !important; border-color: rgba(255,255,255,.25) !important; background: transparent; }
+    .cn-section .cn-plan:hover .cn-plan-cta a.ghost,
+    .cn-section .cn-plan.cn-hovered .cn-plan-cta a.ghost { color: #fff !important; border-color: rgba(255,255,255,.5) !important; background: rgba(255,255,255,.12) !important; }
+    .cn-section .cn-plan:hover .cn-plan-cta a.primary,
+    .cn-section .cn-plan.cn-hovered .cn-plan-cta a.primary { box-shadow: 0 6px 20px rgba(0,0,0,.25) !important; }
+    /* popular karta — stejný blue fill, vyšší specificita pro jistotu */
+    .cn-section .cn-plan.popular:hover,
+    .cn-section .cn-plan.popular.cn-hovered {
+      background: linear-gradient(135deg, #0020f6, #1a35ff) !important;
+      border-color: transparent !important;
+      box-shadow: 0 16px 48px rgba(0,32,246,.45) !important;
+    }
+    .cn-section .cn-plan.popular:hover .cn-popular-badge,
+    .cn-section .cn-plan.popular.cn-hovered .cn-popular-badge { opacity: .9; }
     @media (max-width: 940px) {
       .cn-plans { grid-template-columns: repeat(3,1fr); min-width: 680px; }
       .cn-discounts { grid-template-columns: 1fr; }
@@ -541,6 +580,7 @@
       <div class="nav-links">
         <a href="/hledam-si-praci.html">Hledám si práci</a>
         <a href="/pro-zamestnavatele.html" class="nav-active">Pro zaměstnavatele</a>
+        <a href="/recenze.html">Recenze</a>
         <a href="/#download">Stáhnout</a>
         <a href="/podpora.html">Podpora</a>
       </div>
@@ -1918,6 +1958,33 @@
       document.getElementById('std-price').textContent   = fmt(annualOn ? prices.std.annual  : prices.std.monthly);
       document.getElementById('biz-price').textContent   = fmt(annualOn ? prices.biz.annual  : prices.biz.monthly);
     }
+
+    // Hover fill — mouseover delegation (works across shadow DOM of iconify-icon)
+    (function() {
+      var current = null;
+      function clearHover() {
+        if (current) { current.classList.remove('cn-hovered'); current = null; }
+      }
+      function setHover(card) {
+        if (card === current) return;
+        clearHover();
+        if (card) { card.classList.add('cn-hovered'); current = card; }
+      }
+      function findCard(el) {
+        while (el && el !== document.body) {
+          if (el.classList && el.classList.contains('cn-plan')) return el;
+          el = el.parentElement;
+        }
+        return null;
+      }
+      document.addEventListener('mouseover', function(e) {
+        // e.target at document level is retargeted (shadow DOM host, not internals)
+        setHover(findCard(e.target));
+      });
+      document.addEventListener('mouseout', function(e) {
+        if (!findCard(e.relatedTarget)) clearHover();
+      });
+    })();
 
     // CTA buttons → open register modal
     document.addEventListener('DOMContentLoaded', function() {

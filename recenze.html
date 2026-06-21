@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recenze — Makej!</title>
+  <meta name="description" content="Co říkají brigádníci a zaměstnavatelé o Makej! — přečti si recenze skutečných uživatelů." />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2/dist/iconify-icon.min.js"></script>
+  <style>
+    /* ── Recenze page ── */
+    #recenze-hero {
+      text-align: center;
+      padding: 140px 24px 80px;
+    }
+    #recenze-hero .section-tag {
+      margin-bottom: 20px;
+    }
+    #recenze-hero h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+    #recenze-hero p {
+      color: var(--muted-fg);
+      font-size: 1.1rem;
+      max-width: 520px;
+      margin: 0 auto 48px;
+      line-height: 1.65;
+    }
+
+    /* ── Stats bar ── */
+    .rev-stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .rev-stat { text-align: center; }
+    .rev-stat-num {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .rev-stat-label { font-size: .82rem; color: var(--muted-fg); margin-top: 2px; }
+
+    /* ── Stacks section ── */
+    #stacks-section {
+      padding: 80px 24px 120px;
+    }
+    .stacks-grid {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 80px;
+      flex-wrap: wrap;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    /* ── Stack label ── */
+    .stack-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+    .stack-label {
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted-fg);
+      padding: 5px 14px;
+      border: 1px solid rgba(208,208,255,.12);
+      border-radius: 100px;
+      background: rgba(208,208,255,.04);
+    }
+
+    /* ── Testimonial stack ── */
+    .t-stack {
+      display: grid;
+      place-items: center;
+      /* extra space for the stacked overflow */
+      width: 380px;
+      height: 340px;
+    }
+    .t-stack > .t-card {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    /* ── Testimonial card ── */
+    .t-card {
+      position: relative;
+      width: 320px;
+      min-height: 180px;
+      background: var(--card, #0a0d2e);
+      border: 1px solid rgba(208,208,255,.1);
+      border-radius: 20px;
+      padding: 18px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      transform: skewY(-8deg);
+      transition: transform .45s cubic-bezier(.2,.8,.2,1), filter .45s ease, border-color .3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .t-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background: rgba(5,7,26,.6);
+      transition: opacity .45s ease;
+      pointer-events: none;
+    }
+    /* Default positions */
+    .t-card.pos-0 {
+      filter: grayscale(100%);
+      transform: skewY(-8deg) translateX(0) translateY(0);
+      z-index: 1;
+    }
+    .t-card.pos-1 {
+      filter: grayscale(100%);
+      transform: skewY(-8deg) translateX(28px) translateY(20px);
+      z-index: 2;
+    }
+    .t-card.pos-2 {
+      filter: grayscale(0%);
+      transform: skewY(-8deg) translateX(56px) translateY(40px);
+      z-index: 3;
+    }
+    .t-card.pos-2::before { opacity: 0; }
+
+    /* Hover on pos-0: reveal pos-0, push 1+2 down */
+    .t-stack:hover .t-card.pos-0,
+    .t-stack .t-card.pos-0:hover {
+      filter: grayscale(0%);
+    }
+    .t-stack .t-card.pos-0:hover::before { opacity: 0; }
+    .t-stack .t-card.pos-0:hover ~ .t-card.pos-1 {
+      transform: skewY(-8deg) translateX(56px) translateY(88px);
+    }
+    .t-stack .t-card.pos-0:hover ~ .t-card.pos-2 {
+      transform: skewY(-8deg) translateX(96px) translateY(136px);
+    }
+
+    /* Hover on pos-1: reveal pos-1, push pos-2 down */
+    .t-card.pos-1:hover {
+      filter: grayscale(0%);
+    }
+    .t-card.pos-1:hover::before { opacity: 0; }
+    .t-card.pos-1:hover ~ .t-card.pos-2 {
+      transform: skewY(-8deg) translateX(96px) translateY(120px);
+    }
+
+    /* Hover on pos-2: subtle lift */
+    .t-card.pos-2:hover {
+      transform: skewY(-8deg) translateX(56px) translateY(28px);
+    }
+
+    /* Dark fade on right side (from original component) */
+    .t-card.pos-0::after,
+    .t-card.pos-1::after {
+      content: '';
+      position: absolute;
+      top: -5%;
+      right: -4px;
+      width: 80px;
+      height: 110%;
+      background: linear-gradient(to left, var(--bg, #060912), transparent);
+      border-radius: 0 20px 20px 0;
+      pointer-events: none;
+    }
+
+    /* ── Card internals ── */
+    .t-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .t-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      overflow: hidden;
+      border: 2px solid rgba(208,208,255,.15);
+    }
+    .t-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .t-avatar-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .t-user { flex: 1; min-width: 0; }
+    .t-username {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 700;
+      font-size: .88rem;
+      color: #fff;
+    }
+    .t-verified {
+      color: #1d9bf0;
+      flex-shrink: 0;
+    }
+    .t-handle {
+      font-size: .78rem;
+      color: var(--muted-fg);
+    }
+    .t-x-icon {
+      flex-shrink: 0;
+      color: #fff;
+      opacity: .7;
+      width: 16px;
+      height: 16px;
+    }
+    .t-content {
+      font-size: .84rem;
+      line-height: 1.5;
+      color: rgba(255,255,255,.9);
+      margin-bottom: 14px;
+      flex: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .t-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .75rem;
+      color: var(--muted-fg);
+      margin-top: auto;
+    }
+    .t-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .t-action {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .t-action svg { width: 14px; height: 14px; }
+
+    /* ── Section header ── */
+    .rev-section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .rev-section-header h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .rev-section-header p {
+      color: var(--muted-fg);
+      font-size: 1rem;
+    }
+
+    /* ── Bottom CTA ── */
+    #rev-cta {
+      text-align: center;
+      padding: 60px 24px 80px;
+    }
+    #rev-cta h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+    #rev-cta p {
+      color: var(--muted-fg);
+      margin-bottom: 36px;
+      font-size: 1rem;
+    }
+    #rev-cta .cta-btns {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── Navbar override for recenze active ── */
+    #navbar .nav-links a[href="/recenze.html"] { color: #fff; border-bottom: 2px solid var(--primary, #0020f6); padding-bottom: 2px; }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════ NAVBAR ═══════════ -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">Makej!</a>
+      <div class="nav-links">
+        <a href="/hledam-si-praci.html">Hledám si práci</a>
+        <a href="/pro-zamestnavatele.html">Pro zaměstnavatele</a>
+        <a href="/recenze.html" class="nav-active">Recenze</a>
+        <a href="/#download">Stáhnout</a>
+        <a href="/podpora.html">Podpora</a>
+      </div>
+      <div class="nav-actions" id="nav-actions">
+        <a href="javascript:void(0)" class="btn-ghost" id="nav-login-btn">Přihlásit se</a>
+        <a href="javascript:void(0)" class="btn-primary" id="nav-register-btn">Vytvořit účet</a>
+      </div>
+      <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+        <iconify-icon icon="solar:hamburger-menu-bold" width="24"></iconify-icon>
+      </button>
+    </div>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="/hledam-si-praci.html">Hledám si práci</a>
+      <a href="/pro-zamestnavatele.html">Pro zaměstnavatele</a>
+      <a href="/recenze.html" class="nav-active">Recenze</a>
+      <a href="/#download">Stáhnout</a>
+      <a href="/podpora.html">Podpora</a>
+      <div class="mobile-menu-actions">
+        <a href="javascript:void(0)" class="btn-ghost" id="mobile-login-btn">Přihlásit se</a>
+        <a href="javascript:void(0)" class="btn-primary" id="mobile-register-btn">Vytvořit účet</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════ HERO ═══════════ -->
+  <section id="recenze-hero">
+    <div class="container">
+      <span class="section-tag">Recenze</span>
+      <h1>Co říkají <span class="gradient-text">uživatelé</span></h1>
+      <p>Tisíce brigádníků a zaměstnavatelů už Makej! vyzkoušely. Přečti si, co si o nás myslí.</p>
+
+      <div class="rev-stats">
+        <div class="rev-stat">
+          <div class="rev-stat-num">4,9 ★</div>
+          <div class="rev-stat-label">průměrné hodnocení</div>
+        </div>
+        <div class="rev-stat">
+          <div class="rev-stat-num">2 400+</div>
+          <div class="rev-stat-label">recenzí celkem</div>
+        </div>
+        <div class="rev-stat">
+          <div class="rev-stat-num">97 %</div>
+          <div class="rev-stat-label">doporučuje dál</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ STACKS ═══════════ -->
+  <section id="stacks-section">
+    <div class="rev-section-header">
+      <h2>Hover na kartičku a <span class="gradient-text">odhal recenzi</span></h2>
+      <p>Najeď myší na kartu a odhal, co píšou skuteční uživatelé.</p>
+    </div>
+
+    <div class="stacks-grid">
+
+      <!-- Stack 1 — Brigádníci -->
+      <div class="stack-group">
+        <span class="stack-label">Brigádníci</span>
+        <div class="t-stack" id="stack-1">
+
+          <!-- Card 0 — back -->
+          <div class="t-card pos-0">
+            <div class="t-card-header">
+              <div class="t-avatar">
+                <div class="t-avatar-fallback" style="background: linear-gradient(135deg,#6b21a8,#9333ea);">KN</div>
+              </div>
+              <div class="t-user">
+                <div class="t-username">
+                  Klára Nováková
+                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
+                </div>
+                <div class="t-handle">brigádnice</div>
+              </div>
+            </div>
+            <p class="t-content">Brigádu jako servírka jsem si našla za 2 hodiny! Swipe doprava a za chvíli match 😍 Nikdy jsem si nemyslela, že hledání práce může být takhle jednoduché.</p>
+            <div class="t-footer">
+              <span>8. 3. 2026</span>
+              <div class="t-actions">
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                  <span>94</span>
+                </div>
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                  <span>17</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 1 — middle -->
+          <div class="t-card pos-1">
+            <div class="t-card-header">
+              <div class="t-avatar">
+                <div class="t-avatar-fallback" style="background: linear-gradient(135deg,#0f766e,#14b8a6);">MV</div>
+              </div>
+              <div class="t-user">
+                <div class="t-username">
+                  Martin Volek
+                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
+                </div>
+                <div class="t-handle">brigádník</div>
+              </div>
+            </div>
+            <p class="t-content">Práci číšníka na letní festival jsem sehnal přes Makej za jeden večer. Chat s firmou funguje super, vše jsem dohodl přímo v appce bez emailů. 🙌</p>
+            <div class="t-footer">
+              <span>14. 4. 2026</span>
+              <div class="t-actions">
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                  <span>61</span>
+                </div>
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                  <span>9</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 — front -->
+          <div class="t-card pos-2">
+            <div class="t-card-header">
+              <div class="t-avatar">
+                <div class="t-avatar-fallback" style="background: linear-gradient(135deg,#c2410c,#f97316);">PK</div>
+              </div>
+              <div class="t-user">
+                <div class="t-username">
+                  Pavel Krejčí
+                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
+                </div>
+                <div class="t-handle">brigádník</div>
+              </div>
+            </div>
+            <p class="t-content">Mám díky Makej! 3 brigády měsíčně. Peníze na školu vyřešené, a ještě si vybírám kde chci pracovat 💪 Makej je prostě top!</p>
+            <div class="t-footer">
+              <span>2. 5. 2026</span>
+              <div class="t-actions">
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                  <span>203</span>
+                </div>
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                  <span>34</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /t-stack -->
+      </div><!-- /stack-group -->
+
+      <!-- Stack 2 — Zaměstnavatelé -->
+      <div class="stack-group">
+        <span class="stack-label">Zaměstnavatelé</span>
+        <div class="t-stack" id="stack-2">
+
+          <!-- Card 0 -->
+          <a class="t-card pos-0" href="https://www.firmy.cz" target="_blank" rel="noopener">
+            <div class="t-card-header">
+              <div class="t-avatar">
+                <div class="t-avatar-fallback" style="background: linear-gradient(135deg,#1d4ed8,#3b82f6);">TM</div>
+              </div>
+              <div class="t-user">
+                <div class="t-username">
+                  Tomáš Marek
+                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
+                </div>
+                <div class="t-handle">firmy.cz</div>
+              </div>
+              <svg class="t-x-icon" viewBox="0 0 100 100" width="18" height="18"><rect width="100" height="100" rx="12" fill="#e03c31"/><text x="50" y="68" text-anchor="middle" font-size="58" font-weight="900" fill="white" font-family="Arial,sans-serif">f</text></svg>
+            </div>
+            <p class="t-content">Přijali jsme 3 brigádníky za jeden den! Dashboard je přehledný, kandidáti jsou kvalitní a celý proces trvá jen pár kliků. Žádné zdlouhavé inzeráty. 🔥</p>
+            <div class="t-footer">
+              <span>19. 2. 2026</span>
+              <div class="t-actions">
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                  <span>48</span>
+                </div>
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                  <span>12</span>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- Card 1 -->
+          <a class="t-card pos-1" href="https://maps.google.com" target="_blank" rel="noopener">
+            <div class="t-card-header">
+              <div class="t-avatar">
+                <div class="t-avatar-fallback" style="background: linear-gradient(135deg,#be185d,#ec4899);">EŠ</div>
+              </div>
+              <div class="t-user">
+                <div class="t-username">
+                  Eva Šimánková
+                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
+                </div>
+                <div class="t-handle">Google recenze</div>
+              </div>
+              <svg class="t-x-icon" viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            </div>
+            <p class="t-content">Na letní festival jsme přes Makej obsadili všechny pozice za 48 hodin. Neuvěřitelné! Kandidáti přicházeli sami, my jen vybírali. Appka je fenomenální ✨</p>
+            <div class="t-footer">
+              <span>7. 5. 2026</span>
+              <div class="t-actions">
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                  <span>127</span>
+                </div>
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                  <span>21</span>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- Card 2 — front -->
+          <a class="t-card pos-2" href="https://www.firmy.cz" target="_blank" rel="noopener">
+            <div class="t-card-header">
+              <div class="t-avatar">
+                <div class="t-avatar-fallback" style="background: linear-gradient(135deg,#064e3b,#10b981);">RN</div>
+              </div>
+              <div class="t-user">
+                <div class="t-username">
+                  Roman Novotný
+                  <svg class="t-verified" viewBox="0 0 22 22" fill="currentColor" width="14" height="14"><path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg>
+                </div>
+                <div class="t-handle">firmy.cz</div>
+              </div>
+              <svg class="t-x-icon" viewBox="0 0 100 100" width="18" height="18"><rect width="100" height="100" rx="12" fill="#e03c31"/><text x="50" y="68" text-anchor="middle" font-size="58" font-weight="900" fill="white" font-family="Arial,sans-serif">f</text></svg>
+            </div>
+            <p class="t-content">Jako provozovatel restaurace mám díky Makej! vždy plné směny. Brigádníci jsou spolehliví, hodnocení systém funguje skvěle. Nepostradatelný nástroj! 🍽️</p>
+            <div class="t-footer">
+              <span>22. 4. 2026</span>
+              <div class="t-actions">
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                  <span>314</span>
+                </div>
+                <div class="t-action">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                  <span>58</span>
+                </div>
+              </div>
+            </div>
+          </a>
+
+        </div><!-- /t-stack -->
+      </div><!-- /stack-group -->
+
+
+    </div><!-- /stacks-grid -->
+  </section>
+
+  <!-- ═══════════ CTA ═══════════ -->
+  <section id="rev-cta">
+    <div class="container">
+      <h2>Přidej se k <span class="gradient-text">tisícům spokojených</span></h2>
+      <p>Zaregistruj se zdarma a najdi brigádu nebo brigádníka ještě dnes.</p>
+      <div class="cta-btns">
+        <a href="javascript:void(0)" class="btn-primary btn-lg" id="rev-cta-register">Vytvořit účet zdarma</a>
+        <a href="/hledam-si-praci.html" class="btn-ghost btn-lg">Jak to funguje</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer id="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo">Makej!</a>
+          <p>Brigádní appka nové generace. Swajpuj, matchuj a pracuj.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Produkt</h4>
+          <a href="/hledam-si-praci.html">Jak to funguje</a>
+          <a href="/pro-zamestnavatele.html">Pro zaměstnavatele</a>
+          <a href="/#download">Stáhnout</a>
+        </div>
+        <div class="footer-col">
+          <h4>Firma</h4>
+          <a href="/podpora.html">Podpora</a>
+          <a href="mailto:hello@makej.eu">Kontakt</a>
+        </div>
+        <div class="footer-col">
+          <h4>Právní</h4>
+          <a href="/terms.html">Podmínky použití</a>
+          <a href="/privacy.html">Ochrana soukromí</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Makej! Všechna práva vyhrazena.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- AUTH MODALS (shared) -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="login-modal">
+      <button class="modal-close" id="login-close" aria-label="Zavřít">✕</button>
+      <div class="modal-logo">Makej!</div>
+      <h2 class="modal-title">Přihlásit se</h2>
+      <p class="modal-subtitle">Vítej zpět!</p>
+      <div class="modal-error" id="login-error"></div>
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email</label>
+          <input class="form-input" type="email" id="login-email" placeholder="tvuj@email.cz" autocomplete="email" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Heslo</label>
+          <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn-primary btn-full btn-lg" id="login-submit">Přihlásit se</button>
+      </form>
+      <div class="modal-divider"><span>nebo</span></div>
+      <button class="btn-google" id="login-google">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.6 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.3C29.4 35.5 26.8 36.5 24 36.5c-5.2 0-9.6-3.4-11.2-8l-6.6 5C9.7 39.7 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.7l6.2 5.3C37.5 39.7 44 35.4 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+        Pokračovat s Google
+      </button>
+      <p class="modal-switch">Nemáš účet? <a href="#" id="switch-to-register">Zaregistruj se</a></p>
+    </div>
+    <div class="modal" id="register-modal">
+      <button class="modal-close" id="register-close" aria-label="Zavřít">✕</button>
+      <div class="modal-logo">Makej!</div>
+      <div id="reg-step-1">
+        <h2 class="modal-title">Vytvořit účet</h2>
+        <p class="modal-subtitle">Kdo jsi?</p>
+        <div class="role-cards">
+          <button type="button" class="role-card" data-role="worker"><iconify-icon icon="solar:user-bold" width="32"></iconify-icon><strong>Brigádník</strong><small>Hledám práci</small></button>
+          <button type="button" class="role-card" data-role="employer"><iconify-icon icon="solar:buildings-bold" width="32"></iconify-icon><strong>Zaměstnavatel</strong><small>Hledám brigádníky</small></button>
+        </div>
+      </div>
+      <div id="reg-step-2" style="display:none">
+        <button class="modal-back" id="reg-back"><iconify-icon icon="solar:arrow-left-bold" width="16"></iconify-icon> Zpět</button>
+        <h2 class="modal-title">Tvoje údaje</h2>
+        <p class="modal-subtitle" id="reg-role-subtitle">Brigádník</p>
+        <div class="modal-error" id="register-error"></div>
+        <form id="register-form" novalidate>
+          <div class="form-group"><label class="form-label" for="reg-name">Jméno</label><input class="form-input" type="text" id="reg-name" placeholder="Tvoje jméno" autocomplete="name" required /></div>
+          <div class="form-group" id="reg-company-group" style="display:none"><label class="form-label" for="reg-company">Název firmy</label><input class="form-input" type="text" id="reg-company" placeholder="Název tvé firmy" /></div>
+          <div class="form-group"><label class="form-label" for="reg-email">Email</label><input class="form-input" type="email" id="reg-email" placeholder="tvuj@email.cz" autocomplete="email" required /></div>
+          <div class="form-group"><label class="form-label" for="reg-password">Heslo</label><input class="form-input" type="password" id="reg-password" placeholder="Min. 6 znaků" autocomplete="new-password" required /></div>
+          <div class="form-group"><label class="form-label" for="reg-password2">Heslo znovu</label><input class="form-input" type="password" id="reg-password2" placeholder="Zopakuj heslo" autocomplete="new-password" required /></div>
+          <button type="submit" class="btn-primary btn-full btn-lg" id="register-submit">Vytvořit účet</button>
+        </form>
+      </div>
+      <p class="modal-switch">Už máš účet? <a href="#" id="switch-to-login">Přihlásit se</a></p>
+    </div>
+  </div>
+
+  <!-- Cookie banner -->
+  <div id="cookie-banner" role="dialog" aria-label="Souhlas s cookies">
+    <div class="cookie-inner">
+      <p class="cookie-text">🍪 Používáme pouze technicky nezbytné cookies. Více v <a href="/privacy.html#cookies">Politice soukromí</a>.</p>
+      <div class="cookie-actions">
+        <button class="cookie-btn cookie-btn-reject" id="cookie-reject">Jen nezbytné</button>
+        <button class="cookie-btn cookie-btn-accept" id="cookie-accept">Rozumím</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/script.js"></script>
+  <script>
+    // CTA → open register modal
+    document.addEventListener('DOMContentLoaded', function() {
+      var btn = document.getElementById('rev-cta-register');
+      if (btn) btn.addEventListener('click', function() { openModal && openModal('register'); });
+      var mobileReg = document.getElementById('mobile-register-btn');
+      if (mobileReg) mobileReg.addEventListener('click', function() { openModal && openModal('register'); });
+      var mobileLog = document.getElementById('mobile-login-btn');
+      if (mobileLog) mobileLog.addEventListener('click', function() { openModal && openModal('login'); });
+    });
+  </script>
+  <script src="/chat-widget.js"></script>
+</body>
+</html>

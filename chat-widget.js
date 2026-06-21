@@ -4,7 +4,7 @@
   // ── CSS ──────────────────────────────────────────────────────────────────
   var style = document.createElement('style');
   style.textContent = `
-    #makac-widget { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; align-items:flex-end; gap:12px; }
+    #makac-widget { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; align-items:flex-end; gap:12px; pointer-events:none; }
     #makac-panel {
       width:320px; height:440px; background:#0e0e2a;
       border:1.5px solid rgba(167,139,250,.25); border-radius:20px;
@@ -13,7 +13,7 @@
       transform:translateY(20px); opacity:0; pointer-events:none;
       transition:transform .28s cubic-bezier(.2,.8,.2,1), opacity .28s ease;
     }
-    #makac-panel.open { transform:translateY(0); opacity:1; pointer-events:all; }
+    #makac-panel.open { transform:translateY(0); opacity:1; pointer-events:auto; }
     #makac-panel-header {
       background:linear-gradient(135deg,#2a2a6a,#1a1a3a);
       padding:12px 14px; display:flex; align-items:center; gap:8px;
@@ -68,7 +68,7 @@
     #mw-input::placeholder { color:#5a5a8a; }
     #mw-send { background:linear-gradient(135deg,#4848c4,#292978); border:none; border-radius:9px; width:38px; height:38px; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:opacity .15s; }
     #mw-send:hover { opacity:.85; }
-    #makac-toggle { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,#4848c4,#292978); border:none; cursor:pointer; color:#fff; font-size:1.4rem; box-shadow:0 8px 24px rgba(72,72,196,.5); display:flex; align-items:center; justify-content:center; transition:transform .2s,box-shadow .2s; }
+    #makac-toggle { width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,#4848c4,#292978); border:none; cursor:pointer; color:#fff; font-size:1.4rem; box-shadow:0 8px 24px rgba(72,72,196,.5); display:flex; align-items:center; justify-content:center; transition:transform .2s,box-shadow .2s; pointer-events:auto; }
     #makac-toggle:hover { transform:scale(1.08); box-shadow:0 12px 32px rgba(72,72,196,.65); }
     /* Confirm overlay */
     #mw-confirm { position:absolute; inset:0; background:rgba(10,10,30,.88); backdrop-filter:blur(4px); z-index:10; display:none; align-items:center; justify-content:center; border-radius:20px; }

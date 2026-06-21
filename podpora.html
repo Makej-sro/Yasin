@@ -44,7 +44,7 @@
       margin: 16px 0 20px;
     }
     .sup-hero p { color: var(--muted-fg); font-size: 1.05rem; line-height: 1.65; max-width: 440px; margin: 0 auto; }
-    .sup-search { position: relative; max-width: 520px; margin: 28px auto 0; }
+    .sup-search { position: relative; max-width: 520px; margin: 44px auto 0; }
     .sup-search svg { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #9090b0; pointer-events: none; flex-shrink: 0; z-index: 2; }
     .sup-search input { width: 100%; box-sizing: border-box; padding: 16px 20px 16px 52px; border-radius: 14px; border: 1.5px solid rgba(208,208,255,.15); background: rgba(255,255,255,.07); color: #fff; font-size: 1rem; font-family: var(--font-body); outline: none; transition: border-color .2s, background .2s; }
     .sup-search input::placeholder { color: transparent; }
@@ -116,6 +116,43 @@
       background: transparent; color: #0020f6; border-color: rgba(0,32,246,.3); font-weight: 600;
     }
     #navbar.navbar-light #nav-login-btn:hover { background: rgba(0,32,246,.06); border-color: #0020f6; }
+
+    /* ── Bílé pozadí + modrý text (light theme override) ── */
+    body { background: #fff; }
+    #podpora { background: #fff; }
+    .gradient-text { -webkit-text-fill-color: #0020f6 !important; color: #0020f6 !important; }
+    .sup-hero h1 { color: #0020f6; }
+    .sup-hero p { color: #4a5070; }
+    .sup-search svg { color: #0020f6; }
+    .sup-search input { background: #f4f4fc; border-color: rgba(0,32,246,.2); color: #0d0d28; }
+    .sup-search input:focus { border-color: #0020f6; background: #fff; box-shadow: 0 0 0 3px rgba(0,32,246,.08); }
+    .sup-search-ph { color: #6060a0; }
+    .sup-search-ph .ph-cursor { background: #6060a0; }
+    .sup-card { background: #f4f4fc; border-color: rgba(0,32,246,.12); }
+    .sup-card:hover { border-color: rgba(0,32,246,.4); box-shadow: 0 8px 28px rgba(0,32,246,.1); }
+    .sup-card h3 { color: #0020f6; }
+    .sup-card p { color: #4a5070; }
+    .sup-card a { border-color: rgba(0,32,246,.25); color: #0020f6; }
+    .sup-card a:hover { background: rgba(0,32,246,.06); border-color: #0020f6; color: #0020f6; }
+    .faq-heading h2 { color: #0020f6; }
+    .faq-heading p { color: #4a5070; }
+    .faq-heading a { color: #0020f6; }
+    .faq-list { border-top-color: rgba(0,32,246,.12); }
+    .faq-item { border-bottom-color: rgba(0,32,246,.12); }
+    .faq-q { color: #0d0d28; }
+    .faq-q:hover { color: #0020f6; }
+    .faq-icon { color: #9090b8; }
+    .faq-item.open .faq-icon { color: #0020f6; }
+    .faq-a { color: #4a5070; }
+    .faq-a a { color: #0020f6; }
+    .faq-no-results { color: #6060a0; }
+    #navbar { background: rgba(255,255,255,.15) !important; box-shadow: 0 1px 0 rgba(0,32,246,.1) !important; backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%); }
+    #navbar .nav-logo { -webkit-text-fill-color: #0020f6 !important; color: #0020f6 !important; }
+    #navbar .nav-links a { color: #0020f6 !important; }
+    #navbar .nav-links a.nav-active { color: #0020f6 !important; border-bottom-color: #0020f6 !important; }
+    #navbar .mobile-menu-btn { color: #0020f6; }
+    #navbar #nav-login-btn { background: transparent; color: #0020f6; border-color: rgba(0,32,246,.3); font-weight: 600; }
+    #navbar #nav-login-btn:hover { background: rgba(0,32,246,.06); border-color: #0020f6; }
 </style>
 </head>
 <body>
