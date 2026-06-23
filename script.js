@@ -1,25 +1,12 @@
-// ═══════════ SCROLL RESTORATION ═══════════
-if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-window.scrollTo(0, 0);
-
-// ═══════════ PAGE TRANSITIONS ═══════════
-document.addEventListener('click', function(e) {
-  const link = e.target.closest('a[href]');
-  if (!link) return;
-  const href = link.getAttribute('href');
-  if (!href || href.startsWith('#') || href.startsWith('javascript') || href.startsWith('mailto') || link.target === '_blank') return;
-  if (!href.startsWith('/') && !href.startsWith('http')) return;
-  if (href.startsWith('http') && !href.includes(location.hostname)) return;
-  e.preventDefault();
-  window.location.href = href;
-});
-
 // ═══════════ NAVBAR SCROLL + SCROLLSPY ═══════════
 const navbar    = document.getElementById('navbar');
 const navActions = document.getElementById('nav-actions') || document.querySelector('.nav-actions');
 const navLinks  = document.querySelectorAll('.nav-links a[href^="#"]');
 const spySections = ['how-it-works', 'features', 'employers', 'about', 'download']
   .map(id => document.getElementById(id)).filter(Boolean);
+// Na podstránkách (např. /pro-zamestnavatele) je aktivní odkaz aktuální stránky
+// nastaven natvrdo — scrollspy pak nesmí rozsvěcet sekční kotvy (#download apod.).
+const hasStaticActive = !!document.querySelector('.nav-links a.nav-active:not([href^="#"])');
 
 function updateNav() {
   const scrollY = window.scrollY;
@@ -27,8 +14,18 @@ function updateNav() {
 
   if (navActions) {
     const hero = document.getElementById('hero');
-    navActions.classList.toggle('nav-actions-visible', hero ? scrollY > hero.offsetHeight * 0.8 : scrollY > 400);
+    navActions.classList.toggle('nav-actions-visible', hero ? scrollY > hero.offsetHeight * 0.8 : true);
   }
+
+  // Navbar nad světlou (bílou) sekcí → ztmavit text
+  let overLight = false;
+  document.querySelectorAll('.nav-light').forEach(sec => {
+    const r = sec.getBoundingClientRect();
+    if (r.top <= 70 && r.bottom >= 10) overLight = true;
+  });
+  navbar.classList.toggle('nav-over-light', overLight);
+
+  if (hasStaticActive) return; // aktivní je jen odkaz aktuální stránky
 
   const mid = window.innerHeight * 0.35;
   let active = null;
@@ -44,6 +41,54 @@ function updateNav() {
 
 window.addEventListener('scroll', updateNav, { passive: true });
 updateNav();
+
+// ═══════════ NAVBAR DROPDOWNS ═══════════
+function setupNavDropdowns() {
+  const menus = {
+    'pro-zamestnavatele.html': [
+      ['Jak to funguje', '/pro-zamestnavatele.html#jak-to-funguje'],
+      ['Dashboard',      '/pro-zamestnavatele.html#dashboard'],
+      ['Ceník',          '/pro-zamestnavatele.html#pricing'],
+      ['Časté dotazy',   '/pro-zamestnavatele.html#faq'],
+    ],
+    'hledam-si-praci.html': [
+      ['Jak to funguje', '/hledam-si-praci.html#how-it-works'],
+      ['Vyzkoušej appku','/hledam-si-praci.html#features'],
+      ['Stáhnout',       '/hledam-si-praci.html#download'],
+    ],
+  };
+  document.querySelectorAll('.nav-links > a').forEach(a => {
+    const href = a.getAttribute('href') || '';
+    const key = Object.keys(menus).find(k => href.indexOf(k) !== -1);
+    if (!key) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'nav-dropdown';
+    a.parentNode.insertBefore(wrap, a);
+    wrap.appendChild(a);
+    const menu = document.createElement('div');
+    menu.className = 'nav-dropdown-menu';
+    menus[key].forEach(([label, url]) => {
+      const link = document.createElement('a');
+      link.href = url;
+      link.textContent = label;
+      menu.appendChild(link);
+    });
+    wrap.appendChild(menu);
+  });
+}
+setupNavDropdowns();
+
+// Po načtení (vč. obrázků) doskroluj přesně na kotvu z URL — opraví posun z lazy-load
+window.addEventListener('load', function () {
+  if (!location.hash) return;
+  var el = null;
+  try { el = document.querySelector(location.hash); } catch (e) { return; }
+  if (!el) return;
+  requestAnimationFrame(function () {
+    var y = el.getBoundingClientRect().top + window.scrollY - 92;
+    window.scrollTo(0, y);
+  });
+});
 
 // ═══════════ MOBILE MENU ═══════════
 const menuBtn = document.getElementById('mobile-menu-btn');
@@ -93,7 +138,7 @@ function animateCounters() {
 // ═══════════ SCROLL REVEAL ═══════════
 function setupReveal() {
   const revealElements = document.querySelectorAll(
-    '.step-card, .feature-card, .testimonial-card, .download-card, .section-header'
+    '.step-card, .feature-card, .testimonial-card, .download-card, .section-header, .cn-plan'
   );
   revealElements.forEach(el => el.classList.add('reveal'));
 
@@ -122,24 +167,6 @@ const heroObserver = new IntersectionObserver((entries) => {
 const heroStats = document.querySelector('.hero-stats');
 if (heroStats) heroObserver.observe(heroStats);
 
-// ═══════════ DASHBOARD PREVIEW MODAL ═══════════
-function initDashboardPreview() {
-  const overlay = document.getElementById('dash-overlay');
-  const closeBtn = document.getElementById('dash-close');
-  const openBtn  = document.getElementById('dashboard-preview-btn');
-  const regBtn   = document.getElementById('dash-register-btn');
-  if (!overlay) return;
-
-  function open()  { overlay.classList.add('active');    document.body.style.overflow = 'hidden'; }
-  function close() { overlay.classList.remove('active'); document.body.style.overflow = ''; }
-
-  if (openBtn) openBtn.addEventListener('click', open);
-  closeBtn.addEventListener('click', close);
-  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-  if (regBtn) regBtn.addEventListener('click', e => { e.preventDefault(); close(); });
-}
-
 // ═══════════ HERO LINE SCROLL UNDERLINE ═══════════
 function setupHeroUnderline() {
   const heroLines = document.querySelectorAll('.hero-line');
@@ -165,7 +192,6 @@ function setupHeroUnderline() {
 document.addEventListener('DOMContentLoaded', () => {
   setupReveal();
   initAuth();
-  initDashboardPreview();
 });
 
 // ═══════════ AUTH / SUPABASE ═══════════
@@ -185,7 +211,6 @@ function initAuth() {
   // ─── Modal open/close ───
   function openModal(type, role) {
     overlay.classList.add('active');
-    if (navbar) navbar.classList.add('modal-open');
     if (type === 'login') {
       loginModal.classList.add('active');
       registerModal.classList.remove('active');
@@ -209,7 +234,6 @@ function initAuth() {
     overlay.classList.remove('active');
     loginModal.classList.remove('active');
     registerModal.classList.remove('active');
-    if (navbar) navbar.classList.remove('modal-open');
     document.body.style.overflow = '';
     clearErrors();
   }
@@ -313,10 +337,12 @@ function initAuth() {
   }
 
   // ─── Statická tlačítka (nejsou nikdy přepisována) — bindujeme jen jednou ───
-  const employerBtn = document.getElementById('employer-register-btn');
-  if (employerBtn) {
-    employerBtn.addEventListener('click', e => { e.preventDefault(); openModal('register', 'employer'); });
-  }
+  document.querySelectorAll('.employer-cta-register').forEach(btn => {
+    btn.addEventListener('click', e => { e.preventDefault(); openModal('register', 'employer'); });
+  });
+  document.querySelectorAll('.worker-cta-register').forEach(btn => {
+    btn.addEventListener('click', e => { e.preventDefault(); openModal('register', 'worker'); });
+  });
 
   // Hero CTA buttons (Vytvořit účet zdarma / Přihlásit se)
   const heroRegisterBtn = document.getElementById('hero-register-btn');
@@ -490,19 +516,21 @@ function showToast(msg) {
   const banner = document.getElementById('cookie-banner');
   if (!banner) return;
 
-  if (localStorage.getItem(COOKIE_KEY)) { banner.style.display = 'none'; return; }
+  // Pokud uživatel už rozhodl, nezobrazuj banner
+  if (localStorage.getItem(COOKIE_KEY)) return;
 
-  setTimeout(() => banner.classList.add('visible'), 600);
+  // Zobraz banner s malým zpožděním (po načtení stránky)
+  setTimeout(() => banner.classList.add('visible'), 800);
 
-  function dismiss() {
+  document.getElementById('cookie-accept').addEventListener('click', () => {
+    localStorage.setItem(COOKIE_KEY, 'accepted');
     banner.classList.remove('visible');
-    setTimeout(() => { banner.style.display = 'none'; }, 450);
-  }
+  });
 
-  var acceptBtn = document.getElementById('cookie-accept');
-  var rejectBtn = document.getElementById('cookie-reject');
-  if (acceptBtn) acceptBtn.addEventListener('click', () => { localStorage.setItem(COOKIE_KEY, 'accepted'); dismiss(); });
-  if (rejectBtn) rejectBtn.addEventListener('click', () => { localStorage.setItem(COOKIE_KEY, 'rejected'); dismiss(); });
+  document.getElementById('cookie-reject').addEventListener('click', () => {
+    localStorage.setItem(COOKIE_KEY, 'rejected');
+    banner.classList.remove('visible');
+  });
 })();
 
 // ═══════════ PEEKER (cursor-tracking face in login modal) ═══════════
@@ -629,26 +657,3 @@ function showToast(msg) {
   });
 })();
 
-
-
-/* ── Journey role toggle ── */
-(function () {
-  function init() {
-    var btns = document.querySelectorAll('.jrole-btn');
-    if (!btns.length) return;
-    btns.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var role = btn.getAttribute('data-role');
-        btns.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
-        document.querySelectorAll('.jrole-text').forEach(function (t) {
-          t.style.display = t.getAttribute('data-role') === role ? '' : 'none';
-        });
-      });
-    });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
