@@ -188,7 +188,10 @@
     .faq-nav.faq-nav-bubble { background:#0020f6; color:#fff; border-color:#0020f6; text-align:center; margin-bottom:6px; }
     .faq-nav.faq-nav-bubble.active { background:#0020f6; color:#fff; box-shadow:0 0 0 3px rgba(0,32,246,.18); }
     .faq-nav.faq-nav-bubble:hover { background:#0012b8; border-color:#0012b8; }
-    .faq-panel { flex:1; min-width:0; }
+    .faq-panel { flex:1; min-width:0; max-height:248px; overflow-y:auto; overscroll-behavior:contain; padding-right:6px; scrollbar-width:thin; scrollbar-color:rgba(0,32,246,.25) transparent; }
+    .faq-panel::-webkit-scrollbar { width:5px; }
+    .faq-panel::-webkit-scrollbar-track { background:transparent; }
+    .faq-panel::-webkit-scrollbar-thumb { background:rgba(0,32,246,.25); border-radius:10px; }
     @media (max-width:640px) { .faq-split-section { flex-direction:column; gap:20px; } .faq-sidebar { flex:none; position:static; flex-direction:row; flex-wrap:wrap; } }
 </style>
 </head>
@@ -256,6 +259,8 @@
         <div class="faq-panel">
           <div class="faq-list" id="faq-list">
             <div class="faq-no-results" id="faq-no-results">Žádné výsledky pro tuto frázi 🙁</div>
+
+            <!-- VÝPLATY -->
             <div class="faq-item" data-cat="vyplaty popular">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Je Makej! zdarma?</span></div>
               <div class="faq-a">Pro brigádníky je Makej! zcela zdarma — registrace, swipování i chat. Zaměstnavatelé mají základní plán dostupný po spuštění aplikace.</div>
@@ -268,7 +273,37 @@
               <div class="faq-q" onclick="toggleFaq(this)"><span>Je moje platební karta v bezpečí?</span></div>
               <div class="faq-a">Na Makej! nezadáváš žádné platební údaje — aplikace je zdarma a nepotřebujeme přístup k tvé kartě. Tvoje osobní data chráníme v souladu s GDPR.</div>
             </div>
-            <div class="faq-item" data-cat="smeny">
+            <div class="faq-item" data-cat="vyplaty">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Kdy dostanu výplatu za brigádu?</span></div>
+              <div class="faq-a">Termín výplaty závisí na domluvě se zaměstnavatelem — může to být hotově na konci směny, bankovním převodem do pátku nebo dle jiné dohody. Vždy si podmínky ověř předem v chatu.</div>
+            </div>
+            <div class="faq-item" data-cat="vyplaty">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Můžu brigádu fakturovat jako OSVČ?</span></div>
+              <div class="faq-a">Ano, pokud jsi OSVČ, můžeš vystavit fakturu. Dohodněte se se zaměstnavatelem přes chat — Makej! to nijak neomezuje. Vždy si předem ověř, zda firma přijímá fakturaci.</div>
+            </div>
+            <div class="faq-item" data-cat="vyplaty">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Co když mi zaměstnavatel nezaplatí?</span></div>
+              <div class="faq-a">Situaci nejdřív zkus vyřešit přes chat v aplikaci. Pokud to nepomůže, napiš nám na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a> — případ prošetříme a firma riskuje zablokování na platformě.</div>
+            </div>
+            <div class="faq-item" data-cat="vyplaty">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Je potřeba podepsat pracovní smlouvu?</span></div>
+              <div class="faq-a">To záleží na zaměstnavateli. Krátkodobé brigády bývají na dohodu o provedení práce (DPP) nebo dohodu o pracovní činnosti (DPČ). Vždy si dohodněte podmínky před nástupem do práce.</div>
+            </div>
+            <div class="faq-item" data-cat="vyplaty">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak funguje výplata pro brigádníky pod 18 let?</span></div>
+              <div class="faq-a">Brigádníci mladší 18 let mohou pracovat s omezením hodin dle zákoníku práce. Výplata probíhá stejně jako u ostatních — přímo od zaměstnavatele. Doporučujeme mít písemnou dohodu.</div>
+            </div>
+            <div class="faq-item" data-cat="vyplaty">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Mohu mít více brigád najednou přes Makej!?</span></div>
+              <div class="faq-a">Ano, žádné omezení neexistuje. Můžeš mít aktivní matche s více firmami a pracovat pro více zaměstnavatelů zároveň — jen si hlídej, aby se směny nepřekrývaly.</div>
+            </div>
+            <div class="faq-item" data-cat="vyplaty">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak se řeší spory o výši odměny?</span></div>
+              <div class="faq-a">Dohodnutou odměnu si vždy potvrď písemně přes chat v aplikaci — máš tak důkaz o dohodě. Při sporech nám napiš na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a> a my ti pomůžeme situaci vyřešit.</div>
+            </div>
+
+            <!-- SMĚNY -->
+            <div class="faq-item" data-cat="smeny popular">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Jak se domluvím na termínu směny?</span></div>
               <div class="faq-a">Po matchi s firmou se otevře chat, kde si přímo se zaměstnavatelem domluvíš datum a čas. Vše probíhá v reálném čase — bez zbytečných telefonátů nebo e-mailů.</div>
             </div>
@@ -276,21 +311,121 @@
               <div class="faq-q" onclick="toggleFaq(this)"><span>Na jakých zařízeních Makej! funguje?</span></div>
               <div class="faq-a">Makej! bude dostupný na iOS (App Store) a Androidu (Google Play). Spuštění brzy — registruj se teď a budeš mezi prvními.</div>
             </div>
+            <div class="faq-item" data-cat="smeny">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Mohu zrušit potvrzenou směnu?</span></div>
+              <div class="faq-a">Ano, ale vždy to oznám zaměstnavateli co nejdříve přes chat — zbytečné rušení bez omluvy může negativně ovlivnit tvé hodnocení. Časté rušení může vést k omezení účtu.</div>
+            </div>
+            <div class="faq-item" data-cat="smeny">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Co se stane, když na směnu nepřijdu?</span></div>
+              <div class="faq-a">Zaměstnavatel tě může negativně ohodnotit, což ovlivní tvůj profil. Opakované neomluvené absence mohou vést k zablokování účtu. Vždy radši informuj zaměstnavatele předem.</div>
+            </div>
+            <div class="faq-item" data-cat="smeny">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak dlouho trvají brigády přes Makej!?</span></div>
+              <div class="faq-a">Délka záleží na inzerátu — od jednorázové směny (pár hodin) přes víkendové akce až po opakující se part-time pozice. Každý inzerát má uvedenou délku a typ závazku.</div>
+            </div>
+            <div class="faq-item" data-cat="smeny">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Mohu pracovat přes víkend nebo o svátcích?</span></div>
+              <div class="faq-a">Ano, mnoho brigád na Makej! je právě přes víkendy a svátky — gastro, eventy, sklady a podobné obory jsou nejaktivnější právě tehdy. Filtruj inzeráty dle dostupnosti.</div>
+            </div>
+            <div class="faq-item" data-cat="smeny">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Kde přesně mám na směnu přijít?</span></div>
+              <div class="faq-a">Adresa pracoviště je uvedena přímo v inzerátu. Detaily (vchod, kontaktní osoba) si dodomluv se zaměstnavatelem přes chat před nástupem.</div>
+            </div>
+            <div class="faq-item" data-cat="smeny">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Mohu filtrovat brigády podle vzdálenosti?</span></div>
+              <div class="faq-a">Ano, v nastavení aplikace si nastavíš maximální vzdálenost od tvé polohy a Makej! ti zobrazí jen inzeráty v dosahu. Ideální pro ty, kdo nechtějí dojíždět daleko.</div>
+            </div>
+            <div class="faq-item" data-cat="smeny">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Co znamená „vzdálená" nebo „remote" brigáda?</span></div>
+              <div class="faq-a">Vzdálená brigáda znamená, že práci vykonáváš z domova — typicky administrativní nebo kreativní úkoly. Na inzerátu je vždy jasně označeno, zda je pozice na místě nebo remote.</div>
+            </div>
+            <div class="faq-item" data-cat="smeny">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak funguje plán směn pro zaměstnavatele?</span></div>
+              <div class="faq-a">V employer dashboardu máš přehled všech přijatých brigádníků a jejich směn. Můžeš si tam plánovat obsazení, komunikovat s týmem a sledovat docházku — vše na jednom místě.</div>
+            </div>
+
+            <!-- ÚČET -->
             <div class="faq-item" data-cat="ucet popular">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Jak smažu svůj účet?</span></div>
               <div class="faq-a">V aplikaci jdi do Nastavení → Účet → Smazat účet. Nebo nám napiš na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a> a my to vyřídíme za tebe do 3 pracovních dnů. Data mažeme v souladu s GDPR.</div>
             </div>
-            <div class="faq-item" data-cat="ucet">
+            <div class="faq-item" data-cat="ucet popular">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Jak obnovím zapomenuté heslo?</span></div>
               <div class="faq-a">Na přihlašovací obrazovce klikni na „Zapomněl jsem heslo" a zadej svůj email. Za pár minut ti přijde odkaz pro reset — funguje to automaticky, stačí zkontrolovat i spam.</div>
             </div>
+            <div class="faq-item" data-cat="ucet">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak změním svůj email nebo heslo?</span></div>
+              <div class="faq-a">Jdi do Nastavení → Účet → Změnit email / Změnit heslo. Budeme ti na starý email posílat ověřovací kód jako bezpečnostní opatření.</div>
+            </div>
+            <div class="faq-item" data-cat="ucet">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Mohu mít více účtů?</span></div>
+              <div class="faq-a">Každý uživatel smí mít pouze jeden účet. Vytváření více účtů je porušením podmínek a může vést k zablokování všech. Pokud potřebuješ změnit roli, kontaktuj nás.</div>
+            </div>
+            <div class="faq-item" data-cat="ucet">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak nastavím svůj profil brigádníka?</span></div>
+              <div class="faq-a">Po registraci jdi do sekce Profil a doplň svou fotku, krátký popis, dovednosti a preferované obory práce. Vyplněný profil výrazně zvyšuje šanci, že tě zaměstnavatel přijme.</div>
+            </div>
+            <div class="faq-item" data-cat="ucet">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak změním profilovou fotku?</span></div>
+              <div class="faq-a">V sekci Profil klikni na svou aktuální fotku a vyber novou z galerie. Doporučujeme použít jasnou fotku obličeje — profily s fotkou mají výrazně vyšší úspěšnost.</div>
+            </div>
+            <div class="faq-item" data-cat="ucet">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak se registruji jako zaměstnavatel?</span></div>
+              <div class="faq-a">Při registraci zvol roli „Zaměstnavatel" a vyplň název firmy. Po registraci máš přístup k employer dashboardu, kde můžeš přidávat inzeráty a spravovat kandidáty.</div>
+            </div>
+            <div class="faq-item" data-cat="ucet">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Mohu přepnout z brigádníka na zaměstnavatele?</span></div>
+              <div class="faq-a">Přepínání rolí v rámci jednoho účtu zatím není podporováno. Pokud potřebuješ změnit roli, napiš nám na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a> a pomůžeme ti to vyřešit.</div>
+            </div>
+            <div class="faq-item" data-cat="ucet">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak funguje ověření identity?</span></div>
+              <div class="faq-a">Základní ověření probíhá přes emailovou adresu. V budoucích verzích plánujeme volitelné ověření dokladem pro větší důvěryhodnost profilu — zaměstnavatelé pak budou moci preferovat ověřené brigádníky.</div>
+            </div>
+            <div class="faq-item" data-cat="ucet">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Co se stane s mými daty po smazání účtu?</span></div>
+              <div class="faq-a">Po smazání účtu jsou tvoje osobní data trvale vymazána z naší databáze do 30 dnů, v souladu s GDPR. Anonymizované statistické údaje (bez vazby na tvoji osobu) si můžeme ponechat pro analýzu.</div>
+            </div>
+
+            <!-- MAKAČKY -->
             <div class="faq-item" data-cat="makacky popular">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Jak nahlásím problém se zaměstnavatelem nebo brigádníkem?</span></div>
-              <div class="faq-a">V profilu každého uživatele najdeš tlačítko "Nahlásit". Každé hlášení prověřuje náš tým do 24 hodin. Při závažném porušení podmínek okamžitě blokujeme účet. Bezpečnost komunity je pro nás priorita.</div>
+              <div class="faq-a">V profilu každého uživatele najdeš tlačítko „Nahlásit". Každé hlášení prověřuje náš tým do 24 hodin. Při závažném porušení podmínek okamžitě blokujeme účet. Bezpečnost komunity je pro nás priorita.</div>
             </div>
-            <div class="faq-item" data-cat="makacky">
+            <div class="faq-item" data-cat="makacky popular">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Jak funguje hodnocení po brigádě?</span></div>
               <div class="faq-a">Po dokončení brigády můžeš ohodnotit zaměstnavatele a on tebe. Hodnocení jsou viditelná ostatním a pomáhají budovat důvěru v komunitě. Dobré hodnocení ti otevírá dveře k lepším příležitostem.</div>
+            </div>
+            <div class="faq-item" data-cat="makacky">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Co jsou Makačky a jak je získám?</span></div>
+              <div class="faq-a">Makačky jsou body loajality, které získáváš za aktivitu na platformě — dokončené brigády, dobré hodnocení, pravidelné používání aplikace. Čím více Makačků, tím výše se zobrazuješ ve výsledcích.</div>
+            </div>
+            <div class="faq-item" data-cat="makacky">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak zvýším své hodnocení na Makej!?</span></div>
+              <div class="faq-a">Choď na domluvené směny, komunikuj včas, pracuj poctivě a žádej o hodnocení po každé brigádě. Vyplněný profil s fotkou a popisem také přispívá k celkovému dojmu.</div>
+            </div>
+            <div class="faq-item" data-cat="makacky">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak funguje swipování inzerátů?</span></div>
+              <div class="faq-a">Přejedeš prstem doprava = zájem o brigádu (match request), doleva = přeskočení. Zaměstnavatel pak může tvůj zájem přijmout nebo odmítnout. Po oboustranném přijetí se otevře chat.</div>
+            </div>
+            <div class="faq-item" data-cat="makacky">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Co se stane po matchi?</span></div>
+              <div class="faq-a">Po matchi se oběma stranám otevře chatovací okno. Tam si domluvíte vše potřebné — datum, čas, místo, odměnu a další podmínky. Chat zůstane aktivní po celou dobu spolupráce.</div>
+            </div>
+            <div class="faq-item" data-cat="makacky">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Mohu odmítnout match od zaměstnavatele?</span></div>
+              <div class="faq-a">Ano, match je vždy dobrovolný. Pokud se situace změní, můžeš konverzaci ukončit. Odmítnutí nebude mít vliv na tvé hodnocení — jen se ujisti, že zaměstnavatele informuješ slušně.</div>
+            </div>
+            <div class="faq-item" data-cat="makacky">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak fungují notifikace v aplikaci?</span></div>
+              <div class="faq-a">Notifikace dostaneš při novém matchi, nové zprávě v chatu nebo při přijetí/odmítnutí tvé žádosti. Nastavení notifikací si přizpůsobíš v Nastavení → Oznámení.</div>
+            </div>
+            <div class="faq-item" data-cat="makacky">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak dlouho mi match zůstane aktivní?</span></div>
+              <div class="faq-a">Match zůstane aktivní, dokud ho jedna ze stran neukončí nebo dokud se inzerát nezaplní jiným brigádníkem. Aktivní matche vidíš v sekci Zprávy.</div>
+            </div>
+            <div class="faq-item" data-cat="makacky">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Mohu si stáhnout Makej! teď?</span></div>
+              <div class="faq-a">Aplikace je aktuálně ve vývoji a brzy dorazí do App Store a Google Play. Registruj se předem na makej.eu a dostaneš notifikaci hned při spuštění — plus první brigády bez fronty.</div>
             </div>
           </div>
         </div>
@@ -562,7 +697,18 @@
       drop.querySelectorAll('.ssd-item').forEach(function(el){ el.addEventListener('mousedown',function(e){e.preventDefault();selectSug(parseInt(this.dataset.idx));}); });
     }
     function closeDrop(){drop.classList.remove('open');drop.innerHTML='';activeIdx=-1;}
-    function selectSug(idx){ var item=faqItems[idx]; if(!item) return; input.value=''; closeDrop(); filterFaq(''); setTimeout(function(){item.scrollIntoView({behavior:'smooth',block:'center'});if(!item.classList.contains('open'))item.classList.add('open');},80); }
+    function selectSug(idx){
+      var item=faqItems[idx]; if(!item) return;
+      var cats=(item.dataset.cat||'').split(' ').filter(Boolean);
+      var primaryCat=cats.find(function(c){return c!=='popular';})||cats[0]||activeCat;
+      activeCat=primaryCat;
+      document.querySelectorAll('.faq-nav').forEach(function(b){
+        b.classList.toggle('active', b.dataset.cat===activeCat);
+      });
+      if(phWrap) phWrap.style.opacity='1';
+      input.value=''; closeDrop(); filterFaq('');
+      setTimeout(function(){item.scrollIntoView({behavior:'smooth',block:'nearest'});if(!item.classList.contains('open'))item.classList.add('open');},80);
+    }
     function filterFaq(q){
       var v=0;
       faqItems.forEach(function(item){
