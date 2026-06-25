@@ -128,6 +128,11 @@
     .sup-search input:focus { border-color: #0020f6; background: #fff; box-shadow: 0 0 0 3px rgba(0,32,246,.08); }
     .sup-search-ph { color: #6060a0; }
     .sup-search-ph .ph-cursor { background: #6060a0; }
+    .sup-search-drop { background: #fff; border-color: rgba(0,32,246,.2); box-shadow: 0 12px 40px rgba(0,32,246,.12); }
+    .ssd-item { color: #0d0d28; border-bottom-color: rgba(0,32,246,.07); }
+    .ssd-item:hover, .ssd-item.active { background: #0020f6; color: #fff; }
+    .ssd-item mark { color: #0020f6; }
+    .ssd-item:hover mark, .ssd-item.active mark { color: #a8b8ff; }
     .sup-card { background: #f4f4fc; border-color: rgba(0,32,246,.12); }
     .sup-card:hover { border-color: rgba(0,32,246,.4); box-shadow: 0 8px 28px rgba(0,32,246,.1); }
     .sup-card h3 { color: #0020f6; }
@@ -159,8 +164,8 @@
     .faq-sidebar { flex:0 0 170px; display:flex; flex-direction:column; gap:8px; position:sticky; top:90px; }
     .faq-sidebar-bubble { background:#0020f6; color:#fff; border-radius:100px; padding:10px 20px; font-weight:700; font-size:.88rem; text-align:center; margin-bottom:6px; }
     .faq-nav { display:block; width:100%; padding:10px 18px; border-radius:100px; border:1.5px solid rgba(0,32,246,.2); background:transparent; color:#0020f6; font-size:.88rem; font-weight:600; font-family:var(--font-body); text-align:center; cursor:pointer; transition:all .18s; box-sizing:border-box; }
-    .faq-nav.active { background:rgba(0,32,246,.1); border-color:#0020f6; }
-    .faq-nav:hover:not(.active) { background:rgba(0,32,246,.05); border-color:rgba(0,32,246,.4); }
+    .faq-nav.active { background:#0020f6; border-color:#0020f6; color:#fff; }
+    .faq-nav:hover:not(.active) { background:#0020f6; border-color:#0020f6; color:#fff; }
     .faq-nav.faq-nav-bubble { background:#0020f6; color:#fff; border-color:#0020f6; text-align:center; margin-bottom:6px; }
     .faq-nav.faq-nav-bubble.active { background:#0020f6; color:#fff; box-shadow:0 0 0 3px rgba(0,32,246,.18); }
     .faq-nav.faq-nav-bubble:hover { background:#0012b8; border-color:#0012b8; }
@@ -223,7 +228,7 @@
       <!-- FAQ split layout -->
       <div class="faq-split-section">
         <div class="faq-sidebar">
-          <button class="faq-nav faq-nav-bubble active" data-cat="popular">Časté dotazy</button>
+          <button class="faq-nav active" data-cat="popular">Časté dotazy</button>
           <button class="faq-nav" data-cat="vyplaty">Výplaty</button>
           <button class="faq-nav" data-cat="smeny">Směny</button>
           <button class="faq-nav" data-cat="ucet">Účet</button>
