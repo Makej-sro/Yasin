@@ -60,7 +60,8 @@
     .ssd-item:hover, .ssd-item.active { background: rgba(91,107,255,.18); color: #fff; }
     .ssd-item svg { flex-shrink: 0; color: #6060a0; }
     .ssd-item mark { background: none; color: #a78bfa; font-weight: 700; }
-    .sup-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 860px; margin: 0 auto 40px; padding: 60px 24px 0; }
+    .sup-cards-wrap { background: #0020f6; padding: 60px 24px 70px; }
+    .sup-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 860px; margin: 0 auto; }
     .sup-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 36px 28px 32px; text-align: center; transition: border-color .2s, transform .22s; }
     .sup-card:hover { border-color: rgba(91,107,255,.45); transform: translateY(-4px); }
     .sup-card-icon { font-size: 2.6rem; margin-bottom: 18px; display: block; }
@@ -133,8 +134,8 @@
     .ssd-item:hover, .ssd-item.active { background: #0020f6; color: #fff; }
     .ssd-item mark { color: #0020f6; }
     .ssd-item:hover mark, .ssd-item.active mark { color: #a8b8ff; }
-    .sup-card { background: #f4f4fc; border-color: rgba(0,32,246,.12); }
-    .sup-card:hover { border-color: rgba(0,32,246,.4); box-shadow: 0 8px 28px rgba(0,32,246,.1); }
+    .sup-card { background: #fff; border-color: rgba(255,255,255,.2); }
+    .sup-card:hover { border-color: rgba(255,255,255,.6); box-shadow: 0 8px 32px rgba(0,0,80,.18); transform: translateY(-4px); }
     .sup-card h3 { color: #0020f6; }
     .sup-card p { color: #4a5070; }
     .sup-card a { border-color: rgba(0,32,246,.25); color: #0020f6; }
@@ -142,6 +143,12 @@
     .faq-heading h2 { color: #0020f6; }
     .faq-heading p { color: #4a5070; }
     .faq-heading a { color: #0020f6; }
+    .sup-page { padding-bottom: 0 !important; }
+    #footer { background: #0020f6; border-top: none; }
+    .footer-bottom { border-top-color: rgba(255,255,255,.15); }
+    .footer-logo { background: none !important; -webkit-text-fill-color: #fff !important; color: #fff !important; }
+    .footer-brand > p, .footer-col h4, .footer-col a, .footer-bottom span { color: rgba(255,255,255,.85) !important; }
+    .footer-col a:hover { color: #fff !important; }
     .faq-list { border-top-color: rgba(0,32,246,.12); }
     .faq-item { border-bottom-color: rgba(0,32,246,.12); }
     .faq-q { color: #0d0d28; }
@@ -151,17 +158,29 @@
     .faq-a { color: #4a5070; }
     .faq-a a { color: #0020f6; }
     .faq-no-results { color: #6060a0; }
-    #navbar { background: rgba(255,255,255,.15) !important; box-shadow: 0 1px 0 rgba(0,32,246,.1) !important; backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%); }
-    #navbar .nav-logo { -webkit-text-fill-color: #0020f6 !important; color: #0020f6 !important; }
-    #navbar .nav-links a { color: #0020f6 !important; }
-    #navbar .nav-links a.nav-active { color: #0020f6 !important; border-bottom-color: #0020f6 !important; }
-    #navbar .mobile-menu-btn { color: #0020f6; }
-    #navbar #nav-login-btn { background: transparent; color: #0020f6; border-color: rgba(0,32,246,.3); font-weight: 600; }
-    #navbar #nav-login-btn:hover { background: rgba(0,32,246,.06); border-color: #0020f6; }
+    /* Navbar nad bílou sekcí */
+    #navbar.pnav-white { background: rgba(255,255,255,.15) !important; box-shadow: 0 1px 0 rgba(0,32,246,.1) !important; backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%); }
+    #navbar.pnav-white .nav-logo { -webkit-text-fill-color: #0020f6 !important; color: #0020f6 !important; }
+    #navbar.pnav-white .nav-links a { color: #0020f6 !important; }
+    #navbar.pnav-white .nav-links a.nav-active { color: #0020f6 !important; border-bottom-color: #0020f6 !important; }
+    #navbar.pnav-white .mobile-menu-btn { color: #0020f6; }
+    #navbar.pnav-white #nav-login-btn { background: transparent; color: #0020f6; border-color: rgba(0,32,246,.3); font-weight: 600; }
+    #navbar.pnav-white #nav-login-btn:hover { background: rgba(0,32,246,.06); border-color: #0020f6; }
+    #navbar.pnav-white #nav-register-btn { background: linear-gradient(135deg,#0020f6,#3a3a99) !important; color: #fff !important; }
+    /* Navbar nad modrou sekcí */
+    #navbar.pnav-blue { background: rgba(0,20,220,.55) !important; box-shadow: none !important; backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%); }
+    #navbar.pnav-blue .nav-logo { -webkit-text-fill-color: #fff !important; color: #fff !important; }
+    #navbar.pnav-blue .nav-links a { color: rgba(255,255,255,.85) !important; }
+    #navbar.pnav-blue .nav-links a:hover, #navbar.pnav-blue .nav-links a.nav-active { color: #fff !important; border-bottom-color: #fff !important; }
+    #navbar.pnav-blue .mobile-menu-btn { color: #fff; }
+    #navbar.pnav-blue #nav-login-btn { background: transparent; color: #fff; border-color: rgba(255,255,255,.4); font-weight: 600; }
+    #navbar.pnav-blue #nav-login-btn:hover { background: rgba(255,255,255,.12); border-color: #fff; }
+    #navbar.pnav-blue #nav-register-btn { background: rgba(255,255,255,.18) !important; color: #fff !important; border-color: rgba(255,255,255,.5) !important; }
+    #navbar.pnav-blue #nav-register-btn:hover { background: rgba(255,255,255,.28) !important; }
 
     /* FAQ split layout */
     .faq-split-section { display:flex; gap:40px; max-width:960px; margin:0 auto 80px; padding:20px 24px; align-items:flex-start; background:#f4f4fc; border:1px solid rgba(0,32,246,.12); border-radius:20px; }
-    .faq-sidebar { flex:0 0 170px; display:flex; flex-direction:column; gap:8px; position:sticky; top:90px; }
+    .faq-sidebar { flex:0 0 170px; display:flex; flex-direction:column; gap:14px; }
     .faq-sidebar-bubble { background:#0020f6; color:#fff; border-radius:100px; padding:10px 20px; font-weight:700; font-size:.88rem; text-align:center; margin-bottom:6px; }
     .faq-nav { display:block; width:100%; padding:10px 18px; border-radius:100px; border:1.5px solid rgba(0,32,246,.2); background:transparent; color:#0020f6; font-size:.88rem; font-weight:600; font-family:var(--font-body); text-align:center; cursor:pointer; transition:all .18s; box-sizing:border-box; }
     .faq-nav.active { background:#0020f6; border-color:#0020f6; color:#fff; }
@@ -278,6 +297,7 @@
       </div>
 
       <!-- Contact cards -->
+      <div class="sup-cards-wrap">
       <div class="sup-cards">
         <div style="position:relative;">
           <div class="sup-card" style="position:relative;z-index:2;">
@@ -300,7 +320,6 @@
           <a href="#how-it-works">Jak to funguje</a>
         </div>
       </div>
-
     </div>
   </section>
 
@@ -1118,18 +1137,16 @@
 
   <script>
     (function() {
-      /* navbar-light system — připraveno pro budoucí bílou sekci.
-         Nahraď 'dark-section' za skutečné ID tmavé sekce, která následuje po bílé. */
       var navbar = document.getElementById('navbar');
-      var darkSection = document.getElementById('dark-section');
-      if (!navbar || !darkSection) return;
-      function updateNavbarTheme() {
-        var navH = navbar.offsetHeight;
-        var darkTop = darkSection.getBoundingClientRect().top;
-        navbar.classList.toggle('navbar-light', darkTop > navH);
+      var blueSection = document.querySelector('.sup-cards-wrap');
+      if (!navbar) return;
+      function updatePodrNav() {
+        var onBlue = blueSection && blueSection.getBoundingClientRect().top <= 70;
+        navbar.classList.toggle('pnav-blue', !!onBlue);
+        navbar.classList.toggle('pnav-white', !onBlue);
       }
-      window.addEventListener('scroll', updateNavbarTheme, { passive: true });
-      updateNavbarTheme();
+      window.addEventListener('scroll', updatePodrNav, { passive: true });
+      updatePodrNav();
     })();
   </script>
 </body>
