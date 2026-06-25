@@ -33,7 +33,7 @@
     .sup-hero {
       text-align: center;
       max-width: 580px;
-      margin: 0 auto 72px;
+      margin: 0 auto 44px;
       padding: 0 24px;
     }
     .sup-hero h1 {
@@ -60,7 +60,7 @@
     .ssd-item:hover, .ssd-item.active { background: rgba(91,107,255,.18); color: #fff; }
     .ssd-item svg { flex-shrink: 0; color: #6060a0; }
     .ssd-item mark { background: none; color: #a78bfa; font-weight: 700; }
-    .sup-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 860px; margin: 0 auto 88px; padding: 90px 24px 0; }
+    .sup-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 860px; margin: 0 auto 40px; padding: 60px 24px 0; }
     .sup-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 36px 28px 32px; text-align: center; transition: border-color .2s, transform .22s; }
     .sup-card:hover { border-color: rgba(91,107,255,.45); transform: translateY(-4px); }
     .sup-card-icon { font-size: 2.6rem; margin-bottom: 18px; display: block; }
@@ -153,6 +153,19 @@
     #navbar .mobile-menu-btn { color: #0020f6; }
     #navbar #nav-login-btn { background: transparent; color: #0020f6; border-color: rgba(0,32,246,.3); font-weight: 600; }
     #navbar #nav-login-btn:hover { background: rgba(0,32,246,.06); border-color: #0020f6; }
+
+    /* FAQ split layout */
+    .faq-split-section { display:flex; gap:40px; max-width:960px; margin:0 auto 80px; padding:20px 24px; align-items:flex-start; background:#f4f4fc; border:1px solid rgba(0,32,246,.12); border-radius:20px; }
+    .faq-sidebar { flex:0 0 170px; display:flex; flex-direction:column; gap:8px; position:sticky; top:90px; }
+    .faq-sidebar-bubble { background:#0020f6; color:#fff; border-radius:100px; padding:10px 20px; font-weight:700; font-size:.88rem; text-align:center; margin-bottom:6px; }
+    .faq-nav { display:block; width:100%; padding:10px 18px; border-radius:100px; border:1.5px solid rgba(0,32,246,.2); background:transparent; color:#0020f6; font-size:.88rem; font-weight:600; font-family:var(--font-body); text-align:center; cursor:pointer; transition:all .18s; box-sizing:border-box; }
+    .faq-nav.active { background:rgba(0,32,246,.1); border-color:#0020f6; }
+    .faq-nav:hover:not(.active) { background:rgba(0,32,246,.05); border-color:rgba(0,32,246,.4); }
+    .faq-nav.faq-nav-bubble { background:#0020f6; color:#fff; border-color:#0020f6; text-align:center; margin-bottom:6px; }
+    .faq-nav.faq-nav-bubble.active { background:#0020f6; color:#fff; box-shadow:0 0 0 3px rgba(0,32,246,.18); }
+    .faq-nav.faq-nav-bubble:hover { background:#0012b8; border-color:#0012b8; }
+    .faq-panel { flex:1; min-width:0; }
+    @media (max-width:640px) { .faq-split-section { flex-direction:column; gap:20px; } .faq-sidebar { flex:none; position:static; flex-direction:row; flex-wrap:wrap; } }
 </style>
 </head>
 <body>
@@ -207,40 +220,61 @@
         </div>
       </div>
 
+      <!-- FAQ split layout -->
+      <div class="faq-split-section">
+        <div class="faq-sidebar">
+          <button class="faq-nav faq-nav-bubble active" data-cat="popular">Časté dotazy</button>
+          <button class="faq-nav" data-cat="vyplaty">Výplaty</button>
+          <button class="faq-nav" data-cat="smeny">Směny</button>
+          <button class="faq-nav" data-cat="ucet">Účet</button>
+          <button class="faq-nav" data-cat="makacky">Makačky</button>
+        </div>
+        <div class="faq-panel">
+          <div class="faq-list" id="faq-list">
+            <div class="faq-no-results" id="faq-no-results">Žádné výsledky pro tuto frázi 🙁</div>
+            <div class="faq-item" data-cat="vyplaty popular">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Je Makej! zdarma?</span></div>
+              <div class="faq-a">Pro brigádníky je Makej! zcela zdarma — registrace, swipování i chat. Zaměstnavatelé mají základní plán dostupný po spuštění aplikace.</div>
+            </div>
+            <div class="faq-item" data-cat="vyplaty popular">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak probíhá výplata za práci?</span></div>
+              <div class="faq-a">Výplata probíhá přímo mezi tebou a zaměstnavatelem — Makej! slouží jako platforma pro propojení, ne jako zprostředkovatel plateb. Podmínky si domluv přímo s firmou přes náš chat.</div>
+            </div>
+            <div class="faq-item" data-cat="vyplaty">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Je moje platební karta v bezpečí?</span></div>
+              <div class="faq-a">Na Makej! nezadáváš žádné platební údaje — aplikace je zdarma a nepotřebujeme přístup k tvé kartě. Tvoje osobní data chráníme v souladu s GDPR.</div>
+            </div>
+            <div class="faq-item" data-cat="smeny">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak se domluvím na termínu směny?</span></div>
+              <div class="faq-a">Po matchi s firmou se otevře chat, kde si přímo se zaměstnavatelem domluvíš datum a čas. Vše probíhá v reálném čase — bez zbytečných telefonátů nebo e-mailů.</div>
+            </div>
+            <div class="faq-item" data-cat="smeny">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Na jakých zařízeních Makej! funguje?</span></div>
+              <div class="faq-a">Makej! bude dostupný na iOS (App Store) a Androidu (Google Play). Spuštění brzy — registruj se teď a budeš mezi prvními.</div>
+            </div>
+            <div class="faq-item" data-cat="ucet popular">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak smažu svůj účet?</span></div>
+              <div class="faq-a">V aplikaci jdi do Nastavení → Účet → Smazat účet. Nebo nám napiš na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a> a my to vyřídíme za tebe do 3 pracovních dnů. Data mažeme v souladu s GDPR.</div>
+            </div>
+            <div class="faq-item" data-cat="ucet">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak obnovím zapomenuté heslo?</span></div>
+              <div class="faq-a">Na přihlašovací obrazovce klikni na „Zapomněl jsem heslo" a zadej svůj email. Za pár minut ti přijde odkaz pro reset — funguje to automaticky, stačí zkontrolovat i spam.</div>
+            </div>
+            <div class="faq-item" data-cat="makacky popular">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak nahlásím problém se zaměstnavatelem nebo brigádníkem?</span></div>
+              <div class="faq-a">V profilu každého uživatele najdeš tlačítko "Nahlásit". Každé hlášení prověřuje náš tým do 24 hodin. Při závažném porušení podmínek okamžitě blokujeme účet. Bezpečnost komunity je pro nás priorita.</div>
+            </div>
+            <div class="faq-item" data-cat="makacky">
+              <div class="faq-q" onclick="toggleFaq(this)"><span>Jak funguje hodnocení po brigádě?</span></div>
+              <div class="faq-a">Po dokončení brigády můžeš ohodnotit zaměstnavatele a on tebe. Hodnocení jsou viditelná ostatním a pomáhají budovat důvěru v komunitě. Dobré hodnocení ti otevírá dveře k lepším příležitostem.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Contact cards -->
       <div class="sup-cards">
         <div style="position:relative;">
-          <!-- Doktor Makač peeker -->
-          <div id="doc-peeker" style="position:absolute;top:-48px;left:50%;transform:translateX(-50%);z-index:3;pointer-events:none;filter:drop-shadow(0 14px 36px rgba(0,0,60,0.65));">
-            <div style="position:relative;display:inline-block;">
-              <div style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:46px;z-index:6;margin-bottom:-2px;">
-                <div style="width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-bottom:14px solid white;margin:0 auto;"></div>
-                <div style="background:white;height:10px;border-radius:2px 2px 0 0;margin-top:-1px;position:relative;">
-                  <div style="position:absolute;top:1px;left:50%;transform:translateX(-50%);width:3px;height:8px;background:#e53935;border-radius:1px;"></div>
-                  <div style="position:absolute;top:3px;left:50%;transform:translateX(-50%);width:8px;height:3px;background:#e53935;border-radius:1px;"></div>
-                </div>
-              </div>
-              <div style="width:88px;height:76px;background:linear-gradient(160deg,#4848c4 0%,#1c1c7a 100%);border-radius:50% 50% 44% 44%;position:relative;box-shadow:0 14px 36px rgba(0,0,60,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:2px solid rgba(140,140,255,0.3);">
-                <div id="doc-browL" style="position:absolute;left:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
-                <div id="doc-browR" style="position:absolute;right:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
-                <div id="doc-eyeL" style="position:absolute;left:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
-                  <div id="doc-pupilL" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
-                  <div id="doc-lidL" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
-                </div>
-                <div id="doc-eyeR" style="position:absolute;right:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
-                  <div id="doc-pupilR" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
-                  <div id="doc-lidR" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
-                </div>
-                <div style="position:absolute;bottom:11px;left:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
-                <div style="position:absolute;bottom:11px;right:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
-              </div>
-            </div>
-          </div>
-          <!-- Speech bubble -->
-          <div id="makac-bubble">
-            <p>Jmenuji se <strong>Makač</strong> a jsem tvůj AI pomocník. Jsem tady pro tebe <strong>24/7</strong> a pomůžu ti s tvým dotazem.</p>
-            <button id="makac-chat-btn" onclick="window.openMakacChat && window.openMakacChat()">Zeptat se Makače</button>
-          </div>
           <div class="sup-card" style="position:relative;z-index:2;">
             <span class="sup-card-icon">💬</span>
             <h3>Live chat</h3>
@@ -261,41 +295,6 @@
           <a href="#how-it-works">Jak to funguje</a>
         </div>
       </div>
-
-      <!-- FAQ -->
-      <section class="faq-section">
-        <div class="faq-heading">
-          <h2>Časté <span class="gradient-text">otázky</span></h2>
-          <p>Nenašel jsi odpověď? Napiš nám na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a></p>
-        </div>
-        <div class="faq-list" id="faq-list">
-          <div class="faq-no-results" id="faq-no-results">Žádné výsledky pro tuto frázi 🙁</div>
-          <div class="faq-item">
-            <div class="faq-q" onclick="toggleFaq(this)"><span>Je Makej! zdarma?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
-            <div class="faq-a">Pro brigádníky je Makej! zcela zdarma — registrace, swipování i chat. Zaměstnavatelé mají základní plán dostupný po spuštění aplikace.</div>
-          </div>
-          <div class="faq-item">
-            <div class="faq-q" onclick="toggleFaq(this)"><span>Jak probíhá výplata za práci?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
-            <div class="faq-a">Výplata probíhá přímo mezi tebou a zaměstnavatelem — Makej! slouží jako platforma pro propojení, ne jako zprostředkovatel plateb. Podmínky si domluv přímo s firmou přes náš chat.</div>
-          </div>
-          <div class="faq-item">
-            <div class="faq-q" onclick="toggleFaq(this)"><span>Je moje platební karta v bezpečí?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
-            <div class="faq-a">Na Makej! nezadáváš žádné platební údaje — aplikace je zdarma a nepotřebujeme přístup k tvé kartě. Tvoje osobní data chráníme v souladu s GDPR.</div>
-          </div>
-          <div class="faq-item">
-            <div class="faq-q" onclick="toggleFaq(this)"><span>Jak smažu svůj účet?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
-            <div class="faq-a">V aplikaci jdi do Nastavení → Účet → Smazat účet. Nebo nám napiš na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a> a my to vyřídíme za tebe do 3 pracovních dnů. Data mažeme v souladu s GDPR.</div>
-          </div>
-          <div class="faq-item">
-            <div class="faq-q" onclick="toggleFaq(this)"><span>Jak nahlásím problém se zaměstnavatelem nebo brigádníkem?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
-            <div class="faq-a">V profilu každého uživatele najdeš tlačítko "Nahlásit". Každé hlášení prověřuje náš tým do 24 hodin. Při závažném porušení podmínek okamžitě blokujeme účet. Bezpečnost komunity je pro nás priorita.</div>
-          </div>
-          <div class="faq-item">
-            <div class="faq-q" onclick="toggleFaq(this)"><span>Na jakých zařízeních Makej! funguje?</span><iconify-icon icon="solar:add-circle-bold" width="20" class="faq-icon"></iconify-icon></div>
-            <div class="faq-a">Makej! bude dostupný na iOS (App Store) a Androidu (Google Play). Spuštění brzy — registruj se teď a budeš mezi prvními.</div>
-          </div>
-        </div>
-      </section>
 
     </div>
   </section>
@@ -472,147 +471,6 @@
 
   </div>
 
-  <!-- ═══════════ DASHBOARD PREVIEW MODAL ═══════════ -->
-  <div class="dash-overlay" id="dash-overlay">
-    <div class="dash-modal">
-      <button class="dash-close" id="dash-close" aria-label="Zavřít">✕</button>
-      <div class="dash-modal-header">
-        <span class="dash-modal-logo">Makej!</span>
-        <span class="dash-modal-tag">Dashboard zaměstnavatele — náhled</span>
-      </div>
-
-      <!-- Topbar mockup -->
-      <div class="dash-topbar">
-        <div class="dash-topbar-left">
-          <div class="dash-company-logo">KP</div>
-          <div>
-            <div class="dash-company-name">Kafe Punkt s.r.o.</div>
-            <div class="dash-company-plan">Standard tarif</div>
-          </div>
-        </div>
-        <div class="dash-topbar-right">
-          <div class="dash-notif"><iconify-icon icon="solar:bell-bold" width="16"></iconify-icon><span class="dash-notif-dot"></span></div>
-          <div class="dash-avatar-sm">AS</div>
-        </div>
-      </div>
-
-      <div class="dash-body">
-        <!-- Sidebar mockup -->
-        <div class="dash-sidebar">
-          <div class="dash-nav-item dash-nav-active"><iconify-icon icon="solar:chart-square-bold" width="16"></iconify-icon>Dashboard</div>
-          <div class="dash-nav-item"><iconify-icon icon="solar:document-text-bold" width="16"></iconify-icon>Inzeráty <span class="dash-nav-badge">5</span></div>
-          <div class="dash-nav-item"><iconify-icon icon="solar:users-group-rounded-bold" width="16"></iconify-icon>Kandidáti <span class="dash-nav-badge">3</span></div>
-          <div class="dash-nav-item"><iconify-icon icon="solar:chat-round-bold" width="16"></iconify-icon>Zprávy <span class="dash-nav-badge">2</span></div>
-          <div class="dash-nav-item"><iconify-icon icon="solar:chart-bold" width="16"></iconify-icon>Analytika</div>
-          <div class="dash-nav-item"><iconify-icon icon="solar:settings-bold" width="16"></iconify-icon>Nastavení</div>
-        </div>
-
-        <!-- Main content mockup -->
-        <div class="dash-main">
-          <!-- KPI cards -->
-          <div class="dash-kpi-row">
-            <div class="dash-kpi-card">
-              <div class="dash-kpi-icon"><iconify-icon icon="solar:document-text-bold" width="18"></iconify-icon></div>
-              <div class="dash-kpi-val">5</div>
-              <div class="dash-kpi-lbl">Aktivní inzeráty</div>
-              <div class="dash-kpi-spark">
-                <div class="dash-spark-bar" style="height:30%"></div><div class="dash-spark-bar" style="height:50%"></div>
-                <div class="dash-spark-bar" style="height:40%"></div><div class="dash-spark-bar" style="height:70%"></div>
-                <div class="dash-spark-bar" style="height:60%"></div><div class="dash-spark-bar dash-spark-active" style="height:100%"></div>
-              </div>
-            </div>
-            <div class="dash-kpi-card">
-              <div class="dash-kpi-icon"><iconify-icon icon="solar:heart-bold" width="18"></iconify-icon></div>
-              <div class="dash-kpi-val">312</div>
-              <div class="dash-kpi-lbl">Celkem zájemců</div>
-              <div class="dash-kpi-spark">
-                <div class="dash-spark-bar" style="height:20%"></div><div class="dash-spark-bar" style="height:35%"></div>
-                <div class="dash-spark-bar" style="height:45%"></div><div class="dash-spark-bar" style="height:55%"></div>
-                <div class="dash-spark-bar" style="height:70%"></div><div class="dash-spark-bar dash-spark-active" style="height:100%"></div>
-              </div>
-            </div>
-            <div class="dash-kpi-card">
-              <div class="dash-kpi-icon"><iconify-icon icon="solar:check-circle-bold" width="18"></iconify-icon></div>
-              <div class="dash-kpi-val">42</div>
-              <div class="dash-kpi-lbl">Najato</div>
-              <div class="dash-kpi-spark">
-                <div class="dash-spark-bar" style="height:25%"></div><div class="dash-spark-bar" style="height:40%"></div>
-                <div class="dash-spark-bar" style="height:35%"></div><div class="dash-spark-bar" style="height:60%"></div>
-                <div class="dash-spark-bar" style="height:75%"></div><div class="dash-spark-bar dash-spark-active" style="height:100%"></div>
-              </div>
-            </div>
-            <div class="dash-kpi-card">
-              <div class="dash-kpi-icon"><iconify-icon icon="solar:star-bold" width="18"></iconify-icon></div>
-              <div class="dash-kpi-val">4.8★</div>
-              <div class="dash-kpi-lbl">Hodnocení firmy</div>
-              <div class="dash-kpi-spark">
-                <div class="dash-spark-bar" style="height:80%"></div><div class="dash-spark-bar" style="height:85%"></div>
-                <div class="dash-spark-bar" style="height:82%"></div><div class="dash-spark-bar" style="height:88%"></div>
-                <div class="dash-spark-bar" style="height:90%"></div><div class="dash-spark-bar dash-spark-active" style="height:96%"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Jobs + candidates -->
-          <div class="dash-content-row">
-            <div class="dash-panel" style="flex:1.4">
-              <div class="dash-panel-title">Aktivní inzeráty</div>
-              <div class="dash-job-row">
-                <div class="dash-job-dot" style="background:#F4A261"></div>
-                <div class="dash-job-info"><div class="dash-job-name">Barista — ranní směna</div><div class="dash-job-meta">180 Kč/h · 5 dní zbývá</div></div>
-                <div class="dash-job-count">142 zájemců</div>
-              </div>
-              <div class="dash-job-row">
-                <div class="dash-job-dot" style="background:#8AB4FF"></div>
-                <div class="dash-job-info"><div class="dash-job-name">Servírka — víkend</div><div class="dash-job-meta">165 Kč/h · 12 dní zbývá</div></div>
-                <div class="dash-job-count">41 zájemců</div>
-              </div>
-              <div class="dash-job-row">
-                <div class="dash-job-dot" style="background:#f43f5e"></div>
-                <div class="dash-job-info"><div class="dash-job-name">Pomocník kuchyně — ASAP</div><div class="dash-job-meta">200 Kč/h · 2 dny zbývají ⚡</div></div>
-                <div class="dash-job-count">98 zájemců</div>
-              </div>
-            </div>
-            <div class="dash-panel" style="flex:1">
-              <div class="dash-panel-title">Noví kandidáti</div>
-              <div class="dash-candidate">
-                <div class="dash-cand-avatar" style="background:#5B6BFF">TM</div>
-                <div class="dash-cand-info"><div class="dash-cand-name">Tomáš Marek</div><div class="dash-cand-meta">★ 4.9 · 23 brigád · L7</div></div>
-                <div class="dash-cand-actions">
-                  <button class="dash-btn-accept">✓</button>
-                  <button class="dash-btn-reject">✕</button>
-                </div>
-              </div>
-              <div class="dash-candidate">
-                <div class="dash-cand-avatar" style="background:#F4A261">KN</div>
-                <div class="dash-cand-info"><div class="dash-cand-name">Klára Novotná</div><div class="dash-cand-meta">★ 4.7 · 11 brigád · L4</div></div>
-                <div class="dash-cand-actions">
-                  <button class="dash-btn-accept">✓</button>
-                  <button class="dash-btn-reject">✕</button>
-                </div>
-              </div>
-              <div class="dash-candidate">
-                <div class="dash-cand-avatar" style="background:#5BD68A">PH</div>
-                <div class="dash-cand-info"><div class="dash-cand-name">Petr Hájek</div><div class="dash-cand-meta">★ 4.6 · 47 brigád · L9</div></div>
-                <div class="dash-cand-actions">
-                  <button class="dash-btn-accept">✓</button>
-                  <button class="dash-btn-reject">✕</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dash-modal-footer">
-        <a href="#" class="btn-primary" id="dash-register-btn">
-          <iconify-icon icon="solar:buildings-bold" width="18"></iconify-icon>
-          Chci takový dashboard — začít zdarma
-        </a>
-      </div>
-    </div>
-  </div>
-
   <!-- ═══════════ COOKIE BANNER ═══════════ -->
   <div id="cookie-banner" role="dialog" aria-label="Souhlas s cookies" aria-live="polite">
     <div class="cookie-inner">
@@ -668,6 +526,7 @@
     if (!input || !drop) return;
     var faqItems = Array.from(document.querySelectorAll('.faq-item'));
     var activeIdx = -1;
+    var activeCat = 'popular';
     function getQ(item){ return (item.querySelector('.faq-q span')||item).textContent.trim(); }
     function hl(text,q){ if(!q) return text; return text.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>'); }
     function showDrop(q){
@@ -684,7 +543,10 @@
       var v=0;
       faqItems.forEach(function(item){
         var text=getQ(item).toLowerCase()+' '+((item.querySelector('.faq-a')||{textContent:''}).textContent.toLowerCase());
-        var m=!q||text.includes(q); item.style.display=m?'':'none'; if(m)v++;
+        var matchQ=!q||text.includes(q);
+        var cat=item.dataset.cat||'';
+        var matchCat=!activeCat||cat===activeCat||cat.split(' ').includes(activeCat);
+        var m=matchQ&&matchCat; item.style.display=m?'':'none'; if(m)v++;
       });
       if(noResults) noResults.style.display=v===0?'block':'none';
       if(q) document.querySelectorAll('.faq-item.open').forEach(function(i){i.classList.remove('open');});
@@ -701,6 +563,20 @@
       items.forEach(function(el,i){el.classList.toggle('active',i===activeIdx);});
     });
     document.addEventListener('click',function(e){if(!input.contains(e.target)&&!drop.contains(e.target))closeDrop();});
+
+    // Sidebar nav filtering
+    document.querySelectorAll('.faq-nav').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        document.querySelectorAll('.faq-nav').forEach(function(t){t.classList.remove('active');});
+        this.classList.add('active');
+        activeCat=this.dataset.cat;
+        input.value='';
+        if(phWrap) phWrap.style.opacity='1';
+        closeDrop();
+        filterFaq('');
+      });
+    });
+    filterFaq('');
 
     // Doc peeker eye tracking
     var eyeL=document.getElementById('doc-eyeL'), eyeR=document.getElementById('doc-eyeR');
