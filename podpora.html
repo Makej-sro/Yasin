@@ -194,6 +194,21 @@
     .faq-panel::-webkit-scrollbar-track { background:transparent; }
     .faq-panel::-webkit-scrollbar-thumb { background:rgba(0,32,246,.25); border-radius:10px; }
     @media (max-width:640px) { .faq-split-section { flex-direction:column; gap:20px; } .faq-sidebar { flex:none; position:static; flex-direction:row; flex-wrap:wrap; } }
+
+    /* FAQ highlight sweep */
+    @keyframes faq-sweep {
+      0%   { transform: scaleX(0); opacity: 1; }
+      77%  { transform: scaleX(1); opacity: 1; }
+      100% { transform: scaleX(1); opacity: 0; }
+    }
+    .faq-item.faq-highlight { position: relative; overflow: hidden; }
+    .faq-item.faq-highlight::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(0,32,246,.12);
+      transform-origin: left center;
+      animation: faq-sweep 1.3s ease forwards;
+      pointer-events: none;
+    }
 </style>
 </head>
 <body>
@@ -710,7 +725,14 @@
       });
       if(phWrap) phWrap.style.opacity='1';
       input.value=''; closeDrop(); filterFaq('');
-      setTimeout(function(){item.scrollIntoView({behavior:'smooth',block:'nearest'});if(!item.classList.contains('open'))item.classList.add('open');},80);
+      setTimeout(function(){
+        item.scrollIntoView({behavior:'smooth',block:'nearest'});
+        if(!item.classList.contains('open'))item.classList.add('open');
+        item.classList.remove('faq-highlight');
+        void item.offsetWidth;
+        item.classList.add('faq-highlight');
+        setTimeout(function(){ item.classList.remove('faq-highlight'); }, 1400);
+      },80);
     }
     function filterFaq(q){
       var v=0;
