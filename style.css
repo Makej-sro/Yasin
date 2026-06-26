@@ -1479,12 +1479,19 @@ html { scroll-padding-top: 92px; }
 .nav-dropdown-menu a:hover { background: rgba(208,208,255,.08); color: #fff; }
 
 /* ═══════════ NAVBAR nad světlou sekcí ═══════════ */
-#navbar.nav-over-light .nav-logo { color: #0a0d2e; -webkit-text-fill-color: #0a0d2e; }
-#navbar.nav-over-light .nav-links a { color: #0a0d2e; }
-#navbar.nav-over-light .nav-links a:hover { color: #000; }
-#navbar.nav-over-light .nav-links a.nav-active { color: #000; border-bottom-color: #0a0d2e; }
-#navbar.nav-over-light .mobile-menu-btn { color: #0a0d2e; }
-#navbar.nav-over-light #nav-login-btn {
-  background: transparent; color: #0a0d2e; border-color: rgba(10,13,46,.22);
+#navbar.nav-over-light {
+  background: rgba(255,255,255,.15) !important;
+  box-shadow: 0 1px 0 rgba(0,32,246,.1) !important;
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
 }
-#navbar.nav-over-light #nav-login-btn:hover { background: rgba(10,13,46,.06); border-color: rgba(10,13,46,.4); }
+#navbar.nav-over-light .nav-logo { color: #0020f6; -webkit-text-fill-color: #0020f6; }
+#navbar.nav-over-light .nav-links a { color: #0020f6; }
+#navbar.nav-over-light .nav-links a:hover { color: #0010cc; }
+#navbar.nav-over-light .nav-links a.nav-active { color: #0020f6; border-bottom-color: #0020f6; }
+#navbar.nav-over-light .mobile-menu-btn { color: #0020f6; }
+#navbar.nav-over-light #nav-login-btn {
+  background: transparent; color: #0020f6; border-color: rgba(0,32,246,.3); font-weight: 600;
+}
+#navbar.nav-over-light #nav-login-btn:hover { background: rgba(0,32,246,.06); border-color: rgba(0,32,246,.5); }
+#navbar.nav-over-light #nav-register-btn { background: linear-gradient(135deg,#0020f6,#3a3a99) !important; color: #fff !important; border-color: transparent !important; }
