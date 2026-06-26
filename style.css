@@ -1455,13 +1455,11 @@ html { scroll-padding-top: 92px; }
 .nav-dropdown-menu {
   position: absolute; top: 100%; left: 50%;
   transform: translateX(-50%) translateY(14px);
-  min-width: 212px; margin-top: 8px; padding: 8px;
-  background: rgba(7,9,28,.55);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  border: 1px solid rgba(208,208,255,.12); border-radius: 16px;
-  box-shadow: 0 22px 55px rgba(0,0,0,.5);
-  display: flex; flex-direction: column; gap: 2px;
+  min-width: 200px; margin-top: 8px; padding: 10px;
+  background: #fff;
+  border: 1px solid rgba(0,32,246,.15); border-radius: 18px;
+  box-shadow: 0 12px 40px rgba(0,32,246,.12);
+  display: flex; flex-direction: column; gap: 6px;
   opacity: 0; visibility: hidden; pointer-events: none;
   transition: opacity .2s ease, transform .2s ease, visibility .2s;
   z-index: 200;
@@ -1471,12 +1469,14 @@ html { scroll-padding-top: 92px; }
   transform: translateX(-50%) translateY(8px);
 }
 .nav-dropdown-menu a {
-  padding: 10px 14px; border-radius: 10px;
-  font-size: .9rem; font-weight: 500; color: rgba(208,208,255,.75);
+  display: block; padding: 9px 18px; border-radius: 100px;
+  border: 1.5px solid rgba(0,32,246,.22);
+  font-size: .87rem; font-weight: 600; color: #0020f6;
   white-space: nowrap; border-bottom: none; pointer-events: all;
-  transition: background .15s, color .15s;
+  text-align: center; background: transparent;
+  transition: all .18s;
 }
-.nav-dropdown-menu a:hover { background: rgba(208,208,255,.08); color: #fff; }
+.nav-dropdown-menu a:hover { background: #0020f6; border-color: #0020f6; color: #fff; }
 
 /* ═══════════ NAVBAR nad světlou sekcí ═══════════ */
 #navbar.nav-over-light {
