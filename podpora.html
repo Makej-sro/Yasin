@@ -180,7 +180,7 @@
     #navbar.pnav-blue #nav-register-btn:hover { background: rgba(255,255,255,.28) !important; }
 
     /* FAQ split layout */
-    .faq-split-section { display:flex; gap:40px; max-width:960px; margin:0 auto 80px; padding:20px 24px; align-items:flex-start; background:#f4f4fc; border:1px solid rgba(0,32,246,.12); border-radius:20px; }
+    .faq-split-section { display:flex; gap:40px; max-width:960px; margin:88px auto 80px; padding:20px 24px; align-items:flex-start; background:#f4f4fc; border:1px solid rgba(0,32,246,.12); border-radius:20px; }
     .faq-sidebar { flex:0 0 170px; display:flex; flex-direction:column; gap:14px; }
     .faq-sidebar-bubble { background:#0020f6; color:#fff; border-radius:100px; padding:10px 20px; font-weight:700; font-size:.88rem; text-align:center; margin-bottom:6px; }
     .faq-nav { display:block; width:100%; padding:10px 18px; border-radius:100px; border:1.5px solid rgba(0,32,246,.2); background:transparent; color:#0020f6; font-size:.88rem; font-weight:600; font-family:var(--font-body); text-align:center; cursor:pointer; transition:all .18s; box-sizing:border-box; }
@@ -451,6 +451,11 @@
 
       <!-- Contact cards -->
       <div class="sup-cards-wrap">
+      <div style="text-align:center;margin-bottom:44px;">
+        <h2 style="font-family:var(--font-heading);font-size:clamp(2rem,4.5vw,3.2rem);font-weight:800;line-height:1.25;color:#fff;margin:0;">Nenašel jsi svou odpověď?<br><span style="opacity:.75;">Zkus to tady</span></h2>
+        <p style="color:rgba(255,255,255,.8);font-size:1.05rem;line-height:1.65;margin:20px auto 0;max-width:480px;">Pokud je tvůj dotaz složitější, neváhej nás kontaktovat emailem. Uděláme vše proto, abys dostal svou odpověď ještě ten stejný den.</p>
+        <a href="mailto:podpora@makej.eu" style="display:inline-block;margin-top:20px;padding:12px 28px;border-radius:100px;border:2px solid rgba(255,255,255,.45);color:#fff;font-size:1rem;font-weight:700;font-family:var(--font-body);text-decoration:none;letter-spacing:.01em;transition:background .18s,border-color .18s,transform .18s;" onmouseover="this.style.background='rgba(255,255,255,.15)';this.style.borderColor='#fff';this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,.45)';this.style.transform='translateY(0)';">podpora@makej.eu</a>
+      </div>
       <div class="sup-cards">
         <div style="position:relative;">
           <div class="sup-card" style="position:relative;z-index:2;">
@@ -459,18 +464,6 @@
             <p>Napiš nám přímo v aplikaci. Odpovídáme obvykle do 15 minut v pracovní době.</p>
             <a href="javascript:void(0)" onclick="window.openMakacChat && window.openMakacChat()">Otevřít chat</a>
           </div>
-        </div>
-        <div class="sup-card">
-          <span class="sup-card-icon">📧</span>
-          <h3>Email</h3>
-          <p>Složitější dotazy nebo problémy s účtem řeš s námi přes email.</p>
-          <a href="mailto:podpora@makej.eu">podpora@makej.eu</a>
-        </div>
-        <div class="sup-card">
-          <span class="sup-card-icon">📖</span>
-          <h3>Průvodce</h3>
-          <p>Podrobné návody a odpovědi na nejčastější otázky v naší databázi znalostí.</p>
-          <a href="#how-it-works">Jak to funguje</a>
         </div>
       </div>
     </div>
