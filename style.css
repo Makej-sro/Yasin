@@ -454,7 +454,9 @@ img { max-width: 100%; display: block; }
 
 /* ═══════════ TESTIMONIALS ═══════════ */
 /* ═══════════ MAKÁČI SEKCE ═══════════ */
-#makaci { padding: 120px 0 80px; }
+#makaci { padding: 120px 0 80px; background: #fff; }
+#makaci .section-header h2 { color: #0020f6; }
+#makaci .section-header p { color: #0020f6; }
 
 .makaci-stage {
   position: relative;
@@ -473,6 +475,8 @@ img { max-width: 100%; display: block; }
 .makac-wrap.no-transition { transition: none !important; }
 
 /* Carousel positions */
+.makac-wrap[data-pos="-5"] { transform: translateX(calc(-50% - 600px)) scale(1); opacity: 0; z-index: 1; pointer-events: none; }
+.makac-wrap[data-pos="-4"] { transform: translateX(calc(-50% - 600px)) scale(1); opacity: 0; z-index: 1; pointer-events: none; }
 .makac-wrap[data-pos="-3"] { transform: translateX(calc(-50% - 600px)) scale(1); opacity: 0; z-index: 1; pointer-events: none; }
 .makac-wrap[data-pos="-2"] { transform: translateX(calc(-50% - 600px)) scale(1); opacity: 0; z-index: 1; pointer-events: none; }
 .makac-wrap[data-pos="-1"] { transform: translateX(calc(-50% - 340px)) scale(1); opacity: 1; z-index: 2; }
@@ -500,8 +504,8 @@ img { max-width: 100%; display: block; }
   left: 50%;
   transform: translateX(-50%) translateY(10px);
   width: 230px;
-  background: #1a1a3a;
-  border: 1px solid rgba(208,208,255,.14);
+  background: #0020f6;
+  border: 1px solid rgba(255,255,255,.2);
   border-radius: 20px;
   padding: 18px 20px;
   box-shadow: 0 24px 64px rgba(0,0,40,.55);
@@ -514,11 +518,11 @@ img { max-width: 100%; display: block; }
 
 .mkr-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 8px; }
 .mkr-company { font-weight: 800; font-size: .92rem; color: #fff; }
-.mkr-badge { font-size: .7rem; font-weight: 700; color: #a78bfa; background: rgba(167,139,250,.12); border-radius: 100px; padding: 3px 9px; white-space: nowrap; }
-.mkr-stars { color: #fbbf24; font-size: 1rem; letter-spacing: 1px; margin-bottom: 10px; }
+.mkr-badge { font-size: .7rem; font-weight: 700; color: #fff; background: rgba(255,255,255,.2); border-radius: 100px; padding: 3px 9px; white-space: nowrap; }
+.mkr-stars { color: #fff; font-size: 1rem; letter-spacing: 1px; margin-bottom: 10px; }
 .mkr-num { color: #fff; font-weight: 800; font-size: .88rem; margin-left: 6px; letter-spacing: 0; }
-.mkr-text { font-size: .82rem; color: rgba(208,208,255,.75); line-height: 1.6; margin: 0 0 10px; font-style: italic; }
-.mkr-role { font-size: .75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: .06em; }
+.mkr-text { font-size: .82rem; color: rgba(255,255,255,.85); line-height: 1.6; margin: 0 0 10px; font-style: italic; }
+.mkr-role { font-size: .75rem; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: .06em; }
 
 /* Progress dots */
 .makaci-dots { display: flex; justify-content: center; gap: 8px; margin-top: 32px; }
@@ -528,6 +532,8 @@ img { max-width: 100%; display: block; }
 @media (max-width: 768px) {
   .makaci-stage { height: 380px; }
   .makac-img { height: 200px; }
+  .makac-wrap[data-pos="-5"] { transform: translateX(calc(-50% - 260px)) scale(0.55); opacity: 0; }
+  .makac-wrap[data-pos="-4"] { transform: translateX(calc(-50% - 260px)) scale(0.55); opacity: 0; }
   .makac-wrap[data-pos="-3"] { transform: translateX(calc(-50% - 260px)) scale(0.55); opacity: 0; }
   .makac-wrap[data-pos="-2"] { transform: translateX(calc(-50% - 260px)) scale(0.55); opacity: 0; }
   .makac-wrap[data-pos="-1"] { transform: translateX(calc(-50% - 145px)) scale(0.75); }

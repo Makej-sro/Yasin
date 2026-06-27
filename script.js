@@ -660,7 +660,7 @@ function showToast(msg) {
 
 /* ═══════════ MAKÁČI CAROUSEL ═══════════ */
 (function () {
-  var N = 6;
+  var N = 8;
   var center = 2; // Makač basic starts in center
   var wrappers = Array.from(document.querySelectorAll('.makac-wrap[data-makac]'));
   var dots = Array.from(document.querySelectorAll('.makaci-dot[data-dot]'));
