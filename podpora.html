@@ -456,15 +456,10 @@
         <p style="color:rgba(255,255,255,.8);font-size:1.05rem;line-height:1.65;margin:20px auto 0;max-width:480px;">Pokud je tvůj dotaz složitější, neváhej nás kontaktovat emailem. Uděláme vše proto, abys dostal svou odpověď ještě ten stejný den.</p>
         <a href="mailto:podpora@makej.eu" style="display:inline-block;margin-top:20px;padding:12px 28px;border-radius:100px;border:2px solid rgba(255,255,255,.45);color:#fff;font-size:1rem;font-weight:700;font-family:var(--font-body);text-decoration:none;letter-spacing:.01em;transition:background .18s,border-color .18s,transform .18s;" onmouseover="this.style.background='rgba(255,255,255,.15)';this.style.borderColor='#fff';this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,.45)';this.style.transform='translateY(0)';">podpora@makej.eu</a>
       </div>
-      <div class="sup-cards">
-        <div style="position:relative;">
-          <div class="sup-card" style="position:relative;z-index:2;">
-            <span class="sup-card-icon">💬</span>
-            <h3>Live chat</h3>
-            <p>Napiš nám přímo v aplikaci. Odpovídáme obvykle do 15 minut v pracovní době.</p>
-            <a href="javascript:void(0)" onclick="window.openMakacChat && window.openMakacChat()">Otevřít chat</a>
-          </div>
-        </div>
+      <div style="text-align:center;margin-top:16px;">
+        <h2 style="font-family:var(--font-heading);font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;line-height:1.25;color:#fff;margin:0;">Live chat</h2>
+        <p style="color:rgba(255,255,255,.8);font-size:1.05rem;line-height:1.65;margin:16px auto 0;max-width:480px;">Pokud odpověď potřebuješ fest rychle, neboj se použít náš live chat. Náš AI Makač ti dokáže pomoct se spoustou věcí, tak se ho neboj použít.</p>
+        <button onclick="window.openMakacChat && window.openMakacChat()" style="display:inline-block;margin-top:20px;padding:12px 28px;border-radius:100px;border:2px solid rgba(255,255,255,.45);color:#fff;font-size:1rem;font-weight:700;font-family:var(--font-body);background:transparent;cursor:pointer;letter-spacing:.01em;transition:background .18s,border-color .18s,transform .18s;" onmouseover="this.style.background='rgba(255,255,255,.15)';this.style.borderColor='#fff';this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,.45)';this.style.transform='translateY(0)';">Otevřít chat</button>
       </div>
     </div>
   </section>
@@ -1307,7 +1302,7 @@
       function updatePodrNav() {
         var onBlue = blueSection && blueSection.getBoundingClientRect().top <= 70;
         navbar.classList.toggle('pnav-blue', !!onBlue);
-        navbar.classList.toggle('pnav-white', !onBlue);
+        navbar.classList.toggle('nav-over-light', !onBlue);
       }
       window.addEventListener('scroll', updatePodrNav, { passive: true });
       updatePodrNav();
