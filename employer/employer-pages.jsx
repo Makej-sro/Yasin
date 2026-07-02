@@ -22,10 +22,10 @@ function EJobs({ onTab }) {
           { label: 'Najato celkem', value: E_JOBS.reduce((a,j)=>a+j.hired,0), sub: 'v tomto měsíci', color: '#5BD68A' },
         ].map((s, i) => (
           <ECard key={i} padding={16}>
-            <div style={{ color: T.muted, fontSize: 11, fontFamily: T.fontUI, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase' }}>{s.label}</div>
+            <div style={{ color: T.cardMuted, fontSize: 11, fontFamily: T.fontUI, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase' }}>{s.label}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 6 }}>
-              <div style={{ fontFamily: T.fontMono, fontSize: 24, fontWeight: 700, color: '#fff', letterSpacing: -0.8 }}>{s.value}</div>
-              <div style={{ fontFamily: T.fontUI, fontSize: 11, color: T.mutedSoft }}>{s.sub}</div>
+              <div style={{ fontFamily: T.fontMono, fontSize: 24, fontWeight: 700, color: T.cardText, letterSpacing: -0.8 }}>{s.value}</div>
+              <div style={{ fontFamily: T.fontUI, fontSize: 11, color: T.cardMuted }}>{s.sub}</div>
             </div>
           </ECard>
         ))}
@@ -42,9 +42,9 @@ function EJobs({ onTab }) {
         ].map(f => (
           <button key={f.k} onClick={() => setFilter(f.k)} style={{
             padding: '8px 14px', borderRadius: 9,
-            background: filter === f.k ? 'rgba(91,107,255,0.2)' : 'rgba(255,255,255,0.03)',
-            border: '1px solid ' + (filter === f.k ? 'rgba(91,107,255,0.4)' : T.border),
-            color: filter === f.k ? '#fff' : T.muted,
+            background: filter === f.k ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)',
+            border: '1px solid ' + (filter === f.k ? 'rgba(255,255,255,0.4)' : T.border),
+            color: filter === f.k ? T.text : T.muted,
             fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
             display: 'inline-flex', alignItems: 'center', gap: 7,
           }}>
@@ -57,8 +57,8 @@ function EJobs({ onTab }) {
           <Icon name="magnifer-bold" size={14} color={T.mutedSoft} />
           <input placeholder="Hledat inzerát…" style={{
             paddingLeft: 30, padding: '8px 12px 8px 30px',
-            borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border,
-            color: '#fff', fontFamily: T.fontUI, fontSize: 12.5, width: 220, outline: 'none',
+            borderRadius: 9, background: 'rgba(255,255,255,0.1)', border: '1px solid ' + T.border,
+            color: T.text, fontFamily: T.fontUI, fontSize: 12.5, width: 220, outline: 'none',
           }} />
           <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }}>
             <Icon name="magnifer-linear" size={14} color={T.mutedSoft} />
@@ -76,30 +76,30 @@ function EJobs({ onTab }) {
             <ECard key={j.id} padding={0} style={{ overflow: 'hidden' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr 200px', alignItems: 'stretch' }}>
                 {/* Left: title + status */}
-                <div style={{ padding: 18, borderRight: '1px solid ' + T.border, display: 'flex', flexDirection: 'column', gap: 10, position: 'relative' }}>
+                <div style={{ padding: 18, borderRight: '1px solid ' + T.cardBorder, display: 'flex', flexDirection: 'column', gap: 10, position: 'relative' }}>
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: j.accent }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 8 }}>
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: 5,
                       padding: '3px 8px', borderRadius: 6,
-                      background: status.color + '22',
+                      background: status.color + '33',
                       color: status.color,
                       fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 0.5, textTransform: 'uppercase',
                     }}>
                       {status.dot ? <span style={{ width: 6, height: 6, borderRadius: 999, background: status.color, animation: status.pulse ? 'mkBubbleIn 1s infinite alternate' : 'none' }} /> : null}
                       {status.label}
                     </span>
-                    <span style={{ fontSize: 10, fontFamily: T.fontMono, color: T.mutedSoft }}>{j.plan}</span>
+                    <span style={{ fontSize: 10, fontFamily: T.fontMono, color: T.cardMuted }}>{j.plan}</span>
                   </div>
                   <div style={{ paddingLeft: 8 }}>
-                    <div style={{ fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: -0.3, lineHeight: 1.2 }}>{j.title}</div>
-                    <div style={{ fontFamily: T.fontUI, fontSize: 11.5, color: T.muted, marginTop: 5, display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, color: T.cardText, letterSpacing: -0.3, lineHeight: 1.2 }}>{j.title}</div>
+                    <div style={{ fontFamily: T.fontUI, fontSize: 11.5, color: T.cardMuted, marginTop: 5, display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                        <Icon name="dollar-bold" size={12} color={T.muted} />
-                        <span style={{ fontFamily: T.fontMono, color: '#fff', fontWeight: 700 }}>{j.pay}</span> {j.payUnit}
+                        <Icon name="dollar-bold" size={12} color={T.cardMuted} />
+                        <span style={{ fontFamily: T.fontMono, color: T.cardText, fontWeight: 700 }}>{j.pay}</span> {j.payUnit}
                       </span>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                        <Icon name="clock-circle-bold" size={12} color={T.muted} />
+                        <Icon name="clock-circle-bold" size={12} color={T.cardMuted} />
                         <span style={{ fontFamily: T.fontMono }}>{j.daysLeft}d zbývá</span>
                       </span>
                     </div>
@@ -116,12 +116,12 @@ function EJobs({ onTab }) {
                       { l: 'Najato', v: j.hired, c: '#5BD68A' },
                     ].map((m, i) => (
                       <div key={i}>
-                        <div style={{ color: T.mutedSoft, fontSize: 10, fontFamily: T.fontUI, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' }}>{m.l}</div>
-                        <div style={{ color: '#fff', fontFamily: T.fontMono, fontSize: 20, fontWeight: 700, marginTop: 3, letterSpacing: -0.6 }}>{m.v}</div>
+                        <div style={{ color: T.cardMuted, fontSize: 10, fontFamily: T.fontUI, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' }}>{m.l}</div>
+                        <div style={{ color: T.cardText, fontFamily: T.fontMono, fontSize: 20, fontWeight: 700, marginTop: 3, letterSpacing: -0.6 }}>{m.v}</div>
                       </div>
                     ))}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, paddingTop: 4, borderTop: '1px solid ' + T.border }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, paddingTop: 4, borderTop: '1px solid ' + T.cardBorder }}>
                     <BarMetric label="CTR (zhlédnuto → swajp)" value={j.ctr} max={30} suffix="%" />
                     <BarMetric label="Match rate (swajp → match)" value={parseFloat(matchRate)} max={20} suffix="%" />
                     <BarMetric label="Hire rate (match → najato)" value={parseFloat(hireRate)} max={30} suffix="%" />
@@ -129,7 +129,7 @@ function EJobs({ onTab }) {
                 </div>
 
                 {/* Right: actions */}
-                <div style={{ padding: 18, borderLeft: '1px solid ' + T.border, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
+                <div style={{ padding: 18, borderLeft: '1px solid ' + T.cardBorder, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
                   <button onClick={() => onTab?.('candidates')} style={{
                     padding: '10px 12px', borderRadius: 9,
                     background: 'linear-gradient(135deg, #0020F6, #2D2CA7)',
@@ -139,18 +139,18 @@ function EJobs({ onTab }) {
                   }}><Icon name="users-group-rounded-bold" size={14} color="#fff"/>Kandidáti ({j.matches})</button>
                   <button style={{
                     padding: '8px 12px', borderRadius: 9,
-                    background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border,
-                    color: T.light, cursor: 'pointer',
+                    background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder,
+                    color: T.cardLight, cursor: 'pointer',
                     fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600,
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  }}><Icon name="rocket-2-bold" size={12} color={T.super}/>Boostnout</button>
+                  }}><Icon name="rocket-2-bold" size={12} color="#FFD166"/>Boostnout</button>
                   <button style={{
                     padding: '8px 12px', borderRadius: 9,
-                    background: 'transparent', border: '1px solid ' + T.border,
-                    color: T.muted, cursor: 'pointer',
+                    background: 'transparent', border: '1px solid ' + T.cardBorder,
+                    color: T.cardMuted, cursor: 'pointer',
                     fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600,
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  }}><Icon name="pen-2-linear" size={12} color={T.muted}/>Upravit</button>
+                  }}><Icon name="pen-2-linear" size={12} color={T.cardMuted}/>Upravit</button>
                 </div>
               </div>
             </ECard>
@@ -166,10 +166,10 @@ function BarMetric({ label, value, max, suffix = '' }) {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ color: T.muted, fontSize: 10.5, fontFamily: T.fontUI, fontWeight: 600 }}>{label}</span>
-        <span style={{ color: '#fff', fontFamily: T.fontMono, fontSize: 11.5, fontWeight: 700 }}>{value}{suffix}</span>
+        <span style={{ color: T.cardMuted, fontSize: 10.5, fontFamily: T.fontUI, fontWeight: 600 }}>{label}</span>
+        <span style={{ color: T.cardText, fontFamily: T.fontMono, fontSize: 11.5, fontWeight: 700 }}>{value}{suffix}</span>
       </div>
-      <div style={{ height: 5, borderRadius: 3, background: 'rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+      <div style={{ height: 5, borderRadius: 3, background: 'rgba(0,32,246,0.09)', overflow: 'hidden' }}>
         <div style={{ height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #5B6BFF, #0020F6)' }} />
       </div>
     </div>
@@ -192,12 +192,12 @@ function ECandidates() {
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <div style={{ padding: '24px 28px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 13 }}>
-          Inzerát: <span style={{ color: '#fff', fontWeight: 700 }}>{E_JOBS[0]?.title || 'Všechny inzeráty'}</span>
+          Inzerát: <span style={{ color: T.text, fontWeight: 700 }}>{E_JOBS[0]?.title || 'Všechny inzeráty'}</span>
         </div>
         <span style={{ width: 3, height: 3, borderRadius: 999, background: T.mutedSoft }} />
         <span style={{ color: T.mutedSoft, fontFamily: T.fontMono, fontSize: 12 }}>{Object.values(E_CANDIDATES).flat().length} matchů · {E_CANDIDATES.hired.length} najato</span>
         <div style={{ flex: 1 }} />
-        <button style={{ padding: '8px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border, color: T.light, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <button style={{ padding: '8px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.12)', border: '1px solid ' + T.border, color: T.light, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           <Icon name="filter-bold" size={12} color={T.light}/>
           Filtry
         </button>
@@ -208,17 +208,17 @@ function ECandidates() {
           <div key={col.k} style={{
             display: 'flex', flexDirection: 'column', minHeight: 0,
             borderRadius: 14,
-            background: 'rgba(15,15,40,0.4)',
-            border: '1px solid ' + T.border,
+            background: 'rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.2)',
             overflow: 'hidden',
           }}>
             <div style={{
-              padding: '12px 14px', borderBottom: '1px solid ' + T.border,
+              padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.15)',
               display: 'flex', alignItems: 'center', gap: 8,
               background: col.color + '11',
             }}>
               <Icon name={col.icon} size={14} color={col.color} />
-              <span style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{col.label}</span>
+              <span style={{ color: T.text, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{col.label}</span>
               <span style={{
                 padding: '1px 7px', borderRadius: 999,
                 background: col.color + '22', color: col.color,
@@ -258,7 +258,7 @@ function CandidateCard({ c, stage, active, onClick }) {
   return (
     <button onClick={onClick} style={{
       textAlign: 'left', padding: 12, borderRadius: 11,
-      background: active ? 'linear-gradient(135deg, rgba(0,32,246,0.2), rgba(91,107,255,0.08))' : 'rgba(22,22,59,0.6)',
+      background: active ? 'rgba(0,32,246,0.1)' : 'rgba(0,32,246,0.03)',
       border: '1px solid ' + (active ? 'rgba(91,107,255,0.4)' : T.border),
       cursor: 'pointer', color: 'inherit',
       display: 'flex', flexDirection: 'column', gap: 10,
@@ -272,7 +272,7 @@ function CandidateCard({ c, stage, active, onClick }) {
           flexShrink: 0,
         }}>{c.avatar}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
+          <div style={{ color: T.text, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
           <div style={{ color: T.muted, fontSize: 10.5, fontFamily: T.fontUI, marginTop: 1 }}>
             {c.distance != null ? <><span style={{ fontFamily: T.fontMono }}>{c.age}</span> · {c.distance} km</> : (c.age != null ? <span style={{ fontFamily: T.fontMono }}>{c.age}</span> : null)}
           </div>
@@ -296,7 +296,7 @@ function CandidateCard({ c, stage, active, onClick }) {
         {c.tags.slice(0, 3).map((t, i) => (
           <span key={i} style={{
             padding: '2px 7px', borderRadius: 5,
-            background: 'rgba(255,255,255,0.05)', border: '1px solid ' + T.border,
+            background: 'rgba(0,32,246,0.05)', border: '1px solid ' + T.border,
             color: T.light, fontFamily: T.fontUI, fontSize: 10, fontWeight: 600,
           }}>{t}</span>
         ))}
@@ -318,10 +318,10 @@ function MiniMetric({ icon, v, c }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center',
       padding: '5px 6px', borderRadius: 6,
-      background: 'rgba(0,0,0,0.25)', border: '1px solid ' + T.border,
+      background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.border,
     }}>
       <Icon name={icon} size={11} color={c} />
-      <span style={{ color: '#fff', fontFamily: T.fontMono, fontSize: 11, fontWeight: 700 }}>{v}</span>
+      <span style={{ color: T.text, fontFamily: T.fontMono, fontSize: 11, fontWeight: 700 }}>{v}</span>
     </div>
   );
 }
@@ -355,7 +355,7 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
   return (
     <div style={{
       position: 'fixed', top: 0, right: 0, bottom: 0, width: 420,
-      background: 'rgba(7,7,26,0.96)', backdropFilter: 'blur(24px)',
+      background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(24px)',
       borderLeft: '1px solid ' + T.border,
       boxShadow: '-20px 0 60px rgba(0,0,0,0.5)',
       zIndex: 100, display: 'flex', flexDirection: 'column',
@@ -373,7 +373,7 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
         <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
           <div style={{ width: 72, height: 72, borderRadius: 999, background: c.color, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 26 }}>{c.avatar}</div>
           <div style={{ flex: 1 }}>
-            <div style={{ color: '#fff', fontFamily: T.fontHead, fontSize: 20, fontWeight: 800 }}>{c.name}</div>
+            <div style={{ color: T.text, fontFamily: T.fontHead, fontSize: 20, fontWeight: 800 }}>{c.name}</div>
             <div style={{ color: T.muted, fontSize: 12, fontFamily: T.fontUI, marginTop: 2 }}>{c.age} let · Brno · {c.distance} km</div>
             <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
               <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(91,214,138,0.2)', color: '#5BD68A', fontFamily: T.fontMono, fontSize: 11, fontWeight: 800 }}>{c.match}% match</span>
@@ -389,7 +389,7 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
             { l: 'Brigád', v: c.jobsDone, c: '#5B6BFF' },
             { l: 'Spolehlivost', v: '98%', c: '#5BD68A' },
           ].map((s, i) => (
-            <div key={i} style={{ padding: 12, borderRadius: 10, background: 'rgba(22,22,59,0.6)', border: '1px solid ' + T.border, textAlign: 'center' }}>
+            <div key={i} style={{ padding: 12, borderRadius: 10, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.border, textAlign: 'center' }}>
               <div style={{ color: s.c, fontFamily: T.fontMono, fontSize: 18, fontWeight: 700 }}>{s.v}</div>
               <div style={{ color: T.mutedSoft, fontFamily: T.fontUI, fontSize: 10, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.l}</div>
             </div>
@@ -406,7 +406,7 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
               { i: 'check-circle-bold', t: 'Volný v požadovaných slotech (Po-Pá ráno)', c: '#5BD68A' },
               { i: 'info-circle-bold', t: 'Maturuje na jaře — preferuje odpolední směny', c: '#FFD166' },
             ].map((x, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: 'rgba(0,32,246,0.04)' }}>
                 <Icon name={x.i} size={14} color={x.c}/>
                 <span style={{ color: T.light, fontSize: 12, fontFamily: T.fontUI }}>{x.t}</span>
               </div>
@@ -436,9 +436,9 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
             <div key={i} style={{ marginBottom: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: T.fontUI, marginBottom: 3 }}>
                 <span style={{ color: T.light }}>{r.l}</span>
-                <span style={{ color: '#fff', fontFamily: T.fontMono, fontWeight: 700 }}>{r.v}%</span>
+                <span style={{ color: T.text, fontFamily: T.fontMono, fontWeight: 700 }}>{r.v}%</span>
               </div>
-              <div style={{ height: 5, borderRadius: 3, background: 'rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+              <div style={{ height: 5, borderRadius: 3, background: 'rgba(0,32,246,0.09)', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: r.v + '%', background: 'linear-gradient(90deg, #5BD68A, #5BD68Aaa)' }} />
               </div>
             </div>

@@ -14,11 +14,12 @@ function _strColor(str) {
 function _relTime(iso) {
   if (!iso) return '';
   const s = Math.floor((Date.now() - new Date(iso)) / 1000);
-  if (s < 60)     return 'právě teď';
-  if (s < 3600)   return `před ${Math.floor(s/60)} min`;
-  if (s < 86400)  return `před ${Math.floor(s/3600)} h`;
-  if (s < 172800) return 'včera';
-  return new Date(iso).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' });
+  const t = new Date(iso).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+  if (s < 60)     return `právě teď · ${t}`;
+  if (s < 3600)   return `před ${Math.floor(s/60)} min · ${t}`;
+  if (s < 86400)  return `před ${Math.floor(s/3600)} h · ${t}`;
+  if (s < 172800) return `včera · ${t}`;
+  return new Date(iso).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' }) + ` · ${t}`;
 }
 
 function _fmtTime(iso) {
@@ -191,8 +192,9 @@ async function fetchEmployerData(employerId) {
       ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '–';
     const spark  = n => Array.from({ length: 12 }, (_, i) => n === 0 ? 0 : Math.max(0, Math.round(n * (0.15 + i * 0.07))));
     const activeJobs = E_JOBS.filter(j => j.status === 'active' || j.status === 'urgent').length;
+    const totalJobs  = E_JOBS.length;
     const newKpis = [
-      { id: 'jobs',    label: 'Aktivní inzeráty', value: activeJobs, delta: 0, spark: spark(activeJobs), unit: '',  icon: 'document-text-bold' },
+      { id: 'jobs',    label: 'Aktivní inzeráty', value: activeJobs, max: totalJobs, delta: 0, spark: spark(activeJobs), unit: '',  icon: 'document-text-bold' },
       { id: 'matches', label: 'Celkem matchů',    value: totalM,    delta: 0, spark: spark(totalM),     unit: '',  icon: 'heart-bold' },
       { id: 'hired',   label: 'Najato',           value: totalH,    delta: 0, spark: spark(totalH),     unit: '',  icon: 'check-circle-bold' },
       { id: 'rating',  label: 'Hodnocení firmy',  value: avgR,      delta: 0, spark: spark(5),          unit: '★', icon: 'star-bold' },

@@ -180,19 +180,19 @@ function EMessages() {
   return (
     <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
       {/* List */}
-      <aside style={{ width: 320, flexShrink: 0, borderRight: '1px solid ' + T.border, display: 'flex', flexDirection: 'column', background: 'rgba(15,15,40,0.3)' }}>
+      <aside style={{ width: 320, flexShrink: 0, borderRight: '1px solid ' + T.border, display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.1)' }}>
         <div style={{ padding: 16, borderBottom: '1px solid ' + T.border }}>
           <div style={{ position: 'relative' }}>
             <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}><Icon name="magnifer-linear" size={14} color={T.mutedSoft}/></span>
-            <input placeholder="Hledat v konverzacích…" style={{ width: '100%', padding: '9px 12px 9px 34px', borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border, color: '#fff', fontSize: 12.5, outline: 'none' }} />
+            <input placeholder="Hledat v konverzacích…" style={{ width: '100%', padding: '9px 12px 9px 34px', borderRadius: 9, background: 'rgba(255,255,255,0.12)', border: '1px solid ' + T.border, color: T.text, fontSize: 12.5, outline: 'none' }} />
           </div>
           <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
             {[{k:'all',l:'Všechny'},{k:'unread',l:'Nepřečtené'},{k:'pinned',l:'Připnuté'}].map(f => (
               <button key={f.k} onClick={() => setFilter(f.k)} style={{
                 padding: '5px 10px', borderRadius: 6,
-                background: filter === f.k ? 'rgba(91,107,255,0.2)' : 'transparent',
-                border: '1px solid ' + (filter === f.k ? 'rgba(91,107,255,0.35)' : T.border),
-                color: filter === f.k ? '#fff' : T.muted,
+                background: filter === f.k ? 'rgba(255,255,255,0.22)' : 'transparent',
+                border: '1px solid ' + (filter === f.k ? 'rgba(255,255,255,0.4)' : T.border),
+                color: filter === f.k ? T.text : T.muted,
                 fontFamily: T.fontUI, fontSize: 11, fontWeight: 600, cursor: 'pointer',
               }}>{f.l}</button>
             ))}
@@ -205,7 +205,7 @@ function EMessages() {
               <button key={t.id} onClick={() => setActive(t.id)} style={{
                 width: '100%', display: 'flex', alignItems: 'flex-start', gap: 10,
                 padding: '12px 16px', textAlign: 'left',
-                background: isActive ? 'rgba(91,107,255,0.12)' : 'transparent',
+                background: isActive ? 'rgba(0,32,246,0.08)' : 'transparent',
                 border: 'none', borderLeft: '3px solid ' + (isActive ? T.primary : 'transparent'),
                 cursor: 'pointer', color: 'inherit',
                 fontFamily: 'inherit',
@@ -216,7 +216,7 @@ function EMessages() {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 2 }}>
-                    <span style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <span style={{ color: T.text, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {t.pinned ? '📌 ' : ''}{t.name}
                     </span>
                     <span style={{ color: T.mutedSoft, fontFamily: T.fontMono, fontSize: 10, flexShrink: 0 }}>{t.time}</span>
@@ -236,13 +236,13 @@ function EMessages() {
         <div style={{ padding: '14px 22px', borderBottom: '1px solid ' + T.border, display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 38, height: 38, borderRadius: 999, background: thread.color, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 13 }}>{thread.avatar}</div>
           <div style={{ flex: 1 }}>
-            <div style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 14, fontWeight: 700 }}>{thread.name}</div>
+            <div style={{ color: T.text, fontFamily: T.fontUI, fontSize: 14, fontWeight: 700 }}>{thread.name}</div>
             <div style={{ color: T.muted, fontSize: 11, fontFamily: T.fontUI }}>{thread.role} · {thread.online ? <span style={{ color: '#5BD68A' }}>online</span> : 'offline'}</div>
           </div>
-          <button style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(91,107,255,0.18)', border: '1px solid rgba(91,107,255,0.3)', color: '#fff', fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <Icon name="user-id-bold" size={13} color="#fff"/>Profil
+          <button style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(0,32,246,0.10)', border: '1px solid rgba(0,32,246,0.25)', color: T.text, fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Icon name="user-id-bold" size={13} color={T.text}/>Profil
           </button>
-          <button onClick={() => setShowShiftModal(true)} style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border, color: T.light, fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <button onClick={() => setShowShiftModal(true)} style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.border, color: T.light, fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
             <Icon name="calendar-bold" size={13} color={T.light}/>Nabídnout směnu
           </button>
         </div>
@@ -252,12 +252,12 @@ function EMessages() {
             if (m.kind === 'shift') {
               return (
                 <div key={i} style={{ alignSelf: m.from === 'me' ? 'flex-end' : 'flex-start', maxWidth: '70%' }}>
-                  <div style={{ padding: 14, borderRadius: 14, background: 'linear-gradient(135deg, rgba(0,32,246,0.25), rgba(91,107,255,0.1))', border: '1px solid rgba(91,107,255,0.3)' }}>
-                    <div style={{ color: T.super, fontSize: 10, fontWeight: 800, letterSpacing: 0.6, textTransform: 'uppercase', fontFamily: T.fontUI }}>Nabídka směny</div>
-                    <div style={{ color: '#fff', fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, marginTop: 4 }}>{m.shift.role}</div>
-                    <div style={{ color: T.light, fontFamily: T.fontUI, fontSize: 12, marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                      <div><Icon name="calendar-bold" size={11} color={T.muted}/> {m.shift.date} · {m.shift.time}</div>
-                      <div><Icon name="dollar-bold" size={11} color={T.muted}/> Odhad odměny <span style={{ color: '#fff', fontWeight: 700, fontFamily: T.fontMono }}>{m.shift.pay} Kč</span></div>
+                  <div style={{ padding: 14, borderRadius: 14, background: 'rgba(255,255,255,0.95)', border: '1px solid rgba(91,107,255,0.3)' }}>
+                    <div style={{ color: '#c47f00', fontSize: 10, fontWeight: 800, letterSpacing: 0.6, textTransform: 'uppercase', fontFamily: T.fontUI }}>Nabídka směny</div>
+                    <div style={{ color: '#0020F6', fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, marginTop: 4 }}>{m.shift.role}</div>
+                    <div style={{ color: '#2D2CA7', fontFamily: T.fontUI, fontSize: 12, marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      <div><Icon name="calendar-bold" size={11} color="#6677cc"/> {m.shift.date} · {m.shift.time}</div>
+                      <div><Icon name="dollar-bold" size={11} color="#6677cc"/> Odhad odměny <span style={{ color: '#0020F6', fontWeight: 700, fontFamily: T.fontMono }}>{m.shift.pay} Kč</span></div>
                     </div>
                   </div>
                   <div style={{ color: T.mutedSoft, fontFamily: T.fontMono, fontSize: 10, marginTop: 4, textAlign: m.from === 'me' ? 'right' : 'left' }}>{m.t}</div>
@@ -268,8 +268,8 @@ function EMessages() {
               <div key={i} style={{ alignSelf: m.from === 'me' ? 'flex-end' : 'flex-start', maxWidth: '65%' }}>
                 <div style={{
                   padding: '10px 14px', borderRadius: 14,
-                  background: m.from === 'me' ? 'linear-gradient(135deg, #0020F6, #2D2CA7)' : 'rgba(255,255,255,0.06)',
-                  color: '#fff', fontFamily: T.fontUI, fontSize: 13, lineHeight: 1.45,
+                  background: m.from === 'me' ? 'linear-gradient(135deg, #0020F6, #2D2CA7)' : 'rgba(255,255,255,0.18)',
+                  color: m.from === 'me' ? '#fff' : '#fff', fontFamily: T.fontUI, fontSize: 13, lineHeight: 1.45,
                   borderBottomRightRadius: m.from === 'me' ? 4 : 14,
                   borderBottomLeftRadius: m.from === 'me' ? 14 : 4,
                 }}>{m.text}</div>
@@ -285,7 +285,7 @@ function EMessages() {
             value={msgInput}
             onChange={e => setMsgInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            style={{ flex: 1, padding: '11px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border, color: '#fff', fontSize: 13, outline: 'none', fontFamily: T.fontUI }}
+            style={{ flex: 1, padding: '11px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.12)', border: '1px solid ' + T.border, color: T.text, fontSize: 13, outline: 'none', fontFamily: T.fontUI }}
           />
           <button
             onClick={handleSend}
@@ -301,16 +301,16 @@ function EMessages() {
             <button key={q} onClick={() => {
               if (q === 'Nabídnout směnu') { setShowShiftModal(true); return; }
               setMsgInput(q);
-            }} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid ' + T.border, color: T.muted, fontFamily: T.fontUI, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{q}</button>
+            }} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.1)', border: '1px solid ' + T.border, color: T.muted, fontFamily: T.fontUI, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{q}</button>
           ))}
         </div>
       </main>
 
       {/* Right: candidate context */}
-      <aside style={{ width: 280, flexShrink: 0, borderLeft: '1px solid ' + T.border, padding: 18, overflowY: 'auto', background: 'rgba(15,15,40,0.3)' }}>
+      <aside style={{ width: 280, flexShrink: 0, borderLeft: '1px solid ' + T.border, padding: 18, overflowY: 'auto', background: 'rgba(255,255,255,0.08)' }}>
         <div style={{ textAlign: 'center', marginBottom: 14 }}>
           <div style={{ width: 64, height: 64, borderRadius: 999, background: thread.color, margin: '0 auto', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 22 }}>{thread.avatar}</div>
-          <div style={{ color: '#fff', fontFamily: T.fontHead, fontSize: 15, fontWeight: 800, marginTop: 8 }}>{thread.name}</div>
+          <div style={{ color: T.text, fontFamily: T.fontHead, fontSize: 15, fontWeight: 800, marginTop: 8 }}>{thread.name}</div>
           <div style={{ color: T.muted, fontSize: 11, fontFamily: T.fontUI, marginTop: 2 }}>22 let · Brno · 1.2 km</div>
           <div style={{ display: 'inline-flex', gap: 5, marginTop: 8 }}>
             <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(91,214,138,0.2)', color: '#5BD68A', fontFamily: T.fontMono, fontSize: 10.5, fontWeight: 800 }}>96 % match</span>
@@ -323,8 +323,8 @@ function EMessages() {
             { l: 'brigád', v: '23' },
             { l: 'odp.', v: '4 min' },
           ].map((s, i) => (
-            <div key={i} style={{ padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border, textAlign: 'center' }}>
-              <div style={{ color: '#fff', fontFamily: T.fontMono, fontSize: 14, fontWeight: 700 }}>{s.v}</div>
+            <div key={i} style={{ padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.12)', border: '1px solid ' + T.border, textAlign: 'center' }}>
+              <div style={{ color: T.text, fontFamily: T.fontMono, fontSize: 14, fontWeight: 700 }}>{s.v}</div>
               <div style={{ color: T.mutedSoft, fontSize: 9.5, fontFamily: T.fontUI, marginTop: 1 }}>{s.l}</div>
             </div>
           ))}
@@ -334,23 +334,23 @@ function EMessages() {
           { i: 'document-text-bold', n: 'CV — Tomáš Marek.pdf', s: '142 kB' },
           { i: 'shield-check-bold', n: 'Potvrzení o studiu', s: 'ověřeno' },
         ].map((d, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid ' + T.border, marginBottom: 6 }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.1)', border: '1px solid ' + T.border, marginBottom: 6 }}>
             <Icon name={d.i} size={14} color={T.light}/>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.n}</div>
+              <div style={{ color: T.text, fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.n}</div>
               <div style={{ color: T.mutedSoft, fontSize: 10, fontFamily: T.fontMono }}>{d.s}</div>
             </div>
           </div>
         ))}
-        <button style={{ width: '100%', marginTop: 10, padding: '9px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border, color: T.light, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Otevřít plný profil →</button>
+        <button style={{ width: '100%', marginTop: 10, padding: '9px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.12)', border: '1px solid ' + T.border, color: T.light, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Otevřít plný profil →</button>
       </aside>
 
       {/* Shift offer modal */}
       {showShiftModal && (
         <div onClick={e => { if (e.target === e.currentTarget) setShowShiftModal(false); }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', display: 'grid', placeItems: 'center', zIndex: 200 }}>
-          <div style={{ background: '#0d0d28', border: '1px solid rgba(208,208,255,.14)', borderRadius: 18, padding: 28, width: 380, position: 'relative' }}>
+          <div style={{ background: '#ffffff', border: '1px solid rgba(0,32,246,0.2)', borderRadius: 18, padding: 28, width: 380, position: 'relative' }}>
             <button onClick={() => setShowShiftModal(false)} style={{ position: 'absolute', top: 14, right: 14, background: 'rgba(208,208,255,.08)', border: 'none', borderRadius: 8, padding: 6, color: T.muted, cursor: 'pointer', fontSize: 16, lineHeight: 1 }}>✕</button>
-            <div style={{ color: '#fff', fontFamily: T.fontHead, fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Nabídnout směnu</div>
+            <div style={{ color: T.text, fontFamily: T.fontHead, fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Nabídnout směnu</div>
             <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 12, marginBottom: 20 }}>Nabídka bude odeslána jako zpráva — brigádník ji může přijmout nebo odmítnout.</div>
             {[
               { label: 'Pozice / název směny', key: 'role', placeholder: 'např. Barista, Servírka…', type: 'text' },
@@ -366,7 +366,7 @@ function EMessages() {
                   placeholder={field.placeholder}
                   value={shiftForm[field.key]}
                   onChange={e => setShiftForm(f => ({ ...f, [field.key]: e.target.value }))}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(208,208,255,.14)', color: '#fff', fontSize: 13, outline: 'none', fontFamily: T.fontUI, boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 9, background: 'rgba(0,32,246,0.05)', border: '1px solid rgba(0,32,246,0.2)', color: T.text, fontSize: 13, outline: 'none', fontFamily: T.fontUI, boxSizing: 'border-box' }}
                 />
               </div>
             ))}
@@ -405,9 +405,9 @@ function ESettings() {
           <button key={s.k} onClick={() => setSeg(s.k)} style={{
             display: 'flex', alignItems: 'center', gap: 9,
             padding: '9px 12px', borderRadius: 9,
-            background: seg === s.k ? 'rgba(91,107,255,0.18)' : 'transparent',
-            border: '1px solid ' + (seg === s.k ? 'rgba(91,107,255,0.35)' : 'transparent'),
-            color: seg === s.k ? '#fff' : (s.k === 'danger' ? '#f43f5e' : T.muted),
+            background: seg === s.k ? 'rgba(255,255,255,0.18)' : 'transparent',
+            border: '1px solid ' + (seg === s.k ? 'rgba(255,255,255,0.35)' : 'transparent'),
+            color: seg === s.k ? T.text : (s.k === 'danger' ? '#f43f5e' : T.muted),
             cursor: 'pointer', textAlign: 'left',
             fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600,
           }}>
@@ -447,10 +447,10 @@ function ESettings() {
 
 function FormRow({ label, sub, children }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, padding: '14px 0', borderBottom: '1px solid ' + T.border, alignItems: 'flex-start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, padding: '14px 0', borderBottom: '1px solid ' + T.cardBorder, alignItems: 'flex-start' }}>
       <div>
-        <div style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700 }}>{label}</div>
-        {sub ? <div style={{ color: T.muted, fontSize: 11, fontFamily: T.fontUI, marginTop: 3 }}>{sub}</div> : null}
+        <div style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700 }}>{label}</div>
+        {sub ? <div style={{ color: T.cardMuted, fontSize: 11, fontFamily: T.fontUI, marginTop: 3 }}>{sub}</div> : null}
       </div>
       <div>{children}</div>
     </div>
@@ -459,8 +459,8 @@ function FormRow({ label, sub, children }) {
 
 const inputStyle = {
   width: '100%', padding: '9px 12px', borderRadius: 8,
-  background: 'rgba(0,0,0,0.3)', border: '1px solid ' + T.border,
-  color: '#fff', fontFamily: T.fontUI, fontSize: 13, outline: 'none',
+  background: 'rgba(0,32,246,0.05)', border: '1px solid rgba(0,32,246,0.15)',
+  color: '#0020F6', fontFamily: T.fontUI, fontSize: 13, outline: 'none',
 };
 
 // ── Pomocné prvky profilu ──────────────────────────────────────────────────
@@ -474,13 +474,13 @@ const SOCIAL_FIELDS = [
 
 function ImageField({ label, sub, value, onChange, fallback, color }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: '1px solid ' + T.border }}>
-      <div style={{ width: 64, height: 64, borderRadius: 14, flexShrink: 0, overflow: 'hidden', background: (color || T.primary) + '22', border: '1px solid ' + (color || T.primary) + '55', display: 'grid', placeItems: 'center', color: color || T.light, fontFamily: T.fontHead, fontWeight: 800, fontSize: 20 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: '1px solid ' + T.cardBorder }}>
+      <div style={{ width: 64, height: 64, borderRadius: 14, flexShrink: 0, overflow: 'hidden', background: 'rgba(0,32,246,0.08)', border: '1px solid rgba(0,32,246,0.15)', display: 'grid', placeItems: 'center', color: T.cardText, fontFamily: T.fontHead, fontWeight: 800, fontSize: 20 }}>
         {value ? <img src={value} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} /> : fallback}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ color: '#fff', fontFamily: T.fontHead, fontSize: 14.5, fontWeight: 800 }}>{label}</div>
-        <div style={{ color: T.muted, fontSize: 11, fontFamily: T.fontUI, margin: '2px 0 7px' }}>{sub}</div>
+        <div style={{ color: T.cardText, fontFamily: T.fontHead, fontSize: 14.5, fontWeight: 800 }}>{label}</div>
+        <div style={{ color: T.cardMuted, fontSize: 11, fontFamily: T.fontUI, margin: '2px 0 7px' }}>{sub}</div>
         <input style={{ ...inputStyle, fontSize: 12 }} value={value} onChange={onChange} placeholder="Vlož odkaz na obrázek (URL)" />
       </div>
     </div>
@@ -490,7 +490,7 @@ function ImageField({ label, sub, value, onChange, fallback, color }) {
 function Stars({ n }) {
   return (
     <span style={{ display: 'inline-flex', gap: 1 }}>
-      {[1,2,3,4,5].map(i => <Icon key={i} name={i <= n ? 'star-bold' : 'star-line-duotone'} size={13} color={i <= n ? T.super : T.mutedSoft} />)}
+      {[1,2,3,4,5].map(i => <Icon key={i} name={i <= n ? 'star-bold' : 'star-line-duotone'} size={13} color={i <= n ? T.super : T.cardMuted} />)}
     </span>
   );
 }
@@ -554,14 +554,14 @@ function SettingsProfile() {
         )}
 
         {/* Ověřeno */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingBottom: 14, borderBottom: '1px solid ' + T.border }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingBottom: 14, borderBottom: '1px solid ' + T.cardBorder }}>
           {verified ? (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 999, background: 'rgba(0,32,246,0.16)', border: '1px solid rgba(91,107,255,0.5)', color: '#8AB4FF', fontFamily: T.fontUI, fontSize: 12, fontWeight: 700 }}>
-              <Icon name="verified-check-bold" size={14} color="#5B6BFF" /> Ověřená firma
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 999, background: 'rgba(91,214,138,0.12)', border: '1px solid rgba(91,214,138,0.35)', color: '#1a8f52', fontFamily: T.fontUI, fontSize: 12, fontWeight: 700 }}>
+              <Icon name="verified-check-bold" size={14} color="#5BD68A" /> Ověřená firma
             </span>
           ) : (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 999, background: 'rgba(255,255,255,0.05)', border: '1px solid ' + T.border, color: T.muted, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600 }}>
-              <Icon name="shield-warning-bold" size={14} color={T.muted} /> Neověřeno — kontaktuj podporu pro ověření
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 999, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder, color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600 }}>
+              <Icon name="shield-warning-bold" size={14} color={T.cardMuted} /> Neověřeno — kontaktuj podporu pro ověření
             </span>
           )}
         </div>
@@ -610,8 +610,8 @@ function SettingsProfile() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {SOCIAL_FIELDS.map(s => (
               <div key={s.k} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                <span style={{ width: 30, height: 30, flexShrink: 0, borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid ' + T.border, display: 'grid', placeItems: 'center' }}>
-                  <Icon name={s.icon} size={15} color={T.light} />
+                <span style={{ width: 30, height: 30, flexShrink: 0, borderRadius: 8, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder, display: 'grid', placeItems: 'center' }}>
+                  <Icon name={s.icon} size={15} color={T.cardLight} />
                 </span>
                 <input style={{ ...inputStyle, fontSize: 12 }} value={form.socials[s.k] || ''} onChange={setSocial(s.k)} placeholder={s.ph} />
               </div>
@@ -623,21 +623,21 @@ function SettingsProfile() {
         <FormRow label="Bonusové fotky" sub="Galerie na profilu firmy">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {form.photos.length === 0 && (
-              <div style={{ color: T.mutedSoft, fontFamily: T.fontUI, fontSize: 12 }}>Zatím žádné fotky.</div>
+              <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12 }}>Zatím žádné fotky.</div>
             )}
             {form.photos.map((url, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                <div style={{ width: 38, height: 38, flexShrink: 0, borderRadius: 8, overflow: 'hidden', background: 'rgba(255,255,255,0.05)', border: '1px solid ' + T.border, display: 'grid', placeItems: 'center' }}>
-                  {url ? <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} /> : <Icon name="gallery-bold" size={15} color={T.mutedSoft} />}
+                <div style={{ width: 38, height: 38, flexShrink: 0, borderRadius: 8, overflow: 'hidden', background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder, display: 'grid', placeItems: 'center' }}>
+                  {url ? <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} /> : <Icon name="gallery-bold" size={15} color={T.cardMuted} />}
                 </div>
                 <input style={{ ...inputStyle, fontSize: 12 }} value={url} onChange={e => setPhoto(i, e.target.value)} placeholder="URL fotky" />
-                <button onClick={() => rmPhoto(i)} style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 8, background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.25)', color: '#f43f5e', cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
+                <button onClick={() => rmPhoto(i)} style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 8, background: 'rgba(244,63,94,0.2)', border: '1px solid rgba(244,63,94,0.4)', color: '#f43f5e', cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
                   <Icon name="trash-bin-trash-bold" size={14} color="#f43f5e" />
                 </button>
               </div>
             ))}
-            <button onClick={addPhoto} style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px dashed ' + T.border, color: T.light, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-              <Icon name="add-circle-bold" size={14} color={T.light} /> Přidat fotku
+            <button onClick={addPhoto} style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 8, background: 'rgba(0,32,246,0.05)', border: '1px dashed ' + T.cardBorder, color: T.cardLight, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              <Icon name="add-circle-bold" size={14} color={T.cardLight} /> Přidat fotku
             </button>
           </div>
         </FormRow>
@@ -645,13 +645,13 @@ function SettingsProfile() {
         {/* Branding */}
         <FormRow label="Barva značky" sub="Branding — akcent na profilu firmy">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <input type="color" value={form.branding.color} onChange={e => setForm(f => ({ ...f, branding: { ...f.branding, color: e.target.value } }))} style={{ width: 44, height: 36, padding: 0, borderRadius: 8, border: '1px solid ' + T.border, background: 'transparent', cursor: 'pointer' }} />
+            <input type="color" value={form.branding.color} onChange={e => setForm(f => ({ ...f, branding: { ...f.branding, color: e.target.value } }))} style={{ width: 44, height: 36, padding: 0, borderRadius: 8, border: '1px solid ' + T.cardBorder, background: 'transparent', cursor: 'pointer' }} />
             <input style={{ ...inputStyle, maxWidth: 130, fontFamily: T.fontMono }} value={form.branding.color} onChange={e => setForm(f => ({ ...f, branding: { ...f.branding, color: e.target.value } }))} />
           </div>
         </FormRow>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 16 }}>
-          <button onClick={() => setForm(initForm())} disabled={saving} style={{ padding: '9px 16px', borderRadius: 8, background: 'transparent', border: '1px solid ' + T.border, color: T.muted, fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>Zrušit</button>
+          <button onClick={() => setForm(initForm())} disabled={saving} style={{ padding: '9px 16px', borderRadius: 8, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder, color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>Zrušit</button>
           <button onClick={handleSave} disabled={saving} style={{ padding: '9px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #0020F6, #2D2CA7)', border: 'none', color: '#fff', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>{saving ? 'Ukládám…' : 'Uložit změny'}</button>
         </div>
       </ECard>
@@ -660,19 +660,19 @@ function SettingsProfile() {
       <ECard>
         <SectionHeader title="Aktivní inzeráty" subtitle={activeJobs.length + ' aktivních na profilu'} />
         {activeJobs.length === 0 ? (
-          <div style={{ color: T.mutedSoft, fontFamily: T.fontUI, fontSize: 12.5, padding: '8px 0' }}>Žádné aktivní inzeráty.</div>
+          <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5, padding: '8px 0' }}>Žádné aktivní inzeráty.</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {activeJobs.map((j, i) => (
-              <div key={j.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i < activeJobs.length - 1 ? '1px solid ' + T.border : 'none' }}>
+              <div key={j.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i < activeJobs.length - 1 ? '1px solid ' + T.cardBorder : 'none' }}>
                 <div style={{ width: 8, height: 8, borderRadius: 999, flexShrink: 0, background: j.status === 'urgent' ? '#f43f5e' : '#5BD68A' }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{j.title}</div>
-                  <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 11, marginTop: 2 }}>
+                  <div style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{j.title}</div>
+                  <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 11, marginTop: 2 }}>
                     {j.status === 'urgent' ? 'Spěchá' : 'Aktivní'}{j.location ? ' · ' + j.location : ''}{j.matches ? ' · ' + j.matches + ' kandidátů' : ''}
                   </div>
                 </div>
-                <div style={{ flexShrink: 0, color: T.light, fontFamily: T.fontMono, fontSize: 13, fontWeight: 700 }}>{j.pay} {j.payUnit || 'Kč/h'}</div>
+                <div style={{ flexShrink: 0, color: T.cardLight, fontFamily: T.fontMono, fontSize: 13, fontWeight: 700 }}>{j.pay} {j.payUnit || 'Kč/h'}</div>
               </div>
             ))}
           </div>
@@ -683,19 +683,19 @@ function SettingsProfile() {
       <ECard>
         <SectionHeader title="Recenze" subtitle={avgRating ? avgRating + ' ★ průměr · ' + reviews.length + ' hodnocení' : 'Zatím bez recenzí'} />
         {reviews.length === 0 ? (
-          <div style={{ color: T.mutedSoft, fontFamily: T.fontUI, fontSize: 12.5, padding: '8px 0' }}>Zatím žádné recenze.</div>
+          <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5, padding: '8px 0' }}>Zatím žádné recenze.</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {reviews.map((r, i) => (
-              <div key={r.id} style={{ display: 'flex', gap: 12, padding: '14px 0', borderBottom: i < reviews.length - 1 ? '1px solid ' + T.border : 'none' }}>
-                <div style={{ width: 38, height: 38, flexShrink: 0, borderRadius: 999, background: (r.color || T.primary) + '22', border: '1px solid ' + (r.color || T.primary) + '55', display: 'grid', placeItems: 'center', color: r.color || T.light, fontFamily: T.fontHead, fontWeight: 800, fontSize: 13 }}>{r.avatar}</div>
+              <div key={r.id} style={{ display: 'flex', gap: 12, padding: '14px 0', borderBottom: i < reviews.length - 1 ? '1px solid ' + T.cardBorder : 'none' }}>
+                <div style={{ width: 38, height: 38, flexShrink: 0, borderRadius: 999, background: 'rgba(0,32,246,0.1)', border: '1px solid rgba(0,32,246,0.15)', display: 'grid', placeItems: 'center', color: T.cardText, fontFamily: T.fontHead, fontWeight: 800, fontSize: 13 }}>{r.avatar}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <span style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{r.author}</span>
-                    <span style={{ color: T.mutedSoft, fontFamily: T.fontUI, fontSize: 11 }}>{r.when}</span>
+                    <span style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{r.author}</span>
+                    <span style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 11 }}>{r.when}</span>
                   </div>
                   <div style={{ margin: '3px 0 5px' }}><Stars n={r.rating} /></div>
-                  {r.text && <div style={{ color: T.light, fontFamily: T.fontUI, fontSize: 12.5, lineHeight: 1.5 }}>{r.text}</div>}
+                  {r.text && <div style={{ color: T.cardLight, fontFamily: T.fontUI, fontSize: 12.5, lineHeight: 1.5 }}>{r.text}</div>}
                 </div>
               </div>
             ))}
@@ -721,17 +721,17 @@ function SettingsNotif() {
       <div style={{ padding: '18px 22px 8px' }}>
         <SectionHeader title="Notifikace" subtitle="Kdy vás máme rušit" />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px', gap: 0, padding: '6px 22px', color: T.mutedSoft, fontSize: 10, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.6, textTransform: 'uppercase', borderBottom: '1px solid ' + T.border }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px', gap: 0, padding: '6px 22px', color: T.cardMuted, fontSize: 10, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.6, textTransform: 'uppercase', borderBottom: '1px solid ' + T.cardBorder }}>
         <div>Událost</div>
         <div style={{ textAlign: 'center' }}>E-mail</div>
         <div style={{ textAlign: 'center' }}>V appce</div>
         <div style={{ textAlign: 'center' }}>Push</div>
       </div>
       {rows.map((r, i) => (
-        <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px', gap: 0, padding: '14px 22px', alignItems: 'center', borderBottom: i < rows.length - 1 ? '1px solid ' + T.border : 'none' }}>
+        <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px', gap: 0, padding: '14px 22px', alignItems: 'center', borderBottom: i < rows.length - 1 ? '1px solid ' + T.cardBorder : 'none' }}>
           <div>
-            <div style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{r.l}</div>
-            <div style={{ color: T.muted, fontSize: 11, fontFamily: T.fontUI, marginTop: 2 }}>{r.s}</div>
+            <div style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{r.l}</div>
+            <div style={{ color: T.cardMuted, fontSize: 11, fontFamily: T.fontUI, marginTop: 2 }}>{r.s}</div>
           </div>
           {[r.e, r.p, r.push].map((on, j) => (
             <div key={j} style={{ display: 'flex', justifyContent: 'center' }}>
@@ -748,7 +748,7 @@ function Toggle({ on }) {
   return (
     <div style={{
       width: 36, height: 20, borderRadius: 999,
-      background: on ? T.primary : 'rgba(255,255,255,0.1)',
+      background: on ? T.primary : 'rgba(0,32,246,0.1)',
       position: 'relative', cursor: 'pointer', transition: 'all .2s',
     }}>
       <div style={{
@@ -772,15 +772,15 @@ function SettingsPrivacy() {
       ].map((r, i) => (
         <FormRow key={i} label={r.l} sub={r.sub}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, padding: '6px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border }}>{r.v}</span>
-            <button style={{ padding: '6px 12px', borderRadius: 7, background: 'transparent', border: '1px solid ' + T.border, color: T.muted, fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600, cursor: 'pointer' }}>Změnit</button>
+            <span style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, padding: '6px 10px', borderRadius: 7, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder }}>{r.v}</span>
+            <button style={{ padding: '6px 12px', borderRadius: 7, background: 'rgba(0,32,246,0.04)', border: '1px solid ' + T.cardBorder, color: T.cardMuted, fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600, cursor: 'pointer' }}>Změnit</button>
           </div>
         </FormRow>
       ))}
-      <div style={{ marginTop: 18, padding: 14, borderRadius: 10, background: 'rgba(91,107,255,0.08)', border: '1px solid rgba(91,107,255,0.2)' }}>
-        <div style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700 }}>Export všech dat</div>
-        <div style={{ color: T.muted, fontSize: 11.5, fontFamily: T.fontUI, marginTop: 4 }}>Stáhněte JSON se všemi inzeráty, kandidáty a zprávami. Zpracování trvá ~10 minut.</div>
-        <button style={{ marginTop: 10, padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid ' + T.border, color: '#fff', fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Vyžádat export</button>
+      <div style={{ marginTop: 18, padding: 14, borderRadius: 10, background: 'rgba(0,32,246,0.05)', border: '1px solid rgba(0,32,246,0.12)' }}>
+        <div style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700 }}>Export všech dat</div>
+        <div style={{ color: T.cardMuted, fontSize: 11.5, fontFamily: T.fontUI, marginTop: 4 }}>Stáhněte JSON se všemi inzeráty, kandidáty a zprávami. Zpracování trvá ~10 minut.</div>
+        <button style={{ marginTop: 10, padding: '8px 14px', borderRadius: 8, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder, color: T.cardText, fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Vyžádat export</button>
       </div>
     </ECard>
   );
@@ -795,10 +795,10 @@ function SettingsDanger() {
         { l: 'Převést vlastnictví', s: 'Předat účet jinému členu týmu jako vlastníkovi.', cta: 'Převést', tone: '#5B6BFF' },
         { l: 'Smazat účet a všechna data', s: 'Trvale odstraní všechny inzeráty, kandidáty, zprávy a fakturační historii. Nelze vrátit.', cta: 'Smazat účet', tone: '#f43f5e' },
       ].map((r, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0', borderBottom: i < 2 ? '1px solid ' + T.border : 'none' }}>
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0', borderBottom: i < 2 ? '1px solid ' + T.cardBorder : 'none' }}>
           <div style={{ flex: 1 }}>
-            <div style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{r.l}</div>
-            <div style={{ color: T.muted, fontSize: 11.5, fontFamily: T.fontUI, marginTop: 3 }}>{r.s}</div>
+            <div style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{r.l}</div>
+            <div style={{ color: T.cardMuted, fontSize: 11.5, fontFamily: T.fontUI, marginTop: 3 }}>{r.s}</div>
           </div>
           <button style={{ padding: '9px 14px', borderRadius: 8, background: 'transparent', border: '1px solid ' + r.tone + '66', color: r.tone, fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>{r.cta}</button>
         </div>
@@ -807,4 +807,314 @@ function SettingsDanger() {
   );
 }
 
-Object.assign(window, { EMessages, ESettings });
+// ─────────────────────────────────────────────────────────────
+// CENÍK / TARIFY
+// ─────────────────────────────────────────────────────────────
+
+const PLANS = [
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: 0,
+    period: 'navždy zdarma',
+    color: '#6677cc',
+    icon: 'hand-shake-bold',
+    badge: null,
+    features: [
+      { ok: true,  text: '1 aktivní inzerát' },
+      { ok: true,  text: '1 full-time inzerce' },
+      { ok: true,  text: 'Oslovování brigádníků (1×/měs)' },
+      { ok: true,  text: 'Základní statistiky' },
+      { ok: false, text: 'Topování inzerátu' },
+      { ok: false, text: 'Ověřená firma' },
+      { ok: false, text: 'SMS Urgent' },
+      { ok: false, text: 'Pokročilá analytika' },
+      { ok: false, text: 'Export dat (CSV)' },
+    ],
+    cta: 'Začít zdarma',
+    ctaDisabled: false,
+    contact: false,
+  },
+  {
+    id: 'standard',
+    name: 'Standard',
+    price: 499,
+    period: 'měsíc bez DPH',
+    color: '#8AB4FF',
+    icon: 'bolt-bold',
+    badge: 'Nejoblíbenější',
+    features: [
+      { ok: true,  text: '2 aktivní inzeráty' },
+      { ok: true,  text: 'Topování inzerátu (1×/měs)' },
+      { ok: true,  text: 'Ověřená firma + branding' },
+      { ok: true,  text: 'Oslovování brigádníků (10×/měs)' },
+      { ok: true,  text: 'Plné statistiky + CSV export' },
+      { ok: true,  text: 'Šablony inzerátů' },
+      { ok: false, text: 'SMS Urgent' },
+      { ok: false, text: 'Prémiový badge' },
+      { ok: false, text: 'Pokročilá analytika' },
+    ],
+    cta: 'Vybrat Standard',
+    ctaDisabled: false,
+    contact: false,
+  },
+  {
+    id: 'business',
+    name: 'Business',
+    price: 4999,
+    period: 'měsíc bez DPH',
+    color: '#FFD166',
+    icon: 'crown-star-bold',
+    badge: null,
+    features: [
+      { ok: true,  text: '10 aktivních inzerátů' },
+      { ok: true,  text: 'Topování inzerátu (5×/měs)' },
+      { ok: true,  text: 'SMS Urgent + prémiový badge' },
+      { ok: true,  text: 'Oslovování brigádníků (100×/měs)' },
+      { ok: true,  text: 'Pokročilá analytika' },
+      { ok: true,  text: 'Zmínka na FB + IG Makej' },
+      { ok: true,  text: 'Role uživatelů' },
+      { ok: true,  text: 'Plánování inzerátu' },
+      { ok: true,  text: 'Možnost konzultace' },
+    ],
+    cta: 'Vybrat Business',
+    ctaDisabled: false,
+    contact: false,
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 9999,
+    pricePrefix: 'od ',
+    period: 'kalkulace na míru',
+    color: '#E0B0FF',
+    icon: 'buildings-2-bold',
+    badge: null,
+    features: [
+      { ok: true,  text: 'Vše z Business' },
+      { ok: true,  text: 'Custom integrace (HR systémy)' },
+      { ok: true,  text: 'Co-marketing s Makej' },
+      { ok: true,  text: 'Vlastní reporting na míru' },
+      { ok: true,  text: 'Neomezení uživatelé v týmu' },
+      { ok: true,  text: 'Onboarding a školení týmu' },
+      { ok: true,  text: 'SLA 99,99 % + prioritní podpora' },
+      { ok: true,  text: 'Dedikovaný account manager' },
+    ],
+    cta: 'Nezávazná poptávka',
+    ctaDisabled: false,
+    contact: true,
+  },
+];
+
+function EPricing({ onTab }) {
+  const [selected, setSelected] = useStateE(null);
+  const [success, setSuccess]   = useStateE(false);
+
+  const currentPlanId = (() => {
+    const planName = (ECOMPANY.plan || '').toLowerCase();
+    if (planName.includes('enterprise')) return 'enterprise';
+    if (planName.includes('business') || planName.includes('premium')) return 'business';
+    if (planName.includes('standard')) return 'standard';
+    return 'starter';
+  })();
+
+  function handleSelect(planId) {
+    if (planId === currentPlanId) return;
+    setSelected(planId);
+  }
+
+  function handlePay() {
+    setSuccess(true);
+    setTimeout(() => { setSuccess(false); setSelected(null); }, 3000);
+  }
+
+  return (
+    <div style={{ padding: '28px 32px 48px', overflowY: 'auto' }}>
+      {/* Header */}
+      <div style={{ marginBottom: 32, textAlign: 'center' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,209,102,0.12)', border: '1px solid rgba(255,209,102,0.25)', borderRadius: 99, padding: '5px 14px', marginBottom: 14 }}>
+          <Icon name="crown-star-bold" size={13} color="#FFD166" />
+          <span style={{ color: '#FFD166', fontSize: 11, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 1, textTransform: 'uppercase' }}>Tarify & předplatné</span>
+        </div>
+        <div style={{ fontFamily: T.fontHead, fontSize: 28, fontWeight: 900, color: T.text, marginBottom: 8 }}>Vyber si svůj plán</div>
+        <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 14 }}>Bez závazků. Zrušení kdykoliv.</div>
+      </div>
+
+      {/* Plans grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, maxWidth: 1100, margin: '0 auto 40px' }}>
+        {PLANS.map(plan => {
+          const isActive = plan.id === currentPlanId;
+          const isPop    = plan.badge != null;
+          const isSel    = selected === plan.id;
+          return (
+            <div key={plan.id} onClick={() => handleSelect(plan.id)} style={{
+              borderRadius: 18,
+              border: '2px solid ' + (isActive ? plan.color : isSel ? plan.color : 'rgba(255,255,255,0.1)'),
+              background: isPop
+                ? 'linear-gradient(160deg, rgba(255,209,102,0.10), rgba(0,32,246,0.08))'
+                : 'rgba(255,255,255,0.04)',
+              padding: '28px 24px 24px',
+              cursor: isActive ? 'default' : 'pointer',
+              position: 'relative',
+              transition: 'border-color 0.15s, transform 0.15s',
+              transform: isSel ? 'translateY(-4px)' : 'none',
+            }}>
+              {plan.badge && (
+                <div style={{
+                  position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)',
+                  background: 'linear-gradient(90deg, #FFD166, #FF9F43)',
+                  color: '#1a1000', fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 800,
+                  borderRadius: 99, padding: '4px 14px', whiteSpace: 'nowrap',
+                }}>{plan.badge}</div>
+              )}
+              {isActive && (
+                <div style={{
+                  position: 'absolute', top: 12, right: 12,
+                  background: plan.color + '22', border: '1px solid ' + plan.color + '66',
+                  color: plan.color, fontSize: 9.5, fontWeight: 800, fontFamily: T.fontUI,
+                  borderRadius: 99, padding: '3px 9px', letterSpacing: 0.5,
+                }}>AKTUÁLNÍ</div>
+              )}
+              <div style={{ marginBottom: 16 }}>
+                <Icon name={plan.icon} size={24} color={plan.color} />
+              </div>
+              <div style={{ fontFamily: T.fontHead, fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{plan.name}</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20, flexWrap: 'wrap' }}>
+                {plan.price === 0 ? (
+                  <span style={{ fontFamily: T.fontMono, fontSize: 28, fontWeight: 700, color: plan.color }}>Zdarma</span>
+                ) : (
+                  <>
+                    {plan.pricePrefix && <span style={{ color: T.muted, fontSize: 13, fontFamily: T.fontUI }}>{plan.pricePrefix}</span>}
+                    <span style={{ fontFamily: T.fontMono, fontSize: 28, fontWeight: 700, color: plan.color }}>
+                      {plan.price.toLocaleString('cs-CZ')}
+                    </span>
+                    <span style={{ color: T.muted, fontSize: 12, fontFamily: T.fontUI }}>Kč / {plan.period}</span>
+                  </>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 24 }}>
+                {plan.features.map((f, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Icon
+                      name={f.ok ? 'check-circle-bold' : 'close-circle-bold'}
+                      size={15}
+                      color={f.ok ? '#5BD68A' : 'rgba(255,255,255,0.2)'}
+                    />
+                    <span style={{ color: f.ok ? T.text : 'rgba(255,255,255,0.35)', fontSize: 12.5, fontFamily: T.fontUI }}>
+                      {f.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {plan.contact ? (
+                <a href="mailto:hello@makej.eu" style={{
+                  display: 'block', width: '100%', padding: '10px 0', borderRadius: 10, textAlign: 'center',
+                  background: 'rgba(224,176,255,0.15)', border: '1px solid rgba(224,176,255,0.3)',
+                  color: '#E0B0FF', fontFamily: T.fontUI, fontSize: 13, fontWeight: 800,
+                  textDecoration: 'none', boxSizing: 'border-box',
+                }}>{plan.cta}</a>
+              ) : (
+                <button
+                  onClick={e => { e.stopPropagation(); if (!isActive) handleSelect(plan.id); }}
+                  style={{
+                    width: '100%', padding: '10px 0', borderRadius: 10,
+                    background: isActive
+                      ? 'rgba(255,255,255,0.06)'
+                      : isPop
+                      ? 'linear-gradient(90deg, #FFD166, #FF9F43)'
+                      : plan.id === 'business'
+                      ? 'rgba(255,209,102,0.15)'
+                      : 'rgba(138,180,255,0.15)',
+                    border: isActive ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                    color: isActive ? T.muted : isPop ? '#1a1000' : plan.color,
+                    fontFamily: T.fontUI, fontSize: 13, fontWeight: 800,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {isActive ? 'Aktuální tarif' : plan.cta}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Checkout strip */}
+      {selected && !success && !PLANS.find(x => x.id === selected)?.contact && (
+        <div style={{
+          maxWidth: 900, margin: '0 auto',
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          borderRadius: 16, padding: '20px 28px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20,
+          flexWrap: 'wrap',
+        }}>
+          {(() => {
+            const p = PLANS.find(x => x.id === selected);
+            return (
+              <>
+                <div>
+                  <div style={{ color: T.text, fontFamily: T.fontHead, fontSize: 16, fontWeight: 800 }}>
+                    {p.name} — {p.price.toLocaleString('cs-CZ')} Kč / měsíc
+                  </div>
+                  <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 12, marginTop: 3 }}>
+                    Fakturováno měsíčně · zrušení kdykoliv
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={() => setSelected(null)} style={{
+                    padding: '10px 18px', borderRadius: 9,
+                    background: 'transparent', border: '1px solid rgba(255,255,255,0.2)',
+                    color: T.muted, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                  }}>Zrušit</button>
+                  <button onClick={handlePay} style={{
+                    padding: '10px 22px', borderRadius: 9,
+                    background: 'linear-gradient(90deg, #FFD166, #FF9F43)',
+                    border: 'none', color: '#1a1000',
+                    fontFamily: T.fontUI, fontSize: 13, fontWeight: 800, cursor: 'pointer',
+                  }}>
+                    <Icon name="card-bold" size={14} color="#1a1000" /> Zaplatit kartou
+                  </button>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* Success */}
+      {success && (
+        <div style={{
+          maxWidth: 900, margin: '0 auto',
+          background: 'rgba(91,214,138,0.08)', border: '1px solid rgba(91,214,138,0.3)',
+          borderRadius: 16, padding: '20px 28px', textAlign: 'center',
+        }}>
+          <Icon name="check-circle-bold" size={32} color="#5BD68A" />
+          <div style={{ color: '#5BD68A', fontFamily: T.fontHead, fontSize: 17, fontWeight: 800, marginTop: 10 }}>
+            Platba úspěšná! Tarif byl aktivován.
+          </div>
+        </div>
+      )}
+
+      {/* FAQ */}
+      <div style={{ maxWidth: 900, margin: '36px auto 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        {[
+          { q: 'Mohu kdykoliv zrušit?', a: 'Ano, zrušení je možné kdykoliv bez poplatku. Tarif zůstane aktivní do konce fakturačního období.' },
+          { q: 'Jak se tarif fakturuje?', a: 'Fakturujeme měsíčně přes kartu. Fakturu dostanete e-mailem.' },
+          { q: 'Mohu změnit tarif v průběhu?', a: 'Ano, upgrade je okamžitý. Downgrade proběhne na konci aktuálního období.' },
+          { q: 'Co je ASAP inzerát?', a: 'ASAP inzeráty mají prioritní zobrazení a jsou označeny červeným štítkem — ideální pro urgentní obsazení.' },
+        ].map((item, i) => (
+          <div key={i} style={{
+            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 12, padding: '16px 18px',
+          }}>
+            <div style={{ color: T.text, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, marginBottom: 6 }}>{item.q}</div>
+            <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 12, lineHeight: 1.6 }}>{item.a}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { EMessages, ESettings, EPricing });

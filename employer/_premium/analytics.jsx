@@ -499,6 +499,13 @@ function AnalyticsRetention() {
 // ─────────────────────────────────────────────────────────────
 
 function ECalendar() {
+  const dark    = window._makejIsDark;
+  const cText   = dark ? '#ffffff'    : '#111111';
+  const cMuted  = dark ? T.muted      : '#666666';
+  const cSoft   = dark ? T.mutedSoft  : '#888888';
+  const cLight  = dark ? T.light      : '#444444';
+  const cBorder = dark ? T.border     : T.cardBorder;
+
   const now = new Date();
   const [viewYear,  setViewYear]  = useStateE(now.getFullYear());
   const [viewMonth, setViewMonth] = useStateE(now.getMonth()); // 0-indexed
@@ -543,12 +550,16 @@ function ECalendar() {
     byDay[day].push(j);
   });
 
-  // Pole dnů pro grid (null = prázdná buňka před 1. v měsíci)
-  const daysInMonth  = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const firstWeekday = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7; // Po = 0
+  // Pole dnů pro grid — včetně přetékajících dnů z předchozího/dalšího měsíce
+  const daysInMonth     = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
+  const firstWeekday    = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7; // Po = 0
   const calDays = [];
-  for (let i = 0; i < firstWeekday; i++) calDays.push(null);
-  for (let d = 1; d <= daysInMonth; d++) calDays.push(d);
+  for (let i = 0; i < firstWeekday; i++) calDays.push({ d: daysInPrevMonth - firstWeekday + 1 + i, current: false });
+  for (let d = 1; d <= daysInMonth; d++) calDays.push({ d, current: true });
+  const totalCells = Math.ceil(calDays.length / 7) * 7;
+  let nextMonthDay = 1;
+  while (calDays.length < totalCells) calDays.push({ d: nextMonthDay++, current: false });
 
   // Statistiky
   const filled     = monthJobs.filter(j => j.status === 'filled').length;
@@ -568,7 +579,7 @@ function ECalendar() {
   }
 
   return (
-    <div style={{ padding: '24px 28px 40px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+    <div style={{ padding: '24px 28px 40px', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
       {/* KPI čísla */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
@@ -579,11 +590,11 @@ function ECalendar() {
           { l: 'Najato',     v: totalHired || '—', sub: 'přijatých brigádníků',  c: '#5B6BFF' },
         ].map((x, i) => (
           <ECard key={i} padding={16}>
-            <div style={{ color: T.muted, fontSize: 11, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.4, textTransform: 'uppercase' }}>{x.l}</div>
+            <div style={{ color: cMuted, fontSize: 11, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.4, textTransform: 'uppercase' }}>{x.l}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 4 }}>
-              <div style={{ color: x.c, fontFamily: T.fontMono, fontSize: 24, fontWeight: 700, letterSpacing: -0.6 }}>{x.v}</div>
+              <div style={{ color: dark ? x.c : '#111111', fontFamily: T.fontMono, fontSize: 24, fontWeight: 700, letterSpacing: -0.6 }}>{x.v}</div>
             </div>
-            <div style={{ color: T.mutedSoft, fontSize: 11, fontFamily: T.fontUI, marginTop: 2 }}>{x.sub}</div>
+            <div style={{ color: cSoft, fontSize: 11, fontFamily: T.fontUI, marginTop: 2 }}>{x.sub}</div>
           </ECard>
         ))}
       </div>
@@ -592,15 +603,15 @@ function ECalendar() {
       <ECard padding={0} style={{ overflow: 'hidden' }}>
 
         {/* Header */}
-        <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid ' + T.border }}>
-          <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border, color: T.light, cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
-            <Icon name="alt-arrow-left-line-duotone" size={14} color={T.light}/>
+        <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid ' + cBorder }}>
+          <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + cBorder, color: cLight, cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
+            <Icon name="alt-arrow-left-line-duotone" size={14} color={cLight}/>
           </button>
-          <div style={{ fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, color: '#fff', minWidth: 160 }}>
+          <div style={{ fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, color: cText, minWidth: 160 }}>
             {MONTH_NAMES[viewMonth]} {viewYear}
           </div>
-          <button onClick={nextMonth} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border, color: T.light, cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
-            <Icon name="alt-arrow-right-line-duotone" size={14} color={T.light}/>
+          <button onClick={nextMonth} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + cBorder, color: cLight, cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
+            <Icon name="alt-arrow-right-line-duotone" size={14} color={cLight}/>
           </button>
           <div style={{ flex: 1 }} />
           {/* Legenda */}
@@ -608,7 +619,7 @@ function ECalendar() {
             {[['#5BD68A','Naplněno'],['#8AB4FF','Aktivní'],['#f43f5e','ASAP']].map(([c,l]) => (
               <span key={l} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 2, background: c }}/>
-                <span style={{ color: T.light }}>{l}</span>
+                <span style={{ color: cLight }}>{l}</span>
               </span>
             ))}
           </div>
@@ -617,35 +628,36 @@ function ECalendar() {
         {/* Názvy dní */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid ' + T.border }}>
           {DAY_NAMES.map((d, i) => (
-            <div key={d} style={{ padding: '8px 12px', fontSize: 10.5, fontFamily: T.fontUI, fontWeight: 700, color: T.mutedSoft, letterSpacing: 0.6, textTransform: 'uppercase', textAlign: i >= 5 ? 'center' : 'left', background: i >= 5 ? 'rgba(0,0,0,0.2)' : 'transparent' }}>{d}</div>
+            <div key={d} style={{ padding: '8px 12px', fontSize: 10.5, fontFamily: T.fontUI, fontWeight: 700, color: cSoft, letterSpacing: 0.6, textTransform: 'uppercase', textAlign: i >= 5 ? 'center' : 'left', background: i >= 5 ? 'rgba(0,0,0,0.08)' : 'transparent' }}>{d}</div>
           ))}
         </div>
 
         {/* Buňky */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
-          {calDays.map((d, i) => {
-            const dayJobs   = d ? (byDay[d] || []) : [];
+          {calDays.map((item, i) => {
+            const { d, current } = item;
+            const dayJobs   = current ? (byDay[d] || []) : [];
             const isWeekend = (i % 7) >= 5;
-            const isToday   = isCurrentMonth && d === today;
+            const isToday   = isCurrentMonth && current && d === today;
+            const dayNumColor = isToday ? '#fff' : current ? cLight : (dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.22)');
             return (
               <div key={i} style={{
                 minHeight: 100, padding: 8,
-                borderRight:  (i % 7 < 6) ? '1px solid ' + T.border : 'none',
-                borderBottom: '1px solid ' + T.border,
-                background:   isWeekend ? 'rgba(0,0,0,0.15)' : 'transparent',
-                opacity:      d ? 1 : 0.25,
+                borderRight:  (i % 7 < 6) ? '1px solid ' + cBorder : 'none',
+                borderBottom: '1px solid ' + cBorder,
+                background:   isWeekend ? 'rgba(0,0,0,0.06)' : 'transparent',
               }}>
-                {d && (
-                  <>
-                    <div style={{ display: 'inline-flex', width: 24, height: 24, borderRadius: 999, alignItems: 'center', justifyContent: 'center', background: isToday ? T.primary : 'transparent', color: isToday ? '#fff' : T.light, fontFamily: T.fontMono, fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{d}</div>
+                <>
+                  <div style={{ display: 'inline-flex', width: 24, height: 24, borderRadius: 999, alignItems: 'center', justifyContent: 'center', background: isToday ? T.primary : 'transparent', color: dayNumColor, fontFamily: T.fontMono, fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{d}</div>
+                  {current && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                       {dayJobs.map((job, j) => {
                         const c = jobColor(job);
                         return (
                           <div key={j} style={{ padding: '3px 6px', borderRadius: 5, background: c + '22', borderLeft: '2px solid ' + c }}>
-                            <div style={{ color: '#fff', fontWeight: 700, fontSize: 10.5, fontFamily: T.fontUI, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.title}</div>
+                            <div style={{ color: cText, fontWeight: 700, fontSize: 10.5, fontFamily: T.fontUI, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.title}</div>
                             {(job.time_start || job.time_end) && (
-                              <div style={{ color: T.muted, fontFamily: T.fontMono, fontSize: 9.5 }}>
+                              <div style={{ color: cMuted, fontFamily: T.fontMono, fontSize: 9.5 }}>
                                 {[job.time_start, job.time_end].filter(Boolean).join('–')}
                               </div>
                             )}
@@ -653,8 +665,8 @@ function ECalendar() {
                         );
                       })}
                     </div>
-                  </>
-                )}
+                  )}
+                </>
               </div>
             );
           })}
@@ -674,25 +686,25 @@ function ECalendar() {
               const c = jobColor(j);
               const dayName = d ? DAY_NAMES[(d.getDay() + 6) % 7] : '';
               return (
-                <div key={j.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', borderBottom: i < openJobs.length - 1 ? '1px solid ' + T.border : 'none' }}>
+                <div key={j.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', borderBottom: i < openJobs.length - 1 ? '1px solid ' + cBorder : 'none' }}>
                   <div style={{ textAlign: 'center', width: 44, flexShrink: 0 }}>
-                    <div style={{ color: c, fontFamily: T.fontMono, fontSize: 20, fontWeight: 700, lineHeight: 1 }}>{d ? d.getDate() : '—'}</div>
-                    <div style={{ color: T.muted, fontSize: 10, fontFamily: T.fontUI }}>{dayName}</div>
+                    <div style={{ color: dark ? c : '#111111', fontFamily: T.fontMono, fontSize: 20, fontWeight: 700, lineHeight: 1 }}>{d ? d.getDate() : '—'}</div>
+                    <div style={{ color: cMuted, fontSize: 10, fontFamily: T.fontUI }}>{dayName}</div>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.title}</div>
+                    <div style={{ color: cText, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.title}</div>
                     {(j.time_start || j.time_end || j.location) && (
-                      <div style={{ color: T.muted, fontFamily: T.fontMono, fontSize: 10.5, marginTop: 2 }}>
+                      <div style={{ color: cMuted, fontFamily: T.fontMono, fontSize: 10.5, marginTop: 2 }}>
                         {[j.time_start && j.time_end ? j.time_start + '–' + j.time_end : j.time_start, j.location].filter(Boolean).join(' · ')}
                       </div>
                     )}
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ color: (j.hired || 0) > 0 ? '#FFD166' : '#f43f5e', fontFamily: T.fontMono, fontSize: 13, fontWeight: 700 }}>
+                    <div style={{ color: (j.hired || 0) > 0 ? (dark ? '#FFD166' : '#111111') : '#f43f5e', fontFamily: T.fontMono, fontSize: 13, fontWeight: 700 }}>
                       {j.hired || 0} najato
                     </div>
                     {j.matches > 0 && (
-                      <div style={{ color: T.mutedSoft, fontSize: 10, fontFamily: T.fontUI }}>{j.matches} zájemců</div>
+                      <div style={{ color: cSoft, fontSize: 10, fontFamily: T.fontUI }}>{j.matches} zájemců</div>
                     )}
                   </div>
                 </div>
@@ -704,9 +716,9 @@ function ECalendar() {
 
       {/* Prázdný stav */}
       {monthJobs.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '40px 20px', color: T.muted, fontFamily: T.fontUI }}>
-          <Icon name="calendar-bold" size={44} color={T.mutedSoft} />
-          <div style={{ marginTop: 14, fontSize: 16, fontWeight: 700, color: T.light }}>
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: cMuted, fontFamily: T.fontUI }}>
+          <Icon name="calendar-bold" size={44} color={cSoft} />
+          <div style={{ marginTop: 14, fontSize: 16, fontWeight: 700, color: cLight }}>
             Žádné brigády v {MONTH_NAMES[viewMonth]} {viewYear}
           </div>
           <div style={{ marginTop: 6, fontSize: 12, lineHeight: 1.6 }}>

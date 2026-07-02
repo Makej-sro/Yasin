@@ -129,10 +129,36 @@ const THREAD = [
 // ─────────────────────────────────────────────────────────────
 // Tokens
 // ─────────────────────────────────────────────────────────────
-const T = {
+const THEME_LIGHT = {
+  bg: '#0020F6',
+  card: '#ffffff',
+  cardSoft: 'rgba(0,32,246,0.05)',
+  cardText: '#0020F6',
+  cardMuted: '#6677cc',
+  cardMutedSoft: '#99aadd',
+  cardLight: '#2D2CA7',
+  cardBorder: 'rgba(0,32,246,0.12)',
+  navBg: 'rgba(0,12,200,0.92)',
+  primary: '#0020F6',
+  primaryDeep: '#2D2CA7',
+  light: '#E8EBFF',
+  text: '#ffffff',
+  muted: '#ffffff',
+  mutedSoft: 'rgba(255,255,255,0.8)',
+  destructive: '#f43f5e',
+  super: '#FFD166',
+  border: 'rgba(255,255,255,0.18)',
+};
+const THEME_DARK = {
   bg: 'linear-gradient(180deg, #2a2ab5 0%, #050510 100%)',
   card: '#16163b',
   cardSoft: 'rgba(255,255,255,0.06)',
+  cardText: '#ffffff',
+  cardMuted: '#9999cc',
+  cardMutedSoft: '#6e6ea8',
+  cardLight: '#E8EBFF',
+  cardBorder: 'rgba(255,255,255,0.08)',
+  navBg: 'rgba(7,7,26,0.55)',
   primary: '#0020F6',
   primaryDeep: '#2D2CA7',
   light: '#E8EBFF',
@@ -142,10 +168,22 @@ const T = {
   destructive: '#f43f5e',
   super: '#FFD166',
   border: 'rgba(255,255,255,0.08)',
+};
+
+const T = {
+  ...THEME_LIGHT,
   fontUI: '"Plus Jakarta Sans", -apple-system, system-ui, sans-serif',
   fontHead: '"Inter", -apple-system, system-ui, sans-serif',
   fontMono: '"JetBrains Mono", ui-monospace, monospace',
   fontDeco: '"Playfair Display", Georgia, serif',
+};
+
+window._makejIsDark = false;
+window.toggleMakejTheme = function() {
+  window._makejIsDark = !window._makejIsDark;
+  const theme = window._makejIsDark ? THEME_DARK : THEME_LIGHT;
+  Object.assign(T, theme);
+  window.dispatchEvent(new CustomEvent('makej-theme-toggle'));
 };
 
 // ─────────────────────────────────────────────────────────────

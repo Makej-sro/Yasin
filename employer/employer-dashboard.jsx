@@ -68,9 +68,18 @@ function EDashboard({ period = '30d' }) {
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
               <div>
-                <div style={{ fontFamily: T.fontMono, fontSize: 28, fontWeight: 700, color: T.cardText, letterSpacing: -1, lineHeight: 1 }}>
-                  {typeof k.value === 'number' && k.value >= 1000 ? k.value.toLocaleString('cs-CZ').replace(/,/g, ' ') : k.value}
-                  <span style={{ fontSize: 14, color: T.cardMuted, fontWeight: 600, marginLeft: 2 }}>{k.unit}</span>
+                <div style={{ fontFamily: T.fontMono, fontSize: 28, fontWeight: 700, letterSpacing: -1, lineHeight: 1 }}>
+                  {k.id === 'jobs' && k.max != null ? (
+                    <>
+                      <span style={{ color: T.primary }}>{k.value}</span>
+                      <span style={{ color: '#111111' }}> / {k.max}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ color: T.cardText }}>{typeof k.value === 'number' && k.value >= 1000 ? k.value.toLocaleString('cs-CZ').replace(/,/g, ' ') : k.value}</span>
+                      <span style={{ fontSize: 14, color: T.cardMuted, fontWeight: 600, marginLeft: 2 }}>{k.unit}</span>
+                    </>
+                  )}
                 </div>
                 <div style={{ color: T.cardMuted, fontSize: 10.5, fontFamily: T.fontUI, marginTop: 4 }}>vs. minulých 30 dní</div>
               </div>

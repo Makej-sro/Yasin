@@ -51,12 +51,12 @@ const E_CANDIDATES = {
 };
 
 const E_ACTIVITY = [
-  { type: 'match', who: 'Klára Novotná', what: 'matchla na Servírka — víkend', when: 'před 4 min', icon: 'heart-bold', color: '#0020F6' },
-  { type: 'msg', who: 'Tomáš Marek', what: 'poslal zprávu', when: 'před 12 min', icon: 'chat-round-line-bold', color: '#5BD68A' },
-  { type: 'view', who: '78 brigádníků', what: 'vidělo Pomocník do kuchyně — ASAP', when: 'za poslední hodinu', icon: 'eye-bold', color: '#FFD166' },
-  { type: 'hire', who: 'Sára Dvořáková', what: 'přijala směnu Po-Pá', when: 'včera', icon: 'check-circle-bold', color: '#5BD68A' },
-  { type: 'review', who: 'Adam Procházka', what: 'dal recenzi 5★', when: 'včera', icon: 'star-bold', color: '#FFD166' },
-  { type: 'sub', who: 'Tarif Premium', what: 'obnoven na 30 dní', when: 'před 2 dny', icon: 'shield-check-bold', color: '#5B6BFF' },
+  { type: 'match', who: 'Klára Novotná', what: 'matchla na Servírka — víkend', when: 'před 4 min · 14:32', icon: 'heart-bold', color: '#0020F6' },
+  { type: 'msg', who: 'Tomáš Marek', what: 'poslal zprávu', when: 'před 12 min · 14:24', icon: 'chat-round-line-bold', color: '#5BD68A' },
+  { type: 'view', who: '78 brigádníků', what: 'vidělo Pomocník do kuchyně — ASAP', when: 'za poslední hodinu · 13:45', icon: 'eye-bold', color: '#FFD166' },
+  { type: 'hire', who: 'Sára Dvořáková', what: 'přijala směnu Po-Pá', when: 'včera · 09:15', icon: 'check-circle-bold', color: '#5BD68A' },
+  { type: 'review', who: 'Adam Procházka', what: 'dal recenzi 5★', when: 'včera · 18:07', icon: 'star-bold', color: '#FFD166' },
+  { type: 'sub', who: 'Tarif Premium', what: 'obnoven na 30 dní', when: 'před 2 dny · 11:00', icon: 'shield-check-bold', color: '#5B6BFF' },
 ];
 
 // Recenze firmy — přepsány reálnými daty z Supabase při načtení

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>makej. Admin</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+  <style>
+    :root { color-scheme: dark; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body, #root { width: 100%; height: 100%; }
+    html, body {
+      margin: 0; padding: 0;
+      background: #07071a;
+      font-family: "Plus Jakarta Sans", -apple-system, system-ui, sans-serif;
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+    iconify-icon { display: inline-flex; line-height: 0; }
+    @keyframes adminSpin { to { transform: rotate(360deg); } }
+
+    #auth-gate {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(180deg, #1a1a3a 0%, #050510 100%);
+      z-index: 9999;
+    }
+    #auth-gate.hidden { display: none; }
+    .gate-card {
+      background: rgba(22,22,59,0.95);
+      border: 1px solid rgba(255,209,102,0.2);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      width: min(420px, calc(100vw - 40px));
+      text-align: center;
+    }
+    .gate-logo {
+      font-family: Inter, sans-serif;
+      font-size: 2.2rem; font-weight: 900;
+      background: linear-gradient(135deg, #FFD166, #FF9F43);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.25rem;
+    }
+    .gate-sub { color: #FFD166; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1.75rem; }
+    .gate-input {
+      width: 100%; padding: 0.75rem 1rem;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,209,102,0.15);
+      border-radius: 0.75rem; color: #fff; font-size: 0.95rem;
+      font-family: inherit; margin-bottom: 0.75rem; outline: none;
+    }
+    .gate-input:focus { border-color: rgba(255,209,102,0.4); }
+    .gate-input::placeholder { color: rgba(255,255,255,0.35); }
+    .gate-btn {
+      width: 100%; padding: 0.85rem;
+      background: linear-gradient(135deg, #FFD166, #FF9F43);
+      border: none; border-radius: 0.75rem;
+      color: #1a1000; font-size: 0.95rem; font-weight: 800;
+      font-family: inherit; cursor: pointer; margin-top: 0.25rem;
+      transition: opacity 0.15s;
+    }
+    .gate-btn:hover { opacity: 0.88; }
+    .gate-err { color: #f43f5e; font-size: 0.82rem; margin-top: 0.75rem; min-height: 1.2em; }
+  </style>
+</head>
+<body>
+
+<div id="auth-gate">
+  <div class="gate-card">
+    <div class="gate-logo">makej.</div>
+    <div class="gate-sub">Admin panel</div>
+    <input id="g-email" class="gate-input" type="email" placeholder="E-mail" autocomplete="email" />
+    <input id="g-pass"  class="gate-input" type="password" placeholder="Heslo" autocomplete="current-password" />
+    <button class="gate-btn" onclick="gateLogin()">Přihlásit se</button>
+    <div class="gate-err" id="g-err"></div>
+  </div>
+</div>
+
+<div id="root"></div>
+
+<script>
+  const SB_URL  = 'https://cxegfwfbgcgpwerfbvra.supabase.co';
+  const SB_ANON = 'sb_publishable_N_BIwMCTD6ZOTrtBl3juyw_CGIQ_lvh';
+  const sb = supabase.createClient(SB_URL, SB_ANON, { auth: { storageKey: 'makej-auth' } });
+
+  async function checkSession() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const { data: profile } = await sb.from('profiles').select('role').eq('id', session.user.id).single();
+    if (profile?.role === 'admin') {
+      document.getElementById('auth-gate').classList.add('hidden');
+    }
+  }
+
+  async function gateLogin() {
+    const email = document.getElementById('g-email').value.trim();
+    const pass  = document.getElementById('g-pass').value;
+    const errEl = document.getElementById('g-err');
+    errEl.textContent = '';
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) { errEl.textContent = 'Neplatné přihlašovací údaje'; return; }
+
+    const { data: profile } = await sb.from('profiles').select('role').eq('id', data.user.id).single();
+    if (profile?.role !== 'admin') {
+      await sb.auth.signOut();
+      errEl.textContent = 'Tento účet nemá přístup k admin panelu';
+      return;
+    }
+    document.getElementById('auth-gate').classList.add('hidden');
+  }
+
+  document.getElementById('g-pass').addEventListener('keydown', e => { if (e.key === 'Enter') gateLogin(); });
+
+  checkSession();
+</script>
+
+<script type="text/babel" src="admin-shell.jsx?v=1"></script>
+<script type="text/babel" src="admin-supabase.jsx?v=1"></script>
+<script type="text/babel" src="admin-pages.jsx?v=1"></script>
+<script type="text/babel" src="admin-main.jsx?v=1"></script>
+
+</body>
+</html>

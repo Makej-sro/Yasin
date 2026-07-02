@@ -72,8 +72,23 @@ function ESidebar({ tab, onTab }) {
       overflowY: 'auto',
       position: 'relative', zIndex: 1,
     }}>
-      <div style={{ padding: '4px 8px 18px' }}>
+      <div style={{ padding: '4px 8px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <ELogo />
+        <button
+          title="Přepnout světlý/tmavý režim"
+          onClick={() => window.toggleMakejTheme && window.toggleMakejTheme()}
+          style={{
+            width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+            cursor: 'pointer',
+            display: 'grid', placeItems: 'center',
+            transition: 'background .15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+        >
+          <Icon name={window._makejIsDark ? 'sun-bold' : 'moon-stars-bold'} size={16} color={T.light} />
+        </button>
       </div>
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 18, flex: 1 }}>
@@ -175,7 +190,7 @@ function ESidebar({ tab, onTab }) {
           color: '#fff', cursor: 'pointer',
           fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 700,
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        }}>Spravovat tarif</button>
+        }} onClick={() => onTab('pricing')}>Spravovat tarif</button>
       </div>
 
       {/* Company footer */}
@@ -203,19 +218,20 @@ function ESidebar({ tab, onTab }) {
 // ─────────────────────────────────────────────────────────────
 // TOPBAR
 // ─────────────────────────────────────────────────────────────
-function ETopbar({ title, subtitle, onNew, onSignOut }) {
+function ETopbar({ title, subtitle, onNew, onSignOut, period = '30d', onPeriod }) {
   return (
     <header style={{
       display: 'flex', alignItems: 'center', gap: 16,
       padding: '14px 28px',
       borderBottom: '1px solid ' + T.border,
-      background: 'rgba(7,7,26,0.55)',
+      background: T.navBg,
       backdropFilter: 'blur(16px)',
+      boxShadow: '0 1px 0 ' + T.border,
       flexShrink: 0,
     }}>
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <h1 style={{ margin: 0, fontFamily: T.fontHead, fontSize: 20, fontWeight: 800, color: '#fff', letterSpacing: -0.4 }}>{title}</h1>
+          <h1 style={{ margin: 0, fontFamily: T.fontHead, fontSize: 20, fontWeight: 800, color: T.text, letterSpacing: -0.4 }}>{title}</h1>
           <span style={{ width: 4, height: 4, borderRadius: 999, background: T.mutedSoft }} />
           <span style={{ fontFamily: T.fontUI, fontSize: 13, color: T.muted, fontWeight: 500 }}>{subtitle}</span>
         </div>
@@ -226,12 +242,12 @@ function ETopbar({ title, subtitle, onNew, onSignOut }) {
         display: 'flex', gap: 2, padding: 3, borderRadius: 10,
         background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border,
       }}>
-        {['7d', '30d', '90d', 'rok'].map((p, i) => (
-          <button key={p} style={{
+        {['7d', '30d', '90d', 'rok'].map((p) => (
+          <button key={p} onClick={() => onPeriod && onPeriod(p)} style={{
             padding: '6px 12px', borderRadius: 7,
-            background: i === 1 ? 'rgba(91,107,255,0.2)' : 'transparent',
+            background: p === period ? 'rgba(255,255,255,0.18)' : 'transparent',
             border: 'none',
-            color: i === 1 ? '#fff' : T.muted,
+            color: p === period ? T.text : T.muted,
             fontFamily: T.fontMono, fontSize: 12, fontWeight: 700,
             cursor: 'pointer',
           }}>{p}</button>
@@ -269,13 +285,13 @@ function ETopbar({ title, subtitle, onNew, onSignOut }) {
 
       <button onClick={onNew} style={{
         padding: '10px 16px', borderRadius: 10,
-        background: 'linear-gradient(135deg, #0020F6, #2D2CA7)',
-        border: 'none', color: '#fff', cursor: 'pointer',
+        background: 'rgba(255,255,255,0.95)',
+        border: 'none', color: '#0020F6', cursor: 'pointer',
         fontFamily: T.fontUI, fontSize: 13, fontWeight: 700,
         display: 'inline-flex', alignItems: 'center', gap: 7,
-        boxShadow: '0 6px 16px rgba(0,32,246,0.4)',
+        boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
       }}>
-        <Icon name="add-circle-bold" size={16} color="#fff" />
+        <Icon name="add-circle-bold" size={16} color="#0020F6" />
         Nový inzerát
       </button>
     </header>
@@ -338,8 +354,8 @@ function AreaChart({ series, width = 600, height = 220, labels = [] }) {
         const y = padT + H - ((v - min) / range) * H;
         return (
           <g key={i}>
-            <line x1={padL} y1={y} x2={width - padR} y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-            <text x={padL - 8} y={y + 3} textAnchor="end" fill={T.mutedSoft} fontFamily={T.fontMono} fontSize="9.5">
+            <line x1={padL} y1={y} x2={width - padR} y2={y} stroke="rgba(0,32,246,0.06)" strokeWidth="1" />
+            <text x={padL - 8} y={y + 3} textAnchor="end" fill="#111111" fontFamily={T.fontMono} fontSize="9.5" fontWeight="700">
               {Math.round(v).toLocaleString('cs-CZ')}
             </text>
           </g>
@@ -349,7 +365,7 @@ function AreaChart({ series, width = 600, height = 220, labels = [] }) {
       {labels.map((l, i) => {
         if (i % Math.ceil(labels.length / 6) !== 0) return null;
         const x = padL + i * stepX;
-        return <text key={i} x={x} y={height - 6} textAnchor="middle" fill={T.mutedSoft} fontFamily={T.fontMono} fontSize="9.5">{l}</text>;
+        return <text key={i} x={x} y={height - 6} textAnchor="middle" fill="#111111" fontFamily={T.fontMono} fontSize="9.5" fontWeight="700">{l}</text>;
       })}
       {/* series */}
       {series.map((s, idx) => {
@@ -385,7 +401,7 @@ function BarChart({ data, width = 360, height = 180, color = T.primary }) {
     <svg width={width} height={height} style={{ display: 'block' }}>
       {[0, 0.5, 1].map((t, i) => {
         const y = padT + H - t * H;
-        return <line key={i} x1={padL} y1={y} x2={width - padR} y2={y} stroke="rgba(255,255,255,0.05)" />;
+        return <line key={i} x1={padL} y1={y} x2={width - padR} y2={y} stroke="rgba(0,32,246,0.06)" />;
       })}
       {data.map((d, i) => {
         const h = (d.v / max) * H;
@@ -394,8 +410,8 @@ function BarChart({ data, width = 360, height = 180, color = T.primary }) {
         return (
           <g key={i}>
             <rect x={x} y={y} width={bw} height={h} rx="3" fill={d.color || color} opacity="0.85" />
-            <text x={x + bw / 2} y={y - 4} textAnchor="middle" fill={T.light} fontFamily={T.fontMono} fontSize="9.5" fontWeight="700">{d.v}</text>
-            <text x={x + bw / 2} y={height - 6} textAnchor="middle" fill={T.mutedSoft} fontFamily={T.fontUI} fontSize="9.5">{d.l}</text>
+            <text x={x + bw / 2} y={y - 4} textAnchor="middle" fill="#111111" fontFamily={T.fontMono} fontSize="9.5" fontWeight="700">{d.v}</text>
+            <text x={x + bw / 2} y={height - 6} textAnchor="middle" fill="#111111" fontFamily={T.fontUI} fontSize="9.5" fontWeight="600">{d.l}</text>
           </g>
         );
       })}
@@ -411,7 +427,7 @@ function Donut({ data, size = 140, thickness = 18 }) {
   let acc = 0;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={thickness} />
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(0,32,246,0.08)" strokeWidth={thickness} />
       {data.map((d, i) => {
         const dash = (d.v / total) * c;
         const off = -acc;
@@ -439,10 +455,11 @@ function ECard({ children, style, padding = 22 }) {
   return (
     <div style={{
       borderRadius: 18,
-      background: 'linear-gradient(180deg, rgba(22,22,59,0.6), rgba(15,15,40,0.4))',
-      border: '1px solid ' + T.border,
+      background: T.card,
+      border: '1px solid ' + T.cardBorder,
       padding,
       backdropFilter: 'blur(8px)',
+      color: T.cardText,
       ...style,
     }}>{children}</div>
   );
@@ -452,8 +469,8 @@ function SectionHeader({ title, subtitle, action }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 14 }}>
       <div>
-        <div style={{ fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: -0.2 }}>{title}</div>
-        {subtitle ? <div style={{ fontFamily: T.fontUI, fontSize: 12, color: T.muted, marginTop: 2 }}>{subtitle}</div> : null}
+        <div style={{ fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, color: '#111111', letterSpacing: -0.2 }}>{title}</div>
+        {subtitle ? <div style={{ fontFamily: T.fontUI, fontSize: 12, color: '#555555', marginTop: 2 }}>{subtitle}</div> : null}
       </div>
       {action || null}
     </div>
