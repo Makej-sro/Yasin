@@ -839,6 +839,7 @@ const PLANS = [
     id: 'standard',
     name: 'Standard',
     price: 499,
+    annualPrice: 424,
     period: 'měsíc bez DPH',
     color: '#8AB4FF',
     icon: 'bolt-bold',
@@ -862,6 +863,7 @@ const PLANS = [
     id: 'business',
     name: 'Business',
     price: 4999,
+    annualPrice: 4249,
     period: 'měsíc bez DPH',
     color: '#FFD166',
     icon: 'crown-star-bold',
@@ -906,10 +908,34 @@ const PLANS = [
   },
 ];
 
-function EPricing({ onTab }) {
+function animatePrice(el, from, to) {
+  if (!el) return;
+  var start = performance.now(), dur = 480;
+  function step(now) {
+    var t = Math.min((now - start) / dur, 1);
+    var eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(from + (to - from) * eased).toLocaleString('cs-CZ');
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function EPricing({ onTab, onPlanChange }) {
   const [selected, setSelected] = useStateE(null);
   const [success, setSuccess]   = useStateE(false);
   const [hovered, setHovered]   = useStateE(null);
+  const [annual, setAnnual]     = useStateE(false);
+  const priceRefs               = useRefE({});
+
+  useEffectE(() => {
+    PLANS.forEach(plan => {
+      if (!plan.annualPrice) return;
+      const el = priceRefs.current[plan.id];
+      const from = annual ? plan.price : plan.annualPrice;
+      const to   = annual ? plan.annualPrice : plan.price;
+      animatePrice(el, from, to);
+    });
+  }, [annual]);
 
   const currentPlanId = (() => {
     const planName = (ECOMPANY.plan || '').toLowerCase();
@@ -925,6 +951,11 @@ function EPricing({ onTab }) {
   }
 
   function handlePay() {
+    const plan = PLANS.find(p => p.id === selected);
+    if (plan) {
+      ECOMPANY.plan = plan.name;
+      if (onPlanChange) onPlanChange(plan.name);
+    }
     setSuccess(true);
     setTimeout(() => { setSuccess(false); setSelected(null); }, 3000);
   }
@@ -933,12 +964,24 @@ function EPricing({ onTab }) {
     <div style={{ padding: '28px 32px 48px', overflowY: 'auto' }}>
       {/* Header */}
       <div style={{ marginBottom: 32, textAlign: 'center' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,209,102,0.12)', border: '1px solid rgba(255,209,102,0.25)', borderRadius: 99, padding: '5px 14px', marginBottom: 14 }}>
-          <Icon name="crown-star-bold" size={13} color="#FFD166" />
-          <span style={{ color: '#FFD166', fontSize: 11, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 1, textTransform: 'uppercase' }}>Tarify & předplatné</span>
-        </div>
         <div style={{ fontFamily: T.fontHead, fontSize: 28, fontWeight: 900, color: T.text, marginBottom: 8 }}>Vyber si svůj plán</div>
-        <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 14 }}>Bez závazků. Zrušení kdykoliv.</div>
+        <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 14, marginBottom: 20 }}>Bez závazků. Zrušení kdykoliv.</div>
+        {/* Billing toggle */}
+        <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 99, padding: '6px 16px' }}>
+            <span style={{ color: annual ? T.muted : T.text, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, transition: 'color .2s' }}>Měsíčně</span>
+            <div
+              onClick={() => setAnnual(a => !a)}
+              style={{ width: 44, height: 24, borderRadius: 999, background: annual ? '#5BD68A' : 'rgba(255,255,255,0.15)', cursor: 'pointer', position: 'relative', transition: 'background .2s', flexShrink: 0 }}
+            >
+              <div style={{ position: 'absolute', top: 3, left: annual ? 23 : 3, width: 18, height: 18, borderRadius: 999, background: '#fff', transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
+            </div>
+            <span style={{ color: annual ? T.text : T.muted, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, transition: 'color .2s' }}>Ročně</span>
+          </div>
+          <div style={{ height: 26, display: 'flex', alignItems: 'center' }}>
+            <span style={{ background: 'rgba(91,214,138,0.2)', border: '1px solid rgba(91,214,138,0.35)', color: '#5BD68A', fontFamily: T.fontUI, fontSize: 11, fontWeight: 800, borderRadius: 10, padding: '4px 12px', opacity: annual ? 1 : 0, transition: 'opacity .2s' }}>chci šetřit</span>
+          </div>
+        </div>
       </div>
 
       {/* Plans grid */}
@@ -984,16 +1027,29 @@ function EPricing({ onTab }) {
                 <Icon name={plan.icon} size={24} color={plan.color} />
               </div>
               <div style={{ fontFamily: T.fontHead, fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{plan.name}</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20, flexWrap: 'wrap' }}>
+              <div style={{ marginBottom: 20 }}>
                 {plan.price === 0 ? (
                   <span style={{ fontFamily: T.fontMono, fontSize: 28, fontWeight: 700, color: plan.color }}>Zdarma</span>
                 ) : (
                   <>
-                    {plan.pricePrefix && <span style={{ color: T.muted, fontSize: 13, fontFamily: T.fontUI }}>{plan.pricePrefix}</span>}
-                    <span style={{ fontFamily: T.fontMono, fontSize: 28, fontWeight: 700, color: plan.color }}>
-                      {plan.price.toLocaleString('cs-CZ')}
-                    </span>
-                    <span style={{ color: T.muted, fontSize: 12, fontFamily: T.fontUI }}>Kč / {plan.period}</span>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, flexWrap: 'wrap' }}>
+                      {plan.pricePrefix && <span style={{ color: T.muted, fontSize: 13, fontFamily: T.fontUI }}>{plan.pricePrefix}</span>}
+                      <span
+                        ref={el => { if (el) priceRefs.current[plan.id] = el; }}
+                        style={{ fontFamily: T.fontMono, fontSize: 28, fontWeight: 700, color: plan.color }}
+                      >{plan.price.toLocaleString('cs-CZ')}</span>
+                      <span style={{ color: T.muted, fontSize: 12, fontFamily: T.fontUI }}>
+                        Kč / {annual && plan.annualPrice ? 'měs bez DPH' : plan.period}
+                      </span>
+                    </div>
+                    {plan.annualPrice ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5, opacity: annual ? 1 : 0, transition: 'opacity .2s' }}>
+                        <span style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 11 }}>placeno ročně</span>
+                        <span style={{ background: 'rgba(91,214,138,0.15)', border: '1px solid rgba(91,214,138,0.3)', color: '#5BD68A', fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 800, borderRadius: 8, padding: '2px 8px' }}>
+                          ušetříš {((plan.price - plan.annualPrice) * 12).toLocaleString('cs-CZ')} Kč/rok
+                        </span>
+                      </div>
+                    ) : <div style={{ marginTop: 5, height: 22 }} />}
                   </>
                 )}
               </div>
@@ -1005,7 +1061,7 @@ function EPricing({ onTab }) {
                       size={15}
                       color={f.ok ? '#5BD68A' : 'rgba(255,255,255,0.2)'}
                     />
-                    <span style={{ color: f.ok ? T.text : 'rgba(255,255,255,0.35)', fontSize: 12.5, fontFamily: T.fontUI }}>
+                    <span style={{ color: f.ok ? T.text : 'rgba(255,255,255,0.35)', fontSize: 13.5, fontWeight: 600, fontFamily: T.fontUI }}>
                       {f.text}
                     </span>
                   </div>

@@ -1,5 +1,106 @@
 // Makej Employer — Inzeráty (jobs management) + Kandidáti (kanban)
 
+function ClockIcon({ size = 22, color = '#5B6BFF' }) {
+  const minRef = useRefE(null);
+  const hrRef  = useRefE(null);
+  const state  = useRefE({ start: null, lastRev: 0 });
+
+  useEffectE(() => {
+    const cx = size / 2, cy = size / 2, R = size / 2 - 1.5;
+    const minLen = R * 0.68, hrLen = R * 0.44;
+    const SPEED = 360 / 20000; // plná otáčka za 20 s
+    let id;
+    function tick(ts) {
+      if (!state.current.start) state.current.start = ts;
+      const deg = (ts - state.current.start) * SPEED;
+      const minAngle = deg % 360;
+      const rev = Math.floor(deg / 360);
+      if (minRef.current) {
+        const r = (minAngle - 90) * Math.PI / 180;
+        minRef.current.setAttribute('x2', cx + minLen * Math.cos(r));
+        minRef.current.setAttribute('y2', cy + minLen * Math.sin(r));
+      }
+      if (rev > state.current.lastRev && hrRef.current) {
+        state.current.lastRev = rev;
+        const hrAngle = 60 + rev * 30;
+        const r = (hrAngle - 90) * Math.PI / 180;
+        hrRef.current.setAttribute('x2', cx + hrLen * Math.cos(r));
+        hrRef.current.setAttribute('y2', cy + hrLen * Math.sin(r));
+      }
+      id = requestAnimationFrame(tick);
+    }
+    id = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const cx = size / 2, cy = size / 2, R = size / 2 - 1.5;
+  const minLen = R * 0.68, hrLen = R * 0.44;
+  const hrRad0 = (60 - 90) * Math.PI / 180;
+  const ticks = [0, 90, 180, 270].map(deg => {
+    const r = (deg - 90) * Math.PI / 180;
+    return { x1: cx+(R-0.5)*Math.cos(r), y1: cy+(R-0.5)*Math.sin(r), x2: cx+(R-3.8)*Math.cos(r), y2: cy+(R-3.8)*Math.sin(r) };
+  });
+  const dots = [45, 135, 225, 315].map(deg => {
+    const r = (deg - 90) * Math.PI / 180, dr = R - 2.8;
+    return { x: cx + dr * Math.cos(r), y: cy + dr * Math.sin(r) };
+  });
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0, display: 'block' }}>
+      <circle cx={cx} cy={cy} r={R} fill="none" stroke={color} strokeWidth={2.2} />
+      {ticks.map((t, i) => <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={color} strokeWidth={2} strokeLinecap="round" />)}
+      {dots.map((d, i) => <circle key={i} cx={d.x} cy={d.y} r={1.4} fill={color} />)}
+      <line ref={hrRef} x1={cx} y1={cy} x2={cx+hrLen*Math.cos(hrRad0)} y2={cy+hrLen*Math.sin(hrRad0)} stroke={color} strokeWidth={2.5} strokeLinecap="round" />
+      <line ref={minRef} x1={cx} y1={cy} x2={cx} y2={cy-minLen} stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <circle cx={cx} cy={cy} r={2} fill={color} />
+    </svg>
+  );
+}
+
+function JobCountdown({ activeUntil }) {
+  const [now, setNow] = useStateE(() => new Date());
+  useEffectE(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const diff = Math.max(0, activeUntil - now);
+  if (diff === 0) return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+      <ClockIcon color="#f43f5e" />
+      <span style={{ color: '#f43f5e', fontFamily: T.fontMono, fontSize: 12, fontWeight: 800 }}>Vypršelo</span>
+    </div>
+  );
+  const days  = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins  = Math.floor((diff % 3600000) / 60000);
+  const secs  = Math.floor((diff % 60000) / 1000);
+  const col   = days === 0 ? '#f43f5e' : days <= 3 ? '#FFD166' : T.cardText;
+  const clkCol = days === 0 ? '#f43f5e' : days <= 3 ? '#FFD166' : '#5B6BFF';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <ClockIcon color={clkCol} />
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, fontFamily: T.fontMono }}>
+        {days > 0 ? (
+          <>
+            <span style={{ fontSize: 17, fontWeight: 800, color: col, letterSpacing: -0.5 }}>{days}</span>
+            <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600, marginRight: 5 }}>d</span>
+            <span style={{ fontSize: 17, fontWeight: 800, color: col, letterSpacing: -0.5 }}>{String(hours).padStart(2,'0')}</span>
+            <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600 }}>h</span>
+          </>
+        ) : (
+          <>
+            <span style={{ fontSize: 17, fontWeight: 800, color: '#f43f5e', letterSpacing: -0.5 }}>{String(hours).padStart(2,'0')}</span>
+            <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600, marginRight: 5 }}>h</span>
+            <span style={{ fontSize: 17, fontWeight: 800, color: '#f43f5e', letterSpacing: -0.5 }}>{String(mins).padStart(2,'0')}</span>
+            <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600, marginRight: 5 }}>m</span>
+            <span style={{ fontSize: 17, fontWeight: 800, color: '#f43f5e', letterSpacing: -0.5 }}>{String(secs).padStart(2,'0')}</span>
+            <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600 }}>s</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const STATUS_META = {
   active: { label: 'Aktivní', color: '#5BD68A', dot: true },
   urgent: { label: 'ASAP · spěchá', color: '#f43f5e', dot: true, pulse: true },
@@ -72,6 +173,14 @@ function EJobs({ onTab }) {
           const status = STATUS_META[j.status];
           const matchRate = ((j.matches / j.swipes) * 100).toFixed(1);
           const hireRate = ((j.hired / j.matches) * 100).toFixed(1);
+          const planDays = { Starter: 7, Standard: 30, Business: 60 }[j.plan] || 30;
+          const created = new Date(j.created_at || Date.now());
+          const activeUntil = new Date(created.getTime() + planDays * 86400000);
+          const now = new Date();
+          const pct = Math.min(100, Math.max(0, Math.round(((now - created) / (activeUntil - created)) * 100)));
+          const daysLeft = Math.max(0, Math.ceil((activeUntil - now) / 86400000));
+          const barColor = pct < 50 ? '#5BD68A' : pct < 75 ? '#FFD166' : '#f43f5e';
+          const fmtD = d => d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' });
           return (
             <ECard key={j.id} padding={0} style={{ overflow: 'hidden' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr 200px', alignItems: 'stretch' }}>
@@ -98,10 +207,9 @@ function EJobs({ onTab }) {
                         <Icon name="dollar-bold" size={12} color={T.cardMuted} />
                         <span style={{ fontFamily: T.fontMono, color: T.cardText, fontWeight: 700 }}>{j.pay}</span> {j.payUnit}
                       </span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                        <Icon name="clock-circle-bold" size={12} color={T.cardMuted} />
-                        <span style={{ fontFamily: T.fontMono }}>{j.daysLeft}d zbývá</span>
-                      </span>
+                    </div>
+                    <div style={{ marginTop: 16 }}>
+                      <JobCountdown activeUntil={activeUntil} />
                     </div>
                   </div>
                 </div>

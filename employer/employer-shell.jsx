@@ -153,7 +153,7 @@ function ESidebar({ tab, onTab }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <Icon name="crown-star-bold" size={16} color={T.super} />
-          <span style={{ color: T.super, fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 1, textTransform: 'uppercase' }}>Premium tarif</span>
+          <span style={{ color: T.super, fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 1, textTransform: 'uppercase' }}>{ECOMPANY.plan || 'Starter'}</span>
         </div>
         {(() => {
           const expStr = EPROFILE.premium_until || EPROFILE.plan_expires_at || null;
@@ -161,7 +161,7 @@ function ESidebar({ tab, onTab }) {
           if (!expStr) {
             return (
               <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 12, marginBottom: 12 }}>
-                Bezplatný tarif
+                {ECOMPANY.plan && ECOMPANY.plan.toLowerCase() !== 'starter' ? 'Aktivní předplatné' : 'Bezplatný tarif'}
               </div>
             );
           }

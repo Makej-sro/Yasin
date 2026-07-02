@@ -453,7 +453,7 @@ function EmployerApp() {
   else if (tab === 'chat')          body = <EMessages key={tick} />;
   else if (tab === 'calendar')      body = <ECalendar key={tick} />;
   else if (tab === 'settings')      body = <ESettings key={tick} />;
-  else if (tab === 'pricing')       body = <EPricing onTab={setTab} />;
+  else if (tab === 'pricing')       body = <EPricing onTab={setTab} onPlanChange={() => setTick(t => t + 1)} />;
   else body = (
     <div style={{ flex: 1, display: 'grid', placeItems: 'center', color: T.muted, fontFamily: T.fontUI }}>
       <div style={{ textAlign: 'center', padding: 40 }}>
