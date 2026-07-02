@@ -909,6 +909,7 @@ const PLANS = [
 function EPricing({ onTab }) {
   const [selected, setSelected] = useStateE(null);
   const [success, setSuccess]   = useStateE(false);
+  const [hovered, setHovered]   = useStateE(null);
 
   const currentPlanId = (() => {
     const planName = (ECOMPANY.plan || '').toLowerCase();
@@ -946,10 +947,14 @@ function EPricing({ onTab }) {
           const isActive = plan.id === currentPlanId;
           const isPop    = plan.badge != null;
           const isSel    = selected === plan.id;
+          const isHov    = hovered === plan.id;
           return (
-            <div key={plan.id} onClick={() => handleSelect(plan.id)} style={{
+            <div key={plan.id} onClick={() => handleSelect(plan.id)}
+              onMouseEnter={() => setHovered(plan.id)}
+              onMouseLeave={() => setHovered(null)}
+              style={{
               borderRadius: 18,
-              border: '2px solid ' + (isActive ? plan.color : isSel ? plan.color : 'rgba(255,255,255,0.1)'),
+              border: '2.5px solid ' + (isActive ? plan.color : isSel ? plan.color : isHov ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.1)'),
               background: isPop
                 ? 'linear-gradient(160deg, rgba(255,209,102,0.10), rgba(0,32,246,0.08))'
                 : 'rgba(255,255,255,0.04)',
