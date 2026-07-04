@@ -56,7 +56,7 @@ function ClockIcon({ size = 22, color = '#5B6BFF' }) {
   );
 }
 
-function JobCountdown({ activeUntil }) {
+function JobCountdown({ activeUntil, status }) {
   const [now, setNow] = useStateE(() => new Date());
   useEffectE(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -64,39 +64,32 @@ function JobCountdown({ activeUntil }) {
   }, []);
   const diff = Math.max(0, activeUntil - now);
   if (diff === 0) return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-      <ClockIcon color="#f43f5e" />
-      <span style={{ color: '#f43f5e', fontFamily: T.fontMono, fontSize: 12, fontWeight: 800 }}>Vypršelo</span>
-    </div>
+    <span style={{ color: '#f43f5e', fontFamily: T.fontMono, fontSize: 12, fontWeight: 800 }}>Vypršelo</span>
   );
   const days  = Math.floor(diff / 86400000);
   const hours = Math.floor((diff % 86400000) / 3600000);
   const mins  = Math.floor((diff % 3600000) / 60000);
   const secs  = Math.floor((diff % 60000) / 1000);
-  const col   = days === 0 ? '#f43f5e' : days <= 3 ? '#FFD166' : T.cardText;
-  const clkCol = days === 0 ? '#f43f5e' : days <= 3 ? '#FFD166' : '#5B6BFF';
+  const col = days === 0 ? '#f43f5e' : days <= 3 ? '#FFD166' : T.cardText;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <ClockIcon color={clkCol} />
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, fontFamily: T.fontMono }}>
-        {days > 0 ? (
-          <>
-            <span style={{ fontSize: 17, fontWeight: 800, color: col, letterSpacing: -0.5 }}>{days}</span>
-            <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600, marginRight: 5 }}>d</span>
-            <span style={{ fontSize: 17, fontWeight: 800, color: col, letterSpacing: -0.5 }}>{String(hours).padStart(2,'0')}</span>
-            <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600 }}>h</span>
-          </>
-        ) : (
-          <>
-            <span style={{ fontSize: 17, fontWeight: 800, color: '#f43f5e', letterSpacing: -0.5 }}>{String(hours).padStart(2,'0')}</span>
-            <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600, marginRight: 5 }}>h</span>
-            <span style={{ fontSize: 17, fontWeight: 800, color: '#f43f5e', letterSpacing: -0.5 }}>{String(mins).padStart(2,'0')}</span>
-            <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600, marginRight: 5 }}>m</span>
-            <span style={{ fontSize: 17, fontWeight: 800, color: '#f43f5e', letterSpacing: -0.5 }}>{String(secs).padStart(2,'0')}</span>
-            <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600 }}>s</span>
-          </>
-        )}
-      </div>
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 1, fontFamily: T.fontMono }}>
+      {days > 0 ? (
+        <>
+          <span style={{ fontSize: 17, fontWeight: 800, color: col, letterSpacing: -0.5 }}>{days}</span>
+          <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600, marginRight: 5 }}>d</span>
+          <span style={{ fontSize: 17, fontWeight: 800, color: col, letterSpacing: -0.5 }}>{String(hours).padStart(2,'0')}</span>
+          <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600 }}>h</span>
+        </>
+      ) : (
+        <>
+          <span style={{ fontSize: 17, fontWeight: 800, color: '#f43f5e', letterSpacing: -0.5 }}>{String(hours).padStart(2,'0')}</span>
+          <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600, marginRight: 5 }}>h</span>
+          <span style={{ fontSize: 17, fontWeight: 800, color: '#f43f5e', letterSpacing: -0.5 }}>{String(mins).padStart(2,'0')}</span>
+          <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600, marginRight: 5 }}>m</span>
+          <span style={{ fontSize: 17, fontWeight: 800, color: '#f43f5e', letterSpacing: -0.5 }}>{String(secs).padStart(2,'0')}</span>
+          <span style={{ fontSize: 10, color: T.cardMuted, fontWeight: 600 }}>s</span>
+        </>
+      )}
     </div>
   );
 }
@@ -109,15 +102,47 @@ const STATUS_META = {
 };
 
 function EJobs({ onTab }) {
-  const [filter, setFilter] = useStateE('all');
-  const filtered = filter === 'all' ? E_JOBS : E_JOBS.filter(j => j.status === filter);
+  const [filter, setFilter] = useStateE('active');
+  const [search, setSearch] = useStateE('');
+  const [sort, setSort] = useStateE('newest');
+  const [minPay, setMinPay] = useStateE('');
+  const [maxPay, setMaxPay] = useStateE('');
+
+  const filtered = React.useMemo(() => {
+    let jobs = filter === 'all' ? E_JOBS : E_JOBS.filter(j => j.status === filter);
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      jobs = jobs.filter(j =>
+        (j.title || '').toLowerCase().includes(q) ||
+        String(j.pay).includes(q) ||
+        (j.location || '').toLowerCase().includes(q)
+      );
+    }
+    if (minPay !== '') jobs = jobs.filter(j => Number(j.pay) >= Number(minPay));
+    if (maxPay !== '') jobs = jobs.filter(j => Number(j.pay) <= Number(maxPay));
+    jobs = [...jobs].sort((a, b) => {
+      if (sort === 'newest')   return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      if (sort === 'oldest')   return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+      if (sort === 'pay_desc') return Number(b.pay) - Number(a.pay);
+      if (sort === 'pay_asc')  return Number(a.pay) - Number(b.pay);
+      if (sort === 'matches')  return b.matches - a.matches;
+      return 0;
+    });
+    return jobs;
+  }, [filter, search, sort, minPay, maxPay]);
+
+  const inputStyle = {
+    paddingLeft: 10, paddingRight: 10, paddingTop: 7, paddingBottom: 7,
+    borderRadius: 9, background: 'rgba(255,255,255,0.08)', border: '1px solid ' + T.border,
+    color: T.text, fontFamily: T.fontUI, fontSize: 12.5, outline: 'none',
+  };
 
   return (
     <div style={{ padding: '24px 28px 40px', display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
       {/* Summary */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
         {[
-          { label: 'Aktivních', value: E_JOBS.filter(j=>j.status==='active'||j.status==='urgent').length, sub: 'inzerátů', color: '#5BD68A' },
+          { label: 'Aktivních', value: E_JOBS.filter(j=>j.status==='active'||j.status==='urgent').length, sub: (n => n === 1 ? 'inzerát' : n <= 4 ? 'inzeráty' : 'inzerátů')(E_JOBS.filter(j=>j.status==='active'||j.status==='urgent').length), color: '#5BD68A' },
           { label: 'Celkem zhlédnutí', value: E_JOBS.reduce((a,j)=>a+j.views,0).toLocaleString('cs-CZ').replace(/,/g,' '), sub: 'za 30 dní', color: '#5B6BFF' },
           { label: 'Průměrný CTR', value: (E_JOBS.reduce((a,j)=>a+j.ctr,0)/E_JOBS.length).toFixed(1)+'%', sub: 'swajp → match', color: '#FFD166' },
           { label: 'Najato celkem', value: E_JOBS.reduce((a,j)=>a+j.hired,0), sub: 'v tomto měsíci', color: '#5BD68A' },
@@ -132,8 +157,8 @@ function EJobs({ onTab }) {
         ))}
       </div>
 
-      {/* Filter row */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      {/* Filter + search row */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         {[
           { k: 'all', l: 'Vše', n: E_JOBS.length },
           { k: 'active', l: 'Aktivní', n: E_JOBS.filter(j=>j.status==='active').length },
@@ -154,16 +179,44 @@ function EJobs({ onTab }) {
           </button>
         ))}
         <div style={{ flex: 1 }} />
-        <div style={{ position: 'relative' }}>
-          <Icon name="magnifer-bold" size={14} color={T.mutedSoft} />
-          <input placeholder="Hledat inzerát…" style={{
-            paddingLeft: 30, padding: '8px 12px 8px 30px',
-            borderRadius: 9, background: 'rgba(255,255,255,0.1)', border: '1px solid ' + T.border,
-            color: T.text, fontFamily: T.fontUI, fontSize: 12.5, width: 220, outline: 'none',
-          }} />
-          <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }}>
-            <Icon name="magnifer-linear" size={14} color={T.mutedSoft} />
+        {/* Mzda od–do */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontSize: 11, color: T.muted, fontFamily: T.fontUI }}>Kč/h</span>
+          <input
+            value={minPay} onChange={e => setMinPay(e.target.value)}
+            placeholder="od" type="number" min="0"
+            style={{ ...inputStyle, width: 58, textAlign: 'center' }}
+          />
+          <span style={{ color: T.muted, fontSize: 12 }}>–</span>
+          <input
+            value={maxPay} onChange={e => setMaxPay(e.target.value)}
+            placeholder="do" type="number" min="0"
+            style={{ ...inputStyle, width: 58, textAlign: 'center' }}
+          />
+        </div>
+        {/* Řazení */}
+        <select value={sort} onChange={e => setSort(e.target.value)} style={{
+          ...inputStyle, paddingLeft: 10, paddingRight: 24, cursor: 'pointer',
+          appearance: 'none', WebkitAppearance: 'none',
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236e6ea8'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center',
+        }}>
+          <option value="newest">Nejnovější</option>
+          <option value="oldest">Nejstarší</option>
+          <option value="pay_desc">Nejvyšší mzda</option>
+          <option value="pay_asc">Nejnižší mzda</option>
+          <option value="matches">Nejvíce matchů</option>
+        </select>
+        {/* Vyhledávání */}
+        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+          <span style={{ position: 'absolute', left: 10, pointerEvents: 'none' }}>
+            <Icon name="magnifer-linear" size={12} color={T.mutedSoft} />
           </span>
+          <input
+            value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Hledat inzerát…"
+            style={{ ...inputStyle, paddingLeft: 32, paddingRight: 12, width: 200 }}
+          />
         </div>
       </div>
 
@@ -173,20 +226,31 @@ function EJobs({ onTab }) {
           const status = STATUS_META[j.status];
           const matchRate = ((j.matches / j.swipes) * 100).toFixed(1);
           const hireRate = ((j.hired / j.matches) * 100).toFixed(1);
-          const planDays = { Starter: 7, Standard: 30, Business: 60 }[j.plan] || 30;
-          const created = new Date(j.created_at || Date.now());
-          const activeUntil = new Date(created.getTime() + planDays * 86400000);
+          let activeUntil;
+          if (j.date) {
+            let d = new Date(j.date);
+            if (isNaN(d.getTime())) {
+              const parts = j.date.split('.');
+              if (parts.length >= 2) {
+                const dy = parseInt(parts[0], 10), mo = parseInt(parts[1], 10) - 1;
+                const yr = parts[2] ? parseInt(parts[2], 10) : new Date().getFullYear();
+                d = new Date(yr, mo, dy);
+              }
+            }
+            if (!isNaN(d.getTime())) activeUntil = d;
+          }
+          if (!activeUntil) {
+            const planDays = { Starter: 7, Standard: 30, Business: 60 }[j.plan] || 365;
+            const created = new Date(j.created_at || Date.now());
+            activeUntil = new Date(created.getTime() + planDays * 86400000);
+          }
           const now = new Date();
-          const pct = Math.min(100, Math.max(0, Math.round(((now - created) / (activeUntil - created)) * 100)));
-          const daysLeft = Math.max(0, Math.ceil((activeUntil - now) / 86400000));
-          const barColor = pct < 50 ? '#5BD68A' : pct < 75 ? '#FFD166' : '#f43f5e';
           const fmtD = d => d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' });
           return (
             <ECard key={j.id} padding={0} style={{ overflow: 'hidden' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr 200px', alignItems: 'stretch' }}>
                 {/* Left: title + status */}
                 <div style={{ padding: 18, borderRight: '1px solid ' + T.cardBorder, display: 'flex', flexDirection: 'column', gap: 10, position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: j.accent }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 8 }}>
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -199,17 +263,27 @@ function EJobs({ onTab }) {
                       {status.label}
                     </span>
                     <span style={{ fontSize: 10, fontFamily: T.fontMono, color: T.cardMuted }}>{j.plan}</span>
+                    <span style={{ fontSize: 10, fontFamily: T.fontMono, color: T.cardMuted, marginLeft: 'auto', opacity: 0.5 }}>#{String(j.id).slice(0, 8)}</span>
                   </div>
-                  <div style={{ paddingLeft: 8 }}>
+                  <div style={{ paddingLeft: 8, display: 'flex', flexDirection: 'column', gap: 0, flex: 1 }}>
                     <div style={{ fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, color: T.cardText, letterSpacing: -0.3, lineHeight: 1.2 }}>{j.title}</div>
-                    <div style={{ fontFamily: T.fontUI, fontSize: 11.5, color: T.cardMuted, marginTop: 5, display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                        <Icon name="dollar-bold" size={12} color={T.cardMuted} />
-                        <span style={{ fontFamily: T.fontMono, color: T.cardText, fontWeight: 700 }}>{j.pay}</span> {j.payUnit}
+                    <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        padding: '5px 12px', borderRadius: 999,
+                        background: 'rgba(91,214,138,0.15)',
+                        border: '1px solid rgba(91,214,138,0.35)',
+                        color: '#5BD68A',
+                        fontFamily: T.fontMono, fontSize: 13, fontWeight: 800,
+                      }}>
+                        <Icon name="dollar-bold" size={13} color="#5BD68A" />
+                        {j.pay} Kč/h
                       </span>
                     </div>
-                    <div style={{ marginTop: 16 }}>
-                      <JobCountdown activeUntil={activeUntil} />
+                    <div style={{ marginTop: 'auto', paddingTop: 14, fontSize: 11, fontFamily: T.fontUI, color: T.cardMuted }}>
+                      Zveřejněno: <span style={{ fontFamily: T.fontMono, color: T.cardText, fontWeight: 600 }}>
+                        {j.created_at ? new Date(j.created_at).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' }) : '—'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -285,137 +359,161 @@ function BarMetric({ label, value, max, suffix = '' }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// CANDIDATES — kanban
+// CANDIDATES — filter tabs + vertical list
 // ─────────────────────────────────────────────────────────────
+
+const CAND_STATUS = {
+  match:    { label: 'Nový match',       color: '#5BD68A', bg: 'rgba(91,214,138,0.15)',  border: 'rgba(91,214,138,0.3)'  },
+  waiting:  { label: 'Čeká na odpověď', color: '#FFD166', bg: 'rgba(255,209,102,0.15)', border: 'rgba(255,209,102,0.3)' },
+  rejected: { label: 'Odmítnuto',       color: '#f43f5e', bg: 'rgba(244,63,94,0.12)',   border: 'rgba(244,63,94,0.25)'  },
+};
+
+const ALL_CANDS_FLAT = [
+  ...E_CANDIDATES.new.map(c       => ({ ...c, relStatus: 'match',    jobTitle: 'Barista do specialty kavárny'  })),
+  ...E_CANDIDATES.shortlist.map(c => ({ ...c, relStatus: 'waiting',  jobTitle: 'Servírka — víkendová směna'   })),
+  ...E_CANDIDATES.interview.map(c => ({ ...c, relStatus: 'waiting',  jobTitle: 'Barista do specialty kavárny' })),
+  ...E_CANDIDATES.hired.map(c    => ({ ...c, relStatus: 'match',     jobTitle: 'Cateringový tým — 14.5.'      })),
+  { id: 'c9', name: 'Ondřej Beneš', avatar: 'OB', color: '#FF6B35', age: 26, rating: 4.2, jobsDone: 8, distance: 4.1, level: 2, match: 61, tags: ['Sklad'], lastSeen: 'před 3 dny', relStatus: 'rejected', jobTitle: 'Pomocník do kuchyně — ASAP' },
+];
+
 function ECandidates() {
+  const [tab, setTab] = useStateE('all');
+  const [search, setSearch] = useStateE('');
   const [selected, setSelected] = useStateE(null);
-  const columns = [
-    { k: 'new', label: 'Noví matche', count: E_CANDIDATES.new.length, color: '#5B6BFF', icon: 'star-bold' },
-    { k: 'shortlist', label: 'Shortlist', count: E_CANDIDATES.shortlist.length, color: '#FFD166', icon: 'bookmark-bold' },
-    { k: 'interview', label: 'Pohovor', count: E_CANDIDATES.interview.length, color: '#E0B0FF', icon: 'phone-bold' },
-    { k: 'hired', label: 'Najato', count: E_CANDIDATES.hired.length, color: '#5BD68A', icon: 'check-circle-bold' },
+
+  const tabFiltered = tab === 'all' ? ALL_CANDS_FLAT : ALL_CANDS_FLAT.filter(c => c.relStatus === tab);
+
+  const counts = {
+    all:      ALL_CANDS_FLAT.length,
+    match:    ALL_CANDS_FLAT.filter(c => c.relStatus === 'match').length,
+    waiting:  ALL_CANDS_FLAT.filter(c => c.relStatus === 'waiting').length,
+    rejected: ALL_CANDS_FLAT.filter(c => c.relStatus === 'rejected').length,
+  };
+
+  const visible = React.useMemo(() => {
+    if (!search.trim()) return tabFiltered;
+    const q = search.trim().toLowerCase();
+    return tabFiltered.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      (c.jobTitle || '').toLowerCase().includes(q) ||
+      c.tags.some(t => t.toLowerCase().includes(q))
+    );
+  }, [tab, search]);
+
+  const TABS = [
+    { k: 'all',      l: 'Vše'             },
+    { k: 'waiting',  l: 'Čeká na odpověď' },
+    { k: 'match',    l: 'Nový match'       },
+    { k: 'rejected', l: 'Odmítnuto'        },
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <div style={{ padding: '24px 28px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 13 }}>
-          Inzerát: <span style={{ color: T.text, fontWeight: 700 }}>{E_JOBS[0]?.title || 'Všechny inzeráty'}</span>
-        </div>
-        <span style={{ width: 3, height: 3, borderRadius: 999, background: T.mutedSoft }} />
-        <span style={{ color: T.mutedSoft, fontFamily: T.fontMono, fontSize: 12 }}>{Object.values(E_CANDIDATES).flat().length} matchů · {E_CANDIDATES.hired.length} najato</span>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, background: '#fff' }}>
+      {/* Header */}
+      <div style={{ padding: '20px 28px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ fontFamily: T.fontHead, fontSize: 20, fontWeight: 800, color: '#111827' }}>Kandidáti</div>
+        <span style={{ padding: '2px 10px', borderRadius: 999, background: 'rgba(0,32,246,0.1)', color: '#0020F6', fontFamily: T.fontMono, fontSize: 12, fontWeight: 700 }}>{counts.all}</span>
         <div style={{ flex: 1 }} />
-        <button style={{ padding: '8px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.12)', border: '1px solid ' + T.border, color: T.light, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <Icon name="filter-bold" size={12} color={T.light}/>
-          Filtry
+        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+          <span style={{ position: 'absolute', left: 10, pointerEvents: 'none' }}>
+            <Icon name="magnifer-linear" size={13} color="#9CA3AF" />
+          </span>
+          <input
+            value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Hledat kandidáta, pozici…"
+            style={{ paddingLeft: 32, paddingRight: 12, paddingTop: 8, paddingBottom: 8, borderRadius: 9, background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#111827', fontFamily: T.fontUI, fontSize: 12.5, outline: 'none', width: 230 }}
+          />
+        </div>
+        <button style={{ padding: '8px 12px', borderRadius: 9, background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#374151', fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Icon name="filter-bold" size={12} color="#6B7280"/>Filtry
         </button>
       </div>
 
-      <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, padding: '0 28px 28px', overflow: 'hidden' }}>
-        {columns.map(col => (
-          <div key={col.k} style={{
-            display: 'flex', flexDirection: 'column', minHeight: 0,
-            borderRadius: 14,
-            background: 'rgba(255,255,255,0.1)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            overflow: 'hidden',
+      {/* Filter tabs */}
+      <div style={{ padding: '14px 28px', display: 'flex', gap: 8, borderBottom: '1px solid #E5E7EB' }}>
+        {TABS.map(t => (
+          <button key={t.k} onClick={() => setTab(t.k)} style={{
+            padding: '7px 14px', borderRadius: 9,
+            background: tab === t.k ? 'rgba(0,32,246,0.08)' : '#F9FAFB',
+            border: '1px solid ' + (tab === t.k ? 'rgba(0,32,246,0.3)' : '#E5E7EB'),
+            color: tab === t.k ? '#0020F6' : '#6B7280',
+            fontFamily: T.fontUI, fontSize: 12.5, fontWeight: tab === t.k ? 700 : 500,
+            cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 7,
           }}>
-            <div style={{
-              padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.15)',
-              display: 'flex', alignItems: 'center', gap: 8,
-              background: col.color + '11',
-            }}>
-              <Icon name={col.icon} size={14} color={col.color} />
-              <span style={{ color: T.text, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{col.label}</span>
-              <span style={{
-                padding: '1px 7px', borderRadius: 999,
-                background: col.color + '22', color: col.color,
-                fontFamily: T.fontMono, fontSize: 10.5, fontWeight: 700,
-              }}>{col.count}</span>
-              <div style={{ flex: 1 }} />
-              <Icon name="menu-dots-bold" size={14} color={T.mutedSoft}/>
-            </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {E_CANDIDATES[col.k].map(c => (
-                <CandidateCard key={c.id} c={c} stage={col.k} active={selected?.id === c.id} onClick={() => setSelected({ ...c, stage: col.k })} />
-              ))}
-            </div>
-          </div>
+            {t.l}
+            <span style={{ fontFamily: T.fontMono, fontSize: 11, fontWeight: 700, opacity: tab === t.k ? 1 : 0.6 }}>{counts[t.k]}</span>
+          </button>
         ))}
       </div>
 
-      {selected ? (
+      {/* List */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 28px 32px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {visible.length === 0 ? (
+          <div style={{ paddingTop: 60, textAlign: 'center', color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 13 }}>
+            Žádní kandidáti v této kategorii
+          </div>
+        ) : visible.map(c => (
+          <CandidateListCard key={c.id} c={c} active={selected?.id === c.id} onClick={() => setSelected({ ...c })} />
+        ))}
+      </div>
+
+      {selected && (
         <CandidateDrawer
           c={selected}
           onClose={() => setSelected(null)}
           onAccepted={async () => {
-            // Refresh global data so dashboard reflects the change
             const { data: { session } } = await sb.auth.getSession();
-            if (session?.user) {
-              await fetchEmployerData(session.user.id);
-              setSelected(null);
-            }
+            if (session?.user) { await fetchEmployerData(session.user.id); }
+            setSelected(null);
           }}
         />
-      ) : null}
+      )}
     </div>
   );
 }
 
-function CandidateCard({ c, stage, active, onClick }) {
+function CandidateListCard({ c, active, onClick }) {
+  const st = CAND_STATUS[c.relStatus] || CAND_STATUS.match;
   return (
     <button onClick={onClick} style={{
-      textAlign: 'left', padding: 12, borderRadius: 11,
-      background: active ? 'rgba(0,32,246,0.1)' : 'rgba(0,32,246,0.03)',
-      border: '1px solid ' + (active ? 'rgba(91,107,255,0.4)' : T.border),
-      cursor: 'pointer', color: 'inherit',
-      display: 'flex', flexDirection: 'column', gap: 10,
-      fontFamily: 'inherit',
+      textAlign: 'left', padding: '14px 18px', borderRadius: 16,
+      background: active ? 'rgba(0,32,246,0.1)' : '#EEF2FF',
+      border: '1.5px solid ' + (active ? 'rgba(0,32,246,0.4)' : '#D4DCFF'),
+      cursor: 'pointer', color: 'inherit', fontFamily: 'inherit',
+      display: 'flex', alignItems: 'center', gap: 14, width: '100%',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 999,
-          background: c.color, display: 'grid', placeItems: 'center',
-          color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 13,
-          flexShrink: 0,
-        }}>{c.avatar}</div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: T.text, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
-          <div style={{ color: T.muted, fontSize: 10.5, fontFamily: T.fontUI, marginTop: 1 }}>
-            {c.distance != null ? <><span style={{ fontFamily: T.fontMono }}>{c.age}</span> · {c.distance} km</> : (c.age != null ? <span style={{ fontFamily: T.fontMono }}>{c.age}</span> : null)}
-          </div>
+      <div style={{ width: 44, height: 44, borderRadius: 999, background: c.color, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
+        {c.avatar}
+      </div>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13.5, fontWeight: 700 }}>{c.name}</span>
+          <span style={{ fontFamily: T.fontMono, fontSize: 11, color: '#6B7280' }}>{c.age} let · {c.distance} km</span>
         </div>
-        <div style={{
-          padding: '2px 7px', borderRadius: 6,
-          background: 'rgba(91,214,138,0.18)', color: '#5BD68A',
-          fontFamily: T.fontMono, fontSize: 10.5, fontWeight: 800,
-        }}>{c.match}%</div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <MiniMetricLight icon="star-bold" v={c.rating} c="#D97706" />
+          <MiniMetricLight icon="medal-ribbon-star-bold" v={c.jobsDone} c="#4338CA" />
+        </div>
       </div>
-
-      {/* metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
-        <MiniMetric icon="star-bold" v={c.rating} c="#FFD166" />
-        <MiniMetric icon="medal-ribbon-star-bold" v={c.jobsDone} c="#5B6BFF" />
-        <MiniMetric icon="cup-star-bold" v={'L' + c.level} c="#5BD68A" />
-      </div>
-
-      {/* tags */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-        {c.tags.slice(0, 3).map((t, i) => (
-          <span key={i} style={{
-            padding: '2px 7px', borderRadius: 5,
-            background: 'rgba(0,32,246,0.05)', border: '1px solid ' + T.border,
-            color: T.light, fontFamily: T.fontUI, fontSize: 10, fontWeight: 600,
-          }}>{t}</span>
-        ))}
-      </div>
-
-      {/* footer */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid ' + T.border, paddingTop: 8 }}>
-        <span style={{ color: T.mutedSoft, fontFamily: T.fontMono, fontSize: 9.5 }}>{c.lastSeen}</span>
-        {stage === 'interview' ? <span style={{ color: '#E0B0FF', fontFamily: T.fontMono, fontSize: 9.5, fontWeight: 700 }}>{c.interview}</span> : null}
-        {stage === 'hired' ? <span style={{ color: '#5BD68A', fontFamily: T.fontMono, fontSize: 9.5, fontWeight: 700 }}>{c.shift}</span> : null}
-        {(stage === 'new' || stage === 'shortlist') ? <Icon name="alt-arrow-right-line-duotone" size={12} color={T.muted}/> : null}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
+        <span style={{ padding: '4px 10px', borderRadius: 7, background: st.bg, border: '1px solid ' + st.border, color: st.color, fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 700, whiteSpace: 'nowrap' }}>
+          {st.label}
+        </span>
+        {c.jobTitle && (
+          <span style={{ fontSize: 10.5, color: '#9CA3AF', fontFamily: T.fontUI, textAlign: 'right', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {c.jobTitle}
+          </span>
+        )}
+        {c.relStatus === 'match' && (
+          <button onClick={e => e.stopPropagation()} style={{ padding: '5px 11px', borderRadius: 7, background: 'rgba(0,32,246,0.1)', border: '1px solid rgba(0,32,246,0.25)', color: '#0020F6', fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <Icon name="chat-round-line-bold" size={11} color="#0020F6"/>Napsat zprávu
+          </button>
+        )}
+        {c.relStatus === 'waiting' && (
+          <button onClick={e => e.stopPropagation()} style={{ padding: '5px 11px', borderRadius: 7, background: 'transparent', border: '1px solid ' + T.border, color: T.mutedSoft, fontFamily: T.fontUI, fontSize: 11, fontWeight: 500, cursor: 'pointer' }}>
+            Zrušit nabídku
+          </button>
+        )}
       </div>
     </button>
   );
@@ -430,6 +528,19 @@ function MiniMetric({ icon, v, c }) {
     }}>
       <Icon name={icon} size={11} color={c} />
       <span style={{ color: T.text, fontFamily: T.fontMono, fontSize: 11, fontWeight: 700 }}>{v}</span>
+    </div>
+  );
+}
+
+function MiniMetricLight({ icon, v, c }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center',
+      padding: '4px 8px', borderRadius: 6,
+      background: 'rgba(255,255,255,0.7)', border: '1px solid #D4DCFF',
+    }}>
+      <Icon name={icon} size={11} color={c} />
+      <span style={{ color: '#111827', fontFamily: T.fontMono, fontSize: 11, fontWeight: 700 }}>{v}</span>
     </div>
   );
 }
@@ -463,16 +574,16 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
   return (
     <div style={{
       position: 'fixed', top: 0, right: 0, bottom: 0, width: 420,
-      background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(24px)',
-      borderLeft: '1px solid ' + T.border,
-      boxShadow: '-20px 0 60px rgba(0,0,0,0.5)',
+      background: '#fff',
+      borderLeft: '1px solid #E5E7EB',
+      boxShadow: '-20px 0 60px rgba(0,0,0,0.12)',
       zIndex: 100, display: 'flex', flexDirection: 'column',
       animation: 'mkBubbleIn .25s',
     }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid ' + T.border, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ flex: 1, color: T.muted, fontFamily: T.fontUI, fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' }}>Detail kandidáta</span>
-        <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border, color: T.light, cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
-          <Icon name="close-square-bold" size={16} color={T.muted}/>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ flex: 1, color: '#6B7280', fontFamily: T.fontUI, fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' }}>Detail kandidáta</span>
+        <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, background: '#F9FAFB', border: '1px solid #E5E7EB', cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
+          <Icon name="close-square-bold" size={16} color="#6B7280"/>
         </button>
       </div>
 
@@ -481,11 +592,10 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
         <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
           <div style={{ width: 72, height: 72, borderRadius: 999, background: c.color, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 26 }}>{c.avatar}</div>
           <div style={{ flex: 1 }}>
-            <div style={{ color: T.text, fontFamily: T.fontHead, fontSize: 20, fontWeight: 800 }}>{c.name}</div>
-            <div style={{ color: T.muted, fontSize: 12, fontFamily: T.fontUI, marginTop: 2 }}>{c.age} let · Brno · {c.distance} km</div>
+            <div style={{ color: '#111827', fontFamily: T.fontHead, fontSize: 20, fontWeight: 800 }}>{c.name}</div>
+            <div style={{ color: '#6B7280', fontSize: 12, fontFamily: T.fontUI, marginTop: 2 }}>{c.age} let · Brno · {c.distance} km</div>
             <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-              <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(91,214,138,0.2)', color: '#5BD68A', fontFamily: T.fontMono, fontSize: 11, fontWeight: 800 }}>{c.match}% match</span>
-              <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(91,107,255,0.2)', color: '#5B6BFF', fontFamily: T.fontMono, fontSize: 11, fontWeight: 800 }}>Makač L{c.level}</span>
+              <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(91,214,138,0.15)', color: '#15803D', fontFamily: T.fontMono, fontSize: 11, fontWeight: 800 }}>{c.match}% match</span>
             </div>
           </div>
         </div>
@@ -493,30 +603,30 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
         {/* Stats grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {[
-            { l: 'Hodnocení', v: c.rating + '★', c: '#FFD166' },
-            { l: 'Brigád', v: c.jobsDone, c: '#5B6BFF' },
-            { l: 'Spolehlivost', v: '98%', c: '#5BD68A' },
+            { l: 'Hodnocení', v: c.rating + '★', c: '#D97706' },
+            { l: 'Brigád', v: c.jobsDone, c: '#4338CA' },
+            { l: 'Spolehlivost', v: '98%', c: '#15803D' },
           ].map((s, i) => (
-            <div key={i} style={{ padding: 12, borderRadius: 10, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.border, textAlign: 'center' }}>
+            <div key={i} style={{ padding: 12, borderRadius: 10, background: '#F9FAFB', border: '1px solid #E5E7EB', textAlign: 'center' }}>
               <div style={{ color: s.c, fontFamily: T.fontMono, fontSize: 18, fontWeight: 700 }}>{s.v}</div>
-              <div style={{ color: T.mutedSoft, fontFamily: T.fontUI, fontSize: 10, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.l}</div>
+              <div style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 10, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.l}</div>
             </div>
           ))}
         </div>
 
         {/* Why match */}
         <div>
-          <div style={{ color: T.muted, fontSize: 10.5, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 8 }}>Proč je to dobrý match</div>
+          <div style={{ color: '#6B7280', fontSize: 10.5, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 8 }}>Proč je to dobrý match</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[
-              { i: 'check-circle-bold', t: 'Má 23 brigád v gastru s hodnocením 4.9★', c: '#5BD68A' },
-              { i: 'check-circle-bold', t: 'Bydlí 1.2 km od vaší kavárny', c: '#5BD68A' },
-              { i: 'check-circle-bold', t: 'Volný v požadovaných slotech (Po-Pá ráno)', c: '#5BD68A' },
-              { i: 'info-circle-bold', t: 'Maturuje na jaře — preferuje odpolední směny', c: '#FFD166' },
+              { i: 'check-circle-bold', t: 'Má 23 brigád v gastru s hodnocením 4.9★', c: '#16a34a' },
+              { i: 'check-circle-bold', t: 'Bydlí 1.2 km od vaší kavárny', c: '#16a34a' },
+              { i: 'check-circle-bold', t: 'Volný v požadovaných slotech (Po-Pá ráno)', c: '#16a34a' },
+              { i: 'info-circle-bold', t: 'Maturuje na jaře — preferuje odpolední směny', c: '#D97706' },
             ].map((x, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: 'rgba(0,32,246,0.04)' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
                 <Icon name={x.i} size={14} color={x.c}/>
-                <span style={{ color: T.light, fontSize: 12, fontFamily: T.fontUI }}>{x.t}</span>
+                <span style={{ color: '#374151', fontSize: 12, fontFamily: T.fontUI }}>{x.t}</span>
               </div>
             ))}
           </div>
@@ -524,17 +634,17 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
 
         {/* Skills */}
         <div>
-          <div style={{ color: T.muted, fontSize: 10.5, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 8 }}>Dovednosti</div>
+          <div style={{ color: '#6B7280', fontSize: 10.5, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 8 }}>Dovednosti</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
             {[...c.tags, 'Pokladna', 'AJ B2', 'Týmovost'].map((t, i) => (
-              <span key={i} style={{ padding: '5px 10px', borderRadius: 7, background: 'rgba(91,107,255,0.12)', border: '1px solid rgba(91,107,255,0.25)', color: T.light, fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600 }}>{t}</span>
+              <span key={i} style={{ padding: '5px 10px', borderRadius: 7, background: '#EEF2FF', border: '1px solid #C7D2FE', color: '#3730A3', fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600 }}>{t}</span>
             ))}
           </div>
         </div>
 
-        {/* Reliability radar-ish bars */}
+        {/* Reliability bars */}
         <div>
-          <div style={{ color: T.muted, fontSize: 10.5, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 8 }}>Profil spolehlivosti</div>
+          <div style={{ color: '#6B7280', fontSize: 10.5, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 8 }}>Profil spolehlivosti</div>
           {[
             { l: 'Dochvilnost', v: 98 },
             { l: 'Komunikace', v: 92 },
@@ -543,18 +653,18 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
           ].map((r, i) => (
             <div key={i} style={{ marginBottom: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontFamily: T.fontUI, marginBottom: 3 }}>
-                <span style={{ color: T.light }}>{r.l}</span>
-                <span style={{ color: T.text, fontFamily: T.fontMono, fontWeight: 700 }}>{r.v}%</span>
+                <span style={{ color: '#374151' }}>{r.l}</span>
+                <span style={{ color: '#111827', fontFamily: T.fontMono, fontWeight: 700 }}>{r.v}%</span>
               </div>
-              <div style={{ height: 5, borderRadius: 3, background: 'rgba(0,32,246,0.09)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: r.v + '%', background: 'linear-gradient(90deg, #5BD68A, #5BD68Aaa)' }} />
+              <div style={{ height: 5, borderRadius: 3, background: '#E5E7EB', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: r.v + '%', background: 'linear-gradient(90deg, #0020F6, #6366F1)' }} />
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      <div style={{ padding: 16, borderTop: '1px solid ' + T.border, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ padding: 16, borderTop: '1px solid #E5E7EB', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {accepted ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 14px', borderRadius: 10, background: 'rgba(91,214,138,0.12)', border: '1px solid rgba(91,214,138,0.3)', color: '#5BD68A', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>
             <Icon name="check-circle-bold" size={16} color="#5BD68A"/>Kandidát přijat — inzerát uzavřen
@@ -597,11 +707,11 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
         )}
         <button style={{
           padding: '10px 14px', borderRadius: 10,
-          background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border,
-          color: T.light, cursor: 'pointer',
+          background: '#F9FAFB', border: '1px solid #E5E7EB',
+          color: '#374151', cursor: 'pointer',
           fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600,
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        }}><Icon name="chat-round-line-bold" size={13} color={T.light}/>Napsat zprávu</button>
+        }}><Icon name="chat-round-line-bold" size={13} color="#374151"/>Napsat zprávu</button>
       </div>
     </div>
   );

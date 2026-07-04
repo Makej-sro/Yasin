@@ -1,6 +1,62 @@
 // Makej Employer — Dashboard page
 // Reuses ECard, Sparkline, AreaChart, SectionHeader, E_KPIS, E_ACTIVITY, E_JOBS
 
+function CandidateFunnel({ views, swipes, matches }) {
+  const steps = [
+    { label: 'Zhlédnutí',  value: views,   color: '#5B6BFF', bg: 'rgba(91,107,255,0.10)', border: 'rgba(91,107,255,0.25)' },
+    { label: 'Swipe right', value: swipes, color: '#FFD166', bg: 'rgba(255,209,102,0.10)', border: 'rgba(255,209,102,0.25)' },
+    { label: 'Match',       value: matches, color: '#5BD68A', bg: 'rgba(91,214,138,0.10)', border: 'rgba(91,214,138,0.25)' },
+  ];
+  const minWidths = [70, 45, 28];
+  const maxVal = Math.max(views, 1);
+  const fmtN = n => n >= 1000 ? n.toLocaleString('cs-CZ').replace(/,/g, ' ') : String(n);
+  const convPct = (a, b) => a > 0 ? ((b / a) * 100).toFixed(1) : null;
+  const convs = [null, convPct(views, swipes), convPct(swipes, matches)];
+  const getW = (val, idx) => Math.max(minWidths[idx], Math.round((val / maxVal) * 96)) + '%';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 20px 22px' }}>
+      {steps.map((step, i) => (
+        <div key={step.label} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {i > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '7px 0 6px', gap: 3 }}>
+              <div style={{ width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderTop: '9px solid #D1D5DB' }} />
+              {convs[i] !== null ? (
+                <span style={{ fontFamily: T.fontMono, fontSize: 11.5, fontWeight: 700, color: T.cardLight }}>{convs[i]}% konverze</span>
+              ) : (
+                <span style={{ fontFamily: T.fontMono, fontSize: 11.5, color: T.cardMuted }}>—</span>
+              )}
+            </div>
+          )}
+          <div style={{
+            width: getW(step.value, i),
+            padding: '14px 16px',
+            borderRadius: 12,
+            background: step.bg,
+            border: '1px solid ' + step.border,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+            animation: 'empPop 0.3s ease-out both',
+            animationDelay: (i * 0.13) + 's',
+            transition: 'width 0.5s ease',
+          }}>
+            <div style={{ fontFamily: T.fontMono, fontSize: 26, fontWeight: 700, color: step.color, letterSpacing: -1, lineHeight: 1 }}>
+              {step.value > 0 ? fmtN(step.value) : '—'}
+            </div>
+            <div style={{ fontFamily: T.fontUI, fontSize: 11, fontWeight: 600, color: T.cardMuted, letterSpacing: 0.3 }}>
+              {step.label}
+            </div>
+          </div>
+        </div>
+      ))}
+      {views === 0 && (
+        <div style={{ marginTop: 10, color: T.cardMuted, fontSize: 10.5, fontFamily: T.fontUI, textAlign: 'center' }}>
+          Zatím nedostatek dat
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EDashboard({ period = '30d' }) {
   const [activityTick, setActivityTick] = useStateE(0);
   const [spinning, setSpinning] = useStateE(false);
@@ -94,30 +150,12 @@ function EDashboard({ period = '30d' }) {
         <ECard>
           <SectionHeader
             title="Aktivita kandidátů"
-            subtitle={`Zhlédnutí, swajp-right a matche za ${{ '7d': 'posledních 7 dní', '30d': 'posledních 30 dní', '90d': 'posledních 90 dní', 'rok': 'posledních 12 měsíců' }[period]}`}
-            action={
-              <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                {[
-                  { c: '#5B6BFF', l: 'Zhlédnutí' },
-                  { c: '#FFD166', l: 'Swajp right' },
-                  { c: '#5BD68A', l: 'Matche' },
-                ].map(x => (
-                  <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: 999, background: x.c }} />
-                    <span style={{ fontSize: 11, color: T.cardMuted, fontFamily: T.fontUI, fontWeight: 600 }}>{x.l}</span>
-                  </div>
-                ))}
-              </div>
-            }
+            subtitle={`Konverze kandidátů za posledních ${{ '7d': '7 dní', '30d': '30 dní', '90d': '90 dní', 'rok': '12 měsíců' }[period]}`}
           />
-          <AreaChart
-            width={620} height={240}
-            labels={chartConfig.labels}
-            series={[
-              { color: '#5B6BFF', data: chartConfig.v },
-              { color: '#FFD166', data: chartConfig.s },
-              { color: '#5BD68A', data: chartConfig.m },
-            ]}
+          <CandidateFunnel
+            views={chartConfig.v.reduce((a, b) => a + b, 0)}
+            swipes={chartConfig.s.reduce((a, b) => a + b, 0)}
+            matches={chartConfig.m.reduce((a, b) => a + b, 0)}
           />
         </ECard>
 

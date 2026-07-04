@@ -9,23 +9,12 @@ const { useState: useStateE, useEffect: useEffectE, useRef: useRefE, useMemo: us
 function ELogo() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <div style={{
-        width: 44, height: 44, borderRadius: 12,
-        background: 'linear-gradient(135deg, #0020F6 0%, #2D2CA7 100%)',
-        display: 'grid', placeItems: 'center',
-        position: 'relative', overflow: 'hidden',
-        boxShadow: '0 8px 24px rgba(0,32,246,0.35), inset 0 1px 0 rgba(255,255,255,0.18)',
-      }}>
-        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-          <path d="M3 22 L3 6 L8 6 L13 14 L18 6 L23 6 L23 22 L19 22 L19 13 L14.5 19 L11.5 19 L7 13 L7 22 Z" fill="#fff"/>
-        </svg>
-      </div>
       <div>
-        <div style={{ fontFamily: T.fontHead, fontWeight: 800, fontSize: 22, color: '#fff', letterSpacing: -0.5, lineHeight: 1 }}>
-          makej<span style={{ color: T.super }}>.</span>
+        <div style={{ fontFamily: T.fontHead, fontWeight: 800, fontSize: 22, color: '#0020F6', letterSpacing: -0.5, lineHeight: 1 }}>
+          Makej
         </div>
-        <div style={{ fontFamily: T.fontUI, fontSize: 9, color: T.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginTop: 3, fontWeight: 700 }}>
-          for business
+        <div style={{ fontFamily: T.fontUI, fontSize: 9, color: '#6B7280', letterSpacing: 1.5, textTransform: 'uppercase', marginTop: 3, fontWeight: 700 }}>
+          pro firmy
         </div>
       </div>
     </div>
@@ -66,9 +55,8 @@ function ESidebar({ tab, onTab }) {
       width: 256, flexShrink: 0,
       display: 'flex', flexDirection: 'column',
       padding: '20px 14px',
-      borderRight: '1px solid ' + T.border,
-      background: 'rgba(10,10,30,0.5)',
-      backdropFilter: 'blur(20px)',
+      borderRight: '1px solid #E5E7EB',
+      background: '#ffffff',
       overflowY: 'auto',
       position: 'relative', zIndex: 1,
     }}>
@@ -79,15 +67,15 @@ function ESidebar({ tab, onTab }) {
           onClick={() => window.toggleMakejTheme && window.toggleMakejTheme()}
           style={{
             width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+            background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)',
             cursor: 'pointer',
             display: 'grid', placeItems: 'center',
             transition: 'background .15s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.08)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; }}
         >
-          <Icon name={window._makejIsDark ? 'sun-bold' : 'moon-stars-bold'} size={16} color={T.light} />
+          <Icon name={window._makejIsDark ? 'sun-bold' : 'moon-stars-bold'} size={16} color="#6B7280" />
         </button>
       </div>
 
@@ -96,7 +84,7 @@ function ESidebar({ tab, onTab }) {
           <div key={i}>
             <div style={{
               padding: '0 12px 6px',
-              fontSize: 10, color: T.mutedSoft, fontFamily: T.fontUI,
+              fontSize: 10, color: '#9CA3AF', fontFamily: T.fontUI,
               fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
             }}>{sec.label}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -106,30 +94,33 @@ function ESidebar({ tab, onTab }) {
                   <button key={it.k} onClick={() => !it.disabled && onTab(it.k)} style={{
                     display: 'flex', alignItems: 'center', gap: 11,
                     padding: '9px 12px', borderRadius: 10,
-                    background: active ? 'linear-gradient(135deg, rgba(0,32,246,0.28), rgba(91,107,255,0.12))' : 'transparent',
-                    border: '1px solid ' + (active ? 'rgba(91,107,255,0.4)' : 'transparent'),
-                    color: active ? '#fff' : it.disabled ? 'rgba(153,153,204,0.35)' : T.muted,
+                    background: active ? 'rgba(0,32,246,0.08)' : 'transparent',
+                    border: 'none',
+                    color: active ? '#0020F6' : it.disabled ? '#D1D5DB' : '#374151',
                     cursor: it.disabled ? 'not-allowed' : 'pointer', textAlign: 'left',
                     fontFamily: T.fontUI, fontWeight: active ? 700 : 500, fontSize: 13.5,
                     transition: 'all .15s',
                     opacity: it.disabled ? 0.5 : 1,
                   }}
-                  onMouseEnter={e => { if (!active && !it.disabled) e.currentTarget.style.background = 'rgba(208,208,255,0.04)'; }}
+                  onMouseEnter={e => { if (!active && !it.disabled) e.currentTarget.style.background = '#F3F4F6'; }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
-                    <Icon name={active ? it.icon : it.iconLine} size={18} color={active ? T.light : T.muted} />
+                    {['dash', 'analytics', 'jobs', 'candidates', 'chat', 'calendar', 'settings'].includes(it.k)
+                      ? (() => { const iconMap = { dash: 'dashboard-icon.png', analytics: 'analytics-icon.png', jobs: 'jobs-icon.png', candidates: 'candidates-icon.png', chat: 'messages-icon.png', calendar: 'calendar-icon.png', settings: 'settings-icon.png' }; return <img src={iconMap[it.k]} style={{ width: 18, height: 18, flexShrink: 0, objectFit: 'contain', filter: active ? 'brightness(0) saturate(100%) invert(13%) sepia(100%) saturate(4000%) hue-rotate(228deg) brightness(103%)' : 'opacity(0.4)' }} />; })()
+                      : <Icon name={active ? it.icon : it.iconLine} size={18} color={active ? '#0020F6' : it.disabled ? '#D1D5DB' : '#6B7280'} />
+                    }
                     <span style={{ flex: 1 }}>{it.label}</span>
-                    {it.disabled && <span style={{ fontSize: 9, fontWeight: 700, fontFamily: T.fontUI, color: 'rgba(153,153,204,0.5)', letterSpacing: 0.5, textTransform: 'uppercase' }}>Brzy</span>}
+                    {it.disabled && <span style={{ fontSize: 9, fontWeight: 700, fontFamily: T.fontUI, color: '#D1D5DB', letterSpacing: 0.5, textTransform: 'uppercase' }}>Brzy</span>}
                     {it.badge != null ? (
                       typeof it.badge === 'string' ? (
                         <span style={{
                           padding: '2px 6px', borderRadius: 4,
-                          background: 'rgba(255,209,102,0.18)', color: T.super,
+                          background: 'rgba(251,191,36,0.2)', color: '#92400E',
                           fontSize: 9, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 0.5,
                         }}>{it.badge}</span>
                       ) : (
                         <span style={{
                           minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999,
-                          background: T.primary, color: '#fff',
+                          background: '#0020F6', color: '#fff',
                           fontSize: 10, fontWeight: 800, fontFamily: T.fontUI,
                           display: 'grid', placeItems: 'center',
                         }}>{it.badge}</span>
@@ -147,20 +138,20 @@ function ESidebar({ tab, onTab }) {
       <div style={{
         margin: '12px 0',
         padding: 16, borderRadius: 14,
-        background: 'linear-gradient(135deg, rgba(91,107,255,0.18), rgba(0,32,246,0.08))',
-        border: '1px solid rgba(91,107,255,0.3)',
+        background: 'rgba(0,32,246,0.05)',
+        border: '1px solid rgba(0,32,246,0.15)',
         position: 'relative', overflow: 'hidden',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <Icon name="crown-star-bold" size={16} color={T.super} />
-          <span style={{ color: T.super, fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 1, textTransform: 'uppercase' }}>{ECOMPANY.plan || 'Starter'}</span>
+          <Icon name="crown-star-bold" size={16} color="#92400E" />
+          <span style={{ color: '#92400E', fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 1, textTransform: 'uppercase' }}>{ECOMPANY.plan || 'Starter'}</span>
         </div>
         {(() => {
           const expStr = EPROFILE.premium_until || EPROFILE.plan_expires_at || null;
           const now = new Date();
           if (!expStr) {
             return (
-              <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 12, marginBottom: 12 }}>
+              <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 12, marginBottom: 12 }}>
                 {ECOMPANY.plan && ECOMPANY.plan.toLowerCase() !== 'starter' ? 'Aktivní předplatné' : 'Bezplatný tarif'}
               </div>
             );
@@ -172,21 +163,21 @@ function ESidebar({ tab, onTab }) {
           const expLabel = exp.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
           return (
             <>
-              <div style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
+              <div style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
                 {isActive ? `Aktivní · do ${expLabel}` : `Vypršel · ${expLabel}`}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                <div style={{ flex: 1, height: 4, borderRadius: 999, background: 'rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+                <div style={{ flex: 1, height: 4, borderRadius: 999, background: 'rgba(0,32,246,0.12)', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: pct + '%', borderRadius: 999, background: 'linear-gradient(90deg, #5B6BFF, #0020F6)' }} />
                 </div>
-                <span style={{ color: T.muted, fontFamily: T.fontMono, fontSize: 10, fontWeight: 600 }}>{isActive ? daysLeft + 'd' : '0d'}</span>
+                <span style={{ color: '#6B7280', fontFamily: T.fontMono, fontSize: 10, fontWeight: 600 }}>{isActive ? daysLeft + 'd' : '0d'}</span>
               </div>
             </>
           );
         })()}
         <button style={{
           width: '100%', padding: '8px 10px', borderRadius: 8,
-          background: 'rgba(91,107,255,0.25)', border: '1px solid rgba(91,107,255,0.4)',
+          background: '#0020F6', border: 'none',
           color: '#fff', cursor: 'pointer',
           fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 700,
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -196,7 +187,7 @@ function ESidebar({ tab, onTab }) {
       {/* Company footer */}
       <div style={{
         padding: '10px 8px', display: 'flex', alignItems: 'center', gap: 10,
-        borderTop: '1px solid ' + T.border, marginTop: 6,
+        borderTop: '1px solid #E5E7EB', marginTop: 6,
       }}>
         <div style={{
           width: 36, height: 36, borderRadius: 10,
@@ -206,10 +197,10 @@ function ESidebar({ tab, onTab }) {
           color: ECOMPANY.logoColor, fontFamily: T.fontHead, fontWeight: 800, fontSize: 13,
         }}>{ECOMPANY.logo}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ECOMPANY.name}</div>
-          <div style={{ color: T.muted, fontSize: 10.5, fontFamily: T.fontUI }}>{ECOMPANY.city}</div>
+          <div style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ECOMPANY.name}</div>
+          <div style={{ color: '#6B7280', fontSize: 10.5, fontFamily: T.fontUI }}>{ECOMPANY.city}</div>
         </div>
-        <Icon name="alt-arrow-down-line-duotone" size={14} color={T.muted} />
+        <Icon name="alt-arrow-down-line-duotone" size={14} color="#9CA3AF" />
       </div>
     </aside>
   );
