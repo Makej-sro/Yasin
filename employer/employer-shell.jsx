@@ -223,8 +223,7 @@ function ETopbar({ title, subtitle, onNew, onSignOut, period = '30d', onPeriod }
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <h1 style={{ margin: 0, fontFamily: T.fontHead, fontSize: 20, fontWeight: 800, color: T.text, letterSpacing: -0.4 }}>{title}</h1>
-          <span style={{ width: 4, height: 4, borderRadius: 999, background: T.mutedSoft }} />
-          <span style={{ fontFamily: T.fontUI, fontSize: 13, color: T.muted, fontWeight: 500 }}>{subtitle}</span>
+          {subtitle ? <><span style={{ width: 4, height: 4, borderRadius: 999, background: T.mutedSoft }} /><span style={{ fontFamily: T.fontUI, fontSize: 13, color: T.muted, fontWeight: 500 }}>{subtitle}</span></> : null}
         </div>
       </div>
 

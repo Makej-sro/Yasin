@@ -1,43 +1,55 @@
 // Makej Employer — Dashboard page
 // Reuses ECard, Sparkline, AreaChart, SectionHeader, E_KPIS, E_ACTIVITY, E_JOBS
 
-function CandidateFunnel({ views, swipes, matches }) {
+function CandidateFunnel({ views, swipes, onTab }) {
   const steps = [
-    { label: 'Zhlédnutí',  value: views,   color: '#5B6BFF', bg: 'rgba(91,107,255,0.10)', border: 'rgba(91,107,255,0.25)' },
+    { label: 'Zhlédnutí',   value: views,  color: '#5B6BFF', bg: 'rgba(91,107,255,0.10)', border: 'rgba(91,107,255,0.25)' },
     { label: 'Swipe right', value: swipes, color: '#FFD166', bg: 'rgba(255,209,102,0.10)', border: 'rgba(255,209,102,0.25)' },
-    { label: 'Match',       value: matches, color: '#5BD68A', bg: 'rgba(91,214,138,0.10)', border: 'rgba(91,214,138,0.25)' },
   ];
-  const minWidths = [70, 45, 28];
+  const minWidths = [70, 45];
   const maxVal = Math.max(views, 1);
-  const fmtN = n => n >= 1000 ? n.toLocaleString('cs-CZ').replace(/,/g, ' ') : String(n);
-  const convPct = (a, b) => a > 0 ? ((b / a) * 100).toFixed(1) : null;
-  const convs = [null, convPct(views, swipes), convPct(swipes, matches)];
+  const fmtN = n => n >= 1000 ? n.toLocaleString('cs-CZ').replace(/,/g, ' ') : String(n);
+  const conv = views > 0 ? ((swipes / views) * 100).toFixed(1) : null;
   const getW = (val, idx) => Math.max(minWidths[idx], Math.round((val / maxVal) * 96)) + '%';
 
+  // TODO: napojit historická data pro trend — skryto dokud nejsou k dispozici
+  const trendPct = null;
+
+  // TODO: napojit reálná data z jednotlivých inzerátů
+  const activeJobs = (E_JOBS || []).filter(j => j.status !== 'filled' && j.status !== 'paused');
+  const jobInsight = activeJobs.length >= 2 ? (() => {
+    const sorted = [...activeJobs].sort((a, b) => b.ctr - a.ctr);
+    return { best: sorted[0], worst: sorted[sorted.length - 1] };
+  })() : null;
+
+  const truncate = (s, n) => s.length > n ? s.slice(0, n) + '…' : s;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 20px 22px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 20px 16px' }}>
       {steps.map((step, i) => (
         <div key={step.label} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {i > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '7px 0 6px', gap: 3 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 0 7px', gap: 3 }}>
               <div style={{ width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderTop: '9px solid #D1D5DB' }} />
-              {convs[i] !== null ? (
-                <span style={{ fontFamily: T.fontMono, fontSize: 11.5, fontWeight: 700, color: T.cardLight }}>{convs[i]}% konverze</span>
+              {conv !== null ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <span style={{ fontFamily: T.fontMono, fontSize: 11.5, fontWeight: 700, color: T.cardLight }}>{conv}% konverze</span>
+                  {trendPct !== null ? (
+                    <span style={{ fontFamily: T.fontUI, fontSize: 10, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 2, color: trendPct > 0 ? '#059669' : trendPct < 0 ? '#DC2626' : '#9CA3AF' }}>
+                      {trendPct > 0 ? '↑' : trendPct < 0 ? '↓' : '–'}{trendPct > 0 ? '+' : ''}{trendPct}% oproti minulému období
+                    </span>
+                  ) : null}
+                </div>
               ) : (
-                <span style={{ fontFamily: T.fontMono, fontSize: 11.5, color: T.cardMuted }}>—</span>
+                <span style={{ fontFamily: T.fontMono, fontSize: 11.5, color: T.cardMuted }}>{'—'}</span>
               )}
             </div>
           )}
           <div style={{
-            width: getW(step.value, i),
-            padding: '14px 16px',
-            borderRadius: 12,
-            background: step.bg,
-            border: '1px solid ' + step.border,
+            width: getW(step.value, i), padding: '14px 16px', borderRadius: 12,
+            background: step.bg, border: '1px solid ' + step.border,
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-            animation: 'empPop 0.3s ease-out both',
-            animationDelay: (i * 0.13) + 's',
-            transition: 'width 0.5s ease',
+            animation: 'empPop 0.3s ease-out both', animationDelay: (i * 0.13) + 's', transition: 'width 0.5s ease',
           }}>
             <div style={{ fontFamily: T.fontMono, fontSize: 26, fontWeight: 700, color: step.color, letterSpacing: -1, lineHeight: 1 }}>
               {step.value > 0 ? fmtN(step.value) : '—'}
@@ -53,11 +65,24 @@ function CandidateFunnel({ views, swipes, matches }) {
           Zatím nedostatek dat
         </div>
       )}
+      {jobInsight && (
+        <div style={{ marginTop: 14, width: '100%', textAlign: 'center', fontFamily: T.fontUI, fontSize: 11, color: T.cardMuted, lineHeight: 1.7 }}>
+          <span>Nejlepší inzerát: </span>
+          <button onClick={() => onTab && onTab('jobs')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#0020F6', fontFamily: T.fontUI, fontSize: 11, fontWeight: 700, textDecoration: 'underline' }}>
+            {truncate(jobInsight.best.title, 22)}
+          </button>
+          <span> ({jobInsight.best.ctr}%) • Nejslabší: </span>
+          <button onClick={() => onTab && onTab('jobs')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: T.cardLight, fontFamily: T.fontUI, fontSize: 11, fontWeight: 700, textDecoration: 'underline' }}>
+            {truncate(jobInsight.worst.title, 22)}
+          </button>
+          <span> ({jobInsight.worst.ctr}%)</span>
+        </div>
+      )}
     </div>
   );
 }
 
-function EDashboard({ period = '30d' }) {
+function EDashboard({ period = '30d', onTab }) {
   const [activityTick, setActivityTick] = useStateE(0);
   const [spinning, setSpinning] = useStateE(false);
 
@@ -97,34 +122,106 @@ function EDashboard({ period = '30d' }) {
     spark: k.spark.map(v => Math.round(v * mult)),
   }));
 
+  // Vyžaduje pozornost — akční upozornění
+  const alerts = [];
+
+  const waitingCount = (E_CANDIDATES.new || []).length; // TODO: napojit na reálné matche se statusem 'pending'
+  if (waitingCount > 0) alerts.push({
+    key: 'waiting', icon: 'bell-bold',
+    label: `${waitingCount} ${waitingCount === 1 ? 'kandidát čeká' : waitingCount < 5 ? 'kandidáti čekají' : 'kandidátů čeká'} na odpověď`,
+    color: '#0020F6', bg: 'rgba(0,32,246,0.07)', border: 'rgba(0,32,246,0.20)', tab: 'candidates',
+  });
+
+  const expiringJobs = (E_JOBS || []).filter(j => j.daysLeft > 0 && j.daysLeft <= 3 && j.status !== 'filled');
+  if (expiringJobs.length > 0) {
+    const isVeryUrgent = expiringJobs.some(j => j.daysLeft <= 1);
+    const ej = expiringJobs[0];
+    const shortTitle = ej.title.length > 24 ? ej.title.slice(0, 24) + '…' : ej.title;
+    const lbl = expiringJobs.length === 1
+      ? `„${shortTitle}“ expiruje za ${ej.daysLeft} ${ej.daysLeft === 1 ? 'den' : 'dny'}`
+      : `${expiringJobs.length} inzeráty brzy expirují`;
+    alerts.push({
+      key: 'expiring', icon: 'danger-bold', label: lbl,
+      color: isVeryUrgent ? '#DC2626' : '#D97706',
+      bg: isVeryUrgent ? 'rgba(220,38,38,0.07)' : 'rgba(217,119,6,0.07)',
+      border: isVeryUrgent ? 'rgba(220,38,38,0.22)' : 'rgba(217,119,6,0.22)',
+      tab: 'jobs',
+    });
+  }
+
+  // TODO: napojit na reálná data — E_THREADS.filter(t => t.unread > 0).reduce((s,t) => s + t.unread, 0)
+  const unreadMsgs = 2;
+  if (unreadMsgs > 0) alerts.push({
+    key: 'msgs', icon: 'chat-round-line-bold',
+    label: `${unreadMsgs} nepřečtené zprávy`,
+    color: '#059669', bg: 'rgba(5,150,105,0.07)', border: 'rgba(5,150,105,0.22)',
+    tab: 'chat',
+  });
+
   return (
     <div style={{ padding: '24px 28px 40px', display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
 
+      {/* Vyžaduje pozornost */}
+      {alerts.length > 0 && (
+        <div style={{
+          background: '#fff', border: '1px solid ' + T.cardBorder, borderRadius: 14,
+          padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+            <img src="caution.png" style={{ width: 16, height: 16, objectFit: 'contain' }} />
+            <span style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6 }}>Vyžaduje pozornost</span>
+          </div>
+          <div style={{ width: 1, height: 18, background: T.cardBorder, flexShrink: 0 }} />
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
+            {alerts.map(a => (
+              <button
+                key={a.key}
+                onClick={() => onTab && onTab(a.tab)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 7,
+                  padding: '7px 13px', borderRadius: 99,
+                  background: a.bg, border: '1px solid ' + a.border,
+                  cursor: 'pointer', transition: 'box-shadow .15s',
+                  fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, color: a.color,
+                  lineHeight: 1,
+                }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 10px ' + a.border}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+              >
+                <Icon name={a.icon} size={13} color={a.color} />
+                {a.label}
+                <span style={{ fontSize: 11, opacity: 0.55 }}>{'→'}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* KPI grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
         {kpis.map(k => (
-          <ECard key={k.id} padding={18}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(0,32,246,0.08)', display: 'grid', placeItems: 'center', border: '1px solid rgba(0,32,246,0.15)' }}>
-                  <Icon name={k.icon} size={14} color={T.cardLight} />
+          <ECard key={k.id} padding={24}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(0,32,246,0.08)', display: 'grid', placeItems: 'center', border: '1px solid rgba(0,32,246,0.15)' }}>
+                  <Icon name={k.icon} size={17} color={T.cardLight} />
                 </div>
-                <span style={{ color: T.cardMuted, fontSize: 11.5, fontFamily: T.fontUI, fontWeight: 600, letterSpacing: 0.3 }}>{k.label}</span>
+                <span style={{ color: T.cardMuted, fontSize: 13, fontFamily: T.fontUI, fontWeight: 600, letterSpacing: 0.2 }}>{k.label}</span>
               </div>
               <span style={{
-                padding: '3px 7px', borderRadius: 6,
+                padding: '4px 9px', borderRadius: 7,
                 background: k.delta >= 0 ? 'rgba(91,214,138,0.2)' : 'rgba(244,63,94,0.2)',
                 color: k.delta >= 0 ? '#5BD68A' : '#f43f5e',
-                fontFamily: T.fontMono, fontSize: 10.5, fontWeight: 700,
+                fontFamily: T.fontMono, fontSize: 12, fontWeight: 700,
                 display: 'inline-flex', alignItems: 'center', gap: 3,
               }}>
-                <Icon name={k.delta >= 0 ? 'arrow-up-bold' : 'arrow-down-bold'} size={10} color={k.delta >= 0 ? '#5BD68A' : '#f43f5e'} />
+                <Icon name={k.delta >= 0 ? 'arrow-up-bold' : 'arrow-down-bold'} size={11} color={k.delta >= 0 ? '#5BD68A' : '#f43f5e'} />
                 {Math.abs(k.delta).toFixed(1)}%
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
               <div>
-                <div style={{ fontFamily: T.fontMono, fontSize: 28, fontWeight: 700, letterSpacing: -1, lineHeight: 1 }}>
+                <div style={{ fontFamily: T.fontMono, fontSize: 36, fontWeight: 700, letterSpacing: -1.5, lineHeight: 1 }}>
                   {k.id === 'jobs' && k.max != null ? (
                     <>
                       <span style={{ color: T.primary }}>{k.value}</span>
@@ -133,13 +230,13 @@ function EDashboard({ period = '30d' }) {
                   ) : (
                     <>
                       <span style={{ color: T.cardText }}>{typeof k.value === 'number' && k.value >= 1000 ? k.value.toLocaleString('cs-CZ').replace(/,/g, ' ') : k.value}</span>
-                      <span style={{ fontSize: 14, color: T.cardMuted, fontWeight: 600, marginLeft: 2 }}>{k.unit}</span>
+                      <span style={{ fontSize: 17, color: T.cardMuted, fontWeight: 600, marginLeft: 3 }}>{k.unit}</span>
                     </>
                   )}
                 </div>
-                <div style={{ color: T.cardMuted, fontSize: 10.5, fontFamily: T.fontUI, marginTop: 4 }}>vs. minulých 30 dní</div>
+                <div style={{ color: T.cardMuted, fontSize: 12, fontFamily: T.fontUI, marginTop: 6 }}>vs. minulých 30 dní</div>
               </div>
-              <Sparkline data={k.spark} color={k.delta >= 0 ? '#5BD68A' : '#f43f5e'} width={84} height={32} />
+              <Sparkline data={k.spark} color={k.delta >= 0 ? '#5BD68A' : '#f43f5e'} width={96} height={38} />
             </div>
           </ECard>
         ))}
@@ -155,7 +252,7 @@ function EDashboard({ period = '30d' }) {
           <CandidateFunnel
             views={chartConfig.v.reduce((a, b) => a + b, 0)}
             swipes={chartConfig.s.reduce((a, b) => a + b, 0)}
-            matches={chartConfig.m.reduce((a, b) => a + b, 0)}
+            onTab={onTab}
           />
         </ECard>
 

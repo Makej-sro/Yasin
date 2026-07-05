@@ -172,9 +172,9 @@ const THEME_DARK = {
 
 const T = {
   ...THEME_LIGHT,
-  fontUI: '"Plus Jakarta Sans", -apple-system, system-ui, sans-serif',
-  fontHead: '"Inter", -apple-system, system-ui, sans-serif',
-  fontMono: '"JetBrains Mono", ui-monospace, monospace',
+  fontUI: '"League Spartan", -apple-system, system-ui, sans-serif',
+  fontHead: '"League Spartan", -apple-system, system-ui, sans-serif',
+  fontMono: '"League Spartan", -apple-system, system-ui, sans-serif',
   fontDeco: '"Playfair Display", Georgia, serif',
 };
 

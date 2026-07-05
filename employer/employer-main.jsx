@@ -4,7 +4,7 @@ const TITLES = {
   dash:       { title: 'Dashboard',   subtitle: 'Přehled výkonu náboru za 30 dní' },
   analytics:  { title: 'Analytika',   subtitle: 'Pokročilé reporty a segmentace' },
   jobs:       { title: 'Inzeráty',   subtitle: 'Správa a výkon vašich brigád' },
-  candidates: { title: 'Kandidáti',  subtitle: 'Náborový pipeline' },
+  candidates: { title: 'Kandidáti',  subtitle: '' },
   chat:       { title: 'Zprávy',     subtitle: 'Komunikace s kandidáty' },
   calendar:   { title: 'Plán směn',  subtitle: 'Kalendář obsazení a otevřené sloty' },
   settings:   { title: 'Nastavení',  subtitle: 'Firemní profil a nastavení' },
@@ -446,7 +446,7 @@ function EmployerApp() {
     body = <ELoadingSpinner />;
   } else if (noData && tab === 'dash') {
     body = <EEmptyState />;
-  } else if (tab === 'dash')        body = <EDashboard key={tick + period} period={period} />;
+  } else if (tab === 'dash')        body = <EDashboard key={tick + period} period={period} onTab={setTab} />;
   else if (tab === 'analytics')     body = <EAnalytics key={tick} />;
   else if (tab === 'jobs')          body = <EJobs key={tick} onTab={setTab} />;
   else if (tab === 'candidates')    body = <ECandidates key={tick} />;

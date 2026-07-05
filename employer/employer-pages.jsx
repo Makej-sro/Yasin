@@ -486,7 +486,7 @@ function ECandidates() {
       ) : null; })()}
 
       {/* List */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 28px 32px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 28px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {visible.length === 0 ? (
           <div style={{ paddingTop: 60, textAlign: 'center', color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 13 }}>
             Žádní kandidáti v této kategorii
@@ -516,62 +516,50 @@ function CandidateListCard({ c, active, onClick }) {
   const isFavorite = c.rating >= 4.8 && c.jobsDone >= 15;
   return (
     <button onClick={onClick} style={{
-      textAlign: 'left', padding: '14px 18px', borderRadius: 16,
+      textAlign: 'left', padding: '20px 24px', borderRadius: 18,
       background: active ? 'rgba(0,32,246,0.1)' : '#EEF2FF',
       border: '1.5px solid ' + (active ? 'rgba(0,32,246,0.4)' : '#D4DCFF'),
       cursor: 'pointer', color: 'inherit', fontFamily: 'inherit',
-      display: 'flex', alignItems: 'center', gap: 14, width: '100%',
+      display: 'flex', alignItems: 'center', gap: 18, width: '100%',
     }}>
-      <div style={{ width: 44, height: 44, borderRadius: 999, background: c.color, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
+      <div style={{ width: 56, height: 56, borderRadius: 999, background: c.color, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 18, flexShrink: 0 }}>
         {c.avatar}
       </div>
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13.5, fontWeight: 700 }}>{c.name}</span>
-          <span style={{ fontFamily: T.fontMono, fontSize: 11, color: '#6B7280' }}>{c.age} let · {c.distance} km</span>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 15.5, fontWeight: 700 }}>{c.name}</span>
+          <span style={{ fontFamily: T.fontMono, fontSize: 12.5, color: '#6B7280' }}>{c.age} let · {c.distance} km</span>
         </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
           <MiniMetricLight icon="star-bold" v={c.rating} c="#D97706" />
           <MiniMetricLight icon="medal-ribbon-star-bold" v={c.jobsDone} c="#4338CA" />
           {isFavorite && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 6, background: 'rgba(212,160,23,0.12)', border: '1px solid rgba(212,160,23,0.35)' }}>
-              <img src="star.png" style={{ width: 14, height: 14, objectFit: 'contain', imageRendering: 'pixelated' }} />
-              <span style={{ color: '#92650a', fontFamily: T.fontUI, fontSize: 11, fontWeight: 700 }}>Všemi oblíbený</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 7, background: 'rgba(212,160,23,0.12)', border: '1px solid rgba(212,160,23,0.35)' }}>
+              <img src="star.png" style={{ width: 15, height: 15, objectFit: 'contain', imageRendering: 'pixelated' }} />
+              <span style={{ color: '#92650a', fontFamily: T.fontUI, fontSize: 12, fontWeight: 700 }}>Všemi oblíbený</span>
             </div>
           )}
           {c.workedHere && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 6, background: 'rgba(79,70,229,0.10)', border: '1px solid rgba(79,70,229,0.28)' }}>
-              <img src="handshake.png" style={{ width: 14, height: 14, objectFit: 'contain', imageRendering: 'pixelated' }} />
-              <span style={{ color: '#4338CA', fontFamily: T.fontUI, fontSize: 11, fontWeight: 700 }}>Už se známe</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 7, background: 'rgba(79,70,229,0.10)', border: '1px solid rgba(79,70,229,0.28)' }}>
+              <img src="handshake.png" style={{ width: 15, height: 15, objectFit: 'contain', imageRendering: 'pixelated' }} />
+              <span style={{ color: '#4338CA', fontFamily: T.fontUI, fontSize: 12, fontWeight: 700 }}>Už se známe</span>
             </div>
           )}
           {c.sameIndustry && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 6, background: 'rgba(5,150,105,0.10)', border: '1px solid rgba(5,150,105,0.28)' }}>
-              <img src="briefcase.png" style={{ width: 14, height: 14, objectFit: 'contain', imageRendering: 'pixelated' }} />
-              <span style={{ color: '#065F46', fontFamily: T.fontUI, fontSize: 11, fontWeight: 700 }}>Má zkušenost</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 7, background: 'rgba(5,150,105,0.10)', border: '1px solid rgba(5,150,105,0.28)' }}>
+              <img src="briefcase.png" style={{ width: 15, height: 15, objectFit: 'contain', imageRendering: 'pixelated' }} />
+              <span style={{ color: '#065F46', fontFamily: T.fontUI, fontSize: 12, fontWeight: 700 }}>Má zkušenost</span>
             </div>
           )}
         </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
-        <span style={{ padding: '4px 10px', borderRadius: 7, background: st.bg, border: '1px solid ' + st.border, color: st.color, fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 700, whiteSpace: 'nowrap' }}>
-          {st.label}
-        </span>
-        {c.jobTitle && (
-          <span style={{ fontSize: 10.5, color: '#9CA3AF', fontFamily: T.fontUI, textAlign: 'right', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {c.jobTitle}
-          </span>
-        )}
-        {c.relStatus === 'match' && (
-          <button onClick={e => e.stopPropagation()} style={{ padding: '5px 11px', borderRadius: 7, background: 'rgba(0,32,246,0.1)', border: '1px solid rgba(0,32,246,0.25)', color: '#0020F6', fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-            <Icon name="chat-round-line-bold" size={11} color="#0020F6"/>Napsat zprávu
-          </button>
-        )}
-        {c.relStatus === 'waiting' && (
-          <button onClick={e => e.stopPropagation()} style={{ padding: '5px 11px', borderRadius: 7, background: 'transparent', border: '1px solid ' + T.border, color: T.mutedSoft, fontFamily: T.fontUI, fontSize: 11, fontWeight: 500, cursor: 'pointer' }}>
-            Zrušit nabídku
-          </button>
-        )}
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        <button onClick={e => e.stopPropagation()} style={{ padding: '11px 20px', borderRadius: 11, background: 'rgba(0,32,246,0.1)', border: '1px solid rgba(0,32,246,0.25)', color: '#0020F6', fontFamily: T.fontUI, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+          <img src="messages-icon.png" style={{ width: 15, height: 15, objectFit: 'contain', filter: 'brightness(0) saturate(100%) invert(13%) sepia(100%) saturate(4000%) hue-rotate(228deg) brightness(103%)' }} />Napsat zprávu
+        </button>
+        <button onClick={e => e.stopPropagation()} style={{ padding: '11px 20px', borderRadius: 11, background: 'rgba(91,107,255,0.08)', border: '1px solid rgba(91,107,255,0.25)', color: '#4338CA', fontFamily: T.fontUI, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+          <img src="send.png" style={{ width: 15, height: 15, objectFit: 'contain', filter: 'brightness(0) saturate(100%) invert(26%) sepia(98%) saturate(1200%) hue-rotate(228deg) brightness(90%)' }} />Poslat inzerát
+        </button>
       </div>
     </button>
   );
@@ -737,7 +725,7 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
                   <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(91,214,138,0.15)', color: '#15803D', fontFamily: T.fontMono, fontSize: 11, fontWeight: 800 }}>{c.match}% match</span>
                   <span style={{ color: isOnline ? '#16a34a' : '#9CA3AF', fontFamily: T.fontUI, fontSize: 11, fontWeight: isOnline ? 700 : 400 }}>
-                    {isOnline ? 'Právě swájpuje' : 'Aktivní ' + ls}
+                    {isOnline ? 'Právě swajpuje' : 'Aktivní ' + ls}
                   </span>
                 </div>
               </div>
