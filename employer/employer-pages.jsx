@@ -621,10 +621,60 @@ function StarRow({ n }) {
   );
 }
 
+const JOBS_POOL = [
+  { company: 'Café Central',          position: 'Barista',                desc: 'Příprava kávy, obsluha espressa, komunikace se zákazníky.',         hourly: 145, review: 5 },
+  { company: 'Bistro Kolín',          position: 'Číšník',                 desc: 'Obsluha stolů, přijímání objednávek, úklid sálu po zavírací době.', hourly: 135, review: 5 },
+  { company: 'Event Catering s.r.o.', position: 'Cateringový asistent',   desc: 'Příprava a výdej jídla na firemní akci pro 200 hostů.',             hourly: 150, review: 5 },
+  { company: 'Hospůdka U Nováků',     position: 'Pomocník v kuchyni',     desc: 'Příprava surovin, mytí nádobí, pomoc kuchaři během víkendu.',        hourly: 120, review: 4 },
+  { company: 'Street Food Market',    position: 'Prodavač',               desc: 'Obsluha food truck stánku, příjem plateb, zásobování.',              hourly: 130, review: null },
+  { company: 'Pizzeria Napoli',       position: 'Rozvoz jídla',           desc: 'Rozvoz objednávek na kole v rámci centra Brna.',                     hourly: 125, review: 5 },
+  { company: 'Kavárna Místo',         position: 'Barista — záskok',       desc: 'Jednorázový záskok na ranní směnu, příprava nápojů a pokladna.',     hourly: 140, review: null },
+  { company: 'Hotel Grandezza',       position: 'Číšník — snídaně',       desc: 'Obsluha hotelových hostů při snídaních, příprava bufetu.',           hourly: 138, review: 5 },
+  { company: 'Sushi Mori',            position: 'Pomocník v restauraci',  desc: 'Příprava sushi sady, výdej objednávek, úklid kuchyně.',              hourly: 128, review: null },
+  { company: 'Pivovar Šenkovna',      position: 'Výčepní',                desc: 'Točení piva, obsluha pivního baru, evidence tržeb.',                 hourly: 132, review: 4 },
+  { company: 'Lidl Brno-sever',       position: 'Pokladní',               desc: 'Obsluha pokladny, doplňování zboží, práce se skenerem.',             hourly: 118, review: 5 },
+  { company: 'FreshBox catering',     position: 'Příprava jídla',         desc: 'Balení krabičkových dietních jídel, etiketování, expedice.',         hourly: 122, review: null },
+  { company: 'Brunch & Co.',          position: 'Servírka / číšník',      desc: 'Obsluha brunchového baru, příprava smoothie bowlů a kávy.',          hourly: 136, review: 5 },
+  { company: 'Zásobování Plus',       position: 'Skladník',               desc: 'Příjem zboží, naskladnění, inventura, práce s čtečkou čárových kódů.', hourly: 115, review: null },
+  { company: 'DPD doručování',        position: 'Kurýr — výpomoc',        desc: 'Ranní rozvoz balíků po Brně, práce s aplikací pro navigaci.',        hourly: 140, review: 4 },
+  { company: 'Escape Room Labyrint',  position: 'Game master',            desc: 'Moderování únikových her, technická podpora, obsluha hráčů.',         hourly: 155, review: 5 },
+  { company: 'Tesco Hypermarket',     position: 'Doplňování zboží',       desc: 'Noční doplňování regálů, kontrola expirace, přijímání dodávek.',     hourly: 120, review: null },
+  { company: 'Burger Factory',        position: 'Kuchař fast food',       desc: 'Příprava burgerů, fritování, expedice objednávek ve špičce.',         hourly: 130, review: 5 },
+  { company: 'Rockfest 2024',         position: 'Barmanka na festivalu',  desc: 'Výdej nápojů na festivalovém baru, práce s cash systémem.',           hourly: 148, review: null },
+  { company: 'Sportovní centrum Fit', position: 'Recepční',               desc: 'Příjem klientů, správa rezervací, prodej členství a doplňků.',        hourly: 125, review: 5 },
+];
+
+const DATES_POOL = [
+  'Červen 2025','Duben 2025','Březen 2025','Únor 2025','Leden 2025',
+  'Prosinec 2024','Listopadu 2024','Říjen 2024','Září 2024','Srpen 2024',
+  'Červenec 2024','Červen 2024','Květen 2024','Duben 2024','Březen 2024',
+  'Únor 2024','Leden 2024','Prosinec 2023','Listopad 2023','Říjen 2023',
+];
+
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getCandidateJobs(c) {
+  const seed = c.id ? c.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0) : c.name.length * 17;
+  const shuffled = seededShuffle(JOBS_POOL, seed);
+  const dates = seededShuffle(DATES_POOL, seed + 1);
+  return shuffled.map((j, i) => ({ ...j, date: dates[i % dates.length] }));
+}
+
 function CandidateDrawer({ c, onClose, onAccepted }) {
   const [accepting, setAccepting] = useStateE(false);
   const [rejecting, setRejecting] = useStateE(false);
   const [showReviews, setShowReviews] = useStateE(false);
+  const [showJobs, setShowJobs] = useStateE(false);
+  const candidateJobs = React.useMemo(() => getCandidateJobs(c), [c.id]);
   const accepted = c.status === 'accepted';
   const rejected = c.status === 'rejected';
 
@@ -666,19 +716,37 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
 
       <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 18 }}>
         {/* Hero */}
-        <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-          <div style={{ width: 72, height: 72, borderRadius: 999, background: c.color, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 26 }}>{c.avatar}</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ color: '#111827', fontFamily: T.fontHead, fontSize: 20, fontWeight: 800 }}>{c.name}</div>
-            <div style={{ color: '#6B7280', fontSize: 12, fontFamily: T.fontUI, marginTop: 2 }}>{c.age} let · Brno · {c.distance} km</div>
-            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-              <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(91,214,138,0.15)', color: '#15803D', fontFamily: T.fontMono, fontSize: 11, fontWeight: 800 }}>{c.match}% match</span>
+        {(() => {
+          const ls = c.lastSeen || '';
+          const isOnline = ls === 'právě teď' || ls.includes('min') || ls.includes('sek');
+          return (
+            <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <div style={{ width: 72, height: 72, borderRadius: 999, background: c.color, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 26 }}>{c.avatar}</div>
+                <div style={{
+                  position: 'absolute', bottom: 3, right: 3,
+                  width: 13, height: 13, borderRadius: 999,
+                  background: isOnline ? '#22c55e' : '#F59E0B',
+                  border: '2px solid #fff',
+                  animation: isOnline ? 'onlinePulse 1.8s ease-in-out infinite' : 'none',
+                }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: '#111827', fontFamily: T.fontHead, fontSize: 20, fontWeight: 800 }}>{c.name}</div>
+                <div style={{ color: '#6B7280', fontSize: 12, fontFamily: T.fontUI, marginTop: 2 }}>{c.age} let · Brno · {c.distance} km</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
+                  <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(91,214,138,0.15)', color: '#15803D', fontFamily: T.fontMono, fontSize: 11, fontWeight: 800 }}>{c.match}% match</span>
+                  <span style={{ color: isOnline ? '#16a34a' : '#9CA3AF', fontFamily: T.fontUI, fontSize: 11, fontWeight: isOnline ? 700 : 400 }}>
+                    {isOnline ? 'Právě swájpuje' : 'Aktivní ' + ls}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Stats grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
           <div
             onClick={() => setShowReviews(true)}
             style={{ padding: '8px 6px', borderRadius: 10, background: '#FFFBEB', border: '1px solid #FDE68A', textAlign: 'center', cursor: 'pointer', transition: 'box-shadow .15s' }}
@@ -690,15 +758,15 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
             </div>
             <div style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 9.5, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>Hodnocení</div>
           </div>
-          {[
-            { l: 'Brigád', v: c.jobsDone, c: '#4338CA' },
-            { l: 'Spolehlivost', v: '98%', c: '#15803D' },
-          ].map((s, i) => (
-            <div key={i} style={{ padding: '8px 6px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #E5E7EB', textAlign: 'center' }}>
-              <div style={{ color: s.c, fontFamily: T.fontMono, fontSize: 15, fontWeight: 700 }}>{s.v}</div>
-              <div style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 9.5, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.l}</div>
-            </div>
-          ))}
+          <div
+            onClick={() => setShowJobs(true)}
+            style={{ padding: '8px 6px', borderRadius: 10, background: '#EEF2FF', border: '1px solid #C7D2FE', textAlign: 'center', cursor: 'pointer', transition: 'box-shadow .15s' }}
+            onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 12px rgba(67,56,202,0.15)'}
+            onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+          >
+            <div style={{ color: '#4338CA', fontFamily: T.fontMono, fontSize: 15, fontWeight: 700 }}>{c.jobsDone}</div>
+            <div style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 9.5, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>Brigád</div>
+          </div>
         </div>
 
         {/* Why match */}
@@ -800,6 +868,47 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
         }}><Icon name="chat-round-line-bold" size={13} color="#374151"/>Napsat zprávu</button>
       </div>
+
+      {/* Jobs sub-panel */}
+      {showJobs && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: '#fff',
+          display: 'flex', flexDirection: 'column',
+          animation: 'mkBubbleIn .2s',
+        }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button onClick={() => setShowJobs(false)} style={{ width: 30, height: 30, borderRadius: 8, background: '#F9FAFB', border: '1px solid #E5E7EB', cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
+              <Icon name="alt-arrow-left-bold" size={16} color="#6B7280"/>
+            </button>
+            <span style={{ flex: 1, color: '#111827', fontFamily: T.fontUI, fontSize: 14, fontWeight: 700 }}>Odpracované brigády — {c.name}</span>
+            <span style={{ color: '#4338CA', fontFamily: T.fontMono, fontSize: 13, fontWeight: 700 }}>{c.jobsDone} brigád</span>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {candidateJobs.map((j, i) => (
+              <div key={i} style={{ padding: '12px 14px', borderRadius: 12, background: '#F9FAFB', border: '1px solid #E5E7EB', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{j.company}</span>
+                  <span style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 11 }}>{j.date}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#4338CA', fontFamily: T.fontUI, fontSize: 12, fontWeight: 600 }}>{j.position}</span>
+                  <span style={{ color: '#374151', fontFamily: T.fontMono, fontSize: 12, fontWeight: 700 }}>{j.hourly} Kč/hod</span>
+                </div>
+                <p style={{ margin: 0, color: '#6B7280', fontFamily: T.fontUI, fontSize: 11.5, lineHeight: 1.55 }}>{j.desc}</p>
+                {j.review !== null && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                    {[1,2,3,4,5].map(s => (
+                      <span key={s} style={{ color: s <= j.review ? '#D97706' : '#E5E7EB', fontSize: 12 }}>★</span>
+                    ))}
+                    <span style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 10.5, marginLeft: 3 }}>hodnocení od firmy</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Reviews sub-panel */}
       {showReviews && (
