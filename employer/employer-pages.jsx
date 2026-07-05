@@ -266,7 +266,18 @@ function EJobs({ onTab }) {
                     <span style={{ fontSize: 10, fontFamily: T.fontMono, color: T.cardMuted, marginLeft: 'auto', opacity: 0.5 }}>#{String(j.id).slice(0, 8)}</span>
                   </div>
                   <div style={{ paddingLeft: 8, display: 'flex', flexDirection: 'column', gap: 0, flex: 1 }}>
-                    <div style={{ fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, color: T.cardText, letterSpacing: -0.3, lineHeight: 1.2 }}>{j.title}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, color: T.cardText, letterSpacing: -0.3, lineHeight: 1.2 }}>{j.title}</div>
+                      {ALL_CANDS_FLAT.some(c => c.jobTitle === j.title && c.rating >= 4.8 && c.jobsDone >= 15) && (
+                        <img src="star.png" title="Má kandidáty Všemi oblíbení" style={{ width: 20, height: 20, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }} />
+                      )}
+                      {ALL_CANDS_FLAT.some(c => c.jobTitle === j.title && c.workedHere) && (
+                        <img src="handshake.png" title="Má kandidáty Už se známe" style={{ width: 20, height: 20, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }} />
+                      )}
+                      {ALL_CANDS_FLAT.some(c => c.jobTitle === j.title && c.sameIndustry) && (
+                        <img src="briefcase.png" title="Má kandidáty s zkušeností" style={{ width: 20, height: 20, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }} />
+                      )}
+                    </div>
                     <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{
                         display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -369,10 +380,10 @@ const CAND_STATUS = {
 };
 
 const ALL_CANDS_FLAT = [
-  ...E_CANDIDATES.new.map(c       => ({ ...c, relStatus: 'match',    jobTitle: 'Barista do specialty kavárny'  })),
-  ...E_CANDIDATES.shortlist.map(c => ({ ...c, relStatus: 'waiting',  jobTitle: 'Servírka — víkendová směna'   })),
-  ...E_CANDIDATES.interview.map(c => ({ ...c, relStatus: 'waiting',  jobTitle: 'Barista do specialty kavárny' })),
-  ...E_CANDIDATES.hired.map(c    => ({ ...c, relStatus: 'match',     jobTitle: 'Cateringový tým — 14.5.'      })),
+  ...E_CANDIDATES.new.map(c       => ({ ...c, relStatus: 'match',   jobTitle: 'Barista do specialty kavárny', sameIndustry: c.tags.includes('Gastro') })),
+  ...E_CANDIDATES.shortlist.map(c => ({ ...c, relStatus: 'waiting', jobTitle: 'Servírka — víkendová směna',   workedHere: true, sameIndustry: true })),
+  ...E_CANDIDATES.interview.map(c => ({ ...c, relStatus: 'waiting', jobTitle: 'Barista do specialty kavárny', sameIndustry: true })),
+  ...E_CANDIDATES.hired.map(c    => ({ ...c, relStatus: 'match',    jobTitle: 'Cateringový tým — 14.5.',      workedHere: true, sameIndustry: true })),
   { id: 'c9', name: 'Ondřej Beneš', avatar: 'OB', color: '#FF6B35', age: 26, rating: 4.2, jobsDone: 8, distance: 4.1, level: 2, match: 61, tags: ['Sklad'], lastSeen: 'před 3 dny', relStatus: 'rejected', jobTitle: 'Pomocník do kuchyně — ASAP' },
 ];
 
@@ -381,13 +392,20 @@ function ECandidates() {
   const [search, setSearch] = useStateE('');
   const [selected, setSelected] = useStateE(null);
 
-  const tabFiltered = tab === 'all' ? ALL_CANDS_FLAT : ALL_CANDS_FLAT.filter(c => c.relStatus === tab);
+  const favList        = React.useMemo(() => ALL_CANDS_FLAT.filter(c => c.rating >= 4.8 && c.jobsDone >= 15).sort((a,b) => b.rating - a.rating), []);
+  const knownList      = React.useMemo(() => ALL_CANDS_FLAT.filter(c => c.workedHere), []);
+  const experienceList = React.useMemo(() => ALL_CANDS_FLAT.filter(c => c.sameIndustry), []);
+
+  const tabFiltered = tab === 'favorites'  ? favList
+                    : tab === 'known'       ? knownList
+                    : tab === 'experience'  ? experienceList
+                    : ALL_CANDS_FLAT;
 
   const counts = {
-    all:      ALL_CANDS_FLAT.length,
-    match:    ALL_CANDS_FLAT.filter(c => c.relStatus === 'match').length,
-    waiting:  ALL_CANDS_FLAT.filter(c => c.relStatus === 'waiting').length,
-    rejected: ALL_CANDS_FLAT.filter(c => c.relStatus === 'rejected').length,
+    all:        ALL_CANDS_FLAT.length,
+    favorites:  favList.length,
+    known:      knownList.length,
+    experience: experienceList.length,
   };
 
   const visible = React.useMemo(() => {
@@ -401,10 +419,10 @@ function ECandidates() {
   }, [tab, search]);
 
   const TABS = [
-    { k: 'all',      l: 'Vše'             },
-    { k: 'waiting',  l: 'Čeká na odpověď' },
-    { k: 'match',    l: 'Nový match'       },
-    { k: 'rejected', l: 'Odmítnuto'        },
+    { k: 'all',        l: 'Vše',            desc: null, criteria: [], iconSrc: null },
+    { k: 'favorites',  l: 'Všemi oblíbení', desc: 'Kandidáti s perfektním hodnocením napříč celou kariérou. Jsou to lidé, které právě potřebujete!', criteria: ['Alespoň 35 odpracovaných směn u různých zaměstnavatelů', '90 % hodnocení na 5 hvězdiček'], iconSrc: 'star.png' },
+    { k: 'known',      l: 'Už se známe',    desc: 'Kandidáti, kteří už u vás pracovali — ať na stejné nebo jiné pozici. Znáte jejich pracovní styl, oni znají vás.', criteria: ['Dříve zaměstnáni u vaší firmy', 'Znají váš provoz a firemní kulturu'], iconSrc: 'handshake.png' },
+    { k: 'experience', l: 'Mají zkušenost', desc: 'Kandidáti s prokazatelnou praxí v podobném oboru nebo na stejném typu pozice. Nastoupí rovnou bez dlouhého zaškolování.', criteria: ['Praxe v podobném oboru nebo na shodném typu pozice', 'Odpracované brigády v tomto odvětví v historii profilu'], iconSrc: 'briefcase.png' },
   ];
 
   return (
@@ -446,6 +464,27 @@ function ECandidates() {
         ))}
       </div>
 
+      {/* Tab description */}
+      {(() => { const active = TABS.find(t => t.k === tab); return active?.desc ? (
+        <div style={{ padding: '10px 28px 14px', background: 'rgba(0,32,246,0.03)', borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'flex-start', gap: 9 }}>
+          {active.iconSrc
+            ? <img src={active.iconSrc} style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0, marginTop: 1 }} />
+            : <Icon name="info-circle-bold" size={14} color="#0020F6" style={{ flexShrink: 0, marginTop: 2 }} />
+          }
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <span style={{ color: '#374151', fontFamily: T.fontUI, fontSize: 12.5, lineHeight: 1.55 }}>{active.desc}</span>
+            {active.criteria.map((c, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <div style={{ width: 16, height: 16, borderRadius: 999, background: 'rgba(21,128,61,0.12)', border: '1px solid rgba(21,128,61,0.3)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                  <Icon name="check-bold" size={9} color="#15803D" />
+                </div>
+                <span style={{ color: '#15803D', fontFamily: T.fontUI, fontSize: 12, fontWeight: 600 }}>{c}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null; })()}
+
       {/* List */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '14px 28px 32px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {visible.length === 0 ? (
@@ -474,6 +513,7 @@ function ECandidates() {
 
 function CandidateListCard({ c, active, onClick }) {
   const st = CAND_STATUS[c.relStatus] || CAND_STATUS.match;
+  const isFavorite = c.rating >= 4.8 && c.jobsDone >= 15;
   return (
     <button onClick={onClick} style={{
       textAlign: 'left', padding: '14px 18px', borderRadius: 16,
@@ -490,9 +530,27 @@ function CandidateListCard({ c, active, onClick }) {
           <span style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13.5, fontWeight: 700 }}>{c.name}</span>
           <span style={{ fontFamily: T.fontMono, fontSize: 11, color: '#6B7280' }}>{c.age} let · {c.distance} km</span>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <MiniMetricLight icon="star-bold" v={c.rating} c="#D97706" />
           <MiniMetricLight icon="medal-ribbon-star-bold" v={c.jobsDone} c="#4338CA" />
+          {isFavorite && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 6, background: 'rgba(212,160,23,0.12)', border: '1px solid rgba(212,160,23,0.35)' }}>
+              <img src="star.png" style={{ width: 14, height: 14, objectFit: 'contain', imageRendering: 'pixelated' }} />
+              <span style={{ color: '#92650a', fontFamily: T.fontUI, fontSize: 11, fontWeight: 700 }}>Všemi oblíbený</span>
+            </div>
+          )}
+          {c.workedHere && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 6, background: 'rgba(79,70,229,0.10)', border: '1px solid rgba(79,70,229,0.28)' }}>
+              <img src="handshake.png" style={{ width: 14, height: 14, objectFit: 'contain', imageRendering: 'pixelated' }} />
+              <span style={{ color: '#4338CA', fontFamily: T.fontUI, fontSize: 11, fontWeight: 700 }}>Už se známe</span>
+            </div>
+          )}
+          {c.sameIndustry && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 6, background: 'rgba(5,150,105,0.10)', border: '1px solid rgba(5,150,105,0.28)' }}>
+              <img src="briefcase.png" style={{ width: 14, height: 14, objectFit: 'contain', imageRendering: 'pixelated' }} />
+              <span style={{ color: '#065F46', fontFamily: T.fontUI, fontSize: 11, fontWeight: 700 }}>Má zkušenost</span>
+            </div>
+          )}
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
@@ -545,9 +603,28 @@ function MiniMetricLight({ icon, v, c }) {
   );
 }
 
+const MOCK_REVIEWS = [
+  { company: 'Café Central', position: 'Barista', date: 'Březen 2025', rating: 5, text: 'Tomáš byl spolehlivý a vždy přišel včas. Zákazníci si ho oblíbili, určitě bychom ho vzali znovu.' },
+  { company: 'Bistro Kolín', position: 'Číšník', date: 'Leden 2025', rating: 5, text: 'Skvělá komunikace, zvládl i stresové situace během víkendového provozu. Doporučujeme.' },
+  { company: 'Event Catering s.r.o.', position: 'Cateringový asistent', date: 'Prosinec 2024', rating: 5, text: 'Perfektní přístup k práci, pomohl i nad rámec zadání. Přijdeme znovu.' },
+  { company: 'Hospůdka U Nováků', position: 'Pomocník v kuchyni', date: 'Říjen 2024', rating: 4, text: 'Šikovný, jen někdy potřeboval připomenout rutinní úkoly. Celkově pozitivní zkušenost.' },
+  { company: 'Pizzeria Napoli', position: 'Rozvoz jídla', date: 'Srpen 2024', rating: 5, text: 'Výborná práce pod tlakem, zákazníci spokojeni. Vrátí se k nám na léto.' },
+];
+
+function StarRow({ n }) {
+  return (
+    <div style={{ display: 'flex', gap: 2 }}>
+      {[1,2,3,4,5].map(i => (
+        <span key={i} style={{ color: i <= n ? '#D97706' : '#E5E7EB', fontSize: 13 }}>★</span>
+      ))}
+    </div>
+  );
+}
+
 function CandidateDrawer({ c, onClose, onAccepted }) {
   const [accepting, setAccepting] = useStateE(false);
   const [rejecting, setRejecting] = useStateE(false);
+  const [showReviews, setShowReviews] = useStateE(false);
   const accepted = c.status === 'accepted';
   const rejected = c.status === 'rejected';
 
@@ -602,14 +679,24 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
 
         {/* Stats grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+          <div
+            onClick={() => setShowReviews(true)}
+            style={{ padding: '8px 6px', borderRadius: 10, background: '#FFFBEB', border: '1px solid #FDE68A', textAlign: 'center', cursor: 'pointer', transition: 'box-shadow .15s' }}
+            onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 12px rgba(217,119,6,0.18)'}
+            onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+          >
+            <div style={{ color: '#D97706', fontFamily: T.fontMono, fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 1 }}>
+              {c.rating}<span style={{ fontSize: 11, color: '#F59E0B' }}>/5</span>
+            </div>
+            <div style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 9.5, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>Hodnocení</div>
+          </div>
           {[
-            { l: 'Hodnocení', v: c.rating + '★', c: '#D97706' },
             { l: 'Brigád', v: c.jobsDone, c: '#4338CA' },
             { l: 'Spolehlivost', v: '98%', c: '#15803D' },
           ].map((s, i) => (
-            <div key={i} style={{ padding: 12, borderRadius: 10, background: '#F9FAFB', border: '1px solid #E5E7EB', textAlign: 'center' }}>
-              <div style={{ color: s.c, fontFamily: T.fontMono, fontSize: 18, fontWeight: 700 }}>{s.v}</div>
-              <div style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 10, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.l}</div>
+            <div key={i} style={{ padding: '8px 6px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #E5E7EB', textAlign: 'center' }}>
+              <div style={{ color: s.c, fontFamily: T.fontMono, fontSize: 15, fontWeight: 700 }}>{s.v}</div>
+              <div style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 9.5, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.l}</div>
             </div>
           ))}
         </div>
@@ -713,6 +800,42 @@ function CandidateDrawer({ c, onClose, onAccepted }) {
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
         }}><Icon name="chat-round-line-bold" size={13} color="#374151"/>Napsat zprávu</button>
       </div>
+
+      {/* Reviews sub-panel */}
+      {showReviews && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: '#fff',
+          display: 'flex', flexDirection: 'column',
+          animation: 'mkBubbleIn .2s',
+        }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button onClick={() => setShowReviews(false)} style={{ width: 30, height: 30, borderRadius: 8, background: '#F9FAFB', border: '1px solid #E5E7EB', cursor: 'pointer', display: 'grid', placeItems: 'center' }}>
+              <Icon name="alt-arrow-left-bold" size={16} color="#6B7280"/>
+            </button>
+            <span style={{ flex: 1, color: '#111827', fontFamily: T.fontUI, fontSize: 14, fontWeight: 700 }}>Recenze — {c.name}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ color: '#D97706', fontFamily: T.fontMono, fontSize: 16, fontWeight: 700 }}>{c.rating}★</span>
+              <span style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 12 }}>({MOCK_REVIEWS.length} recenzí)</span>
+            </div>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {MOCK_REVIEWS.map((r, i) => (
+              <div key={i} style={{ padding: '14px 16px', borderRadius: 12, background: '#F9FAFB', border: '1px solid #E5E7EB', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{r.company}</span>
+                  <span style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 11 }}>{r.date}</span>
+                </div>
+                <span style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 11.5 }}>
+                  <span style={{ fontWeight: 700 }}>Popis práce:</span> {r.position}
+                </span>
+                <StarRow n={r.rating} />
+                <p style={{ margin: 0, color: '#374151', fontFamily: T.fontUI, fontSize: 12.5, lineHeight: 1.6 }}>{r.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
