@@ -813,100 +813,106 @@ function SettingsDanger() {
 
 const PLANS = [
   {
-    id: 'starter',
-    name: 'Starter',
-    price: 0,
-    period: 'navždy zdarma',
-    color: '#6677cc',
-    icon: 'hand-shake-bold',
-    badge: null,
+    id: 'starter', name: 'Starter', price: 0, free: true, period: 'navždy zdarma',
+    color: '#8AB4FF', icon: 'hand-shake-bold',
     features: [
       { ok: true,  text: '1 aktivní inzerát' },
       { ok: true,  text: '1 full-time inzerce' },
       { ok: true,  text: 'Oslovování brigádníků (1×/měs)' },
       { ok: true,  text: 'Základní statistiky' },
+    ],
+    more: [
       { ok: false, text: 'Topování inzerátu' },
       { ok: false, text: 'Ověřená firma' },
       { ok: false, text: 'SMS Urgent' },
       { ok: false, text: 'Pokročilá analytika' },
+      { ok: false, text: 'Prémiový badge' },
       { ok: false, text: 'Export dat (CSV)' },
     ],
-    cta: 'Začít zdarma',
-    ctaDisabled: false,
-    contact: false,
+    cta: 'Začít zdarma', contact: false,
   },
   {
-    id: 'standard',
-    name: 'Standard',
-    price: 499,
-    annualPrice: 424,
-    period: 'měsíc bez DPH',
-    color: '#8AB4FF',
-    icon: 'bolt-bold',
-    badge: 'Nejoblíbenější',
+    id: 'standard', name: 'Standard', price: 499, annualPrice: 424, period: 'za měsíc bez DPH',
+    color: '#5B6BFF', icon: 'bolt-bold', badge: 'Nejoblíbenější', popular: true,
     features: [
       { ok: true,  text: '2 aktivní inzeráty' },
       { ok: true,  text: 'Topování inzerátu (1×/měs)' },
       { ok: true,  text: 'Ověřená firma + branding' },
       { ok: true,  text: 'Oslovování brigádníků (10×/měs)' },
+    ],
+    more: [
       { ok: true,  text: 'Plné statistiky + CSV export' },
       { ok: true,  text: 'Šablony inzerátů' },
+      { ok: true,  text: 'Video na profilu' },
       { ok: false, text: 'SMS Urgent' },
       { ok: false, text: 'Prémiový badge' },
       { ok: false, text: 'Pokročilá analytika' },
     ],
-    cta: 'Vybrat Standard',
-    ctaDisabled: false,
-    contact: false,
+    cta: 'Vybrat Standard', contact: false,
   },
   {
-    id: 'business',
-    name: 'Business',
-    price: 4999,
-    annualPrice: 4249,
-    period: 'měsíc bez DPH',
-    color: '#FFD166',
-    icon: 'crown-star-bold',
-    badge: null,
+    id: 'business', name: 'Business', price: 4999, annualPrice: 4249, period: 'za měsíc bez DPH',
+    color: '#FFD166', icon: 'crown-star-bold',
     features: [
       { ok: true,  text: '10 aktivních inzerátů' },
       { ok: true,  text: 'Topování inzerátu (5×/měs)' },
       { ok: true,  text: 'SMS Urgent + prémiový badge' },
       { ok: true,  text: 'Oslovování brigádníků (100×/měs)' },
+    ],
+    more: [
       { ok: true,  text: 'Pokročilá analytika' },
       { ok: true,  text: 'Zmínka na FB + IG Makej' },
       { ok: true,  text: 'Role uživatelů' },
       { ok: true,  text: 'Plánování inzerátu' },
       { ok: true,  text: 'Možnost konzultace' },
     ],
-    cta: 'Vybrat Business',
-    ctaDisabled: false,
-    contact: false,
+    cta: 'Vybrat Business', contact: false,
   },
   {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 9999,
-    pricePrefix: 'od ',
-    period: 'kalkulace na míru',
-    color: '#E0B0FF',
-    icon: 'buildings-2-bold',
-    badge: null,
+    id: 'agency', name: 'Agency', price: 4999, pricePrefix: 'od ', period: 'za měsíc bez DPH',
+    color: '#5BD68A', icon: 'users-group-two-rounded-bold',
+    features: [
+      { ok: true,  text: 'Neomezené inzeráty' },
+      { ok: true,  text: 'Inzerce jménem klienta' },
+      { ok: true,  text: 'Topování inzerátu (20×/měs)' },
+      { ok: true,  text: 'Oslovování brigádníků (100×/měs)' },
+    ],
+    more: [
+      { ok: true,  text: 'Prémiový badge + SMS Urgent' },
+      { ok: true,  text: 'Pokročilá analytika + CSV' },
+      { ok: true,  text: 'Role uživatelů' },
+      { ok: true,  text: 'Zmínka na FB + IG Makej' },
+    ],
+    cta: 'Kontaktovat nás', contact: true,
+  },
+  {
+    id: 'enterprise', name: 'Enterprise', price: 9999, pricePrefix: 'od ', period: 'kalkulace na míru',
+    color: '#E0B0FF', icon: 'buildings-2-bold',
     features: [
       { ok: true,  text: 'Vše z Business' },
       { ok: true,  text: 'Custom integrace (HR systémy)' },
       { ok: true,  text: 'Co-marketing s Makej' },
       { ok: true,  text: 'Vlastní reporting na míru' },
+    ],
+    more: [
       { ok: true,  text: 'Neomezení uživatelé v týmu' },
       { ok: true,  text: 'Onboarding a školení týmu' },
       { ok: true,  text: 'SLA 99,99 % + prioritní podpora' },
       { ok: true,  text: 'Dedikovaný account manager' },
     ],
-    cta: 'Nezávazná poptávka',
-    ctaDisabled: false,
-    contact: true,
+    cta: 'Nezávazná poptávka', contact: true,
   },
 ];
+
+// Řádek jedné vlastnosti tarifu (styl z webového ceníku)
+function PlanFeat({ f }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, textAlign: 'left' }}>
+      <Icon name={f.ok ? 'check-circle-bold' : 'close-circle-bold'} size={15} color={f.ok ? '#5B6BFF' : '#D1D5DB'} />
+      <span style={{ color: f.ok ? '#374151' : '#9CA3AF', fontSize: 12.5, fontWeight: 600, fontFamily: T.fontUI, lineHeight: 1.35 }}>{f.text}</span>
+    </div>
+  );
+}
 
 function animatePrice(el, from, to) {
   if (!el) return;
@@ -925,6 +931,7 @@ function EPricing({ onTab, onPlanChange }) {
   const [success, setSuccess]   = useStateE(false);
   const [hovered, setHovered]   = useStateE(null);
   const [annual, setAnnual]     = useStateE(false);
+  const [expanded, setExpanded] = useStateE({});
   const priceRefs               = useRefE({});
 
   useEffectE(() => {
@@ -961,151 +968,156 @@ function EPricing({ onTab, onPlanChange }) {
   }
 
   return (
-    <div style={{ padding: '28px 32px 48px', overflowY: 'auto' }}>
+    <div style={{ padding: '28px 32px 48px', overflowY: 'auto', background: '#fff', flex: 1, minHeight: 0 }}>
       {/* Header */}
       <div style={{ marginBottom: 32, textAlign: 'center' }}>
-        <div style={{ fontFamily: T.fontHead, fontSize: 28, fontWeight: 900, color: T.text, marginBottom: 8 }}>Vyber si svůj plán</div>
-        <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 14, marginBottom: 20 }}>Bez závazků. Zrušení kdykoliv.</div>
+        <div style={{ fontFamily: T.fontHead, fontSize: 28, fontWeight: 900, color: '#111827', marginBottom: 8 }}>Vyber si svůj plán</div>
+        <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 14, marginBottom: 20 }}>Bez závazků. Zrušení kdykoliv.</div>
         {/* Billing toggle */}
         <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 99, padding: '6px 16px' }}>
-            <span style={{ color: annual ? T.muted : T.text, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, transition: 'color .2s' }}>Měsíčně</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: 99, padding: '6px 16px' }}>
+            <span style={{ color: annual ? '#9CA3AF' : '#111827', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, transition: 'color .2s' }}>Měsíčně</span>
             <div
               onClick={() => setAnnual(a => !a)}
-              style={{ width: 44, height: 24, borderRadius: 999, background: annual ? '#5BD68A' : 'rgba(255,255,255,0.15)', cursor: 'pointer', position: 'relative', transition: 'background .2s', flexShrink: 0 }}
+              style={{ width: 44, height: 24, borderRadius: 999, background: annual ? '#5BD68A' : '#D1D5DB', cursor: 'pointer', position: 'relative', transition: 'background .2s', flexShrink: 0 }}
             >
-              <div style={{ position: 'absolute', top: 3, left: annual ? 23 : 3, width: 18, height: 18, borderRadius: 999, background: '#fff', transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
+              <div style={{ position: 'absolute', top: 3, left: annual ? 23 : 3, width: 18, height: 18, borderRadius: 999, background: '#fff', transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }} />
             </div>
-            <span style={{ color: annual ? T.text : T.muted, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, transition: 'color .2s' }}>Ročně</span>
+            <span style={{ color: annual ? '#111827' : '#9CA3AF', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, transition: 'color .2s' }}>Ročně</span>
           </div>
           <div style={{ height: 26, display: 'flex', alignItems: 'center' }}>
-            <span style={{ background: 'rgba(91,214,138,0.2)', border: '1px solid rgba(91,214,138,0.35)', color: '#5BD68A', fontFamily: T.fontUI, fontSize: 11, fontWeight: 800, borderRadius: 10, padding: '4px 12px', opacity: annual ? 1 : 0, transition: 'opacity .2s' }}>chci šetřit</span>
+            <span style={{ background: 'rgba(0,246,10,0.12)', border: '1px solid rgba(0,246,10,0.3)', color: '#00f60a', fontFamily: T.fontUI, fontSize: 11, fontWeight: 800, borderRadius: 10, padding: '4px 12px', opacity: annual ? 1 : 0, transition: 'opacity .2s' }}>chci šetřit</span>
           </div>
         </div>
       </div>
 
-      {/* Plans grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, maxWidth: 1100, margin: '0 auto 40px' }}>
-        {PLANS.map(plan => {
-          const isActive = plan.id === currentPlanId;
-          const isPop    = plan.badge != null;
-          const isSel    = selected === plan.id;
-          const isHov    = hovered === plan.id;
-          return (
-            <div key={plan.id} onClick={() => handleSelect(plan.id)}
-              onMouseEnter={() => setHovered(plan.id)}
-              onMouseLeave={() => setHovered(null)}
-              style={{
-              borderRadius: 18,
-              border: '2.5px solid ' + (isActive ? plan.color : isSel ? plan.color : isHov ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.1)'),
-              background: isPop
-                ? 'linear-gradient(160deg, rgba(255,209,102,0.10), rgba(0,32,246,0.08))'
-                : 'rgba(255,255,255,0.04)',
-              padding: '28px 24px 24px',
-              cursor: isActive ? 'default' : 'pointer',
-              position: 'relative',
-              transition: 'border-color 0.15s, transform 0.15s',
-              transform: isSel ? 'translateY(-4px)' : 'none',
-            }}>
-              {plan.badge && (
-                <div style={{
-                  position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)',
-                  background: 'linear-gradient(90deg, #FFD166, #FF9F43)',
-                  color: '#1a1000', fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 800,
-                  borderRadius: 99, padding: '4px 14px', whiteSpace: 'nowrap',
-                }}>{plan.badge}</div>
-              )}
-              {isActive && (
-                <div style={{
-                  position: 'absolute', top: 12, right: 12,
-                  background: plan.color + '22', border: '1px solid ' + plan.color + '66',
-                  color: plan.color, fontSize: 9.5, fontWeight: 800, fontFamily: T.fontUI,
-                  borderRadius: 99, padding: '3px 9px', letterSpacing: 0.5,
-                }}>AKTUÁLNÍ</div>
-              )}
-              <div style={{ marginBottom: 16 }}>
-                <Icon name={plan.icon} size={24} color={plan.color} />
-              </div>
-              <div style={{ fontFamily: T.fontHead, fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{plan.name}</div>
-              <div style={{ marginBottom: 20 }}>
-                {plan.price === 0 ? (
-                  <span style={{ fontFamily: T.fontMono, fontSize: 28, fontWeight: 700, color: plan.color }}>Zdarma</span>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, flexWrap: 'wrap' }}>
-                      {plan.pricePrefix && <span style={{ color: T.muted, fontSize: 13, fontFamily: T.fontUI }}>{plan.pricePrefix}</span>}
-                      <span
-                        ref={el => { if (el) priceRefs.current[plan.id] = el; }}
-                        style={{ fontFamily: T.fontMono, fontSize: 28, fontWeight: 700, color: plan.color }}
-                      >{plan.price.toLocaleString('cs-CZ')}</span>
-                      <span style={{ color: T.muted, fontSize: 12, fontFamily: T.fontUI }}>
-                        Kč / {annual && plan.annualPrice ? 'měs bez DPH' : plan.period}
-                      </span>
-                    </div>
-                    {plan.annualPrice ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5, opacity: annual ? 1 : 0, transition: 'opacity .2s' }}>
-                        <span style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 11 }}>placeno ročně</span>
-                        <span style={{ background: 'rgba(91,214,138,0.15)', border: '1px solid rgba(91,214,138,0.3)', color: '#5BD68A', fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 800, borderRadius: 8, padding: '2px 8px' }}>
-                          ušetříš {((plan.price - plan.annualPrice) * 12).toLocaleString('cs-CZ')} Kč/rok
-                        </span>
-                      </div>
-                    ) : <div style={{ marginTop: 5, height: 22 }} />}
-                  </>
+      {/* Plans grid — vizuál & efekty z webového ceníku */}
+      <div style={{ maxWidth: 1180, margin: '0 auto 30px', paddingBottom: 6 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 14, alignItems: 'stretch', padding: '20px 4px 8px' }}>
+          {PLANS.map((plan, i) => {
+            const isActive = plan.id === currentPlanId;
+            const isPop    = !!plan.popular;
+            const isSel    = selected === plan.id;
+            const isHov    = hovered === plan.id;
+            const isExp    = !!expanded[plan.id];
+            const lift     = isSel || isHov;
+            return (
+              <div key={plan.id}
+                onClick={() => !plan.contact && handleSelect(plan.id)}
+                onMouseEnter={() => setHovered(plan.id)}
+                onMouseLeave={() => setHovered(null)}
+                style={{
+                  position: 'relative', display: 'flex', flexDirection: 'column', textAlign: 'center',
+                  borderRadius: 20,
+                  border: isPop ? '2px solid #0020F6' : ('1.5px solid ' + (isActive ? plan.color : lift ? plan.color + 'aa' : plan.color + '40')),
+                  background: isPop
+                    ? 'linear-gradient(165deg, rgba(0,32,246,0.10), rgba(91,107,255,0.035))'
+                    : plan.color + '12',
+                  boxShadow: isPop
+                    ? '0 20px 48px rgba(0,32,246,0.20)'
+                    : (lift ? '0 16px 36px ' + plan.color + '3a' : '0 1px 2px rgba(0,0,0,0.04)'),
+                  padding: '26px 20px 22px', marginTop: isPop ? 0 : 8,
+                  cursor: plan.contact ? 'default' : (isActive ? 'default' : 'pointer'),
+                  transform: lift ? 'translateY(-6px)' : 'none',
+                  transition: 'transform .25s cubic-bezier(.34,1.3,.5,1), box-shadow .25s, border-color .2s',
+                  animation: 'empPop .4s ease both', animationDelay: (i * 0.07) + 's',
+                }}>
+                {plan.badge && (
+                  <div style={{
+                    position: 'absolute', top: 0, right: 0, display: 'inline-flex', alignItems: 'center', gap: 5,
+                    background: 'linear-gradient(135deg, #0020F6, #5B6BFF)', color: '#fff',
+                    fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 800, padding: '6px 12px',
+                    borderRadius: '0 20px 0 14px', whiteSpace: 'nowrap',
+                  }}><Icon name="star-bold" size={12} color="#fff" />{plan.badge}</div>
                 )}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 24 }}>
-                {plan.features.map((f, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Icon
-                      name={f.ok ? 'check-circle-bold' : 'close-circle-bold'}
-                      size={15}
-                      color={f.ok ? '#5BD68A' : 'rgba(255,255,255,0.2)'}
-                    />
-                    <span style={{ color: f.ok ? T.text : 'rgba(255,255,255,0.35)', fontSize: 13.5, fontWeight: 600, fontFamily: T.fontUI }}>
-                      {f.text}
+                {isActive && (
+                  <div style={{
+                    position: 'absolute', top: 10, left: 10,
+                    background: plan.color + '22', border: '1px solid ' + plan.color + '66',
+                    color: plan.color, fontSize: 9, fontWeight: 800, fontFamily: T.fontUI,
+                    borderRadius: 99, padding: '3px 8px', letterSpacing: 0.5,
+                  }}>AKTUÁLNÍ</div>
+                )}
+                <div style={{ marginTop: plan.badge ? 16 : 6 }}>
+                  <Icon name={plan.icon} size={22} color={plan.color} />
+                </div>
+                <div style={{ fontFamily: T.fontUI, fontSize: 11, fontWeight: 800, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1.4, marginTop: 8, marginBottom: 12 }}>{plan.name}</div>
+
+                <div style={{ minHeight: 44, display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4, flexWrap: 'wrap' }}>
+                  {plan.free ? (
+                    <span style={{ fontFamily: T.fontHead, fontSize: 32, fontWeight: 800, color: '#111827', lineHeight: 1 }}>Zdarma</span>
+                  ) : (
+                    <>
+                      {plan.pricePrefix && <span style={{ color: '#9CA3AF', fontSize: 13, fontWeight: 600, fontFamily: T.fontUI }}>{plan.pricePrefix}</span>}
+                      <span ref={el => { if (el) priceRefs.current[plan.id] = el; }}
+                        style={{ fontFamily: T.fontHead, fontSize: 38, fontWeight: 800, color: '#111827', lineHeight: 1 }}>
+                        {(annual && plan.annualPrice ? plan.annualPrice : plan.price).toLocaleString('cs-CZ')}
+                      </span>
+                      <span style={{ color: '#6B7280', fontSize: 15, fontWeight: 600, fontFamily: T.fontUI }}>Kč</span>
+                    </>
+                  )}
+                </div>
+                <div style={{ color: '#9CA3AF', fontSize: 11.5, fontFamily: T.fontUI, marginTop: 4 }}>
+                  {plan.free ? plan.period : (annual && plan.annualPrice ? 'za měsíc · placeno ročně' : plan.period)}
+                </div>
+                <div style={{ minHeight: 24, marginTop: 6, marginBottom: 4, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  {plan.annualPrice ? (
+                    <span style={{ opacity: annual ? 1 : 0, transition: 'opacity .2s', background: 'rgba(0,246,10,0.12)', border: '1px solid rgba(0,246,10,0.3)', color: '#00f60a', fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 800, borderRadius: 8, padding: '3px 9px' }}>
+                      ušetříš {((plan.price - plan.annualPrice) * 12).toLocaleString('cs-CZ')} Kč/rok
                     </span>
-                  </div>
-                ))}
+                  ) : null}
+                </div>
+
+                <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', margin: '10px 0 16px' }} />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
+                  {plan.features.map((f, fi) => <PlanFeat key={fi} f={f} />)}
+                  {isExp && plan.more.map((f, fi) => <PlanFeat key={'m' + fi} f={f} />)}
+                </div>
+
+                {plan.more && plan.more.length > 0 && (
+                  <button onClick={e => { e.stopPropagation(); setExpanded(x => ({ ...x, [plan.id]: !x[plan.id] })); }}
+                    style={{ width: '100%', padding: 8, borderRadius: 10, border: '1px solid #E5E7EB', background: 'rgba(255,255,255,0.65)', color: '#6B7280', fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 16 }}>
+                    {isExp ? 'Zobrazit méně' : 'Zobrazit více'}
+                    <span style={{ display: 'inline-flex', transition: 'transform .25s', transform: isExp ? 'rotate(180deg)' : 'none' }}>
+                      <Icon name="alt-arrow-down-bold" size={13} color="#6B7280" />
+                    </span>
+                  </button>
+                )}
+
+                <div style={{ marginTop: 'auto' }}>
+                  {plan.contact ? (
+                    <a href="mailto:hello@makej.eu" onClick={e => e.stopPropagation()} style={{
+                      display: 'block', width: '100%', padding: '11px 0', borderRadius: 12, textAlign: 'center',
+                      background: '#fff', border: '1px solid ' + plan.color + '77',
+                      color: '#374151', fontFamily: T.fontUI, fontSize: 13, fontWeight: 800,
+                      textDecoration: 'none', boxSizing: 'border-box',
+                    }}>{plan.cta}</a>
+                  ) : (
+                    <button onClick={e => { e.stopPropagation(); if (!isActive) handleSelect(plan.id); }}
+                      style={{
+                        width: '100%', padding: '11px 0', borderRadius: 12,
+                        background: isActive ? '#F3F4F6' : isPop ? 'linear-gradient(135deg, #0020F6, #3a3a99)' : '#fff',
+                        border: isActive ? '1px solid #E5E7EB' : isPop ? 'none' : '1.5px solid ' + plan.color,
+                        color: isActive ? '#9CA3AF' : isPop ? '#fff' : '#111827',
+                        fontFamily: T.fontUI, fontSize: 13, fontWeight: 800, cursor: isActive ? 'default' : 'pointer',
+                      }}>
+                      {isActive ? 'Aktuální tarif' : plan.cta}
+                    </button>
+                  )}
+                </div>
               </div>
-              {plan.contact ? (
-                <a href="mailto:hello@makej.eu" style={{
-                  display: 'block', width: '100%', padding: '10px 0', borderRadius: 10, textAlign: 'center',
-                  background: 'rgba(224,176,255,0.15)', border: '1px solid rgba(224,176,255,0.3)',
-                  color: '#E0B0FF', fontFamily: T.fontUI, fontSize: 13, fontWeight: 800,
-                  textDecoration: 'none', boxSizing: 'border-box',
-                }}>{plan.cta}</a>
-              ) : (
-                <button
-                  onClick={e => { e.stopPropagation(); if (!isActive) handleSelect(plan.id); }}
-                  style={{
-                    width: '100%', padding: '10px 0', borderRadius: 10,
-                    background: isActive
-                      ? 'rgba(255,255,255,0.06)'
-                      : isPop
-                      ? 'linear-gradient(90deg, #FFD166, #FF9F43)'
-                      : plan.id === 'business'
-                      ? 'rgba(255,209,102,0.15)'
-                      : 'rgba(138,180,255,0.15)',
-                    border: isActive ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                    color: isActive ? T.muted : isPop ? '#1a1000' : plan.color,
-                    fontFamily: T.fontUI, fontSize: 13, fontWeight: 800,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {isActive ? 'Aktuální tarif' : plan.cta}
-                </button>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* Checkout strip */}
       {selected && !success && !PLANS.find(x => x.id === selected)?.contact && (
         <div style={{
           maxWidth: 900, margin: '0 auto',
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.12)',
+          background: '#F9FAFB',
+          border: '1px solid #E5E7EB',
           borderRadius: 16, padding: '20px 28px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20,
           flexWrap: 'wrap',
@@ -1115,18 +1127,18 @@ function EPricing({ onTab, onPlanChange }) {
             return (
               <>
                 <div>
-                  <div style={{ color: T.text, fontFamily: T.fontHead, fontSize: 16, fontWeight: 800 }}>
-                    {p.name} — {p.price.toLocaleString('cs-CZ')} Kč / měsíc
+                  <div style={{ color: '#111827', fontFamily: T.fontHead, fontSize: 16, fontWeight: 800 }}>
+                    {p.name} — {(annual && p.annualPrice ? p.annualPrice : p.price).toLocaleString('cs-CZ')} Kč / měsíc
                   </div>
-                  <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 12, marginTop: 3 }}>
-                    Fakturováno měsíčně · zrušení kdykoliv
+                  <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 12, marginTop: 3 }}>
+                    {annual && p.annualPrice ? 'Placeno ročně · zrušení kdykoliv' : 'Fakturováno měsíčně · zrušení kdykoliv'}
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button onClick={() => setSelected(null)} style={{
                     padding: '10px 18px', borderRadius: 9,
-                    background: 'transparent', border: '1px solid rgba(255,255,255,0.2)',
-                    color: T.muted, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                    background: '#fff', border: '1px solid #E5E7EB',
+                    color: '#6B7280', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, cursor: 'pointer',
                   }}>Zrušit</button>
                   <button onClick={handlePay} style={{
                     padding: '10px 22px', borderRadius: 9,
@@ -1147,32 +1159,53 @@ function EPricing({ onTab, onPlanChange }) {
       {success && (
         <div style={{
           maxWidth: 900, margin: '0 auto',
-          background: 'rgba(91,214,138,0.08)', border: '1px solid rgba(91,214,138,0.3)',
+          background: '#F0FDF4', border: '1px solid #BBF7D0',
           borderRadius: 16, padding: '20px 28px', textAlign: 'center',
         }}>
-          <Icon name="check-circle-bold" size={32} color="#5BD68A" />
-          <div style={{ color: '#5BD68A', fontFamily: T.fontHead, fontSize: 17, fontWeight: 800, marginTop: 10 }}>
+          <Icon name="check-circle-bold" size={32} color="#059669" />
+          <div style={{ color: '#059669', fontFamily: T.fontHead, fontSize: 17, fontWeight: 800, marginTop: 10 }}>
             Platba úspěšná! Tarif byl aktivován.
           </div>
         </div>
       )}
 
-      {/* FAQ */}
-      <div style={{ maxWidth: 900, margin: '36px auto 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      {/* Slevy (z webového ceníku) */}
+      <div style={{ maxWidth: 980, margin: '8px auto 26px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
         {[
-          { q: 'Mohu kdykoliv zrušit?', a: 'Ano, zrušení je možné kdykoliv bez poplatku. Tarif zůstane aktivní do konce fakturačního období.' },
-          { q: 'Jak se tarif fakturuje?', a: 'Fakturujeme měsíčně přes kartu. Fakturu dostanete e-mailem.' },
-          { q: 'Mohu změnit tarif v průběhu?', a: 'Ano, upgrade je okamžitý. Downgrade proběhne na konci aktuálního období.' },
-          { q: 'Co je ASAP inzerát?', a: 'ASAP inzeráty mají prioritní zobrazení a jsou označeny červeným štítkem — ideální pro urgentní obsazení.' },
-        ].map((item, i) => (
-          <div key={i} style={{
-            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 12, padding: '16px 18px',
-          }}>
-            <div style={{ color: T.text, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, marginBottom: 6 }}>{item.q}</div>
-            <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 12, lineHeight: 1.6 }}>{item.a}</div>
+          { pct: '5%',  title: 'Čtvrtletní platba', text: 'Zaplať 3 měsíce předem a ušetři 5 % z ceny tarifu.' },
+          { pct: '15%', title: 'Roční platba',       text: 'Zaplať rok předem a ušetři 15 %. Nejlepší hodnota pro stabilní nábor.' },
+          { emoji: '⚡', title: 'Upgrade kdykoliv',    text: 'Upgrade tarifu platí okamžitě. Downgrade k dalšímu fakturačnímu období.' },
+        ].map((d, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 14, padding: '16px 18px' }}>
+            {d.pct
+              ? <div style={{ fontFamily: T.fontHead, fontSize: 26, fontWeight: 900, color: '#00f60a', flexShrink: 0, lineHeight: 1 }}>{d.pct}</div>
+              : <div style={{ fontSize: 26, flexShrink: 0, lineHeight: 1 }}>{d.emoji}</div>}
+            <div>
+              <div style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13.5, fontWeight: 800, marginBottom: 3 }}>{d.title}</div>
+              <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 12, lineHeight: 1.5 }}>{d.text}</div>
+            </div>
           </div>
         ))}
+      </div>
+
+      {/* Poznámky a pravidla (z webového ceníku) */}
+      <div style={{ maxWidth: 860, margin: '0 auto', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 14, padding: '20px 24px' }}>
+        <div style={{ color: '#111827', fontFamily: T.fontHead, fontSize: 14, fontWeight: 800, marginBottom: 12 }}>Poznámky a pravidla</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[
+            'Aktivní inzeráty = počet zveřejněných (viditelných brigádníkům) zároveň. Po vyřešení inzerátu firma uvolní slot pro další.',
+            'Drafty a neaktivní inzeráty si lze vytvořit libovolně — limit tarifu se vztahuje jen na zveřejněné.',
+            'Každý inzerát má cyklus 30 dní. 5 dní před koncem chodí upozornění. Potvrzením relevance běží další cyklus bez omezení.',
+            'Agency tarif funguje jinak — inzeruje jménem svých klientů. Cena závisí na objemu a počtu klientů.',
+            'Enterprise tarif se kalkuluje individuálně. Sleva 5 % do 25 000 Kč/měs, sleva 10 % nad 25 001 Kč/měs.',
+            'Všechny ceny jsou bez DPH. Makačky (virtuální měna brigádníků) se firemních tarifů netýkají.',
+          ].map((n, i) => (
+            <div key={i} style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>
+              <span style={{ color: '#5B6BFF', flexShrink: 0, lineHeight: 1.55 }}>•</span>
+              <span style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 12, lineHeight: 1.55 }}>{n}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

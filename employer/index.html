@@ -24,7 +24,7 @@
     html, body {
       margin: 0; padding: 0;
       background: #07071a;
-      font-family: "League Spartan", -apple-system, system-ui, sans-serif;
+      font-family: "Inter", -apple-system, system-ui, sans-serif;
       color: #fff;
       -webkit-font-smoothing: antialiased;
       overflow: hidden;
@@ -91,6 +91,9 @@
 
     button { font-family: inherit; }
     input { font-family: inherit; }
+
+    /* Celý dashboard — font Inter (přebíjí inline League Spartan ze sdílených tokenů T.font*) */
+    #root, #root * { font-family: "Inter", -apple-system, system-ui, sans-serif !important; }
   </style>
 </head>
 <body>
@@ -190,10 +193,10 @@
 
   <script type="text/babel" src="app.jsx?v=3"></script>
   <script type="text/babel" src="employer-data.jsx?v=2"></script>
-  <script type="text/babel" src="employer-shell.jsx?v=17"></script>
-  <script type="text/babel" src="employer-dashboard.jsx?v=6"></script>
-  <script type="text/babel" src="employer-pages.jsx?v=53"></script>
-  <script type="text/babel" src="employer-pages3.jsx?v=1"></script>
+  <script type="text/babel" src="employer-shell.jsx?v=18"></script>
+  <script type="text/babel" src="employer-dashboard.jsx?v=7"></script>
+  <script type="text/babel" src="employer-pages.jsx?v=56"></script>
+  <script type="text/babel" src="employer-pages3.jsx?v=5"></script>
   <script type="text/babel" src="_premium/analytics.jsx?v=1"></script>
   <script type="text/babel" src="employer-supabase.jsx?v=1"></script>
   <script type="text/babel" src="employer-main.jsx?v=4"></script>
