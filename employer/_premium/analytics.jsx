@@ -112,15 +112,13 @@ function ProGate({ feature, children }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// ANALYTIKA — 4 sub-sekce: Přehled / Demografie / Náklady / Retence
+// ANALYTIKA — 2 sub-sekce: Přehled / Demografie
 // ─────────────────────────────────────────────────────────────
 function EAnalytics() {
   const [seg, setSeg] = useStateE('overview');
   const segs = [
     { k: 'overview', l: 'Přehled' },
     { k: 'demo', l: 'Demografie' },
-    { k: 'cost', l: 'Náklady' },
-    { k: 'retention', l: 'Retence' },
   ];
 
   return (
@@ -139,8 +137,6 @@ function EAnalytics() {
 
         {seg === 'overview' && <AnalyticsOverview />}
         {seg === 'demo' && <AnalyticsDemo />}
-        {seg === 'cost' && <AnalyticsCost />}
-        {seg === 'retention' && <AnalyticsRetention />}
       </div>
     </ProGate>
   );
@@ -325,6 +321,7 @@ function DistroChart() {
 function AnalyticsDemo() {
   return (
     <>
+      <KrajeMap />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
         <ECard>
           <SectionHeader title="Věk" />
@@ -414,83 +411,6 @@ function BrnoMap() {
         <Icon name="point-on-map-bold" size={11} color={T.super}/> 287 kandidátů v okolí 5 km
       </div>
     </div>
-  );
-}
-
-// ── Náklady ───────────────────────────────────────────────────
-function AnalyticsCost() {
-  return (
-    <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-        {[
-          { l: 'Cost per hire', v: '480 Kč', sub: '↓ 8 % vs. min. měsíc', c: '#5BD68A' },
-          { l: 'Marketing výdaje', v: '12 480 Kč', sub: 'Boost + Premium', c: '#5B6BFF' },
-          { l: 'ROI Premium tarifu', v: '+ 280 %', sub: '14 200 Kč ušetřeno', c: '#FFD166' },
-          { l: 'Cost per match', v: '40 Kč', sub: 'medián segmentu 64 Kč', c: '#5BD68A' },
-        ].map((x, i) => (
-          <ECard key={i} padding={16}>
-            <div style={{ color: T.muted, fontSize: 11, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.4, textTransform: 'uppercase' }}>{x.l}</div>
-            <div style={{ color: '#fff', fontFamily: T.fontMono, fontSize: 26, fontWeight: 700, marginTop: 6, letterSpacing: -0.8 }}>{x.v}</div>
-            <div style={{ color: x.c, fontSize: 11.5, fontFamily: T.fontUI, marginTop: 4, fontWeight: 600 }}>{x.sub}</div>
-          </ECard>
-        ))}
-      </div>
-      <ECard>
-        <SectionHeader title="Náklady na nábor v čase" subtitle="Cost per hire vs. trh" />
-        <AreaChart
-          width={1200} height={240}
-          labels={['Led','Úno','Bře','Dub','Kvě','Čer','Čec','Srp','Zář','Říj','Lis','Pro']}
-          series={[
-            { color: '#0020F6', data: [780, 720, 690, 640, 600, 580, 560, 540, 520, 510, 495, 480] },
-            { color: '#6e6ea8', data: [820, 810, 790, 770, 760, 740, 720, 710, 700, 690, 685, 680] },
-          ]}
-        />
-        <div style={{ display: 'flex', gap: 20, marginTop: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 2, background: '#0020F6' }} /><span style={{ fontSize: 11.5, color: T.light, fontFamily: T.fontUI }}>Vy</span></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 2, background: '#6e6ea8' }} /><span style={{ fontSize: 11.5, color: T.muted, fontFamily: T.fontUI }}>Průměr trhu</span></div>
-        </div>
-      </ECard>
-    </>
-  );
-}
-
-// ── Retence ───────────────────────────────────────────────────
-function AnalyticsRetention() {
-  return (
-    <ECard>
-      <SectionHeader title="Retence brigádníků" subtitle="Kolik zůstává po 30 / 60 / 90 dnech" />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 18 }}>
-        {[
-          { d: 30, v: 84, c: '#5BD68A' },
-          { d: 60, v: 67, c: '#FFD166' },
-          { d: 90, v: 52, c: '#5B6BFF' },
-        ].map((x, i) => (
-          <div key={i} style={{ padding: 18, borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid ' + T.border, textAlign: 'center' }}>
-            <div style={{ color: T.muted, fontSize: 11, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.5, textTransform: 'uppercase' }}>{x.d} dní</div>
-            <div style={{ color: x.c, fontFamily: T.fontMono, fontSize: 38, fontWeight: 700, marginTop: 8, letterSpacing: -1.5 }}>{x.v}%</div>
-            <div style={{ color: T.mutedSoft, fontSize: 11, fontFamily: T.fontUI, marginTop: 4 }}>průměr segmentu {x.v - 14}%</div>
-          </div>
-        ))}
-      </div>
-      <SectionHeader title="Důvody odchodu" />
-      {[
-        { l: 'Dokončili semestr / školu', v: 32 },
-        { l: 'Lepší nabídka jinde', v: 24 },
-        { l: 'Změna životní situace', v: 18 },
-        { l: 'Nespokojenost s rozvrhem', v: 14 },
-        { l: 'Jiné', v: 12 },
-      ].map((x, i) => (
-        <div key={i} style={{ marginBottom: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontFamily: T.fontUI, marginBottom: 4 }}>
-            <span style={{ color: T.light }}>{x.l}</span>
-            <span style={{ color: '#fff', fontFamily: T.fontMono, fontWeight: 700 }}>{x.v} %</span>
-          </div>
-          <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.3)' }}>
-            <div style={{ height: '100%', width: (x.v * 3) + '%', borderRadius: 3, background: 'linear-gradient(90deg, #5B6BFF, #0020F6)' }} />
-          </div>
-        </div>
-      ))}
-    </ECard>
   );
 }
 
