@@ -26,10 +26,13 @@ const E_THREADS = [
     msgs: [{ from: 'them', text: 'Mám zájem.', t: 'pondělí' }] },
 ];
 
-function EMessages() {
+function EMessages({ initialThreadId } = {}) {
   // Local thread state — initialized from (possibly mutated) global E_THREADS
   const [threads, setThreads]   = useStateE(() => [...E_THREADS]);
-  const [active,  setActive]    = useStateE(() => E_THREADS[0]?.id || null);
+  const [active,  setActive]    = useStateE(() => {
+    if (initialThreadId && E_THREADS.some(t => t.id === initialThreadId)) return initialThreadId;
+    return E_THREADS[0]?.id || null;
+  });
   const [filter,  setFilter]    = useStateE('all');
   const [msgInput, setMsgInput] = useStateE('');
   const [sending,  setSending]  = useStateE(false);
@@ -539,8 +542,6 @@ function SettingsProfile() {
   const mapsUrl    = form.address ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(form.address) : null;
   const mapEmbed   = form.address ? 'https://maps.google.com/maps?q=' + encodeURIComponent(form.address) + '&z=14&output=embed' : null;
   const activeJobs = (typeof E_JOBS !== 'undefined' ? E_JOBS : []).filter(j => j.status === 'active' || j.status === 'urgent');
-  const reviews    = (typeof E_REVIEWS !== 'undefined' ? E_REVIEWS : []);
-  const avgRating  = reviews.length ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(1) : null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -679,7 +680,19 @@ function SettingsProfile() {
         )}
       </ECard>
 
-      {/* Recenze */}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// RECENZE — všechna hodnocení od kandidátů
+// ─────────────────────────────────────────────────────────────
+function EReviews() {
+  const reviews   = (typeof E_REVIEWS !== 'undefined' ? E_REVIEWS : []);
+  const avgRating = reviews.length ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(1) : null;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <ECard>
         <SectionHeader title="Recenze" subtitle={avgRating ? avgRating + ' ★ průměr · ' + reviews.length + ' hodnocení' : 'Zatím bez recenzí'} />
         {reviews.length === 0 ? (

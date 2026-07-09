@@ -22,6 +22,17 @@ function _relTime(iso) {
   return new Date(iso).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' }) + ` · ${t}`;
 }
 
+function _relTimeCoarse(iso) {
+  if (!iso) return '';
+  const days = Math.floor((Date.now() - new Date(iso)) / 86400000);
+  if (days <= 0)   return 'dnes';
+  if (days === 1)  return 'včera';
+  if (days < 7)    return `před ${days} dny`;
+  if (days < 30)   { const w = Math.floor(days / 7);  return `před ${w} ${w === 1 ? 'týdnem' : 'týdny'}`; }
+  if (days < 365)  { const m = Math.floor(days / 30); return `před ${m} ${m === 1 ? 'měsícem' : 'měsíci'}`; }
+  const y = Math.floor(days / 365); return `před ${y} ${y === 1 ? 'rokem' : 'lety'}`;
+}
+
 function _fmtTime(iso) {
   if (!iso) return '';
   return new Date(iso).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
@@ -190,6 +201,11 @@ async function fetchEmployerData(employerId) {
     const totalH = accepted.length;
     const avgR   = reviews.length
       ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '–';
+    const lastReview = reviews[0] ? {
+      text: reviews[0].text, rating: reviews[0].rating,
+      reviewer: reviews[0].reviewer?.name || 'Kandidát',
+      when: _relTimeCoarse(reviews[0].created_at),
+    } : null;
     const spark  = n => Array.from({ length: 12 }, (_, i) => n === 0 ? 0 : Math.max(0, Math.round(n * (0.15 + i * 0.07))));
     const activeJobs = E_JOBS.filter(j => j.status === 'active' || j.status === 'urgent').length;
     const totalJobs  = E_JOBS.length;
@@ -197,7 +213,7 @@ async function fetchEmployerData(employerId) {
       { id: 'jobs',    label: 'Aktivní inzeráty', value: activeJobs, max: totalJobs, delta: 0, spark: spark(activeJobs), unit: '',  icon: 'document-text-bold' },
       { id: 'matches', label: 'Celkem matchů',    value: totalM,    delta: 0, spark: spark(totalM),     unit: '',  icon: 'heart-bold' },
       { id: 'hired',   label: 'Najato',           value: totalH,    delta: 0, spark: spark(totalH),     unit: '',  icon: 'check-circle-bold' },
-      { id: 'rating',  label: 'Hodnocení firmy',  value: avgR,      delta: 0, spark: spark(5),          unit: '★', icon: 'star-bold' },
+      { id: 'rating',  label: 'Hodnocení firmy',  value: avgR,      delta: 0, spark: spark(5),          unit: '★', icon: 'star-bold', count: reviews.length, lastReview },
     ];
     E_KPIS.length = 0;
     newKpis.forEach(k => E_KPIS.push(k));

@@ -49,7 +49,7 @@ function setupNavDropdowns() {
       ['Jak to funguje', '/pro-zamestnavatele.html#jak-to-funguje'],
       ['Dashboard',      '/pro-zamestnavatele.html#dashboard'],
       ['Ceník',          '/pro-zamestnavatele.html#pricing'],
-      ['Časté dotazy',   '/pro-zamestnavatele.html#faq'],
+      ['Časté dotazy',   '/podpora.html'],
     ],
     'hledam-si-praci.html': [
       ['Jak to funguje', '/hledam-si-praci.html#how-it-works'],
@@ -145,8 +145,13 @@ function setupReveal() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
+        const el = entry.target;
+        el.classList.add('visible');
+        observer.unobserve(el);
+        // Once the entrance animation has played, drop 'reveal' so its
+        // transition-delay (used for the staggered entrance) doesn't
+        // linger and delay unrelated :hover transitions afterwards.
+        setTimeout(() => el.classList.remove('reveal', 'visible'), 900);
       }
     });
   }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });

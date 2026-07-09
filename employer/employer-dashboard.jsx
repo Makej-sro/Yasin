@@ -149,8 +149,7 @@ function EDashboard({ period = '30d', onTab }) {
     });
   }
 
-  // TODO: napojit na reálná data — E_THREADS.filter(t => t.unread > 0).reduce((s,t) => s + t.unread, 0)
-  const unreadMsgs = 2;
+  const unreadMsgs = (typeof E_THREADS !== 'undefined' ? E_THREADS.reduce((s, t) => s + (t.unread || 0), 0) : 0);
   if (unreadMsgs > 0) alerts.push({
     key: 'msgs', icon: 'chat-round-line-bold',
     label: `${unreadMsgs} nepřečtené zprávy`,
@@ -198,9 +197,13 @@ function EDashboard({ period = '30d', onTab }) {
       )}
 
       {/* KPI grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
         {kpis.map(k => (
-          <ECard key={k.id} padding={24}>
+          <ECard
+            key={k.id} padding={24}
+            style={k.id === 'rating' ? { position: 'relative', cursor: onTab ? 'pointer' : 'default' } : undefined}
+            onClick={k.id === 'rating' ? () => onTab && onTab('reviews') : undefined}
+          >
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(0,32,246,0.08)', display: 'grid', placeItems: 'center', border: '1px solid rgba(0,32,246,0.15)' }}>
@@ -208,19 +211,21 @@ function EDashboard({ period = '30d', onTab }) {
                 </div>
                 <span style={{ color: T.cardMuted, fontSize: 13, fontFamily: T.fontUI, fontWeight: 600, letterSpacing: 0.2 }}>{k.label}</span>
               </div>
-              <span style={{
-                padding: '4px 9px', borderRadius: 7,
-                background: k.delta >= 0 ? 'rgba(91,214,138,0.2)' : 'rgba(244,63,94,0.2)',
-                color: k.delta >= 0 ? '#5BD68A' : '#f43f5e',
-                fontFamily: T.fontMono, fontSize: 12, fontWeight: 700,
-                display: 'inline-flex', alignItems: 'center', gap: 3,
-              }}>
-                <Icon name={k.delta >= 0 ? 'arrow-up-bold' : 'arrow-down-bold'} size={11} color={k.delta >= 0 ? '#5BD68A' : '#f43f5e'} />
-                {Math.abs(k.delta).toFixed(1)}%
-              </span>
+              {k.id !== 'rating' && (
+                <span style={{
+                  padding: '4px 9px', borderRadius: 7,
+                  background: k.delta >= 0 ? 'rgba(91,214,138,0.2)' : 'rgba(244,63,94,0.2)',
+                  color: k.delta >= 0 ? '#5BD68A' : '#f43f5e',
+                  fontFamily: T.fontMono, fontSize: 12, fontWeight: 700,
+                  display: 'inline-flex', alignItems: 'center', gap: 3,
+                }}>
+                  <Icon name={k.delta >= 0 ? 'arrow-up-bold' : 'arrow-down-bold'} size={11} color={k.delta >= 0 ? '#5BD68A' : '#f43f5e'} />
+                  {Math.abs(k.delta).toFixed(1)}%
+                </span>
+              )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
-              <div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
+              <div style={{ flexShrink: 0 }}>
                 <div style={{ fontFamily: T.fontMono, fontSize: 36, fontWeight: 700, letterSpacing: -1.5, lineHeight: 1 }}>
                   {k.id === 'jobs' && k.max != null ? (
                     <>
@@ -230,14 +235,33 @@ function EDashboard({ period = '30d', onTab }) {
                   ) : (
                     <>
                       <span style={{ color: T.cardText }}>{typeof k.value === 'number' && k.value >= 1000 ? k.value.toLocaleString('cs-CZ').replace(/,/g, ' ') : k.value}</span>
-                      <span style={{ fontSize: 17, color: T.cardMuted, fontWeight: 600, marginLeft: 3 }}>{k.unit}</span>
+                      <span style={{ fontSize: 17, color: k.id === 'rating' ? '#D97706' : T.cardMuted, fontWeight: 600, marginLeft: 3 }}>{k.unit}</span>
                     </>
                   )}
                 </div>
-                <div style={{ color: T.cardMuted, fontSize: 12, fontFamily: T.fontUI, marginTop: 6 }}>vs. minulých 30 dní</div>
+                <div style={{ color: T.cardMuted, fontSize: 12, fontFamily: T.fontUI, marginTop: 6 }}>
+                  {k.id === 'rating' && k.count != null ? `${k.count} hodnocení` : 'vs. minulých 30 dní'}
+                </div>
               </div>
-              <Sparkline data={k.spark} color={k.delta >= 0 ? '#5BD68A' : '#f43f5e'} width={96} height={38} />
+              {k.id !== 'rating' && (
+                <Sparkline data={k.spark} color={k.delta >= 0 ? '#5BD68A' : '#f43f5e'} width={96} height={38} />
+              )}
             </div>
+            {k.id === 'rating' && k.lastReview && (
+              <div style={{
+                position: 'absolute', top: '50%', right: 24, transform: 'translateY(-50%)',
+                width: '52%', paddingLeft: 16, borderLeft: '1px solid ' + T.border,
+              }}>
+                <div style={{ color: T.cardText, fontSize: 14, fontFamily: T.fontUI, fontWeight: 700, marginBottom: 5 }}>{k.lastReview.reviewer}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
+                  <StarRow n={k.lastReview.rating} />
+                  <span style={{ color: T.cardMuted, fontSize: 12, fontFamily: T.fontUI, fontWeight: 500 }}>{k.lastReview.when}</span>
+                </div>
+                <div style={{ color: T.cardText, fontSize: 14, fontFamily: T.fontUI, lineHeight: 1.5 }}>
+                  {k.lastReview.text}
+                </div>
+              </div>
+            )}
           </ECard>
         ))}
       </div>

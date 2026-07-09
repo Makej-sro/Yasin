@@ -25,6 +25,12 @@ function ELogo() {
 // SIDEBAR
 // ─────────────────────────────────────────────────────────────
 function ESidebar({ tab, onTab }) {
+  // Reálné počty z živých globálů (0 → badge se skryje)
+  const jobsBadge = (typeof E_JOBS !== 'undefined' ? E_JOBS.filter(j => j.status === 'active' || j.status === 'urgent').length : 0) || null;
+  const candBadge = (typeof E_CANDIDATES !== 'undefined' ? (E_CANDIDATES.new || []).length : 0) || null;
+  const chatBadge = (typeof E_THREADS !== 'undefined' ? E_THREADS.reduce((s, t) => s + (t.unread || 0), 0) : 0) || null;
+  const reviewsBadge = (typeof E_REVIEWS !== 'undefined' ? E_REVIEWS.length : 0) || null;
+
   const sections = [
     {
       label: 'Přehled',
@@ -36,15 +42,16 @@ function ESidebar({ tab, onTab }) {
     {
       label: 'Nábor',
       items: [
-        { k: 'jobs', label: 'Inzeráty', icon: 'document-text-bold', iconLine: 'document-text-linear', badge: 5 },
-        { k: 'candidates', label: 'Kandidáti', icon: 'users-group-rounded-bold', iconLine: 'users-group-rounded-linear', badge: 12 },
-        { k: 'chat', label: 'Zprávy', icon: 'chat-round-line-bold', iconLine: 'chat-round-line-linear', badge: 3 },
+        { k: 'jobs', label: 'Inzeráty', icon: 'document-text-bold', iconLine: 'document-text-linear', badge: jobsBadge },
+        { k: 'candidates', label: 'Kandidáti', icon: 'users-group-rounded-bold', iconLine: 'users-group-rounded-linear', badge: candBadge },
+        { k: 'chat', label: 'Zprávy', icon: 'chat-round-line-bold', iconLine: 'chat-round-line-linear', badge: chatBadge },
         { k: 'calendar', label: 'Plán směn', icon: 'calendar-bold', iconLine: 'calendar-linear' },
       ],
     },
     {
       label: 'Firma',
       items: [
+        { k: 'reviews', label: 'Recenze', badge: reviewsBadge },
         { k: 'settings', label: 'Nastavení', icon: 'settings-bold', iconLine: 'settings-linear' },
       ],
     },
@@ -104,8 +111,8 @@ function ESidebar({ tab, onTab }) {
                   }}
                   onMouseEnter={e => { if (!active && !it.disabled) e.currentTarget.style.background = '#F3F4F6'; }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
-                    {['dash', 'analytics', 'jobs', 'candidates', 'chat', 'calendar', 'settings'].includes(it.k)
-                      ? (() => { const iconMap = { dash: 'dashboard-icon.png', analytics: 'analytics-icon.png', jobs: 'jobs-icon.png', candidates: 'candidates-icon.png', chat: 'messages-icon.png', calendar: 'calendar-icon.png', settings: 'settings-icon.png' }; return <img src={iconMap[it.k]} style={{ width: 18, height: 18, flexShrink: 0, objectFit: 'contain', filter: active ? 'brightness(0) saturate(100%) invert(13%) sepia(100%) saturate(4000%) hue-rotate(228deg) brightness(103%)' : 'opacity(0.4)' }} />; })()
+                    {['dash', 'analytics', 'jobs', 'candidates', 'chat', 'calendar', 'reviews', 'settings'].includes(it.k)
+                      ? (() => { const iconMap = { dash: 'dashboard-icon.png', analytics: 'analytics-icon.png', jobs: 'jobs-icon.png', candidates: 'candidates-icon.png', chat: 'messages-icon.png', calendar: 'calendar-icon.png', reviews: 'reviews-icon.png', settings: 'settings-icon.png' }; return <img src={iconMap[it.k]} style={{ width: 18, height: 18, flexShrink: 0, objectFit: 'contain', filter: active ? 'brightness(0) saturate(100%) invert(13%) sepia(100%) saturate(4000%) hue-rotate(228deg) brightness(103%)' : 'opacity(0.4)' }} />; })()
                       : <Icon name={active ? it.icon : it.iconLine} size={18} color={active ? '#0020F6' : it.disabled ? '#D1D5DB' : '#6B7280'} />
                     }
                     <span style={{ flex: 1 }}>{it.label}</span>
@@ -441,9 +448,9 @@ function Donut({ data, size = 140, thickness = 18 }) {
 // ─────────────────────────────────────────────────────────────
 // COMMON — Card + KPI + Section
 // ─────────────────────────────────────────────────────────────
-function ECard({ children, style, padding = 22 }) {
+function ECard({ children, style, padding = 22, onClick }) {
   return (
-    <div style={{
+    <div onClick={onClick} style={{
       borderRadius: 18,
       background: T.card,
       border: '1px solid ' + T.cardBorder,

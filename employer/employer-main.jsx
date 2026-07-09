@@ -7,6 +7,7 @@ const TITLES = {
   candidates: { title: 'Kandidáti',  subtitle: '' },
   chat:       { title: 'Zprávy',     subtitle: 'Komunikace s kandidáty' },
   calendar:   { title: 'Plán směn',  subtitle: 'Kalendář obsazení a otevřené sloty' },
+  reviews:    { title: 'Recenze',    subtitle: 'Všechna hodnocení od kandidátů' },
   settings:   { title: 'Nastavení',  subtitle: 'Firemní profil a nastavení' },
   pricing:    { title: 'Tarify',     subtitle: 'Správa předplatného a ceník' },
 };
@@ -375,7 +376,13 @@ function EmployerApp() {
   const [showNewJob, setShowNewJob] = useStateE(false);
   const [toasts,    setToasts]    = useStateE([]);
   const [period,    setPeriod]    = useStateE('30d');
+  const [openThreadId, setOpenThreadId] = useStateE(null);
   const empId                     = useRefE(null);
+
+  function openChat(matchId) {
+    setOpenThreadId(matchId || null);
+    setTab('chat');
+  }
 
   function addToast(title, text, icon = '🔔', type = 'info') {
     const id = Date.now() + Math.random();
@@ -449,9 +456,10 @@ function EmployerApp() {
   } else if (tab === 'dash')        body = <EDashboard key={tick + period} period={period} onTab={setTab} />;
   else if (tab === 'analytics')     body = <EAnalytics key={tick} />;
   else if (tab === 'jobs')          body = <EJobs key={tick} onTab={setTab} />;
-  else if (tab === 'candidates')    body = <ECandidates key={tick} />;
-  else if (tab === 'chat')          body = <EMessages key={tick} />;
+  else if (tab === 'candidates')    body = <ECandidates key={tick} onOpenChat={openChat} />;
+  else if (tab === 'chat')          body = <EMessages key={tick + '-' + openThreadId} initialThreadId={openThreadId} />;
   else if (tab === 'calendar')      body = <ECalendar key={tick} />;
+  else if (tab === 'reviews')       body = <EReviews key={tick} />;
   else if (tab === 'settings')      body = <ESettings key={tick} />;
   else if (tab === 'pricing')       body = <EPricing onTab={setTab} onPlanChange={() => setTick(t => t + 1)} />;
   else body = (

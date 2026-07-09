@@ -271,23 +271,6 @@
     #pricing .cn-plan-cta a.primary:hover { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--primary), 0 10px 28px rgba(0,32,246,.5); }
     #pricing .cn-expand-btn { color: rgba(10,13,46,.45); border-color: rgba(10,13,46,.12); }
     #pricing .cn-expand-btn:hover { color: var(--primary); border-color: var(--primary); }
-
-    /* FAQ (zaměstnavatelé) */
-    .emp-faq { max-width: 760px; margin: 0 auto; padding: 0 24px; }
-    .emp-faq-list { border-top: 1px solid var(--border); }
-    .emp-faq-item { border-bottom: 1px solid var(--border); }
-    .emp-faq-q {
-      display: flex; justify-content: space-between; align-items: center; gap: 16px;
-      padding: 22px 4px; cursor: pointer; font-weight: 600; font-size: 1rem; color: #fff;
-      user-select: none; transition: color .15s;
-    }
-    .emp-faq-q:hover { color: #d0d0ff; }
-    .emp-faq-icon { color: var(--muted-fg); flex-shrink: 0; transition: transform .25s cubic-bezier(.2,.8,.2,1), color .15s; }
-    .emp-faq-item.open .emp-faq-icon { transform: rotate(45deg); color: #a0b4ff; }
-    .emp-faq-a { display: none; padding: 0 4px 22px; color: var(--muted-fg); font-size: .92rem; line-height: 1.7; }
-    .emp-faq-a a { color: #a0b4ff; text-decoration: none; }
-    .emp-faq-a a:hover { text-decoration: underline; }
-    .emp-faq-item.open .emp-faq-a { display: block; }
   </style>
 </head>
 <body>
@@ -633,62 +616,6 @@
     </div>
   </section>
 
-  <!-- ═══════════ FAQ ═══════════ -->
-  <section id="faq" style="padding:40px 0 110px;">
-    <div class="container">
-      <div class="section-header reveal">
-        <h2>Časté <span class="gradient-text">otázky</span></h2>
-        <p>Nenašli jste odpověď? Napište nám na <a href="mailto:hello@makej.eu" style="color:#a0b4ff;text-decoration:none;">hello@makej.eu</a></p>
-      </div>
-      <div class="emp-faq">
-        <div class="emp-faq-list">
-          <div class="emp-faq-item">
-            <div class="emp-faq-q" onclick="toggleFaq(this)">
-              <span>Kolik stojí zveřejnění inzerátu?</span>
-              <iconify-icon icon="solar:add-circle-bold" width="20" class="emp-faq-icon"></iconify-icon>
-            </div>
-            <div class="emp-faq-a">Plán Starter je zdarma a navždy — zveřejníte 1 aktivní inzerát. Placené plány začínají na 499 Kč/měsíc a přidávají víc aktivních inzerátů, topování, oslovování brigádníků a pokročilou analytiku.</div>
-          </div>
-          <div class="emp-faq-item">
-            <div class="emp-faq-q" onclick="toggleFaq(this)">
-              <span>Jak rychle najdu brigádníka?</span>
-              <iconify-icon icon="solar:add-circle-bold" width="20" class="emp-faq-icon"></iconify-icon>
-            </div>
-            <div class="emp-faq-a">První kandidát chodí v průměru do 2,4 hodiny a 94 % firem najme do 48 hodin. Rychlost závisí na oboru, lokalitě a atraktivitě nabídky — topování ji ještě zrychlí.</div>
-          </div>
-          <div class="emp-faq-item">
-            <div class="emp-faq-q" onclick="toggleFaq(this)">
-              <span>Jak probíhá výběr kandidátů?</span>
-              <iconify-icon icon="solar:add-circle-bold" width="20" class="emp-faq-icon"></iconify-icon>
-            </div>
-            <div class="emp-faq-a">Brigádníci swajpují vaši nabídku ve feedu. U každého zájemce vidíte profil, hodnocení a historii brigád. Jedním tapem ho přijmete, nebo posunete dál — a po přijetí se otevře chat.</div>
-          </div>
-          <div class="emp-faq-item">
-            <div class="emp-faq-q" onclick="toggleFaq(this)">
-              <span>Můžu inzerovat i part-time nebo full-time pozice?</span>
-              <iconify-icon icon="solar:add-circle-bold" width="20" class="emp-faq-icon"></iconify-icon>
-            </div>
-            <div class="emp-faq-a">Ano. Makej pokrývá jednorázové brigády, part-time i full-time pozice napříč obory — od gastra a skladů po eventy a retail.</div>
-          </div>
-          <div class="emp-faq-item">
-            <div class="emp-faq-q" onclick="toggleFaq(this)">
-              <span>Platím za každou obsazenou pozici?</span>
-              <iconify-icon icon="solar:add-circle-bold" width="20" class="emp-faq-icon"></iconify-icon>
-            </div>
-            <div class="emp-faq-a">Ne. Platíte jen měsíční nebo roční předplatné zvoleného plánu — žádné provize z jednotlivých náborů ani skryté poplatky.</div>
-          </div>
-          <div class="emp-faq-item">
-            <div class="emp-faq-q" onclick="toggleFaq(this)">
-              <span>Jak komunikuju s kandidáty?</span>
-              <iconify-icon icon="solar:add-circle-bold" width="20" class="emp-faq-icon"></iconify-icon>
-            </div>
-            <div class="emp-faq-a">Po matchi se otevře chat — v mobilní aplikaci i ve web dashboardu, plně synchronizovaně. Domluvíte čas, místo a detaily na jednom místě.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ═══════════ DOWNLOAD CTA ═══════════ -->
   <section id="download">
     <div class="container">
@@ -907,16 +834,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="script.js?v=9"></script>
+  <script src="script.js?v=10"></script>
   <script>
-    // FAQ accordion
-    function toggleFaq(el) {
-      var item = el.parentElement;
-      var isOpen = item.classList.contains('open');
-      document.querySelectorAll('.emp-faq-item.open').forEach(function (i) { i.classList.remove('open'); });
-      if (!isOpen) item.classList.add('open');
-    }
-
     // Pricing: expand / collapse plan details
     function toggleExpand(btn) {
       var plan = btn.closest('.cn-plan');
