@@ -142,53 +142,16 @@ function ESidebar({ tab, onTab }) {
       </nav>
 
       {/* Plan card */}
-      <div style={{
-        margin: '12px 0',
-        padding: 16, borderRadius: 14,
-        background: 'rgba(0,32,246,0.05)',
-        border: '1px solid rgba(0,32,246,0.15)',
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <Icon name="crown-star-bold" size={16} color="#92400E" />
-          <span style={{ color: '#92400E', fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 1, textTransform: 'uppercase' }}>{ECOMPANY.plan || 'Starter'}</span>
+      <div style={{ margin: '12px 0', padding: '0 8px' }}>
+        <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600, marginBottom: 8 }}>
+          Tarif: <span style={{ color: '#111827', fontWeight: 700 }}>{ECOMPANY.plan || 'Starter'}</span>
         </div>
-        {(() => {
-          const expStr = EPROFILE.premium_until || EPROFILE.plan_expires_at || null;
-          const now = new Date();
-          if (!expStr) {
-            return (
-              <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 12, marginBottom: 12 }}>
-                {ECOMPANY.plan && ECOMPANY.plan.toLowerCase() !== 'starter' ? 'Aktivní předplatné' : 'Bezplatný tarif'}
-              </div>
-            );
-          }
-          const exp = new Date(expStr);
-          const daysLeft = Math.ceil((exp - now) / 86400000);
-          const isActive = daysLeft > 0;
-          const pct = isActive ? Math.min(100, Math.round((daysLeft / 365) * 100)) : 0;
-          const expLabel = exp.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
-          return (
-            <>
-              <div style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
-                {isActive ? `Aktivní · do ${expLabel}` : `Vypršel · ${expLabel}`}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                <div style={{ flex: 1, height: 4, borderRadius: 999, background: 'rgba(0,32,246,0.12)', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: pct + '%', borderRadius: 999, background: 'linear-gradient(90deg, #5B6BFF, #0020F6)' }} />
-                </div>
-                <span style={{ color: '#6B7280', fontFamily: T.fontMono, fontSize: 10, fontWeight: 600 }}>{isActive ? daysLeft + 'd' : '0d'}</span>
-              </div>
-            </>
-          );
-        })()}
         <button style={{
-          width: '100%', padding: '8px 10px', borderRadius: 8,
+          width: '100%', padding: '9px 10px', borderRadius: 9,
           background: '#0020F6', border: 'none',
           color: '#fff', cursor: 'pointer',
-          fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 700,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        }} onClick={() => onTab('pricing')}>Spravovat tarif</button>
+          fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700,
+        }} onClick={() => onTab('pricing')}>Můj tarif</button>
       </div>
 
       {/* Company footer */}

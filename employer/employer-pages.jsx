@@ -135,12 +135,12 @@ function EJobs({ onTab }) {
 
   const inputStyle = {
     paddingLeft: 10, paddingRight: 10, paddingTop: 7, paddingBottom: 7,
-    borderRadius: 9, background: 'rgba(255,255,255,0.08)', border: '1px solid ' + T.border,
-    color: T.text, fontFamily: T.fontUI, fontSize: 12.5, outline: 'none',
+    borderRadius: 9, background: '#F9FAFB', border: '1px solid #E5E7EB',
+    color: '#111827', fontFamily: T.fontUI, fontSize: 12.5, outline: 'none',
   };
 
   return (
-    <div style={{ padding: '24px 28px 40px', display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
+    <div style={{ padding: '24px 28px 40px', display: 'flex', flexDirection: 'column', gap: 18, background: '#ffffff' }}>
       {/* Summary */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
         {[
@@ -170,10 +170,10 @@ function EJobs({ onTab }) {
         ].map(f => (
           <button key={f.k} onClick={() => setFilter(f.k)} style={{
             padding: '8px 14px', borderRadius: 9,
-            background: filter === f.k ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)',
-            border: '1px solid ' + (filter === f.k ? 'rgba(255,255,255,0.4)' : T.border),
-            color: filter === f.k ? T.text : T.muted,
-            fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
+            background: filter === f.k ? 'rgba(0,32,246,0.08)' : '#F9FAFB',
+            border: '1px solid ' + (filter === f.k ? 'rgba(0,32,246,0.3)' : '#E5E7EB'),
+            color: filter === f.k ? '#0020F6' : '#6B7280',
+            fontFamily: T.fontUI, fontSize: 12.5, fontWeight: filter === f.k ? 700 : 600, cursor: 'pointer',
             display: 'inline-flex', alignItems: 'center', gap: 7,
           }}>
             {f.l}
@@ -183,13 +183,13 @@ function EJobs({ onTab }) {
         <div style={{ flex: 1 }} />
         {/* Mzda od–do */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontSize: 11, color: T.muted, fontFamily: T.fontUI }}>Kč/h</span>
+          <span style={{ fontSize: 11, color: '#6B7280', fontFamily: T.fontUI }}>Kč/h</span>
           <input
             value={minPay} onChange={e => setMinPay(e.target.value)}
             placeholder="od" type="number" min="0"
             style={{ ...inputStyle, width: 58, textAlign: 'center' }}
           />
-          <span style={{ color: T.muted, fontSize: 12 }}>–</span>
+          <span style={{ color: '#6B7280', fontSize: 12 }}>–</span>
           <input
             value={maxPay} onChange={e => setMaxPay(e.target.value)}
             placeholder="do" type="number" min="0"
@@ -200,7 +200,7 @@ function EJobs({ onTab }) {
         <select value={sort} onChange={e => setSort(e.target.value)} style={{
           ...inputStyle, paddingLeft: 10, paddingRight: 24, cursor: 'pointer',
           appearance: 'none', WebkitAppearance: 'none',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236e6ea8'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239CA3AF'/%3E%3C/svg%3E")`,
           backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center',
         }}>
           <option value="newest">Nejnovější</option>
@@ -212,7 +212,7 @@ function EJobs({ onTab }) {
         {/* Vyhledávání */}
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
           <span style={{ position: 'absolute', left: 10, pointerEvents: 'none' }}>
-            <Icon name="magnifer-linear" size={12} color={T.mutedSoft} />
+            <Icon name="magnifer-linear" size={12} color="#9CA3AF" />
           </span>
           <input
             value={search} onChange={e => setSearch(e.target.value)}

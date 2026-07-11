@@ -980,105 +980,79 @@ function SettingsDanger() {
 
 const PLANS = [
   {
-    id: 'starter', name: 'Starter', price: 0, free: true, period: 'navždy zdarma',
+    id: 'zakladni', name: 'Základní', price: 0, free: true, period: 'navždy zdarma',
     color: '#8AB4FF', icon: 'hand-shake-bold',
-    features: [
-      { ok: true,  text: '1 aktivní inzerát' },
-      { ok: true,  text: '1 full-time inzerce' },
-      { ok: true,  text: 'Oslovování brigádníků (1×/měs)' },
-      { ok: true,  text: 'Základní statistiky' },
-    ],
-    more: [
-      { ok: false, text: 'Topování inzerátu' },
-      { ok: false, text: 'Ověřená firma' },
-      { ok: false, text: 'SMS Urgent' },
-      { ok: false, text: 'Pokročilá analytika' },
-      { ok: false, text: 'Prémiový badge' },
-      { ok: false, text: 'Export dat (CSV)' },
-    ],
     cta: 'Začít zdarma', contact: false,
   },
   {
-    id: 'standard', name: 'Standard', price: 499, annualPrice: 424, period: 'za měsíc bez DPH',
+    id: 'vyhodny', name: 'Výhodný', price: 499, annualPrice: 424, period: 'za měsíc bez DPH',
     color: '#5B6BFF', icon: 'bolt-bold', badge: 'Nejoblíbenější', popular: true,
-    features: [
-      { ok: true,  text: '2 aktivní inzeráty' },
-      { ok: true,  text: 'Topování inzerátu (1×/měs)' },
-      { ok: true,  text: 'Ověřená firma + branding' },
-      { ok: true,  text: 'Oslovování brigádníků (10×/měs)' },
-    ],
-    more: [
-      { ok: true,  text: 'Plné statistiky + CSV export' },
-      { ok: true,  text: 'Šablony inzerátů' },
-      { ok: true,  text: 'Video na profilu' },
-      { ok: false, text: 'SMS Urgent' },
-      { ok: false, text: 'Prémiový badge' },
-      { ok: false, text: 'Pokročilá analytika' },
-    ],
-    cta: 'Vybrat Standard', contact: false,
+    cta: 'Vybrat Výhodný', contact: false,
   },
   {
-    id: 'business', name: 'Business', price: 4999, annualPrice: 4249, period: 'za měsíc bez DPH',
+    id: 'dynamicky', name: 'Dynamický', price: 2000, period: 'za měsíc bez DPH',
+    color: '#5BD68A', icon: 'bolt-bold',
+    cta: 'Vybrat Dynamický', contact: false,
+  },
+  {
+    id: 'maximalni', name: 'Maximální', price: 4999, annualPrice: 4249, period: 'za měsíc bez DPH',
     color: '#FFD166', icon: 'crown-star-bold',
-    features: [
-      { ok: true,  text: '10 aktivních inzerátů' },
-      { ok: true,  text: 'Topování inzerátu (5×/měs)' },
-      { ok: true,  text: 'SMS Urgent + prémiový badge' },
-      { ok: true,  text: 'Oslovování brigádníků (100×/měs)' },
-    ],
-    more: [
-      { ok: true,  text: 'Pokročilá analytika' },
-      { ok: true,  text: 'Zmínka na FB + IG Makej' },
-      { ok: true,  text: 'Role uživatelů' },
-      { ok: true,  text: 'Plánování inzerátu' },
-      { ok: true,  text: 'Možnost konzultace' },
-    ],
-    cta: 'Vybrat Business', contact: false,
+    cta: 'Vybrat Maximální', contact: false,
   },
   {
-    id: 'agency', name: 'Agency', price: 4999, pricePrefix: 'od ', period: 'za měsíc bez DPH',
-    color: '#5BD68A', icon: 'users-group-two-rounded-bold',
-    features: [
-      { ok: true,  text: 'Neomezené inzeráty' },
-      { ok: true,  text: 'Inzerce jménem klienta' },
-      { ok: true,  text: 'Topování inzerátu (20×/měs)' },
-      { ok: true,  text: 'Oslovování brigádníků (100×/měs)' },
-    ],
-    more: [
-      { ok: true,  text: 'Prémiový badge + SMS Urgent' },
-      { ok: true,  text: 'Pokročilá analytika + CSV' },
-      { ok: true,  text: 'Role uživatelů' },
-      { ok: true,  text: 'Zmínka na FB + IG Makej' },
-    ],
-    cta: 'Kontaktovat nás', contact: true,
-  },
-  {
-    id: 'enterprise', name: 'Enterprise', price: 9999, pricePrefix: 'od ', period: 'kalkulace na míru',
+    id: 'vlastni', name: 'Vlastní', price: 9999, pricePrefix: 'od ', period: 'kalkulace na míru',
     color: '#E0B0FF', icon: 'buildings-2-bold',
-    features: [
-      { ok: true,  text: 'Vše z Business' },
-      { ok: true,  text: 'Custom integrace (HR systémy)' },
-      { ok: true,  text: 'Co-marketing s Makej' },
-      { ok: true,  text: 'Vlastní reporting na míru' },
-    ],
-    more: [
-      { ok: true,  text: 'Neomezení uživatelé v týmu' },
-      { ok: true,  text: 'Onboarding a školení týmu' },
-      { ok: true,  text: 'SLA 99,99 % + prioritní podpora' },
-      { ok: true,  text: 'Dedikovaný account manager' },
-    ],
     cta: 'Nezávazná poptávka', contact: true,
   },
 ];
 
-// Řádek jedné vlastnosti tarifu (styl z webového ceníku)
-function PlanFeat({ f }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, textAlign: 'left' }}>
-      <Icon name={f.ok ? 'check-circle-bold' : 'close-circle-bold'} size={15} color={f.ok ? '#5B6BFF' : '#D1D5DB'} />
-      <span style={{ color: f.ok ? '#374151' : '#9CA3AF', fontSize: 12.5, fontWeight: 600, fontFamily: T.fontUI, lineHeight: 1.35 }}>{f.text}</span>
-    </div>
-  );
+// ─────────────────────────────────────────────────────────────
+// Srovnávací tabulka funkcí — jeden řádek = jedna funkce napříč všemi tarify.
+// Hodnota buňky: true/false (má/nemá), text (konkrétní limit, např. "10×/měs"),
+// nebo 'tbd' pro Dynamický — funkce tohoto tarifu ještě nejsou definované,
+// takže se u něj nic netvrdí napevno (ani ✓ ani ✗), jen se ukáže "brzy".
+// Ostatní tarify jsou kumulativní — vyšší tarif automaticky obsahuje vše z nižšího.
+// ─────────────────────────────────────────────────────────────
+const FEATURE_ROWS = [
+  { section: 'Inzeráty' },
+  { label: 'Aktivní inzeráty',             cells: { zakladni: '1',     vyhodny: '2',    dynamicky: 'tbd', maximalni: '10',   vlastni: '10' } },
+  { label: 'Full-time inzerce',            cells: { zakladni: '1',     vyhodny: '1',    dynamicky: 'tbd', maximalni: '1',    vlastni: '1' } },
+  { label: 'Topování inzerátu',            cells: { zakladni: false,   vyhodny: '1×/měs', dynamicky: 'tbd', maximalni: '5×/měs', vlastni: '5×/měs' } },
+  { label: 'Plánování inzerátu předem',    cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+  { label: 'Šablony inzerátů',             cells: { zakladni: false,   vyhodny: true,   dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+
+  { section: 'Nábor a viditelnost' },
+  { label: 'Oslovování brigádníků',        cells: { zakladni: '1×/měs', vyhodny: '10×/měs', dynamicky: 'tbd', maximalni: '100×/měs', vlastni: '100×/měs' } },
+  { label: 'Ověřená firma + branding',     cells: { zakladni: false,   vyhodny: true,   dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+  { label: 'Video na profilu',             cells: { zakladni: false,   vyhodny: true,   dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+  { label: 'Prémiový badge',               cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+  { label: 'SMS Urgent',                   cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+  { label: 'Zmínka na FB + IG Makej',      cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+
+  { section: 'Data a reporting' },
+  { label: 'Základní statistiky',          cells: { zakladni: true,    vyhodny: true,   dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+  { label: 'Plné statistiky + CSV export', cells: { zakladni: false,   vyhodny: true,   dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+  { label: 'Pokročilá analytika',          cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+  { label: 'Custom integrace (HR systémy)', cells: { zakladni: false,  vyhodny: false,  dynamicky: 'tbd', maximalni: false,  vlastni: true } },
+  { label: 'Vlastní reporting na míru',    cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: false,  vlastni: true } },
+  { label: 'Co-marketing s Makej',         cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: false,  vlastni: true } },
+
+  { section: 'Tým a podpora' },
+  { label: 'Možnost konzultace',           cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+  { label: 'Role uživatelů',               cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: true,   vlastni: true } },
+  { label: 'Neomezení uživatelé v týmu',   cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: false,  vlastni: true } },
+  { label: 'Onboarding a školení týmu',    cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: false,  vlastni: true } },
+  { label: 'SLA 99,99 % + prioritní podpora', cells: { zakladni: false, vyhodny: false, dynamicky: 'tbd', maximalni: false,  vlastni: true } },
+  { label: 'Dedikovaný account manager',   cells: { zakladni: false,   vyhodny: false,  dynamicky: 'tbd', maximalni: false,  vlastni: true } },
+];
+
+function FeatureCell({ value }) {
+  if (value === 'tbd') {
+    return <span style={{ display: 'inline-block', padding: '2px 9px', borderRadius: 6, background: '#F3F4F6', color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 700 }}>brzy</span>;
+  }
+  if (value === true)  return <Icon name="check-circle-bold" size={17} color="#059669" />;
+  if (value === false) return <span style={{ color: '#D1D5DB', fontSize: 15, fontWeight: 700 }}>–</span>;
+  return <span style={{ color: '#111827', fontFamily: T.fontMono, fontSize: 12, fontWeight: 700 }}>{value}</span>;
 }
 
 function animatePrice(el, from, to) {
@@ -1098,7 +1072,7 @@ function EPricing({ onTab, onPlanChange }) {
   const [success, setSuccess]   = useStateE(false);
   const [hovered, setHovered]   = useStateE(null);
   const [annual, setAnnual]     = useStateE(false);
-  const [expanded, setExpanded] = useStateE({});
+  const [showCompare, setShowCompare] = useStateE(false);
   const priceRefs               = useRefE({});
 
   useEffectE(() => {
@@ -1113,10 +1087,13 @@ function EPricing({ onTab, onPlanChange }) {
 
   const currentPlanId = (() => {
     const planName = (ECOMPANY.plan || '').toLowerCase();
-    if (planName.includes('enterprise')) return 'enterprise';
-    if (planName.includes('business') || planName.includes('premium')) return 'business';
-    if (planName.includes('standard')) return 'standard';
-    return 'starter';
+    // Porovnává se proti starým názvům tarifů, protože ECOMPANY.plan v datech
+    // (mock i reálná) stále ukládá staré názvy (Standard, Business, Enterprise…)
+    if (planName.includes('enterprise') || planName.includes('vlastní') || planName.includes('vlastni')) return 'vlastni';
+    if (planName.includes('business') || planName.includes('premium') || planName.includes('maximální') || planName.includes('maximalni')) return 'maximalni';
+    if (planName.includes('dynamick')) return 'dynamicky';
+    if (planName.includes('standard') || planName.includes('výhodný') || planName.includes('vyhodny')) return 'vyhodny';
+    return 'zakladni';
   })();
 
   function handleSelect(planId) {
@@ -1137,36 +1114,35 @@ function EPricing({ onTab, onPlanChange }) {
   return (
     <div style={{ padding: '28px 32px 48px', overflowY: 'auto', background: '#fff', flex: 1, minHeight: 0 }}>
       {/* Header */}
-      <div style={{ marginBottom: 32, textAlign: 'center' }}>
-        <div style={{ fontFamily: T.fontHead, fontSize: 28, fontWeight: 900, color: '#111827', marginBottom: 8 }}>Vyber si svůj plán</div>
-        <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 14, marginBottom: 20 }}>Bez závazků. Zrušení kdykoliv.</div>
+      <div style={{ marginBottom: 12, textAlign: 'center' }}>
+        <div style={{ fontFamily: T.fontHead, fontSize: 33, fontWeight: 900, color: '#111827', marginBottom: 10 }}>Vyber si svůj plán</div>
+        <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 17, marginBottom: 26 }}>Bez závazků. Zrušení kdykoliv.</div>
         {/* Billing toggle */}
         <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: 99, padding: '6px 16px' }}>
-            <span style={{ color: annual ? '#9CA3AF' : '#111827', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, transition: 'color .2s' }}>Měsíčně</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 14, background: '#F3F4F6', border: '1px solid #E5E7EB', borderRadius: 99, padding: '8px 20px' }}>
+            <span style={{ color: annual ? '#9CA3AF' : '#111827', fontFamily: T.fontUI, fontSize: 16, fontWeight: 700, transition: 'color .2s' }}>Měsíčně</span>
             <div
               onClick={() => setAnnual(a => !a)}
-              style={{ width: 44, height: 24, borderRadius: 999, background: annual ? '#5BD68A' : '#D1D5DB', cursor: 'pointer', position: 'relative', transition: 'background .2s', flexShrink: 0 }}
+              style={{ width: 48, height: 26, borderRadius: 999, background: annual ? '#00f60a' : '#D1D5DB', cursor: 'pointer', position: 'relative', transition: 'background .2s', flexShrink: 0 }}
             >
-              <div style={{ position: 'absolute', top: 3, left: annual ? 23 : 3, width: 18, height: 18, borderRadius: 999, background: '#fff', transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }} />
+              <div style={{ position: 'absolute', top: 3, left: annual ? 25 : 3, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }} />
             </div>
-            <span style={{ color: annual ? '#111827' : '#9CA3AF', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, transition: 'color .2s' }}>Ročně</span>
+            <span style={{ color: annual ? '#111827' : '#9CA3AF', fontFamily: T.fontUI, fontSize: 16, fontWeight: 700, transition: 'color .2s' }}>Ročně</span>
           </div>
-          <div style={{ height: 26, display: 'flex', alignItems: 'center' }}>
-            <span style={{ background: 'rgba(0,246,10,0.12)', border: '1px solid rgba(0,246,10,0.3)', color: '#00f60a', fontFamily: T.fontUI, fontSize: 11, fontWeight: 800, borderRadius: 10, padding: '4px 12px', opacity: annual ? 1 : 0, transition: 'opacity .2s' }}>chci šetřit</span>
+          <div style={{ height: 40, display: 'flex', alignItems: 'center' }}>
+            <span style={{ background: 'rgba(0,246,10,0.12)', border: '1px solid rgba(0,246,10,0.3)', color: '#00f60a', fontFamily: T.fontUI, fontSize: 15, fontWeight: 800, borderRadius: 12, padding: '8px 20px', opacity: annual ? 1 : 0, transform: annual ? 'scale(1)' : 'scale(0.9)', transition: 'opacity .2s, transform .2s' }}>chci šetřit</span>
           </div>
         </div>
       </div>
 
-      {/* Plans grid — vizuál & efekty z webového ceníku */}
-      <div style={{ maxWidth: 1180, margin: '0 auto 30px', paddingBottom: 6 }}>
+      {/* Karty tarifů — čistě cena + CTA, bez seznamu funkcí */}
+      <div style={{ maxWidth: 1180, margin: '0 auto 24px', paddingBottom: 6 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 14, alignItems: 'stretch', padding: '20px 4px 8px' }}>
           {PLANS.map((plan, i) => {
             const isActive = plan.id === currentPlanId;
             const isPop    = !!plan.popular;
             const isSel    = selected === plan.id;
             const isHov    = hovered === plan.id;
-            const isExp    = !!expanded[plan.id];
             const lift     = isSel || isHov;
             return (
               <div key={plan.id}
@@ -1176,14 +1152,14 @@ function EPricing({ onTab, onPlanChange }) {
                 style={{
                   position: 'relative', display: 'flex', flexDirection: 'column', textAlign: 'center',
                   borderRadius: 20,
-                  border: isPop ? '2px solid #0020F6' : ('1.5px solid ' + (isActive ? plan.color : lift ? plan.color + 'aa' : plan.color + '40')),
-                  background: isPop
+                  border: isSel ? '2px solid #0020F6' : ('1.5px solid ' + (lift ? plan.color + 'aa' : plan.color + '40')),
+                  background: isSel
                     ? 'linear-gradient(165deg, rgba(0,32,246,0.10), rgba(91,107,255,0.035))'
                     : plan.color + '12',
-                  boxShadow: isPop
+                  boxShadow: isSel
                     ? '0 20px 48px rgba(0,32,246,0.20)'
                     : (lift ? '0 16px 36px ' + plan.color + '3a' : '0 1px 2px rgba(0,0,0,0.04)'),
-                  padding: '26px 20px 22px', marginTop: isPop ? 0 : 8,
+                  padding: '26px 20px 22px', marginTop: 8,
                   cursor: plan.contact ? 'default' : (isActive ? 'default' : 'pointer'),
                   transform: lift ? 'translateY(-6px)' : 'none',
                   transition: 'transform .25s cubic-bezier(.34,1.3,.5,1), box-shadow .25s, border-color .2s',
@@ -1213,6 +1189,8 @@ function EPricing({ onTab, onPlanChange }) {
                 <div style={{ minHeight: 44, display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4, flexWrap: 'wrap' }}>
                   {plan.free ? (
                     <span style={{ fontFamily: T.fontHead, fontSize: 32, fontWeight: 800, color: '#111827', lineHeight: 1 }}>Zdarma</span>
+                  ) : plan.priceLabel ? (
+                    <span style={{ fontFamily: T.fontHead, fontSize: 28, fontWeight: 800, color: '#111827', lineHeight: 1 }}>{plan.priceLabel}</span>
                   ) : (
                     <>
                       {plan.pricePrefix && <span style={{ color: '#9CA3AF', fontSize: 13, fontWeight: 600, fontFamily: T.fontUI }}>{plan.pricePrefix}</span>}
@@ -1225,7 +1203,7 @@ function EPricing({ onTab, onPlanChange }) {
                   )}
                 </div>
                 <div style={{ color: '#9CA3AF', fontSize: 11.5, fontFamily: T.fontUI, marginTop: 4 }}>
-                  {plan.free ? plan.period : (annual && plan.annualPrice ? 'za měsíc · placeno ročně' : plan.period)}
+                  {plan.period}
                 </div>
                 <div style={{ minHeight: 24, marginTop: 6, marginBottom: 4, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   {plan.annualPrice ? (
@@ -1235,24 +1213,7 @@ function EPricing({ onTab, onPlanChange }) {
                   ) : null}
                 </div>
 
-                <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', margin: '10px 0 16px' }} />
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
-                  {plan.features.map((f, fi) => <PlanFeat key={fi} f={f} />)}
-                  {isExp && plan.more.map((f, fi) => <PlanFeat key={'m' + fi} f={f} />)}
-                </div>
-
-                {plan.more && plan.more.length > 0 && (
-                  <button onClick={e => { e.stopPropagation(); setExpanded(x => ({ ...x, [plan.id]: !x[plan.id] })); }}
-                    style={{ width: '100%', padding: 8, borderRadius: 10, border: '1px solid #E5E7EB', background: 'rgba(255,255,255,0.65)', color: '#6B7280', fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 16 }}>
-                    {isExp ? 'Zobrazit méně' : 'Zobrazit více'}
-                    <span style={{ display: 'inline-flex', transition: 'transform .25s', transform: isExp ? 'rotate(180deg)' : 'none' }}>
-                      <Icon name="alt-arrow-down-bold" size={13} color="#6B7280" />
-                    </span>
-                  </button>
-                )}
-
-                <div style={{ marginTop: 'auto' }}>
+                <div style={{ marginTop: 'auto', paddingTop: 8 }}>
                   {plan.contact ? (
                     <a href="mailto:hello@makej.eu" onClick={e => e.stopPropagation()} style={{
                       display: 'block', width: '100%', padding: '11px 0', borderRadius: 12, textAlign: 'center',
@@ -1264,9 +1225,9 @@ function EPricing({ onTab, onPlanChange }) {
                     <button onClick={e => { e.stopPropagation(); if (!isActive) handleSelect(plan.id); }}
                       style={{
                         width: '100%', padding: '11px 0', borderRadius: 12,
-                        background: isActive ? '#F3F4F6' : isPop ? 'linear-gradient(135deg, #0020F6, #3a3a99)' : '#fff',
-                        border: isActive ? '1px solid #E5E7EB' : isPop ? 'none' : '1.5px solid ' + plan.color,
-                        color: isActive ? '#9CA3AF' : isPop ? '#fff' : '#111827',
+                        background: isActive ? '#F3F4F6' : (isSel || isPop) ? 'linear-gradient(135deg, #0020F6, #3a3a99)' : '#fff',
+                        border: isActive ? '1px solid #E5E7EB' : (isSel || isPop) ? 'none' : '1.5px solid ' + plan.color,
+                        color: isActive ? '#9CA3AF' : (isSel || isPop) ? '#fff' : '#111827',
                         fontFamily: T.fontUI, fontSize: 13, fontWeight: 800, cursor: isActive ? 'default' : 'pointer',
                       }}>
                       {isActive ? 'Aktuální tarif' : plan.cta}
@@ -1277,6 +1238,91 @@ function EPricing({ onTab, onPlanChange }) {
             );
           })}
         </div>
+      </div>
+
+      {/* Proklik na detailní srovnání tarifů */}
+      <div style={{ maxWidth: 1180, margin: '0 auto 30px', textAlign: 'center' }}>
+        <style>{`
+          @keyframes tariffPulse {
+            0%, 100% { border-color: #E5E7EB; box-shadow: 0 0 0 0 rgba(0,32,246,0); }
+            50% { border-color: rgba(0,32,246,0.5); box-shadow: 0 0 0 4px rgba(0,32,246,0.10); }
+          }
+          .tariff-compare-btn { animation: tariffPulse 2.4s ease-in-out infinite; }
+          .tariff-compare-btn:hover { animation: none; border-color: rgba(0,32,246,0.45) !important; }
+        `}</style>
+        <button onClick={() => setShowCompare(s => !s)}
+          className={showCompare ? '' : 'tariff-compare-btn'}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 18,
+            padding: '13px 18px', borderRadius: 14,
+            background: showCompare ? 'rgba(0,32,246,0.06)' : '#F9FAFB',
+            border: '1px solid ' + (showCompare ? 'rgba(0,32,246,0.28)' : '#E5E7EB'),
+            color: showCompare ? '#0020F6' : '#374151',
+            fontFamily: T.fontUI, fontSize: 14.5, fontWeight: 700, cursor: 'pointer',
+            transition: 'all .15s',
+          }}>
+          <img src="bulb.png" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0, display: 'block' }} />
+          Porovnání tarifů přímo pro tebe
+          <span style={{ display: 'inline-flex', transition: 'transform .25s', transform: showCompare ? 'rotate(180deg)' : 'none' }}>
+            <Icon name="alt-arrow-down-bold" size={15} color={showCompare ? '#0020F6' : '#6B7280'} />
+          </span>
+        </button>
+
+        {showCompare && (
+          <div style={{ marginTop: 18, overflowX: 'auto', textAlign: 'left', animation: 'empPop .3s ease both' }}>
+            <div style={{ border: '1px solid #E5E7EB', borderRadius: 18, overflow: 'hidden', minWidth: 900 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '220px repeat(5, minmax(0, 1fr))' }}>
+
+                {/* Hlavička tabulky — jen názvy + ceny tarifů */}
+                <div style={{ borderBottom: '2px solid #E5E7EB', background: '#F9FAFB' }} />
+                {PLANS.map(plan => (
+                  <div key={plan.id} style={{
+                    textAlign: 'center', padding: '14px 10px',
+                    borderBottom: '2px solid #E5E7EB', borderLeft: '1px solid #E5E7EB',
+                    borderTop: '4px solid ' + plan.color,
+                    background: plan.popular ? 'rgba(0,32,246,0.05)' : '#F9FAFB',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}><Icon name={plan.icon} size={18} color={plan.color} /></div>
+                    <div style={{ fontFamily: T.fontUI, fontSize: 11, fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: 0.8 }}>{plan.name}</div>
+                    <div style={{ fontFamily: T.fontMono, fontSize: 12, fontWeight: 700, color: '#6B7280', marginTop: 3 }}>
+                      {plan.free ? 'Zdarma' : plan.priceLabel ? plan.priceLabel : (plan.pricePrefix || '') + (annual && plan.annualPrice ? plan.annualPrice : plan.price).toLocaleString('cs-CZ') + ' Kč'}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Řádky srovnání funkcí */}
+                {FEATURE_ROWS.map((row, ri) => {
+                  if (row.section) {
+                    return (
+                      <div key={'s' + ri} style={{
+                        gridColumn: '1 / -1', padding: '9px 16px',
+                        background: '#F9FAFB', borderBottom: '1px solid #E5E7EB',
+                        color: '#374151', fontFamily: T.fontUI, fontSize: 11, fontWeight: 800,
+                        textTransform: 'uppercase', letterSpacing: 0.6,
+                      }}>{row.section}</div>
+                    );
+                  }
+                  return (
+                    <React.Fragment key={ri}>
+                      <div style={{ padding: '11px 16px', display: 'flex', alignItems: 'center', color: '#374151', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600, borderBottom: '1px solid #F3F4F6' }}>
+                        {row.label}
+                      </div>
+                      {PLANS.map(plan => (
+                        <div key={plan.id} style={{
+                          padding: '11px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: plan.popular ? 'rgba(0,32,246,0.03)' : 'transparent',
+                          borderLeft: '1px solid #F3F4F6', borderBottom: '1px solid #F3F4F6',
+                        }}>
+                          <FeatureCell value={row.cells[plan.id]} />
+                        </div>
+                      ))}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Checkout strip */}
@@ -1337,16 +1383,15 @@ function EPricing({ onTab, onPlanChange }) {
       )}
 
       {/* Slevy (z webového ceníku) */}
-      <div style={{ maxWidth: 980, margin: '8px auto 26px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+      <div style={{ maxWidth: 980, margin: '8px auto 26px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
         {[
-          { pct: '5%',  title: 'Čtvrtletní platba', text: 'Zaplať 3 měsíce předem a ušetři 5 % z ceny tarifu.' },
           { pct: '15%', title: 'Roční platba',       text: 'Zaplať rok předem a ušetři 15 %. Nejlepší hodnota pro stabilní nábor.' },
-          { emoji: '⚡', title: 'Upgrade kdykoliv',    text: 'Upgrade tarifu platí okamžitě. Downgrade k dalšímu fakturačnímu období.' },
+          { icon: 'flash.png', title: 'Upgrade kdykoliv',    text: 'Upgrade tarifu platí okamžitě. Downgrade k dalšímu fakturačnímu období.' },
         ].map((d, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 14, padding: '16px 18px' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 14, padding: '16px 18px' }}>
             {d.pct
               ? <div style={{ fontFamily: T.fontHead, fontSize: 26, fontWeight: 900, color: '#00f60a', flexShrink: 0, lineHeight: 1 }}>{d.pct}</div>
-              : <div style={{ fontSize: 26, flexShrink: 0, lineHeight: 1 }}>{d.emoji}</div>}
+              : <img src={d.icon} style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />}
             <div>
               <div style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13.5, fontWeight: 800, marginBottom: 3 }}>{d.title}</div>
               <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 12, lineHeight: 1.5 }}>{d.text}</div>
@@ -1363,8 +1408,7 @@ function EPricing({ onTab, onPlanChange }) {
             'Aktivní inzeráty = počet zveřejněných (viditelných brigádníkům) zároveň. Po vyřešení inzerátu firma uvolní slot pro další.',
             'Drafty a neaktivní inzeráty si lze vytvořit libovolně — limit tarifu se vztahuje jen na zveřejněné.',
             'Každý inzerát má cyklus 30 dní. 5 dní před koncem chodí upozornění. Potvrzením relevance běží další cyklus bez omezení.',
-            'Agency tarif funguje jinak — inzeruje jménem svých klientů. Cena závisí na objemu a počtu klientů.',
-            'Enterprise tarif se kalkuluje individuálně. Sleva 5 % do 25 000 Kč/měs, sleva 10 % nad 25 001 Kč/měs.',
+            'Tarif Vlastní se kalkuluje individuálně. Sleva 5 % do 25 000 Kč/měs, sleva 10 % nad 25 001 Kč/měs.',
             'Všechny ceny jsou bez DPH. Makačky (virtuální měna brigádníků) se firemních tarifů netýkají.',
           ].map((n, i) => (
             <div key={i} style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>

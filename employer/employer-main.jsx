@@ -651,7 +651,7 @@ function EmployerApp() {
 
       {loaded && <ESidebar tab={tab} onTab={setTab} />}
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', overflowY: 'auto', background: tab === 'analytics' ? '#ffffff' : 'transparent' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', overflowY: 'auto', background: (tab === 'analytics' || tab === 'jobs') ? '#ffffff' : 'transparent' }}>
         {loaded && <ETopbar title={meta.title} subtitle={meta.subtitle} onNew={() => setShowNewJob(true)} onSignOut={handleSignOut} period={period} onPeriod={setPeriod} />}
         {body}
       </main>
