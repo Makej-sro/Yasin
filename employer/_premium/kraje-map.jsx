@@ -56,13 +56,22 @@ const KRAJE_STATS = {
 };
 
 function KrajeMap() {
-  const [selected, setSelected] = useStateE(null);
+  const [selected, setSelected] = useStateE([]);
   const [hovered, setHovered] = useStateE(null);
   const keys = Object.keys(KRAJE_PATHS);
-  const active = hovered || selected;
   const totalWorkers = keys.reduce((s, k) => s + KRAJE_STATS[k].workers, 0);
   const totalCompanies = keys.reduce((s, k) => s + KRAJE_STATS[k].companies, 0);
-  const target = active ? KRAJE_STATS[active] : { workers: totalWorkers, companies: totalCompanies };
+
+  const toggleSelect = (k) => setSelected(prev => prev.includes(k) ? prev.filter(x => x !== k) : [...prev, k]);
+
+  // Při hoveru se ukazuje náhled daného kraje, jinak součet všech vybraných krajů
+  const target = hovered
+    ? KRAJE_STATS[hovered]
+    : selected.length > 0
+      ? selected.reduce((acc, k) => ({ workers: acc.workers + KRAJE_STATS[k].workers, companies: acc.companies + KRAJE_STATS[k].companies }), { workers: 0, companies: 0 })
+      : { workers: totalWorkers, companies: totalCompanies };
+
+  const labelKeys = hovered ? [hovered] : selected;
 
   // Animovaný count-up čísel při přepnutí kraje
   const [animWorkers, setAnimWorkers] = useStateE(target.workers);
@@ -83,10 +92,10 @@ function KrajeMap() {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
     // eslint-disable-next-line
-  }, [active]);
+  }, [hovered, selected.join(',')]);
 
   return (
-    <div style={{ margin: '0 -28px', padding: '24px 28px 28px', background: '#ffffff' }}>
+    <div style={{ padding: '24px 28px 28px', background: '#ffffff' }}>
       <style>{`
         @keyframes krajePulse { 0%, 100% { stroke-opacity: 1; } 50% { stroke-opacity: 0.5; } }
         @keyframes krajeTooltipIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
@@ -104,9 +113,9 @@ function KrajeMap() {
 
       {/* Mapa — kraje modré; hover/výběr vybarvení sundá, obrys zesvětlí, jemné zvětšení + záře */}
       <div style={{ position: 'relative', padding: '4px 0 20px' }}>
-        <svg viewBox={KRAJE_VIEWBOX} style={{ width: '100%', maxWidth: 860, height: 'auto', display: 'block', margin: '0 auto' }}>
+        <svg viewBox={KRAJE_VIEWBOX} overflow="visible" style={{ width: '100%', maxWidth: 860, height: 'auto', display: 'block', margin: '0 auto', overflow: 'visible' }}>
           {keys.map(k => {
-            const isSel = selected === k;
+            const isSel = selected.includes(k);
             const isHov = hovered === k;
             const isActive = isSel || isHov;
             return (
@@ -124,43 +133,38 @@ function KrajeMap() {
                 }}
                 onMouseEnter={() => setHovered(k)}
                 onMouseLeave={() => setHovered(null)}
-                onClick={() => setSelected(prev => prev === k ? null : k)}
+                onClick={() => toggleSelect(k)}
               />
             );
           })}
         </svg>
 
-        {hovered && (
-          <div className="kraj-tooltip" style={{
-            position: 'absolute', top: 14, left: 14, padding: '6px 12px', borderRadius: 8,
-            background: 'rgba(10,10,26,0.88)', border: '1px solid rgba(255,255,255,0.12)',
-            color: '#fff', fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, pointerEvents: 'none',
-          }}>
-            {KRAJE_NAMES[hovered]}
+        {labelKeys.length > 0 && (
+          <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', flexDirection: 'column', gap: 6, pointerEvents: 'none' }}>
+            {labelKeys.map(k => (
+              <div key={k} className="kraj-tooltip" style={{
+                padding: '6px 12px', borderRadius: 8,
+                background: 'rgba(10,10,26,0.88)', border: '1px solid rgba(255,255,255,0.12)',
+                color: '#fff', fontFamily: T.fontUI, fontSize: 12, fontWeight: 700,
+              }}>
+                {KRAJE_NAMES[k]}
+              </div>
+            ))}
           </div>
         )}
       </div>
 
       {/* Statistiky — pod mapou, hodnoty ve světle modrých obdélníčcích, animovaný count-up */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <div style={{
-            color: active ? '#0020F6' : '#333333', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700,
-            display: 'flex', alignItems: 'center', gap: 6, transition: 'color .2s ease',
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 14 }}>
+        {selected.length > 0 && (
+          <button onClick={() => setSelected([])} style={{
+            padding: '5px 12px', borderRadius: 8,
+            background: 'transparent', border: '1px solid rgba(0,32,246,0.25)',
+            color: '#555555', fontFamily: T.fontUI, fontSize: 11, fontWeight: 600, cursor: 'pointer',
           }}>
-            <Icon name={active ? 'point-on-map-bold' : 'global-bold'} size={14} color={active ? '#0020F6' : '#333333'}/>
-            {active ? KRAJE_NAMES[active] : 'Celá ČR'}
-          </div>
-          {selected && (
-            <button onClick={() => setSelected(null)} style={{
-              padding: '5px 12px', borderRadius: 8,
-              background: 'transparent', border: '1px solid rgba(0,32,246,0.25)',
-              color: '#555555', fontFamily: T.fontUI, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-            }}>
-              ✕ Zpět na celou ČR
-            </button>
-          )}
-        </div>
+            ✕ Zpět na celou ČR
+          </button>
+        )}
 
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ padding: '14px 22px', borderRadius: 12, background: 'rgba(0,32,246,0.07)', border: '1px solid rgba(0,32,246,0.16)', minWidth: 150, transition: 'background .2s ease' }}>

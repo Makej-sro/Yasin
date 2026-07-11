@@ -112,31 +112,17 @@ function ProGate({ feature, children }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// ANALYTIKA — 2 sub-sekce: Přehled / Demografie
+// ANALYTIKA — jedna sekce: mapa nahoře, statistiky pod ní
 // ─────────────────────────────────────────────────────────────
 function EAnalytics() {
-  const [seg, setSeg] = useStateE('overview');
-  const segs = [
-    { k: 'overview', l: 'Přehled' },
-    { k: 'demo', l: 'Demografie' },
-  ];
-
   return (
     <ProGate feature="Analytika">
-      <div style={{ padding: '24px 28px 40px', display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
-        <div style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid ' + T.border, alignSelf: 'flex-start' }}>
-          {segs.map(s => (
-            <button key={s.k} onClick={() => setSeg(s.k)} style={{
-              padding: '8px 16px', borderRadius: 8,
-              background: seg === s.k ? 'rgba(91,107,255,0.22)' : 'transparent',
-              border: 'none', color: seg === s.k ? '#fff' : T.muted,
-              fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
-            }}>{s.l}</button>
-          ))}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
+        <KrajeMap />
+        <div style={{ padding: '0 28px 40px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <AnalyticsOverview />
+          <AnalyticsDemo />
         </div>
-
-        {seg === 'overview' && <AnalyticsOverview />}
-        {seg === 'demo' && <AnalyticsDemo />}
       </div>
     </ProGate>
   );
@@ -164,17 +150,17 @@ function AnalyticsOverview() {
               return (
                 <div key={i}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#fff', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 7, color: T.cardText, fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600 }}>
                       <span style={{ width: 8, height: 8, borderRadius: 2, background: c.color }} />
                       {c.l}
                     </span>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
-                      <span style={{ color: T.mutedSoft, fontFamily: T.fontMono, fontSize: 10.5 }}>{c.views.toLocaleString('cs-CZ').replace(/,/g,' ')} views</span>
-                      <span style={{ color: '#5BD68A', fontFamily: T.fontMono, fontSize: 11.5, fontWeight: 700 }}>{c.hires} najato</span>
-                      <span style={{ color: '#fff', fontFamily: T.fontMono, fontSize: 11.5, fontWeight: 700, minWidth: 44, textAlign: 'right' }}>{conv}%</span>
+                      <span style={{ color: T.cardMutedSoft, fontFamily: T.fontMono, fontSize: 10.5 }}>{c.views.toLocaleString('cs-CZ').replace(/,/g,' ')} views</span>
+                      <span style={{ color: '#1a9e4d', fontFamily: T.fontMono, fontSize: 11.5, fontWeight: 700 }}>{c.hires} najato</span>
+                      <span style={{ color: T.cardText, fontFamily: T.fontMono, fontSize: 11.5, fontWeight: 700, minWidth: 44, textAlign: 'right' }}>{conv}%</span>
                     </div>
                   </div>
-                  <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+                  <div style={{ height: 6, borderRadius: 3, background: T.cardSoft, overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: (parseFloat(conv) * 60) + '%', background: c.color }} />
                   </div>
                 </div>
@@ -195,14 +181,14 @@ function AnalyticsOverview() {
             { i: 'graph-down-bold', c: '#E0B0FF', tag: 'Anomálie', t: 'Time-to-hire klesl o 28 % po zapnutí Premium tarifu — odhad ROI je +14 200 Kč/měsíc.' },
             { i: 'medal-ribbon-star-bold', c: '#FFD166', tag: 'Výkon', t: 'Vaše firma je v top 8 % gastro segmentu v Brně podle hodnocení i rychlosti odpovědí.' },
           ].map((x, i) => (
-            <div key={i} style={{ padding: 14, borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid ' + T.border, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div key={i} style={{ padding: 14, borderRadius: 12, background: T.cardSoft, border: '1px solid ' + T.cardBorder, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ width: 26, height: 26, borderRadius: 7, background: x.c + '22', border: '1px solid ' + x.c + '44', display: 'grid', placeItems: 'center' }}>
                   <Icon name={x.i} size={13} color={x.c}/>
                 </div>
                 <span style={{ color: x.c, fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 0.7, textTransform: 'uppercase' }}>{x.tag}</span>
               </div>
-              <div style={{ color: T.light, fontFamily: T.fontUI, fontSize: 12, lineHeight: 1.5 }}>{x.t}</div>
+              <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12, lineHeight: 1.5 }}>{x.t}</div>
             </div>
           ))}
         </div>
@@ -222,8 +208,8 @@ function AnalyticsOverview() {
               { l: '>12h', v: 8, color: '#f43f5e' },
             ]}
           />
-          <div style={{ marginTop: 8, color: T.mutedSoft, fontFamily: T.fontUI, fontSize: 11 }}>
-            Váš průměr: <span style={{ color: '#fff', fontFamily: T.fontMono, fontWeight: 700 }}>14 minut</span> · Top 5 % v segmentu
+          <div style={{ marginTop: 8, color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 11 }}>
+            Váš průměr: <span style={{ color: T.cardText, fontFamily: T.fontMono, fontWeight: 700 }}>14 minut</span> · Top 5 % v segmentu
           </div>
         </ECard>
         <ECard>
@@ -247,7 +233,7 @@ function CohortTable() {
   return (
     <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 3, fontFamily: T.fontUI, fontSize: 11.5 }}>
       <thead>
-        <tr style={{ color: T.mutedSoft, fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase' }}>
+        <tr style={{ color: T.cardMutedSoft, fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase' }}>
           <th style={{ textAlign: 'left', padding: '4px 8px' }}>Týden nástupu</th>
           <th style={{ textAlign: 'right', padding: '4px 8px' }}>Vel.</th>
           {['T0','T+1','T+2','T+3','T+4','T+5'].map(h => <th key={h} style={{ padding: '4px 6px', textAlign: 'center' }}>{h}</th>)}
@@ -256,11 +242,11 @@ function CohortTable() {
       <tbody>
         {cohorts.map((c, i) => (
           <tr key={i}>
-            <td style={{ color: T.light, padding: '6px 8px', fontWeight: 600 }}>{c.week}</td>
-            <td style={{ color: T.muted, fontFamily: T.fontMono, padding: '6px 8px', textAlign: 'right' }}>{c.size}</td>
+            <td style={{ color: T.cardLight, padding: '6px 8px', fontWeight: 600 }}>{c.week}</td>
+            <td style={{ color: T.cardMuted, fontFamily: T.fontMono, padding: '6px 8px', textAlign: 'right' }}>{c.size}</td>
             {[0,1,2,3,4,5].map(j => {
               const v = c.vals[j];
-              if (v == null) return <td key={j} style={{ padding: 0 }}><div style={{ height: 26, borderRadius: 5, background: 'rgba(255,255,255,0.02)' }}/></td>;
+              if (v == null) return <td key={j} style={{ padding: 0 }}><div style={{ height: 26, borderRadius: 5, background: T.cardSoft }}/></td>;
               const op = 0.2 + (v / 100) * 0.7;
               return (
                 <td key={j} style={{ padding: 0 }}>
@@ -301,17 +287,17 @@ function DistroChart() {
           return (
             <g key={i}>
               <rect x={x} y={y} width={bw} height={h} rx="4" fill={isYou ? '#FFD166' : '#5B6BFF'} opacity={isYou ? 1 : 0.6} />
-              {isYou && <text x={x + bw/2} y={y - 8} textAnchor="middle" fill="#FFD166" fontFamily={T.fontUI} fontSize="9.5" fontWeight="800">VY</text>}
-              <text x={x + bw/2} y={H - 12} textAnchor="middle" fill={T.mutedSoft} fontFamily={T.fontMono} fontSize="9.5">{b.l}</text>
+              {isYou && <text x={x + bw/2} y={y - 8} textAnchor="middle" fill="#c99400" fontFamily={T.fontUI} fontSize="9.5" fontWeight="800">VY</text>}
+              <text x={x + bw/2} y={H - 12} textAnchor="middle" fill={T.cardMutedSoft} fontFamily={T.fontMono} fontSize="9.5">{b.l}</text>
             </g>
           );
         })}
-        <text x={padL} y={H - 2} fill={T.mutedSoft} fontFamily={T.fontUI} fontSize="9">Kč/h</text>
+        <text x={padL} y={H - 2} fill={T.cardMutedSoft} fontFamily={T.fontUI} fontSize="9">Kč/h</text>
       </svg>
       <div style={{ display: 'flex', gap: 20, marginTop: 6, fontFamily: T.fontMono, fontSize: 11 }}>
-        <div><span style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>Medián segmentu</span><div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>162 Kč</div></div>
-        <div><span style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>Vy</span><div style={{ color: '#FFD166', fontWeight: 700, fontSize: 14 }}>180 Kč</div></div>
-        <div><span style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>Top 10 %</span><div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>220+ Kč</div></div>
+        <div><span style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>Medián segmentu</span><div style={{ color: T.cardText, fontWeight: 700, fontSize: 14 }}>162 Kč</div></div>
+        <div><span style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>Vy</span><div style={{ color: '#c99400', fontWeight: 700, fontSize: 14 }}>180 Kč</div></div>
+        <div><span style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>Top 10 %</span><div style={{ color: T.cardText, fontWeight: 700, fontSize: 14 }}>220+ Kč</div></div>
       </div>
     </div>
   );
@@ -321,7 +307,6 @@ function DistroChart() {
 function AnalyticsDemo() {
   return (
     <>
-      <KrajeMap />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
         <ECard>
           <SectionHeader title="Věk" />
@@ -342,10 +327,10 @@ function AnalyticsDemo() {
                 <div key={i}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ width: 8, height: 8, borderRadius: 2, background: x.c }} />
-                    <span style={{ color: T.light, flex: 1 }}>{x.l}</span>
-                    <span style={{ color: '#fff', fontFamily: T.fontMono, fontWeight: 700 }}>{x.v}</span>
+                    <span style={{ color: T.cardLight, flex: 1 }}>{x.l}</span>
+                    <span style={{ color: T.cardText, fontFamily: T.fontMono, fontWeight: 700 }}>{x.v}</span>
                   </div>
-                  <div style={{ color: T.mutedSoft, fontFamily: T.fontMono, fontSize: 10, marginLeft: 14 }}>{x.n} kandidátů</div>
+                  <div style={{ color: T.cardMutedSoft, fontFamily: T.fontMono, fontSize: 10, marginLeft: 14 }}>{x.n} kandidátů</div>
                 </div>
               ))}
             </div>
@@ -361,56 +346,17 @@ function AnalyticsDemo() {
           ].map((x, i) => (
             <div key={i} style={{ marginBottom: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, fontFamily: T.fontUI, marginBottom: 4 }}>
-                <span style={{ color: T.light }}>{x.l}</span>
-                <span style={{ color: '#fff', fontFamily: T.fontMono, fontWeight: 700 }}>{x.v} %</span>
+                <span style={{ color: T.cardLight }}>{x.l}</span>
+                <span style={{ color: T.cardText, fontFamily: T.fontMono, fontWeight: 700 }}>{x.v} %</span>
               </div>
-              <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.3)' }}>
+              <div style={{ height: 6, borderRadius: 3, background: T.cardSoft }}>
                 <div style={{ height: '100%', width: x.v + '%', borderRadius: 3, background: x.c }} />
               </div>
             </div>
           ))}
         </ECard>
       </div>
-      <ECard>
-        <SectionHeader title="Mapa kandidátů — Brno" subtitle="Hustota podle čtvrti" />
-        <BrnoMap />
-      </ECard>
     </>
-  );
-}
-
-function BrnoMap() {
-  const dots = [
-    { x: 50, y: 50, r: 28, l: 'Brno-střed', n: 89 },
-    { x: 35, y: 38, r: 22, l: 'Veveří', n: 64 },
-    { x: 58, y: 28, r: 18, l: 'Královo Pole', n: 41 },
-    { x: 28, y: 55, r: 15, l: 'Žabovřesky', n: 28 },
-    { x: 78, y: 60, r: 14, l: 'Líšeň', n: 22 },
-    { x: 70, y: 75, r: 11, l: 'Jih', n: 12 },
-    { x: 22, y: 70, r: 10, l: 'Bohunice', n: 9 },
-    { x: 45, y: 78, r: 9, l: 'Komárov', n: 8 },
-    { x: 80, y: 38, r: 12, l: 'Maloměřice', n: 14 },
-  ];
-  return (
-    <div style={{ position: 'relative', width: '100%', height: 360, borderRadius: 14, background: 'linear-gradient(135deg, rgba(0,32,246,0.08), rgba(15,15,40,0.6))', border: '1px solid ' + T.border, overflow: 'hidden' }}>
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-        {Array.from({length: 12}, (_, i) => <line key={'h'+i} x1="0" y1={i*8.3} x2="100" y2={i*8.3} stroke="rgba(91,107,255,0.06)" strokeWidth="0.1" />)}
-        {Array.from({length: 12}, (_, i) => <line key={'v'+i} x1={i*8.3} y1="0" x2={i*8.3} y2="100" stroke="rgba(91,107,255,0.06)" strokeWidth="0.1" />)}
-        <path d="M 5 80 C 20 65, 40 55, 50 60 S 75 75, 95 70" stroke="rgba(91,107,255,0.25)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      </svg>
-      {dots.map((d, i) => (
-        <div key={i} style={{ position: 'absolute', left: d.x + '%', top: d.y + '%', transform: 'translate(-50%,-50%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: d.r * 2, height: d.r * 2, borderRadius: 999, background: 'radial-gradient(circle, rgba(0,32,246,0.5), rgba(0,32,246,0.05))', border: '1px solid rgba(91,107,255,0.5)' }} />
-          <div style={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none' }}>
-            <div style={{ color: '#fff', fontFamily: T.fontMono, fontSize: 13, fontWeight: 700 }}>{d.n}</div>
-            <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 9.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{d.l}</div>
-          </div>
-        </div>
-      ))}
-      <div style={{ position: 'absolute', bottom: 12, left: 12, padding: '6px 10px', borderRadius: 8, background: 'rgba(7,7,26,0.7)', border: '1px solid ' + T.border, color: T.muted, fontSize: 10.5, fontFamily: T.fontUI }}>
-        <Icon name="point-on-map-bold" size={11} color={T.super}/> 287 kandidátů v okolí 5 km
-      </div>
-    </div>
   );
 }
 

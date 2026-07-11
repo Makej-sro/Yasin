@@ -369,6 +369,161 @@ function EToast({ toasts, onRemove }) {
   );
 }
 
+// ─────────────────────────────────────────────────────────────
+// PROFIL KANDIDÁTA — modal s recenzemi (otevírá se z chatu/kandidátů)
+// ─────────────────────────────────────────────────────────────
+function EWorkerProfileModal({ workerId, fallback, onClose }) {
+  const [p, setP]       = useStateE(fallback || null);
+  const [reviews, setR] = useStateE(null);   // null = načítá se
+  const [loading, setL] = useStateE(true);
+
+  useEffectE(() => {
+    if (!workerId) return;
+    let alive = true;
+    (async () => {
+      const [profRes, revRes] = await Promise.all([
+        sb.from('profiles').select('*').eq('id', workerId).single(),
+        sb.from('reviews')
+          .select('*, reviewer:profiles!reviews_reviewer_id_fkey(name, company_name)')
+          .eq('reviewed_id', workerId)
+          .order('created_at', { ascending: false }),
+      ]);
+      if (!alive) return;
+      if (profRes.data) setP(profRes.data);
+      setR(revRes.data || []);
+      setL(false);
+    })();
+    return () => { alive = false; };
+  }, [workerId]);
+
+  const name    = p?.name || 'Kandidát';
+  const initials = name.split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase() || '??';
+  const skills  = Array.isArray(p?.skills) ? p.skills : [];
+  const rating  = Number(p?.rating || 0);
+  const secTitle = { color: T.cardMuted, fontSize: 10.5, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 8 };
+
+  function stars(n) {
+    return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
+  }
+
+  const avatarColor = _strColor(workerId || name);
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,18,40,0.45)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#fff', borderRadius: 20,
+        border: '1px solid ' + T.cardBorder,
+        boxShadow: '0 24px 80px rgba(15,18,40,0.18)',
+        width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
+        animation: 'empPop .28s cubic-bezier(.2,.8,.2,1)',
+      }}>
+
+        {/* ── Header ── */}
+        <div style={{ padding: '22px 24px 20px', borderBottom: '1px solid ' + T.cardBorder, display: 'flex', gap: 16, alignItems: 'center' }}>
+          <div style={{ width: 68, height: 68, borderRadius: 999, background: avatarColor, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 26, flexShrink: 0, overflow: 'hidden' }}>
+            {p?.avatar_url ? <img src={p.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ color: T.cardText, fontFamily: T.fontHead, fontSize: 22, fontWeight: 800 }}>{name}</span>
+              {p?.verified && <Icon name="verified-check-bold" size={18} color="#5B6BFF" />}
+            </div>
+            <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5, marginTop: 3 }}>
+              {[p?.address, p?.level ? 'Makač L' + p.level : null].filter(Boolean).join(' · ') || 'Brigádník'}
+            </div>
+            {loading && <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 11, marginTop: 4 }}>Načítám profil…</div>}
+          </div>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, background: T.cardSoft, border: '1px solid ' + T.cardBorder, color: T.cardMuted, cursor: 'pointer', display: 'grid', placeItems: 'center', flexShrink: 0, fontSize: 16 }}>✕</button>
+        </div>
+
+        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* ── Statistiky ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+            {[
+              { l: 'Hodnocení', v: rating > 0 ? rating.toFixed(1) + '★' : '–', c: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
+              { l: 'Brigád',    v: p?.jobs_done || 0,                            c: '#4338CA', bg: '#EEF2FF', border: '#C7D2FE' },
+              { l: 'Hodin',     v: p?.hours_logged || 0,                         c: '#15803D', bg: '#F0FDF4', border: '#BBF7D0' },
+              { l: 'Vyděláno',  v: (Number(p?.total_earned || 0)).toLocaleString('cs-CZ') + ' Kč', c: '#0020F6', bg: 'rgba(0,32,246,0.05)', border: 'rgba(0,32,246,0.15)' },
+            ].map((s, i) => (
+              <div key={i} style={{ textAlign: 'center', padding: '12px 8px', borderRadius: 12, background: s.bg, border: '1px solid ' + s.border }}>
+                <div style={{ color: s.c, fontFamily: T.fontMono, fontSize: 17, fontWeight: 700, lineHeight: 1.2 }}>{s.v}</div>
+                <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 9.5, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── O kandidátovi ── */}
+          {p?.bio && (
+            <div>
+              <div style={secTitle}>O kandidátovi</div>
+              <div style={{ color: T.cardMuted, fontSize: 13, fontFamily: T.fontUI, lineHeight: 1.65, whiteSpace: 'pre-line' }}>{p.bio}</div>
+            </div>
+          )}
+
+          {/* ── Vzdělání ── */}
+          {p?.education && (
+            <div>
+              <div style={secTitle}>Vzdělání</div>
+              <div style={{ color: T.cardMuted, fontSize: 13, fontFamily: T.fontUI }}>{p.education}</div>
+            </div>
+          )}
+
+          {/* ── Dovednosti ── */}
+          <div>
+            <div style={secTitle}>Dovednosti</div>
+            {skills.length ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {skills.map((t, i) => (
+                  <span key={i} style={{ padding: '5px 11px', borderRadius: 7, background: 'rgba(0,32,246,0.06)', border: '1px solid rgba(0,32,246,0.15)', color: T.cardText, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600 }}>{t}</span>
+                ))}
+              </div>
+            ) : <div style={{ color: T.cardMutedSoft, fontSize: 12.5, fontFamily: T.fontUI, fontStyle: 'italic' }}>Brigádník zatím neuvedl žádné dovednosti.</div>}
+          </div>
+
+          {/* ── Životopis ── */}
+          <div>
+            <div style={secTitle}>Životopis</div>
+            {p?.cv_url ? (
+              <a href={p.cv_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 14px', borderRadius: 9, background: 'rgba(0,32,246,0.07)', border: '1px solid rgba(0,32,246,0.2)', color: '#0020F6', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700, textDecoration: 'none' }}>
+                <Icon name="document-text-bold" size={14} color="#0020F6" />Otevřít životopis
+              </a>
+            ) : <div style={{ color: T.cardMutedSoft, fontSize: 12.5, fontFamily: T.fontUI, fontStyle: 'italic' }}>Brigádník nenahrál životopis.</div>}
+          </div>
+
+          {/* ── Recenze z minulých brigád ── */}
+          <div>
+            <div style={secTitle}>Recenze z minulých brigád</div>
+            {reviews === null ? (
+              <div style={{ color: T.cardMutedSoft, fontSize: 12.5, fontFamily: T.fontUI, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 16, height: 16, borderRadius: 999, border: '2px solid rgba(0,32,246,0.3)', borderTopColor: '#0020F6', animation: 'empSpin .7s linear infinite' }} />
+                Načítám recenze…
+              </div>
+            ) : reviews.length === 0 ? (
+              <div style={{ padding: 18, borderRadius: 12, background: T.cardSoft, border: '1px solid ' + T.cardBorder, color: T.cardMutedSoft, fontSize: 12.5, fontFamily: T.fontUI, fontStyle: 'italic', textAlign: 'center' }}>
+                Brigádník zatím nemá žádné recenze.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {reviews.map((r, i) => (
+                  <div key={i} style={{ padding: '14px 16px', borderRadius: 12, background: T.cardSoft, border: '1px solid ' + T.cardBorder }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{r.reviewer?.company_name || r.reviewer?.name || 'Firma'}</span>
+                      <span style={{ color: '#D97706', fontSize: 14, letterSpacing: 1 }}>{stars(Number(r.rating) || 0)}</span>
+                    </div>
+                    {r.text && <div style={{ color: T.cardMuted, fontSize: 12.5, fontFamily: T.fontUI, lineHeight: 1.6 }}>{r.text}</div>}
+                    <div style={{ color: T.cardMutedSoft, fontSize: 11, fontFamily: T.fontUI, marginTop: 6 }}>{_relTime(r.created_at)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function EmployerApp() {
   const [tab,       setTab]       = useStateE('dash');
   const [loaded,    setLoaded]    = useStateE(false);
@@ -377,7 +532,13 @@ function EmployerApp() {
   const [toasts,    setToasts]    = useStateE([]);
   const [period,    setPeriod]    = useStateE('30d');
   const [openThreadId, setOpenThreadId] = useStateE(null);
+  const [profileWorker, setProfileWorker] = useStateE(null);
   const empId                     = useRefE(null);
+
+  if (typeof window !== 'undefined') {
+    window.empGoTab = setTab;  // bridge pro navigaci z child komponent
+    window.empOpenProfile = (workerId, fallback) => setProfileWorker({ workerId, fallback });
+  }
 
   function openChat(matchId) {
     setOpenThreadId(matchId || null);
@@ -389,6 +550,8 @@ function EmployerApp() {
     setToasts(prev => [...prev, { id, title, text, icon, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 6000);
   }
+  // Bridge: nech volat toasty i z child komponent (shell, pages) bez prop drilling
+  if (typeof window !== 'undefined') window.empToast = addToast;
 
   // Theme toggle re-render
   useEffectE(() => {
@@ -488,7 +651,7 @@ function EmployerApp() {
 
       {loaded && <ESidebar tab={tab} onTab={setTab} />}
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', overflowY: 'auto' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', overflowY: 'auto', background: tab === 'analytics' ? '#ffffff' : 'transparent' }}>
         {loaded && <ETopbar title={meta.title} subtitle={meta.subtitle} onNew={() => setShowNewJob(true)} onSignOut={handleSignOut} period={period} onPeriod={setPeriod} />}
         {body}
       </main>
@@ -501,6 +664,14 @@ function EmployerApp() {
             await fetchEmployerData(empId.current);
             setTick(t => t + 1);
           }}
+        />
+      )}
+
+      {profileWorker && (
+        <EWorkerProfileModal
+          workerId={profileWorker.workerId}
+          fallback={profileWorker.fallback}
+          onClose={() => setProfileWorker(null)}
         />
       )}
 

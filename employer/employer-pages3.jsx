@@ -38,6 +38,8 @@ function EMessages({ initialThreadId } = {}) {
   const [sending,  setSending]  = useStateE(false);
   const [showShiftModal, setShowShiftModal] = useStateE(false);
   const [shiftForm, setShiftForm] = useStateE({ role: '', date: '', time: '', pay: '', location: '' });
+  const [showInterviewModal, setShowInterviewModal] = useStateE(false);
+  const [interviewForm, setInterviewForm] = useStateE({ date: '', time: '', location: '', note: '' });
   const userId                  = useRefE(null);
   const scrollRef               = useRefE(null);
 
@@ -54,7 +56,7 @@ function EMessages({ initialThreadId } = {}) {
     const chan = sb.channel('e-msgs-global')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         const msg = payload.new;
-        const preview = msg.type === 'shift_offer' ? '📅 Nabídka směny' : msg.text;
+        const preview = msg.type === 'shift_offer' ? '📅 Nabídka směny' : msg.type === 'interview_offer' ? '🗓️ Pozvánka na pohovor' : msg.text;
         setThreads(prev => prev.map(t => {
           if (t.id !== msg.match_id) return t;
           const isMine = msg.sender_id === userId.current;
@@ -82,17 +84,22 @@ function EMessages({ initialThreadId } = {}) {
         filter: 'match_id=eq.' + active,
       }, (payload) => {
         const msg = payload.new;
+        // Skip own messages — already added optimistically in handleSend / handleSendShift
+        if (msg.sender_id === userId.current) return;
         setThreads(prev => prev.map(t => {
           if (t.id !== active) return t;
-          // Avoid duplicate if it's our own optimistic message
           if (t.msgs.some(m => m.id === msg.id)) return t;
+          const from = msg.sender_id === userId.current ? 'me' : 'them';
           const isShift = msg.type === 'shift_offer' && msg.metadata;
+          const isInterview = msg.type === 'interview_offer' && msg.metadata;
           const newMsg = isShift
-            ? { from: msg.sender_id === userId.current ? 'me' : 'them', kind: 'shift', shift: { role: msg.metadata.role, date: msg.metadata.date, time: msg.metadata.time, pay: msg.metadata.pay }, t: _fmtTime(msg.created_at), id: msg.id }
-            : { from: msg.sender_id === userId.current ? 'me' : 'them', text: msg.text, t: _fmtTime(msg.created_at), id: msg.id };
+            ? { from, kind: 'shift', shift: { role: msg.metadata.role, date: msg.metadata.date, time: msg.metadata.time, pay: msg.metadata.pay }, t: _fmtTime(msg.created_at), id: msg.id }
+            : isInterview
+            ? { from, kind: 'interview', interview: { date: msg.metadata.date, time: msg.metadata.time, location: msg.metadata.location, note: msg.metadata.note }, t: _fmtTime(msg.created_at), id: msg.id }
+            : { from, text: msg.text, t: _fmtTime(msg.created_at), id: msg.id };
           return {
             ...t,
-            last: isShift ? '📅 Nabídka směny' : msg.text,
+            last: isShift ? '📅 Nabídka směny' : isInterview ? '🗓️ Pozvánka na pohovor' : msg.text,
             msgs: [...t.msgs, newMsg],
           };
         }));
@@ -147,7 +154,7 @@ function EMessages({ initialThreadId } = {}) {
     }));
     setShowShiftModal(false);
     setShiftForm({ role: '', date: '', time: '', pay: '', location: '' });
-    const { error } = await sb.from('messages').insert({
+    const { data: insertedShift, error } = await sb.from('messages').insert({
       match_id: active,
       sender_id: userId.current,
       text: 'Nabídka směny',
@@ -161,6 +168,64 @@ function EMessages({ initialThreadId } = {}) {
         ...t, msgs: t.msgs.filter(m => m.id !== tempId),
       }));
       alert('Nepodařilo se odeslat nabídku. Je potřeba spustit DB migraci: ALTER TABLE messages ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT \'text\'; ALTER TABLE messages ADD COLUMN IF NOT EXISTS metadata JSONB;');
+    } else if (insertedShift) {
+      // Nahradit temp ID skutečným DB ID, aby realtime event poznal duplikát a přeskočil ho
+      setThreads(prev => prev.map(t => t.id !== active ? t : {
+        ...t, msgs: t.msgs.map(m => m.id === tempId ? { ...m, id: insertedShift.id, t: _fmtTime(insertedShift.created_at) } : m),
+      }));
+    }
+  }
+
+  async function handleSendInterview() {
+    if (!active || !userId.current) return;
+    const meta = {
+      date: interviewForm.date,
+      time: interviewForm.time,
+      location: interviewForm.location,
+      note: interviewForm.note,
+    };
+    const tempId = 'tmp-int-' + Date.now();
+    const intMsg = { from: 'me', kind: 'interview', interview: { ...meta }, t: _fmtTime(new Date().toISOString()), id: tempId };
+    setThreads(prev => prev.map(t => t.id !== active ? t : {
+      ...t, last: '🗓️ Pozvánka na pohovor',
+      msgs: [...t.msgs, intMsg],
+    }));
+    setShowInterviewModal(false);
+    setInterviewForm({ date: '', time: '', location: '', note: '' });
+    const { data: inserted, error } = await sb.from('messages').insert({
+      match_id: active,
+      sender_id: userId.current,
+      text: 'Pozvánka na pohovor',
+      type: 'interview_offer',
+      metadata: meta,
+    }).select().single();
+    if (error) {
+      console.error('sendInterviewOffer error:', error);
+      setThreads(prev => prev.map(t => t.id !== active ? t : {
+        ...t, msgs: t.msgs.filter(m => m.id !== tempId),
+      }));
+    } else if (inserted) {
+      setThreads(prev => prev.map(t => t.id !== active ? t : {
+        ...t, msgs: t.msgs.map(m => m.id === tempId ? { ...m, id: inserted.id, t: _fmtTime(inserted.created_at) } : m),
+      }));
+    }
+  }
+
+  // Odeslání libovolného textu jako zprávy (pro tlačítko „Zaslat pravidla")
+  async function sendQuickText(text) {
+    if (!text || !active || !userId.current) return;
+    const tempId = 'tmp-' + Date.now();
+    setThreads(prev => prev.map(t => t.id !== active ? t : {
+      ...t, last: text,
+      msgs: [...t.msgs, { from: 'me', text, t: _fmtTime(new Date().toISOString()), id: tempId }],
+    }));
+    const { data } = await sb.from('messages').insert({
+      match_id: active, sender_id: userId.current, text,
+    }).select().single();
+    if (data) {
+      setThreads(prev => prev.map(t => t.id !== active ? t : {
+        ...t, msgs: t.msgs.map(m => m.id === tempId ? { ...m, id: data.id, t: _fmtTime(data.created_at) } : m),
+      }));
     }
   }
 
@@ -173,8 +238,8 @@ function EMessages({ initialThreadId } = {}) {
 
   if (!thread) return (
     <div style={{ flex: 1, display: 'grid', placeItems: 'center' }}>
-      <div style={{ textAlign: 'center', color: T.muted, fontFamily: T.fontUI }}>
-        <Icon name="chat-round-line-bold" size={48} color={T.mutedSoft} />
+      <div style={{ textAlign: 'center', color: T.cardMuted, fontFamily: T.fontUI }}>
+        <Icon name="chat-round-line-bold" size={48} color={T.cardMutedSoft} />
         <div style={{ marginTop: 12, fontSize: 13 }}>Zatím žádné zprávy.<br/>Začněte komunikovat s kandidáty v aplikaci.</div>
       </div>
     </div>
@@ -183,19 +248,19 @@ function EMessages({ initialThreadId } = {}) {
   return (
     <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
       {/* List */}
-      <aside style={{ width: 320, flexShrink: 0, borderRight: '1px solid ' + T.border, display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.1)' }}>
-        <div style={{ padding: 16, borderBottom: '1px solid ' + T.border }}>
+      <aside style={{ width: 320, flexShrink: 0, borderRight: '1px solid ' + T.cardBorder, display: 'flex', flexDirection: 'column', background: '#ffffff' }}>
+        <div style={{ padding: 16, borderBottom: '1px solid ' + T.cardBorder }}>
           <div style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}><Icon name="magnifer-linear" size={14} color={T.mutedSoft}/></span>
-            <input placeholder="Hledat v konverzacích…" style={{ width: '100%', padding: '9px 12px 9px 34px', borderRadius: 9, background: 'rgba(255,255,255,0.12)', border: '1px solid ' + T.border, color: T.text, fontSize: 12.5, outline: 'none' }} />
+            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}><Icon name="magnifer-linear" size={14} color={T.cardMutedSoft}/></span>
+            <input placeholder="Hledat v konverzacích…" style={{ width: '100%', padding: '9px 12px 9px 34px', borderRadius: 9, background: 'rgba(0,32,246,0.05)', border: '1px solid ' + T.cardBorder, color: T.cardText, fontSize: 12.5, outline: 'none' }} />
           </div>
           <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
             {[{k:'all',l:'Všechny'},{k:'unread',l:'Nepřečtené'},{k:'pinned',l:'Připnuté'}].map(f => (
               <button key={f.k} onClick={() => setFilter(f.k)} style={{
                 padding: '5px 10px', borderRadius: 6,
-                background: filter === f.k ? 'rgba(255,255,255,0.22)' : 'transparent',
-                border: '1px solid ' + (filter === f.k ? 'rgba(255,255,255,0.4)' : T.border),
-                color: filter === f.k ? T.text : T.muted,
+                background: filter === f.k ? T.primary : 'transparent',
+                border: '1px solid ' + (filter === f.k ? T.primary : T.cardBorder),
+                color: filter === f.k ? '#fff' : T.cardMuted,
                 fontFamily: T.fontUI, fontSize: 11, fontWeight: 600, cursor: 'pointer',
               }}>{f.l}</button>
             ))}
@@ -208,24 +273,24 @@ function EMessages({ initialThreadId } = {}) {
               <button key={t.id} onClick={() => setActive(t.id)} style={{
                 width: '100%', display: 'flex', alignItems: 'flex-start', gap: 10,
                 padding: '12px 16px', textAlign: 'left',
-                background: isActive ? 'rgba(0,32,246,0.08)' : 'transparent',
+                background: isActive ? 'rgba(0,32,246,0.09)' : 'transparent',
                 border: 'none', borderLeft: '3px solid ' + (isActive ? T.primary : 'transparent'),
                 cursor: 'pointer', color: 'inherit',
                 fontFamily: 'inherit',
               }}>
                 <div style={{ position: 'relative', flexShrink: 0 }}>
                   <div style={{ width: 38, height: 38, borderRadius: 999, background: t.color, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 13 }}>{t.avatar}</div>
-                  {t.online ? <span style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: 999, background: '#5BD68A', border: '2px solid #07071a' }} /> : null}
+                  {t.online ? <span style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: 999, background: '#5BD68A', border: '2px solid #fff' }} /> : null}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 2 }}>
-                    <span style={{ color: T.text, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <span style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {t.pinned ? '📌 ' : ''}{t.name}
                     </span>
-                    <span style={{ color: T.mutedSoft, fontFamily: T.fontMono, fontSize: 10, flexShrink: 0 }}>{t.time}</span>
+                    <span style={{ color: T.cardMutedSoft, fontFamily: T.fontMono, fontSize: 10, flexShrink: 0 }}>{t.time}</span>
                   </div>
-                  <div style={{ color: T.muted, fontSize: 10.5, fontFamily: T.fontUI, marginBottom: 3 }}>{t.role}</div>
-                  <div style={{ color: t.unread > 0 ? T.light : T.mutedSoft, fontSize: 11.5, fontFamily: T.fontUI, fontWeight: t.unread > 0 ? 600 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.last}</div>
+                  <div style={{ color: T.cardMuted, fontSize: 10.5, fontFamily: T.fontUI, marginBottom: 3 }}>{t.role}</div>
+                  <div style={{ color: t.unread > 0 ? T.cardText : T.cardMutedSoft, fontSize: 11.5, fontFamily: T.fontUI, fontWeight: t.unread > 0 ? 600 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.last}</div>
                 </div>
                 {t.unread > 0 ? <span style={{ minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999, background: T.primary, color: '#fff', fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, display: 'grid', placeItems: 'center', flexShrink: 0 }}>{t.unread}</span> : null}
               </button>
@@ -235,18 +300,18 @@ function EMessages({ initialThreadId } = {}) {
       </aside>
 
       {/* Thread */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <div style={{ padding: '14px 22px', borderBottom: '1px solid ' + T.border, display: 'flex', alignItems: 'center', gap: 12 }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: '#ffffff' }}>
+        <div style={{ padding: '14px 22px', borderBottom: '1px solid ' + T.cardBorder, display: 'flex', alignItems: 'center', gap: 12, background: '#ffffff' }}>
           <div style={{ width: 38, height: 38, borderRadius: 999, background: thread.color, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 13 }}>{thread.avatar}</div>
           <div style={{ flex: 1 }}>
-            <div style={{ color: T.text, fontFamily: T.fontUI, fontSize: 14, fontWeight: 700 }}>{thread.name}</div>
-            <div style={{ color: T.muted, fontSize: 11, fontFamily: T.fontUI }}>{thread.role} · {thread.online ? <span style={{ color: '#5BD68A' }}>online</span> : 'offline'}</div>
+            <div style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 14, fontWeight: 700 }}>{thread.name}</div>
+            <div style={{ color: T.cardMuted, fontSize: 11, fontFamily: T.fontUI }}>{thread.role} · {thread.online ? <span style={{ color: '#5BD68A' }}>online</span> : 'offline'}</div>
           </div>
-          <button style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(0,32,246,0.10)', border: '1px solid rgba(0,32,246,0.25)', color: T.text, fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <Icon name="user-id-bold" size={13} color={T.text}/>Profil
+          <button onClick={() => window.empOpenProfile && window.empOpenProfile(thread.worker_id, { name: thread.name, address: thread.city, level: thread.level, jobs_done: thread.jobsDone, rating: thread.rating, verified: thread.verified, cv_url: thread.cvUrl })} style={{ padding: '8px 12px', borderRadius: 8, background: T.primary, border: '1px solid ' + T.primary, color: '#fff', fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Icon name="user-id-bold" size={13} color="#fff"/>Profil
           </button>
-          <button onClick={() => setShowShiftModal(true)} style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.border, color: T.light, fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <Icon name="calendar-bold" size={13} color={T.light}/>Nabídnout směnu
+          <button onClick={() => setShowShiftModal(true)} style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(0,32,246,0.05)', border: '1px solid ' + T.cardBorder, color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Icon name="calendar-bold" size={13} color={T.cardMuted}/>Nabídnout směnu
           </button>
         </div>
 
@@ -255,15 +320,32 @@ function EMessages({ initialThreadId } = {}) {
             if (m.kind === 'shift') {
               return (
                 <div key={i} style={{ alignSelf: m.from === 'me' ? 'flex-end' : 'flex-start', maxWidth: '70%' }}>
-                  <div style={{ padding: 14, borderRadius: 14, background: 'rgba(255,255,255,0.95)', border: '1px solid rgba(91,107,255,0.3)' }}>
-                    <div style={{ color: '#c47f00', fontSize: 10, fontWeight: 800, letterSpacing: 0.6, textTransform: 'uppercase', fontFamily: T.fontUI }}>Nabídka směny</div>
-                    <div style={{ color: '#0020F6', fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, marginTop: 4 }}>{m.shift.role}</div>
-                    <div style={{ color: '#2D2CA7', fontFamily: T.fontUI, fontSize: 12, marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                      <div><Icon name="calendar-bold" size={11} color="#6677cc"/> {m.shift.date} · {m.shift.time}</div>
-                      <div><Icon name="dollar-bold" size={11} color="#6677cc"/> Odhad odměny <span style={{ color: '#0020F6', fontWeight: 700, fontFamily: T.fontMono }}>{m.shift.pay} Kč</span></div>
+                  <div style={{ padding: 14, borderRadius: 14, background: 'linear-gradient(135deg, rgba(0,32,246,0.10), rgba(91,107,255,0.06))', border: '1px solid rgba(0,32,246,0.22)' }}>
+                    <div style={{ color: T.primary, fontSize: 10, fontWeight: 800, letterSpacing: 0.6, textTransform: 'uppercase', fontFamily: T.fontUI }}>Nabídka směny</div>
+                    <div style={{ color: T.cardText, fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, marginTop: 4 }}>{m.shift.role}</div>
+                    <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12, marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      <div><Icon name="calendar-bold" size={11} color={T.cardMutedSoft}/> {m.shift.date} · {m.shift.time}</div>
+                      <div><Icon name="dollar-bold" size={11} color={T.cardMutedSoft}/> Odhad odměny <span style={{ color: T.cardText, fontWeight: 700, fontFamily: T.fontMono }}>{m.shift.pay} Kč</span></div>
                     </div>
                   </div>
-                  <div style={{ color: T.mutedSoft, fontFamily: T.fontMono, fontSize: 10, marginTop: 4, textAlign: m.from === 'me' ? 'right' : 'left' }}>{m.t}</div>
+                  <div style={{ color: T.cardMutedSoft, fontFamily: T.fontMono, fontSize: 10, marginTop: 4, textAlign: m.from === 'me' ? 'right' : 'left' }}>{m.t}</div>
+                </div>
+              );
+            }
+            if (m.kind === 'interview') {
+              return (
+                <div key={i} style={{ alignSelf: m.from === 'me' ? 'flex-end' : 'flex-start', maxWidth: '70%' }}>
+                  <div style={{ padding: 14, borderRadius: 14, background: 'linear-gradient(135deg, rgba(0,32,246,0.10), rgba(91,107,255,0.06))', border: '1px solid rgba(0,32,246,0.22)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: T.primary, fontSize: 10, fontWeight: 800, letterSpacing: 0.6, textTransform: 'uppercase', fontFamily: T.fontUI }}>
+                      <Icon name="users-group-rounded-bold" size={12} color={T.primary}/> Pozvánka na pohovor
+                    </div>
+                    <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div><Icon name="calendar-bold" size={11} color={T.cardMutedSoft}/> {m.interview.date}{m.interview.time ? ' · ' + m.interview.time : ''}</div>
+                      {m.interview.location ? <div><Icon name="map-point-bold" size={11} color={T.cardMutedSoft}/> {m.interview.location}</div> : null}
+                      {m.interview.note ? <div style={{ color: T.cardMutedSoft, marginTop: 2 }}>{m.interview.note}</div> : null}
+                    </div>
+                  </div>
+                  <div style={{ color: T.cardMutedSoft, fontFamily: T.fontMono, fontSize: 10, marginTop: 4, textAlign: m.from === 'me' ? 'right' : 'left' }}>{m.t}</div>
                 </div>
               );
             }
@@ -271,24 +353,24 @@ function EMessages({ initialThreadId } = {}) {
               <div key={i} style={{ alignSelf: m.from === 'me' ? 'flex-end' : 'flex-start', maxWidth: '65%' }}>
                 <div style={{
                   padding: '10px 14px', borderRadius: 14,
-                  background: m.from === 'me' ? 'linear-gradient(135deg, #0020F6, #2D2CA7)' : 'rgba(255,255,255,0.18)',
-                  color: m.from === 'me' ? '#fff' : '#fff', fontFamily: T.fontUI, fontSize: 13, lineHeight: 1.45,
+                  background: m.from === 'me' ? 'linear-gradient(135deg, #0020F6, #2D2CA7)' : 'rgba(0,32,246,0.05)',
+                  color: m.from === 'me' ? '#fff' : T.cardText, fontFamily: T.fontUI, fontSize: 13, lineHeight: 1.45,
                   borderBottomRightRadius: m.from === 'me' ? 4 : 14,
                   borderBottomLeftRadius: m.from === 'me' ? 14 : 4,
                 }}>{m.text}</div>
-                <div style={{ color: T.mutedSoft, fontFamily: T.fontMono, fontSize: 10, marginTop: 4, textAlign: m.from === 'me' ? 'right' : 'left' }}>{m.t}</div>
+                <div style={{ color: T.cardMutedSoft, fontFamily: T.fontMono, fontSize: 10, marginTop: 4, textAlign: m.from === 'me' ? 'right' : 'left' }}>{m.t}</div>
               </div>
             );
           })}
         </div>
 
-        <div style={{ padding: 16, borderTop: '1px solid ' + T.border, display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ padding: 16, borderTop: '1px solid ' + T.cardBorder, display: 'flex', gap: 8, alignItems: 'center', background: '#ffffff' }}>
           <input
             placeholder="Napište zprávu…"
             value={msgInput}
             onChange={e => setMsgInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            style={{ flex: 1, padding: '11px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.12)', border: '1px solid ' + T.border, color: T.text, fontSize: 13, outline: 'none', fontFamily: T.fontUI }}
+            style={{ flex: 1, padding: '11px 14px', borderRadius: 10, background: 'rgba(0,32,246,0.05)', border: '1px solid ' + T.cardBorder, color: T.cardText, fontSize: 13, outline: 'none', fontFamily: T.fontUI }}
           />
           <button
             onClick={handleSend}
@@ -299,62 +381,94 @@ function EMessages({ initialThreadId } = {}) {
         </div>
 
         {/* Quick replies */}
-        <div style={{ padding: '0 16px 14px', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div style={{ padding: '0 16px 14px', display: 'flex', gap: 6, flexWrap: 'wrap', background: '#ffffff' }}>
           {['Nabídnout směnu','Pozvat na pohovor','Zaslat pravidla','Bohužel ne'].map(q => (
             <button key={q} onClick={() => {
               if (q === 'Nabídnout směnu') { setShowShiftModal(true); return; }
+              if (q === 'Pozvat na pohovor') { setShowInterviewModal(true); return; }
+              if (q === 'Zaslat pravidla') {
+                const rules = ((typeof EPROFILE !== 'undefined' && EPROFILE.chat_rules) || '').trim();
+                if (!rules) {
+                  window.empToast && window.empToast('Pravidla nejsou nastavená', 'Nastav si vlastní text v Nastavení → Pravidla do chatu a pak ho odešleš jedním klikem.', 'ℹ️', 'info');
+                  window.empGoTab && window.empGoTab('settings');
+                  return;
+                }
+                sendQuickText(rules);
+                return;
+              }
+              if (q === 'Bohužel ne') {
+                setMsgInput('Děkujeme za váš zájem o tuto pozici! Tentokrát jsme se rozhodli pro jiného kandidáta. Budeme rádi, když se ozvete na naše další nabídky. 🙏');
+                return;
+              }
               setMsgInput(q);
-            }} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.1)', border: '1px solid ' + T.border, color: T.muted, fontFamily: T.fontUI, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{q}</button>
+            }} style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(0,32,246,0.05)', border: '1px solid ' + T.cardBorder, color: T.cardMuted, fontFamily: T.fontUI, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{q}</button>
           ))}
         </div>
       </main>
 
       {/* Right: candidate context */}
-      <aside style={{ width: 280, flexShrink: 0, borderLeft: '1px solid ' + T.border, padding: 18, overflowY: 'auto', background: 'rgba(255,255,255,0.08)' }}>
-        <div style={{ textAlign: 'center', marginBottom: 14 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 999, background: thread.color, margin: '0 auto', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 22 }}>{thread.avatar}</div>
-          <div style={{ color: T.text, fontFamily: T.fontHead, fontSize: 15, fontWeight: 800, marginTop: 8 }}>{thread.name}</div>
-          <div style={{ color: T.muted, fontSize: 11, fontFamily: T.fontUI, marginTop: 2 }}>22 let · Brno · 1.2 km</div>
-          <div style={{ display: 'inline-flex', gap: 5, marginTop: 8 }}>
-            <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(91,214,138,0.2)', color: '#5BD68A', fontFamily: T.fontMono, fontSize: 10.5, fontWeight: 800 }}>96 % match</span>
-            <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(91,107,255,0.2)', color: '#5B6BFF', fontFamily: T.fontMono, fontSize: 10.5, fontWeight: 800 }}>L7</span>
+      <aside style={{ width: 280, flexShrink: 0, borderLeft: '1px solid ' + T.cardBorder, padding: 20, overflowY: 'auto', background: '#ffffff', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <div style={{ width: 84, height: 84, borderRadius: 24, margin: '0 auto', background: 'linear-gradient(160deg, rgba(255,255,255,0.30), rgba(255,255,255,0)), ' + thread.color, display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 28, boxShadow: '0 10px 24px rgba(20,22,40,0.14)' }}>{thread.avatar}</div>
+          <div style={{ color: T.cardText, fontFamily: T.fontHead, fontSize: 18, fontWeight: 800, marginTop: 12 }}>{thread.name}</div>
+          <div style={{ color: T.cardMuted, fontSize: 12.5, fontFamily: T.fontUI, marginTop: 3 }}>{[thread.city, thread.role].filter(Boolean).join(' · ') || 'Brigádník'}</div>
+          <div style={{ display: 'inline-flex', gap: 6, marginTop: 10 }}>
+            <span style={{ padding: '4px 12px', borderRadius: 999, background: 'rgba(0,32,246,0.10)', color: T.primary, fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 800 }}>Level {thread.level || 1}</span>
+            {thread.verified && <span style={{ padding: '4px 12px', borderRadius: 999, background: 'rgba(34,160,107,0.14)', color: '#16a34a', fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 800 }}>Ověřený</span>}
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 14 }}>
+
+        {/* Stats — jednoduché karty */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 22 }}>
           {[
-            { l: '★', v: '4.9' },
-            { l: 'brigád', v: '23' },
-            { l: 'odp.', v: '4 min' },
+            { l: 'hodnocení', v: Number(thread.rating) > 0 ? thread.rating : '–', star: Number(thread.rating) > 0 },
+            { l: 'brigád', v: thread.jobsDone || 0, star: false },
           ].map((s, i) => (
-            <div key={i} style={{ padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.12)', border: '1px solid ' + T.border, textAlign: 'center' }}>
-              <div style={{ color: T.text, fontFamily: T.fontMono, fontSize: 14, fontWeight: 700 }}>{s.v}</div>
-              <div style={{ color: T.mutedSoft, fontSize: 9.5, fontFamily: T.fontUI, marginTop: 1 }}>{s.l}</div>
+            <div key={i} style={{ padding: '16px 12px', borderRadius: 16, background: T.cardSoft, border: '1px solid ' + T.cardBorder, textAlign: 'center' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: T.cardText, fontFamily: T.fontHead, fontSize: 21, fontWeight: 800, lineHeight: 1 }}>
+                {s.v}{s.star && <Icon name="star-bold" size={15} color="#F5A623" />}
+              </div>
+              <div style={{ color: T.cardMutedSoft, fontSize: 11, fontWeight: 600, marginTop: 6, fontFamily: T.fontUI }}>{s.l}</div>
             </div>
           ))}
         </div>
-        <div style={{ color: T.muted, fontSize: 10, fontWeight: 700, fontFamily: T.fontUI, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 6 }}>Sdílené dokumenty</div>
-        {[
-          { i: 'document-text-bold', n: 'CV — Tomáš Marek.pdf', s: '142 kB' },
-          { i: 'shield-check-bold', n: 'Potvrzení o studiu', s: 'ověřeno' },
-        ].map((d, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.1)', border: '1px solid ' + T.border, marginBottom: 6 }}>
-            <Icon name={d.i} size={14} color={T.light}/>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: T.text, fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.n}</div>
-              <div style={{ color: T.mutedSoft, fontSize: 10, fontFamily: T.fontMono }}>{d.s}</div>
+
+        {/* Životopis */}
+        <div style={{ color: T.cardMutedSoft, fontSize: 10.5, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>Životopis</div>
+        {thread.cvUrl ? (
+          <a href={thread.cvUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 14, borderRadius: 14, background: T.cardSoft, border: '1px solid ' + T.cardBorder, marginBottom: 20, textDecoration: 'none' }}>
+            <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(0,32,246,0.08)', display: 'grid', placeItems: 'center', flexShrink: 0 }}><Icon name="document-text-bold" size={16} color={T.primary}/></span>
+            <div style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600 }}>Otevřít životopis</div>
+          </a>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 14, borderRadius: 14, background: 'transparent', border: '1.5px dashed ' + T.cardBorder, marginBottom: 20 }}>
+            <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(15,18,40,0.04)', display: 'grid', placeItems: 'center', flexShrink: 0 }}><Icon name="document-text-bold" size={16} color={T.cardMutedSoft}/></span>
+            <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 12.5, fontStyle: 'italic' }}>Bez životopisu</div>
+          </div>
+        )}
+
+        {/* Dovednosti */}
+        {Array.isArray(thread.skills) && thread.skills.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ color: T.cardMutedSoft, fontSize: 10.5, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>Dovednosti</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+              {thread.skills.map((sk, i) => (
+                <span key={i} style={{ padding: '6px 12px', borderRadius: 999, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder, color: T.cardText, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600 }}>{sk}</span>
+              ))}
             </div>
           </div>
-        ))}
-        <button style={{ width: '100%', marginTop: 10, padding: '9px 12px', borderRadius: 9, background: 'rgba(255,255,255,0.12)', border: '1px solid ' + T.border, color: T.light, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Otevřít plný profil →</button>
+        )}
+
+        <button onClick={() => window.empOpenProfile && window.empOpenProfile(thread.worker_id, { name: thread.name, address: thread.city, level: thread.level, jobs_done: thread.jobsDone, rating: thread.rating, verified: thread.verified, cv_url: thread.cvUrl })} style={{ width: '100%', marginTop: 'auto', padding: '13px 12px', borderRadius: 12, background: 'linear-gradient(135deg, #0020F6, #2D2CA7)', border: 'none', color: '#fff', fontFamily: T.fontUI, fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>Otevřít plný profil + recenze →</button>
       </aside>
 
       {/* Shift offer modal */}
       {showShiftModal && (
         <div onClick={e => { if (e.target === e.currentTarget) setShowShiftModal(false); }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', display: 'grid', placeItems: 'center', zIndex: 200 }}>
-          <div style={{ background: '#ffffff', border: '1px solid rgba(0,32,246,0.2)', borderRadius: 18, padding: 28, width: 380, position: 'relative' }}>
-            <button onClick={() => setShowShiftModal(false)} style={{ position: 'absolute', top: 14, right: 14, background: 'rgba(208,208,255,.08)', border: 'none', borderRadius: 8, padding: 6, color: T.muted, cursor: 'pointer', fontSize: 16, lineHeight: 1 }}>✕</button>
-            <div style={{ color: T.text, fontFamily: T.fontHead, fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Nabídnout směnu</div>
-            <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 12, marginBottom: 20 }}>Nabídka bude odeslána jako zpráva — brigádník ji může přijmout nebo odmítnout.</div>
+          <div style={{ background: '#ffffff', border: '1px solid ' + T.cardBorder, borderRadius: 18, padding: 28, width: 380, position: 'relative' }}>
+            <button onClick={() => setShowShiftModal(false)} style={{ position: 'absolute', top: 14, right: 14, background: 'rgba(208,208,255,.08)', border: 'none', borderRadius: 8, padding: 6, color: T.cardMuted, cursor: 'pointer', fontSize: 16, lineHeight: 1 }}>✕</button>
+            <div style={{ color: T.cardText, fontFamily: T.fontHead, fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Nabídnout směnu</div>
+            <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12, marginBottom: 20 }}>Nabídka bude odeslána jako zpráva — brigádník ji může přijmout nebo odmítnout.</div>
             {[
               { label: 'Pozice / název směny', key: 'role', placeholder: 'např. Barista, Servírka…', type: 'text' },
               { label: 'Datum', key: 'date', placeholder: 'např. Čt 15.5.', type: 'text' },
@@ -363,13 +477,13 @@ function EMessages({ initialThreadId } = {}) {
               { label: 'Adresa / místo', key: 'location', placeholder: 'např. Náměstí Míru 3, Praha 2', type: 'text' },
             ].map(field => (
               <div key={field.key} style={{ marginBottom: 14 }}>
-                <div style={{ color: T.light, fontFamily: T.fontUI, fontSize: 11, fontWeight: 700, marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 }}>{field.label}</div>
+                <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 11, fontWeight: 700, marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 }}>{field.label}</div>
                 <input
                   type={field.type}
                   placeholder={field.placeholder}
                   value={shiftForm[field.key]}
                   onChange={e => setShiftForm(f => ({ ...f, [field.key]: e.target.value }))}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 9, background: 'rgba(0,32,246,0.05)', border: '1px solid rgba(0,32,246,0.2)', color: T.text, fontSize: 13, outline: 'none', fontFamily: T.fontUI, boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 9, background: 'rgba(0,32,246,0.05)', border: '1px solid rgba(208,208,255,.14)', color: T.cardText, fontSize: 13, outline: 'none', fontFamily: T.fontUI, boxSizing: 'border-box' }}
                 />
               </div>
             ))}
@@ -378,6 +492,40 @@ function EMessages({ initialThreadId } = {}) {
               disabled={!shiftForm.date || !shiftForm.time}
               style={{ width: '100%', padding: '12px 0', borderRadius: 10, background: 'linear-gradient(135deg, #0020F6, #2D2CA7)', border: 'none', color: '#fff', fontFamily: T.fontHead, fontSize: 14, fontWeight: 800, cursor: (!shiftForm.date || !shiftForm.time) ? 'not-allowed' : 'pointer', opacity: (!shiftForm.date || !shiftForm.time) ? 0.5 : 1, marginTop: 4 }}>
               Odeslat nabídku směny
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Interview offer modal */}
+      {showInterviewModal && (
+        <div onClick={e => { if (e.target === e.currentTarget) setShowInterviewModal(false); }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', display: 'grid', placeItems: 'center', zIndex: 200 }}>
+          <div style={{ background: '#ffffff', border: '1px solid ' + T.cardBorder, borderRadius: 18, padding: 28, width: 380, position: 'relative' }}>
+            <button onClick={() => setShowInterviewModal(false)} style={{ position: 'absolute', top: 14, right: 14, background: 'rgba(208,208,255,.08)', border: 'none', borderRadius: 8, padding: 6, color: T.cardMuted, cursor: 'pointer', fontSize: 16, lineHeight: 1 }}>✕</button>
+            <div style={{ color: T.cardText, fontFamily: T.fontHead, fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Pozvat na pohovor</div>
+            <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12, marginBottom: 20 }}>Pozvánka se odešle jako zpráva. Je to jen pohovor — inzerát zůstává aktivní.</div>
+            {[
+              { label: 'Datum', key: 'date', placeholder: 'např. Čt 15.5.', type: 'text' },
+              { label: 'Čas', key: 'time', placeholder: 'např. 14:00', type: 'text' },
+              { label: 'Místo / online odkaz', key: 'location', placeholder: 'např. Náměstí Míru 3, Praha 2 nebo Google Meet', type: 'text' },
+              { label: 'Poznámka (nepovinné)', key: 'note', placeholder: 'např. Vezmi si s sebou OP, potrvá cca 20 min', type: 'text' },
+            ].map(field => (
+              <div key={field.key} style={{ marginBottom: 14 }}>
+                <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 11, fontWeight: 700, marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 }}>{field.label}</div>
+                <input
+                  type={field.type}
+                  placeholder={field.placeholder}
+                  value={interviewForm[field.key]}
+                  onChange={e => setInterviewForm(f => ({ ...f, [field.key]: e.target.value }))}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 9, background: 'rgba(0,32,246,0.05)', border: '1px solid rgba(208,208,255,.14)', color: T.cardText, fontSize: 13, outline: 'none', fontFamily: T.fontUI, boxSizing: 'border-box' }}
+                />
+              </div>
+            ))}
+            <button
+              onClick={handleSendInterview}
+              disabled={!interviewForm.date || !interviewForm.time}
+              style={{ width: '100%', padding: '12px 0', borderRadius: 10, background: 'linear-gradient(135deg, #0020F6, #2D2CA7)', border: 'none', color: '#fff', fontFamily: T.fontHead, fontSize: 14, fontWeight: 800, cursor: (!interviewForm.date || !interviewForm.time) ? 'not-allowed' : 'pointer', opacity: (!interviewForm.date || !interviewForm.time) ? 0.5 : 1, marginTop: 4 }}>
+              Odeslat pozvánku na pohovor
             </button>
           </div>
         </div>
@@ -511,6 +659,7 @@ function SettingsProfile() {
     socials:   Object.assign({ instagram: '', facebook: '', linkedin: '', tiktok: '' }, EPROFILE.socials || {}),
     photos:    Array.isArray(EPROFILE.photos) ? EPROFILE.photos.slice() : [],
     branding:  Object.assign({ color: ECOMPANY.logoColor || T.primary }, EPROFILE.branding || {}),
+    chat_rules: EPROFILE.chat_rules || '',
   });
   const [form, setForm]     = useStateE(initForm);
   const [saving, setSaving] = useStateE(false);
@@ -532,6 +681,7 @@ function SettingsProfile() {
       socials: form.socials,
       photos: form.photos.filter(u => u && u.trim()),
       branding: form.branding,
+      chat_rules: form.chat_rules,
     });
     setSaving(false);
     setToast(ok ? 'ok' : 'err');
@@ -586,6 +736,10 @@ function SettingsProfile() {
         </FormRow>
         <FormRow label="Krátký popis" sub="Max. 280 znaků — vidí se v kartě firmy">
           <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical', fontFamily: T.fontUI }} value={form.bio} onChange={set('bio')} maxLength={280} placeholder="Napiš něco o firmě…" />
+        </FormRow>
+
+        <FormRow label="Pravidla do chatu" sub="Odešleš je kandidátovi jedním klikem tlačítkem „Zaslat pravidla“ ve zprávách">
+          <textarea style={{ ...inputStyle, minHeight: 110, resize: 'vertical', fontFamily: T.fontUI }} value={form.chat_rules} onChange={set('chat_rules')} placeholder={'Např.:\n• Dochvilnost je základ — přijď 10 min předem.\n• Dress code: černé triko, pohodlná obuv.\n• Vezmi si OP a číslo účtu.\n• Kontakt na místě: Jana, 777 123 456.'} />
         </FormRow>
 
         {/* Kontakt */}

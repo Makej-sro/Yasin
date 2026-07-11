@@ -406,25 +406,50 @@ function ECandidates({ onOpenChat } = {}) {
   const [tab, setTab] = useStateE('all');
   const [search, setSearch] = useStateE('');
   const [selected, setSelected] = useStateE(null);
+  const [jobIds, setJobIds] = useStateE([]);       // [] = všechny inzeráty, jinak vybraná job ID
+  const [dropOpen, setDropOpen] = useStateE(false);
+  const dropRef = useRefE(null);
 
   // Živá reálná data — přepočítá se při každém mountu (komponenta se remountuje přes key={tick})
   const ALL_CANDS_FLAT = React.useMemo(() => buildCandsFlat(), []);
 
-  const favList        = React.useMemo(() => ALL_CANDS_FLAT.filter(c => c.rating >= 4.8 && c.jobsDone >= 15).sort((a,b) => b.rating - a.rating), [ALL_CANDS_FLAT]);
-  const knownList      = React.useMemo(() => ALL_CANDS_FLAT.filter(c => c.workedHere), [ALL_CANDS_FLAT]);
-  const experienceList = React.useMemo(() => ALL_CANDS_FLAT.filter(c => c.sameIndustry), [ALL_CANDS_FLAT]);
+  // Zavřít dropdown kliknutím mimo
+  useEffectE(() => {
+    if (!dropOpen) return;
+    function handle(e) { if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false); }
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [dropOpen]);
+
+  const jobFiltered = jobIds.length ? ALL_CANDS_FLAT.filter(c => jobIds.includes(c.job_id)) : ALL_CANDS_FLAT;
+
+  const favList        = React.useMemo(() => jobFiltered.filter(c => c.rating >= 4.8 && c.jobsDone >= 15).sort((a,b) => b.rating - a.rating), [jobFiltered]);
+  const knownList      = React.useMemo(() => jobFiltered.filter(c => c.workedHere), [jobFiltered]);
+  const experienceList = React.useMemo(() => jobFiltered.filter(c => c.sameIndustry), [jobFiltered]);
 
   const tabFiltered = tab === 'favorites'  ? favList
                     : tab === 'known'       ? knownList
                     : tab === 'experience'  ? experienceList
-                    : ALL_CANDS_FLAT;
+                    : jobFiltered;
 
   const counts = {
-    all:        ALL_CANDS_FLAT.length,
+    all:        jobFiltered.length,
     favorites:  favList.length,
     known:      knownList.length,
     experience: experienceList.length,
   };
+
+  function toggleJob(id) {
+    setJobIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  }
+
+  const btnLabel = jobIds.length === 0
+    ? 'Všechny inzeráty'
+    : jobIds.length === 1
+      ? (E_JOBS.find(j => j.id === jobIds[0])?.title || '1 inzerát')
+      : `${jobIds.length} inzeráty`;
+
+  const STATUS_DOT = { active: '#5BD68A', urgent: '#f43f5e', paused: '#FFD166', filled: '#8AB4FF' };
 
   const visible = React.useMemo(() => {
     if (!search.trim()) return tabFiltered;
@@ -434,7 +459,7 @@ function ECandidates({ onOpenChat } = {}) {
       (c.jobTitle || '').toLowerCase().includes(q) ||
       c.tags.some(t => t.toLowerCase().includes(q))
     );
-  }, [tab, search]);
+  }, [tab, search, jobIds, tabFiltered]);
 
   const TABS = [
     { k: 'all',        l: 'Vše',            desc: null, criteria: [], iconSrc: null },
@@ -471,9 +496,110 @@ function ECandidates({ onOpenChat } = {}) {
             style={{ paddingLeft: 32, paddingRight: 12, paddingTop: 8, paddingBottom: 8, borderRadius: 9, background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#111827', fontFamily: T.fontUI, fontSize: 12.5, outline: 'none', width: 230 }}
           />
         </div>
-        <button style={{ padding: '8px 12px', borderRadius: 9, background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#374151', fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <Icon name="filter-bold" size={12} color="#6B7280"/>Filtry
-        </button>
+        <div ref={dropRef} style={{ position: 'relative' }}>
+          <button
+            onClick={() => setDropOpen(o => !o)}
+            style={{
+              padding: '8px 12px', borderRadius: 9,
+              background: jobIds.length ? 'rgba(0,32,246,0.08)' : '#F9FAFB',
+              border: '1px solid ' + (jobIds.length ? 'rgba(0,32,246,0.3)' : '#E5E7EB'),
+              color: jobIds.length ? '#0020F6' : '#374151',
+              fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', gap: 6, maxWidth: 200,
+            }}>
+            <Icon name="filter-bold" size={12} color={jobIds.length ? '#0020F6' : '#6B7280'}/>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{btnLabel}</span>
+            {jobIds.length > 0 && (
+              <span style={{ padding: '1px 6px', borderRadius: 6, background: '#0020F6', color: '#fff', fontFamily: T.fontMono, fontSize: 10.5, fontWeight: 700, flexShrink: 0 }}>{jobIds.length}</span>
+            )}
+            <svg width="9" height="6" viewBox="0 0 10 6" style={{ transform: dropOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s', flexShrink: 0 }}>
+              <path d="M0 0l5 6 5-6z" fill={jobIds.length ? '#0020F6' : '#9CA3AF'} />
+            </svg>
+          </button>
+
+          {dropOpen && (
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 200,
+              background: '#fff', borderRadius: 12,
+              border: '1px solid #E5E7EB',
+              boxShadow: '0 8px 32px rgba(15,18,40,0.14)',
+              minWidth: 280, maxWidth: 340,
+              overflow: 'hidden',
+            }}>
+              <div style={{ padding: '11px 14px', borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700 }}>Filtr podle inzerátu</span>
+                {jobIds.length > 0 && (
+                  <button onClick={() => setJobIds([])} style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', color: '#f43f5e', fontFamily: T.fontUI, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                    Zrušit výběr
+                  </button>
+                )}
+              </div>
+
+              <button onClick={() => { setJobIds([]); setDropOpen(false); }} style={{
+                width: '100%', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
+                background: jobIds.length === 0 ? 'rgba(0,32,246,0.05)' : 'transparent',
+                border: 'none', cursor: 'pointer', borderBottom: '1px solid #E5E7EB',
+              }}>
+                <div style={{
+                  width: 17, height: 17, borderRadius: 5, flexShrink: 0,
+                  background: jobIds.length === 0 ? '#0020F6' : '#fff',
+                  border: '1.5px solid ' + (jobIds.length === 0 ? '#0020F6' : '#D1D5DB'),
+                  display: 'grid', placeItems: 'center',
+                }}>
+                  {jobIds.length === 0 && <Icon name="check-bold" size={10} color="#fff" />}
+                </div>
+                <span style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: jobIds.length === 0 ? 700 : 500 }}>Všechny inzeráty</span>
+                <span style={{ marginLeft: 'auto', fontFamily: T.fontMono, fontSize: 11, color: '#9CA3AF' }}>{ALL_CANDS_FLAT.length}</span>
+              </button>
+
+              <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+                {E_JOBS.length === 0 ? (
+                  <div style={{ padding: '18px 14px', textAlign: 'center', color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 12 }}>Zatím nemáte žádné inzeráty</div>
+                ) : E_JOBS.map(j => {
+                  const checked = jobIds.includes(j.id);
+                  const cnt = ALL_CANDS_FLAT.filter(c => c.job_id === j.id).length;
+                  const dot = STATUS_DOT[j.status] || '#9CA3AF';
+                  return (
+                    <button key={j.id} onClick={() => toggleJob(j.id)} style={{
+                      width: '100%', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
+                      background: checked ? 'rgba(0,32,246,0.04)' : 'transparent',
+                      border: 'none', borderBottom: '1px solid #E5E7EB', cursor: 'pointer',
+                    }}>
+                      <div style={{
+                        width: 17, height: 17, borderRadius: 5, flexShrink: 0,
+                        background: checked ? '#0020F6' : '#fff',
+                        border: '1.5px solid ' + (checked ? '#0020F6' : '#D1D5DB'),
+                        display: 'grid', placeItems: 'center',
+                      }}>
+                        {checked && <Icon name="check-bold" size={10} color="#fff" />}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                        <div style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: checked ? 700 : 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.title}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                          <span style={{ width: 6, height: 6, borderRadius: 999, background: dot, flexShrink: 0 }} />
+                          <span style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 10.5 }}>{j.location || j.company}</span>
+                        </div>
+                      </div>
+                      <span style={{ fontFamily: T.fontMono, fontSize: 11.5, fontWeight: 700, color: cnt > 0 ? '#111827' : '#9CA3AF', flexShrink: 0 }}>{cnt}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {jobIds.length > 0 && (
+                <div style={{ padding: '10px 14px' }}>
+                  <button onClick={() => setDropOpen(false)} style={{
+                    width: '100%', padding: '9px', borderRadius: 9,
+                    background: '#0020F6', border: 'none', color: '#fff',
+                    fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                  }}>
+                    Použít filtr ({jobFiltered.length} kandidátů)
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Tab description */}

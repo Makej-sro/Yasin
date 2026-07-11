@@ -176,19 +176,34 @@ async function fetchEmployerData(employerId) {
       const threadMsgs = messages
         .filter(msg => msg.match_id === match.id)
         .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-        .map(msg => ({
-          from: msg.sender_id === employerId ? 'me' : 'them',
-          text: msg.text, t: _fmtTime(msg.created_at), id: msg.id,
-        }));
+        .map(msg => {
+          const from = msg.sender_id === employerId ? 'me' : 'them';
+          if (msg.type === 'shift_offer' && msg.metadata) return {
+            from, kind: 'shift',
+            shift: { role: msg.metadata.role, date: msg.metadata.date, time: msg.metadata.time, pay: msg.metadata.pay },
+            t: _fmtTime(msg.created_at), id: msg.id,
+          };
+          if (msg.type === 'interview_offer' && msg.metadata) return {
+            from, kind: 'interview',
+            interview: { date: msg.metadata.date, time: msg.metadata.time, location: msg.metadata.location, note: msg.metadata.note },
+            t: _fmtTime(msg.created_at), id: msg.id,
+          };
+          return { from, text: msg.text, t: _fmtTime(msg.created_at), id: msg.id };
+        });
       const lastMsg = threadMsgs[threadMsgs.length - 1];
-      const wName   = match.worker?.name || 'Kandidát';
+      const w       = match.worker || {};
+      const wName   = w.name || 'Kandidát';
       return {
         id: match.id, match_id: match.id, worker_id: match.worker_id,
         name: wName,
         avatar: wName.split(' ').map(p => p[0] || '').join('').slice(0,2).toUpperCase() || '??',
         color: _strColor(match.worker_id || match.id),
         role: match.job?.title || '',
-        last: lastMsg?.text || 'Nová shoda',
+        city: w.address || '', rating: Number(w.rating || 0).toFixed(1),
+        jobsDone: w.jobs_done || 0, level: w.level || 1, cvUrl: w.cv_url || '',
+        verified: !!w.verified,
+        skills: Array.isArray(w.skills) ? w.skills : [],
+        last: lastMsg ? (lastMsg.kind === 'shift' ? '📅 Nabídka směny' : lastMsg.kind === 'interview' ? '🗓️ Pozvánka na pohovor' : lastMsg.text) || 'Nová shoda' : 'Nová shoda',
         time: _relTime(match.created_at),
         unread: 0, online: false, msgs: threadMsgs,
       };
