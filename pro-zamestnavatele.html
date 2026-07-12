@@ -227,6 +227,43 @@
       border: 1px solid rgba(208,208,255,.12);
       box-shadow: 0 30px 70px rgba(0,0,0,.4);
     }
+
+    /* ── Before/After slider (dashboard) ── */
+    .ba {
+      position: relative; width: 100%; aspect-ratio: 2340 / 1256;
+      border-radius: 20px; overflow: hidden;
+      border: 1px solid rgba(208,208,255,.12);
+      box-shadow: 0 30px 70px rgba(0,0,0,.4);
+      user-select: none; touch-action: pan-y; cursor: ew-resize;
+      --pos: 50%;
+    }
+    .dctrl-shot .ba img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; display: block; pointer-events: none;
+      aspect-ratio: auto; border: none; border-radius: 0; box-shadow: none;
+    }
+    .ba .ba-top { clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+    .ba-divider {
+      position: absolute; top: 0; bottom: 0; left: var(--pos);
+      width: 3px; background: #fff; transform: translateX(-50%);
+      box-shadow: 0 0 0 1px rgba(0,0,0,.12); pointer-events: none;
+    }
+    .ba-handle {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 46px; height: 46px; border-radius: 50%; background: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.3);
+      display: flex; align-items: center; justify-content: center; gap: 1px;
+      color: #0020F6;
+    }
+    .ba-label {
+      position: absolute; top: 14px; z-index: 2; pointer-events: none;
+      padding: 6px 13px; border-radius: 999px;
+      background: rgba(10,13,46,.72); color: #fff;
+      font-family: var(--font-heading); font-size: .72rem; font-weight: 700;
+      letter-spacing: .03em; backdrop-filter: blur(6px);
+    }
+    .ba-label.l { left: 14px; }
+    .ba-label.r { right: 14px; }
     @media (max-width: 768px) {
       .bolt-steps { gap: 48px; }
       .bolt-row { grid-template-columns: 1fr; gap: 24px; }
@@ -448,7 +485,18 @@
           <p>Získejte přehled o inzerátech, kandidátech a výkonu — a spravujte celý nábor na jednom místě.</p>
         </div>
         <div class="dctrl-shot">
-          <img src="/dashboard-preview.png" alt="Náhled dashboardu zaměstnavatele" width="900" height="576" loading="lazy" />
+          <div class="ba" id="dash-ba">
+            <img class="ba-under" src="/dashboard-2.png" alt="Dashboard — mapa trhu práce" loading="lazy" />
+            <img class="ba-top" src="/dashboard-1.png" alt="Dashboard — statistiky" loading="lazy" />
+            <div class="ba-label l">Statistiky</div>
+            <div class="ba-label r">Mapa trhu práce</div>
+            <div class="ba-divider">
+              <div class="ba-handle">
+                <iconify-icon icon="solar:alt-arrow-left-bold" width="13"></iconify-icon>
+                <iconify-icon icon="solar:alt-arrow-right-bold" width="13"></iconify-icon>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -540,7 +588,7 @@
           <h4>Produkt</h4>
           <a href="/hledam-si-praci.html">Hledám si práci</a>
           <a href="/pro-zamestnavatele.html">Pro zaměstnavatele</a>
-          <a href="/cenik.html">Ceník</a>
+          <a href="/pro-zamestnavatele.html#pricing">Ceník</a>
           <a href="#download">Stáhnout</a>
         </div>
         <div class="footer-col">
@@ -766,10 +814,29 @@
   </script>
   <script src="/chat-widget.js"></script>
 
+  <!-- Before/After slider dashboardu -->
+  <script>
+    (function () {
+      var ba = document.getElementById('dash-ba');
+      if (!ba) return;
+      var dragging = false;
+      function setPos(clientX) {
+        var r = ba.getBoundingClientRect();
+        var p = (clientX - r.left) / r.width * 100;
+        p = Math.max(0, Math.min(100, p));
+        ba.style.setProperty('--pos', p + '%');
+      }
+      ba.addEventListener('pointerdown', function (e) { dragging = true; try { ba.setPointerCapture(e.pointerId); } catch (x) {} setPos(e.clientX); });
+      ba.addEventListener('pointermove', function (e) { if (dragging) setPos(e.clientX); });
+      window.addEventListener('pointerup', function () { dragging = false; });
+      ba.addEventListener('pointercancel', function () { dragging = false; });
+    })();
+  </script>
+
   <!-- Dashboardový ceník (React komponent, stejný jako v dashboardu) -->
   <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
-  <script type="text/babel" src="/pricing-embed.jsx?v=1"></script>
+  <script type="text/babel" src="/pricing-embed.jsx?v=4"></script>
 </body>
 </html>

@@ -185,7 +185,7 @@ function MakejPricing() {
       </div>
 
       {/* Karty tarifů */}
-      <div style={{ maxWidth: 1180, margin: '0 auto 24px', paddingBottom: 6 }}>
+      <div id="makej-plans" style={{ maxWidth: 1180, margin: '0 auto 24px', paddingBottom: 6, scrollMarginTop: 100 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 14, alignItems: 'stretch', padding: '20px 4px 8px' }}>
           {PLANS.map((plan, i) => {
             const isPop    = !!plan.popular;
@@ -456,5 +456,18 @@ function MakejPricing() {
   const el = document.getElementById('makej-pricing-root');
   if (el && window.ReactDOM && window.React) {
     ReactDOM.createRoot(el).render(<MakejPricing />);
+    // Když někdo přijde přes footer odkaz #pricing, po vykreslení plynule doskroluj na sekci
+    if (window.location.hash === '#pricing') {
+      setTimeout(function () {
+        const sec = document.getElementById('pricing');
+        if (sec) {
+          // Doskroluj na začátek sekce (nadpis hned pod navbarem), ať je celý ceník v záběru
+          const nav = document.querySelector('nav');
+          const navH = nav ? nav.offsetHeight : 80;
+          const y = sec.getBoundingClientRect().top + window.scrollY - navH - 8;
+          window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        }
+      }, 140);
+    }
   }
 })();
