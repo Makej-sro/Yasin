@@ -124,6 +124,9 @@ async function fetchEmployerData(employerId) {
         description: job.description,
         tags: Array.isArray(job.tags) ? job.tags : [],
         created_at: job.created_at,
+        // Kandidáti, kteří na tento inzerát swipli (bez ohledu na pozdější rozhodnutí firmy) —
+        // reálná data pro statistiky inzerátu (unikátní/noví kandidáti, rychlost swipnutí po zveřejnění)
+        candidates: jm.map(m => ({ worker_id: m.worker_id, matched_at: m.created_at, status: m.status })),
       };
     });
     E_JOBS.length = 0;

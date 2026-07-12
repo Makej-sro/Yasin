@@ -114,13 +114,13 @@ function ProGate({ feature, children }) {
 // ─────────────────────────────────────────────────────────────
 // ANALYTIKA — jedna sekce: mapa nahoře, statistiky pod ní
 // ─────────────────────────────────────────────────────────────
-function EAnalytics() {
+function EAnalytics({ period = '30d' }) {
   return (
     <ProGate feature="Analytika">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
         <KrajeMap />
         <div style={{ padding: '0 28px 40px', display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <AnalyticsOverview />
+          <AnalyticsOverview period={period} />
           <AnalyticsDemo />
         </div>
       </div>
@@ -129,7 +129,7 @@ function EAnalytics() {
 }
 
 // ── Přehled ──────────────────────────────────────────────────
-function AnalyticsOverview() {
+function AnalyticsOverview({ period = '30d' }) {
   return (
     <>
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 14 }}>
@@ -196,26 +196,273 @@ function AnalyticsOverview() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <ECard>
-          <SectionHeader title="Doba odpovědi" subtitle="Kandidáti s odpovědí do 1h matchují 3.4× častěji" />
-          <BarChart
-            width={460} height={200}
-            data={[
-              { l: '<5 min', v: 142, color: '#5BD68A' },
-              { l: '5-30m', v: 98, color: '#5BD68A' },
-              { l: '30-1h', v: 64, color: '#FFD166' },
-              { l: '1-3h', v: 41, color: '#FFD166' },
-              { l: '3-12h', v: 22, color: '#f43f5e' },
-              { l: '>12h', v: 8, color: '#f43f5e' },
-            ]}
-          />
-          <div style={{ marginTop: 8, color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 11 }}>
-            Váš průměr: <span style={{ color: T.cardText, fontFamily: T.fontMono, fontWeight: 700 }}>14 minut</span> · Top 5 % v segmentu
-          </div>
+          <ResponseTimeCard period={period} />
         </ECard>
         <ECard>
-          <SectionHeader title="Distribuce hodinovky v segmentu" subtitle="Brno · gastro · poslední 30 dní" />
-          <DistroChart />
+          <WageBenchmark />
         </ECard>
+        <ECard>
+          <FirstInterestCard period={period} />
+        </ECard>
+        <ECard>
+          <RetentionCard />
+        </ECard>
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// DOBA ODEZVY FIRMY + DOBA DO PRVNÍHO ZÁJMU
+// Zdroj: simulovaná data na úrovni (kandidát, inzerát) / (inzerát), zapouzdřená
+// v getResponseRecords()/getFirstSwipeRecords(). Až bude platforma reálně
+// ukládat swipe_at / firm_response_at / firm_decision (matches) a
+// published_at / first_swipe_at (jobs), stačí přepsat tělo těchto dvou funkcí
+// na živý dotaz do Supabase — zbytek (bucketing, statistiky, komponenty) se
+// nemění, protože pracuje jen s tvarem { swipe_at, firm_response_at, firm_decision }
+// resp. { published_at, first_swipe_at }.
+// ─────────────────────────────────────────────────────────────
+
+const PERIOD_DAYS = { '7d': 7, '30d': 30, '90d': 90, 'rok': 365 };
+
+const RESPONSE_BUCKETS = [
+  { key: 'lt5m',  label: '<5 min',     color: '#5BD68A' },
+  { key: '5_30m', label: '5-30m',      color: '#5BD68A' },
+  { key: '30_1h', label: '30-1h',      color: '#FFD166' },
+  { key: '1_3h',  label: '1-3h',       color: '#FFD166' },
+  { key: '3_12h', label: '3-12h',      color: '#f43f5e' },
+  { key: 'gt12h', label: '>12h',       color: '#f43f5e' },
+  { key: 'none',  label: 'Bez odezvy', color: '#9999cc' },
+];
+
+function _bucketForMinutes(minutes) {
+  if (minutes < 5)   return 'lt5m';
+  if (minutes < 30)  return '5_30m';
+  if (minutes < 60)  return '30_1h';
+  if (minutes < 180) return '1_3h';
+  if (minutes < 720) return '3_12h';
+  return 'gt12h';
+}
+
+function _fmtMinutes(min) {
+  if (min == null) return '—';
+  if (min < 60) return Math.round(min) + ' min';
+  const h = Math.floor(min / 60), m = Math.round(min % 60);
+  return h + 'h' + (m ? ' ' + m + 'min' : '');
+}
+
+// Deterministický pseudonáhodný generátor (stejný vstup → stejný výstup, žádné blikání při re-renderu)
+function _seededRnd(seed) {
+  let s = seed;
+  return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+}
+
+// ── Zástupný zdroj: páry (kandidát, inzerát) se swipe_at / firm_response_at / firm_decision ──
+function getResponseRecords(rangeDays) {
+  const now = Date.now();
+  const DAY = 86400000;
+  const mult = rangeDays / 30;
+  const rnd = _seededRnd(Math.round(rangeDays) + 42);
+
+  const plan = [
+    { min: 1,   max: 5,    count: 142, acceptRate: 0.34 },
+    { min: 5,   max: 30,   count: 98,  acceptRate: 0.30 },
+    { min: 30,  max: 60,   count: 64,  acceptRate: 0.22 },
+    { min: 60,  max: 180,  count: 41,  acceptRate: 0.17 },
+    { min: 180, max: 720,  count: 22,  acceptRate: 0.10 },
+    { min: 720, max: 1440, count: 8,   acceptRate: 0.06 },
+  ];
+
+  const records = [];
+  plan.forEach(p => {
+    const count = Math.max(1, Math.round(p.count * mult));
+    for (let i = 0; i < count; i++) {
+      const minutes = p.min + rnd() * (p.max - p.min);
+      const swipeAt = now - rnd() * rangeDays * DAY;
+      records.push({
+        swipe_at: new Date(swipeAt).toISOString(),
+        firm_response_at: new Date(swipeAt + minutes * 60000).toISOString(),
+        firm_decision: rnd() < p.acceptRate ? 'accepted' : 'rejected',
+      });
+    }
+  });
+
+  // "Bez odezvy" — swipnuto 7+ dní zpět, firma nikdy nezareagovala
+  const noneCount = Math.max(0, Math.round(19 * mult));
+  const noneSpan = Math.max(7, rangeDays);
+  for (let i = 0; i < noneCount; i++) {
+    const swipeAt = now - (7 + rnd() * (noneSpan - 7)) * DAY;
+    records.push({ swipe_at: new Date(swipeAt).toISOString(), firm_response_at: null, firm_decision: null });
+  }
+
+  // Čerstvé swipy (< 7 dní) — firma zatím neodpověděla, do statistiky se ještě nepočítají
+  const pendingCount = Math.max(0, Math.round(6 * mult));
+  const pendingSpan = Math.min(6, rangeDays);
+  for (let i = 0; i < pendingCount; i++) {
+    const swipeAt = now - rnd() * pendingSpan * DAY;
+    records.push({ swipe_at: new Date(swipeAt).toISOString(), firm_response_at: null, firm_decision: null });
+  }
+
+  return records;
+}
+
+// Bucketing + "míra výběru podle rychlosti" (chrání proti cherry-pickingu — nezodpovězení
+// 7+ dní se počítají jako nejhorší kategorie, ne že by z výpočtu úplně vypadli)
+function computeResponseStats(records, rangeDays) {
+  const now = Date.now();
+  const DAY = 86400000;
+  const cutoff = now - rangeDays * DAY;
+
+  const counted = records
+    .filter(r => new Date(r.swipe_at).getTime() >= cutoff)
+    .map(r => {
+      const swipeMs = new Date(r.swipe_at).getTime();
+      if (r.firm_response_at) {
+        const minutes = (new Date(r.firm_response_at).getTime() - swipeMs) / 60000;
+        return { bucket: _bucketForMinutes(minutes), minutes, decision: r.firm_decision };
+      }
+      const ageDays = (now - swipeMs) / DAY;
+      if (ageDays >= 7) return { bucket: 'none', minutes: null, decision: null };
+      return null; // stále čeká na odpověď firmy — do statistiky zatím nevstupuje
+    })
+    .filter(Boolean);
+
+  const byBucket = {};
+  RESPONSE_BUCKETS.forEach(b => byBucket[b.key] = { total: 0, accepted: 0 });
+  counted.forEach(c => { byBucket[c.bucket].total++; if (c.decision === 'accepted') byBucket[c.bucket].accepted++; });
+
+  const fastKeys = ['lt5m', '5_30m', '30_1h'];
+  const slowKeys = ['3_12h', 'gt12h', 'none'];
+  const sum = (keys, field) => keys.reduce((a, k) => a + byBucket[k][field], 0);
+  const fastTotal = sum(fastKeys, 'total'), fastAcc = sum(fastKeys, 'accepted');
+  const slowTotal = sum(slowKeys, 'total'), slowAcc = sum(slowKeys, 'accepted');
+  const fastRate = fastTotal ? fastAcc / fastTotal : 0;
+  const slowRate = slowTotal ? slowAcc / slowTotal : 0;
+  const multiplier = slowTotal && slowRate > 0 ? fastRate / slowRate : null;
+
+  const respondedMinutes = counted.filter(c => c.minutes != null).map(c => c.minutes);
+  const avgMinutes = respondedMinutes.length ? respondedMinutes.reduce((a, m) => a + m, 0) / respondedMinutes.length : null;
+
+  return {
+    chartData: RESPONSE_BUCKETS.map(b => ({ l: b.label, v: byBucket[b.key].total, color: b.color })),
+    multiplier,
+    avgMinutes,
+    total: counted.length,
+  };
+}
+
+function ResponseTimeCard({ period = '30d' }) {
+  const rangeDays = PERIOD_DAYS[period] || 30;
+  const stats = computeResponseStats(getResponseRecords(rangeDays), rangeDays);
+  const subtitle = stats.multiplier != null
+    ? `Kandidáti s odpovědí do 1 h matchují ${stats.multiplier.toFixed(1)}× častěji`
+    : 'Rychlost odpovědi vs. míra výběru kandidátů';
+
+  return (
+    <>
+      <SectionHeader title="Doba odpovědi firmy" subtitle={subtitle} />
+      <BarChart width={500} height={200} data={stats.chartData} />
+      <div style={{ marginTop: 8, color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 11 }}>
+        Váš průměr: <span style={{ color: T.cardText, fontFamily: T.fontMono, fontWeight: 700 }}>{_fmtMinutes(stats.avgMinutes)}</span>
+        {' · '}{stats.total} vyhodnocených kandidátů
+      </div>
+      <div style={{ marginTop: 4, color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 10 }}>
+        „Bez odezvy" = firma na kandidáta nereagovala do 7 dní od jeho swipu.
+      </div>
+    </>
+  );
+}
+
+// ── Zástupný zdroj: inzeráty se published_at / first_swipe_at ──
+function getFirstSwipeRecords(rangeDays) {
+  const now = Date.now();
+  const DAY = 86400000;
+  const mult = rangeDays / 30;
+  const rnd = _seededRnd(Math.round(rangeDays) + 777);
+
+  const plan = [
+    { min: 1,   max: 5,    count: 2 },
+    { min: 5,   max: 30,   count: 5 },
+    { min: 30,  max: 60,   count: 7 },
+    { min: 60,  max: 180,  count: 9 },
+    { min: 180, max: 720,  count: 6 },
+    { min: 720, max: 1440, count: 3 },
+  ];
+
+  const records = [];
+  plan.forEach(p => {
+    const count = Math.max(0, Math.round(p.count * mult));
+    for (let i = 0; i < count; i++) {
+      const minutes = p.min + rnd() * (p.max - p.min);
+      const publishedAt = now - rnd() * rangeDays * DAY;
+      records.push({
+        published_at: new Date(publishedAt).toISOString(),
+        first_swipe_at: new Date(publishedAt + minutes * 60000).toISOString(),
+      });
+    }
+  });
+
+  // Inzerát publikován 7+ dní zpět a dosud nikdo neswipnul
+  const noneCount = Math.max(0, Math.round(2 * mult));
+  const noneSpan = Math.max(7, rangeDays);
+  for (let i = 0; i < noneCount; i++) {
+    const publishedAt = now - (7 + rnd() * (noneSpan - 7)) * DAY;
+    records.push({ published_at: new Date(publishedAt).toISOString(), first_swipe_at: null });
+  }
+
+  return records;
+}
+
+function computeFirstSwipeStats(records, rangeDays) {
+  const now = Date.now();
+  const DAY = 86400000;
+  const cutoff = now - rangeDays * DAY;
+
+  const counted = records
+    .filter(r => new Date(r.published_at).getTime() >= cutoff)
+    .map(r => {
+      const pubMs = new Date(r.published_at).getTime();
+      if (r.first_swipe_at) {
+        const minutes = (new Date(r.first_swipe_at).getTime() - pubMs) / 60000;
+        return { bucket: _bucketForMinutes(minutes), minutes };
+      }
+      const ageDays = (now - pubMs) / DAY;
+      if (ageDays >= 7) return { bucket: 'none', minutes: null };
+      return null; // inzerát je nový, na první swipe se ještě čeká
+    })
+    .filter(Boolean);
+
+  const byBucket = {};
+  RESPONSE_BUCKETS.forEach(b => byBucket[b.key] = 0);
+  counted.forEach(c => byBucket[c.bucket]++);
+
+  const minutesList = counted.filter(c => c.minutes != null).map(c => c.minutes);
+  const avgMinutes = minutesList.length ? minutesList.reduce((a, m) => a + m, 0) / minutesList.length : null;
+  const medianMinutes = minutesList.length ? [...minutesList].sort((a, b) => a - b)[Math.floor(minutesList.length / 2)] : null;
+
+  return {
+    chartData: RESPONSE_BUCKETS.map(b => ({ l: b.label, v: byBucket[b.key], color: '#5B6BFF' })),
+    avgMinutes,
+    medianMinutes,
+    total: counted.length,
+  };
+}
+
+function FirstInterestCard({ period = '30d' }) {
+  const rangeDays = PERIOD_DAYS[period] || 30;
+  const stats = computeFirstSwipeStats(getFirstSwipeRecords(rangeDays), rangeDays);
+  const hasHistogram = stats.total >= 5;
+
+  return (
+    <>
+      <SectionHeader title="Doba do prvního zájmu" subtitle="Jak rychle si lidé všimnou vašeho inzerátu" />
+      <div style={{ padding: hasHistogram ? '14px 0 10px' : '20px 0 6px' }}>
+        <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Průměrně</div>
+        <div style={{ color: T.cardText, fontFamily: T.fontMono, fontSize: 28, fontWeight: 800, letterSpacing: -0.5, lineHeight: 1 }}>{_fmtMinutes(stats.avgMinutes)}</div>
+      </div>
+      {hasHistogram && <BarChart width={500} height={160} data={stats.chartData} />}
+      <div style={{ marginTop: 8, color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 11 }}>
+        Napříč {stats.total} inzeráty za dané období{stats.medianMinutes != null ? ` · medián ${_fmtMinutes(stats.medianMinutes)}` : ''}
       </div>
     </>
   );
@@ -261,45 +508,265 @@ function CohortTable() {
   );
 }
 
-function DistroChart() {
-  const buckets = [
-    { l: '120', v: 8 },
-    { l: '140', v: 24 },
-    { l: '160', v: 41 },
-    { l: '180', v: 35 }, // YOU
-    { l: '200', v: 18 },
-    { l: '220', v: 7 },
-    { l: '240+', v: 3 },
-  ];
-  const max = Math.max(...buckets.map(b => b.v));
-  const W = 460, H = 180, padL = 28, padB = 28, padT = 8;
-  const innerW = W - padL - 8, innerH = H - padT - padB;
-  const bw = (innerW / buckets.length) * 0.7;
-  const gap = (innerW / buckets.length) * 0.3;
+// ─────────────────────────────────────────────────────────────
+// MZDOVÝ BENCHMARK — ručně udržovaná distribuce mezd napříč firmami na platformě
+// (percentil → Kč/h). Místo nejasného "min/max trhu" (vůči čemu?) ukazujeme
+// srozumitelnější věc: kolik procent firem na Makej! platí míň než vy.
+//
+// TODO: nahradit živým výpočtem — potřebuje agregaci hodinovek napříč VŠEMI
+// aktivními inzeráty VŠECH zaměstnavatelů na platformě (ne jen vlastní firmy),
+// tu zatím nemáme. Do té doby getWagePercentiles() vrací ručně udržovanou
+// referenční křivku — zbytek komponenty (odhad percentilu, barvy, popisky)
+// se pak nemusí měnit.
+// ─────────────────────────────────────────────────────────────
+const WAGE_PERCENTILES = [
+  { pct: 5,  wage_kc_h: 120 },
+  { pct: 25, wage_kc_h: 145 },
+  { pct: 50, wage_kc_h: 170 },
+  { pct: 75, wage_kc_h: 195 },
+  { pct: 95, wage_kc_h: 230 },
+];
+const WAGE_BENCHMARK_UPDATED = '2026-04-01';
+const WAGE_BENCHMARK_EMAIL = 'data@makej.eu';
+
+// Jediné místo, které zná zdroj dat. Později stačí přepsat tělo této funkce
+// (např. na fetch živých dat z platformy) — zbytek komponenty zůstane beze změny.
+function getWagePercentiles() {
+  return WAGE_PERCENTILES;
+}
+
+// Lineární interpolace mezi nejbližšími body křivky — odhad, kolik % firem platí míň než `wage`.
+function estimateWagePercentile(wage, points) {
+  if (!points.length) return null;
+  if (wage <= points[0].wage_kc_h) return points[0].pct;
+  if (wage >= points[points.length - 1].wage_kc_h) return points[points.length - 1].pct;
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i], b = points[i + 1];
+    if (wage >= a.wage_kc_h && wage <= b.wage_kc_h) {
+      const t = (wage - a.wage_kc_h) / (b.wage_kc_h - a.wage_kc_h);
+      return Math.round(a.pct + t * (b.pct - a.pct));
+    }
+  }
+  return 50;
+}
+
+function WageBenchmark() {
+  const points = getWagePercentiles();
+  const median = points.find(p => p.pct === 50);
+
+  const fmtDate = (iso) => {
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? iso : d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
+  };
+
+  // Fallback pro jistotu, kdyby benchmark data chyběla (v běžném provozu nenastane)
+  if (!points.length || !median) {
+    return (
+      <>
+        <SectionHeader title="Průměrná hodinovka brigádníků" />
+        <div style={{ padding: '18px 0 6px', color: T.cardMuted, fontFamily: T.fontUI, fontSize: 13, lineHeight: 1.55 }}>
+          Zatím nemáme aktuální data. Napište nám na{' '}
+          <a href={`mailto:${WAGE_BENCHMARK_EMAIL}`} style={{ color: '#0020F6', textDecoration: 'none', fontWeight: 700 }}>{WAGE_BENCHMARK_EMAIL}</a>.
+        </div>
+      </>
+    );
+  }
+
+  // „Váš průměr" — průměr hodinovky napříč všemi aktivními inzeráty firmy (celé portfolio)
+  const jobs = (typeof E_JOBS !== 'undefined' ? E_JOBS : []).filter(j => j.status === 'active' || j.status === 'urgent');
+  const yourWage = jobs.length ? Math.round(jobs.reduce((a, j) => a + Number(j.pay || 0), 0) / jobs.length) : null;
+  const percentile = yourWage != null ? estimateWagePercentile(yourWage, points) : null;
+
+  // Barevná logika podle percentilu: zelená nad polovinou trhu, žlutá kolem mediánu, červená pod
+  let cmp = null;
+  if (percentile != null) {
+    if (percentile >= 60)      cmp = { color: '#1a9e4d', bg: 'rgba(26,158,77,0.10)', border: 'rgba(26,158,77,0.30)', label: 'nad trhem' };
+    else if (percentile >= 40) cmp = { color: '#c99400', bg: 'rgba(201,148,0,0.10)', border: 'rgba(201,148,0,0.30)', label: 'na úrovni trhu' };
+    else                       cmp = { color: '#f43f5e', bg: 'rgba(244,63,94,0.10)', border: 'rgba(244,63,94,0.30)', label: 'pod trhem' };
+  }
+
   return (
-    <div>
-      <svg width={W} height={H} style={{ display: 'block' }}>
-        {buckets.map((b, i) => {
-          const h = (b.v / max) * innerH;
-          const x = padL + i * (bw + gap) + gap / 2;
-          const y = padT + innerH - h;
-          const isYou = b.l === '180';
-          return (
-            <g key={i}>
-              <rect x={x} y={y} width={bw} height={h} rx="4" fill={isYou ? '#FFD166' : '#5B6BFF'} opacity={isYou ? 1 : 0.6} />
-              {isYou && <text x={x + bw/2} y={y - 8} textAnchor="middle" fill="#c99400" fontFamily={T.fontUI} fontSize="9.5" fontWeight="800">VY</text>}
-              <text x={x + bw/2} y={H - 12} textAnchor="middle" fill={T.cardMutedSoft} fontFamily={T.fontMono} fontSize="9.5">{b.l}</text>
-            </g>
-          );
-        })}
-        <text x={padL} y={H - 2} fill={T.cardMutedSoft} fontFamily={T.fontUI} fontSize="9">Kč/h</text>
-      </svg>
-      <div style={{ display: 'flex', gap: 20, marginTop: 6, fontFamily: T.fontMono, fontSize: 11 }}>
-        <div><span style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>Medián segmentu</span><div style={{ color: T.cardText, fontWeight: 700, fontSize: 14 }}>162 Kč</div></div>
-        <div><span style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>Vy</span><div style={{ color: '#c99400', fontWeight: 700, fontSize: 14 }}>180 Kč</div></div>
-        <div><span style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>Top 10 %</span><div style={{ color: T.cardText, fontWeight: 700, fontSize: 14 }}>220+ Kč</div></div>
+    <>
+      <SectionHeader title="Průměrná hodinovka brigádníků" subtitle={`Napříč trhem · aktualizováno ${fmtDate(WAGE_BENCHMARK_UPDATED)}`} />
+
+      <div style={{ padding: '20px 0 6px' }}>
+        <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Medián trhu</div>
+        <div style={{ color: T.cardText, fontFamily: T.fontMono, fontSize: 34, fontWeight: 800, letterSpacing: -1, lineHeight: 1 }}>
+          {median.wage_kc_h}<span style={{ fontSize: 14, color: T.cardMuted, fontWeight: 600 }}> Kč/h</span>
+        </div>
       </div>
-    </div>
+
+      {percentile != null ? (
+        <>
+          <div style={{ marginTop: 14 }}>
+            <div style={{ color: cmp.color, fontFamily: T.fontUI, fontSize: 18, fontWeight: 800, lineHeight: 1.3 }}>
+              Platíte {percentile >= 50 ? 'více' : 'méně'} než {percentile}&nbsp;% firem na Makej!
+            </div>
+            <div style={{ marginTop: 4, color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5 }}>
+              Váš průměr (všechny inzeráty): <span style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.cardText }}>{yourWage} Kč/h</span>
+            </div>
+          </div>
+
+          {/* Vizuální škála 0–100 % — pozice mezi firmami podle percentilu, ne podle Kč */}
+          <div style={{ margin: '26px 6px 0' }}>
+            <div style={{ position: 'relative', height: 8, borderRadius: 999, background: 'rgba(0,32,246,0.10)' }}>
+              <div style={{
+                position: 'absolute', top: '50%', left: percentile + '%', transform: 'translate(-50%, -50%)',
+                width: 14, height: 14, borderRadius: '50%', background: cmp.color,
+                border: '2px solid #fff', boxShadow: '0 1px 5px rgba(0,0,0,0.3)', zIndex: 2,
+              }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontFamily: T.fontUI, fontSize: 9, color: T.cardMutedSoft, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+              <span>Nižší mzdy</span>
+              <span>Vyšší mzdy</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 14px', borderRadius: 10, background: cmp.bg, border: '1px solid ' + cmp.border, marginTop: 14 }}>
+            <span style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600 }}>Vaše pozice na trhu</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: cmp.color, fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 800 }}>
+              <span style={{ width: 8, height: 8, borderRadius: 999, background: cmp.color }} /> {cmp.label}
+            </span>
+          </div>
+        </>
+      ) : (
+        <div style={{ marginTop: 14, color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5, lineHeight: 1.55 }}>
+          Zatím nemáte žádný aktivní inzerát, se kterým bychom vás mohli srovnat s trhem.
+        </div>
+      )}
+
+      <div style={{ marginTop: 12, color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 10.5, lineHeight: 1.5 }}>
+        Orientační odhad na základě interní distribuce mezd na platformě. Nemusí odpovídat aktuální situaci na trhu.
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// RETENCE KANDIDÁTŮ — kolik najatých kandidátů se k firmě vrací opakovaně
+// (2+ záznamy se stavem "Najato" napříč různými inzeráty, ne v rámci jednoho inzerátu).
+// Počítá se za celou historii firmy, ne za zvolené období — retence je dlouhodobá metrika.
+//
+// TODO: napojit na reálný "Najato" stav, jakmile bude definován spolehlivý mechanismus
+// označování kandidátů jako najatých (otevřený bod z dřívějška). Do té doby vrací
+// getRetentionRecords() mock data ve správné struktuře { id, name, hires } — zbytek
+// komponenty (výpočet %, edge case, seznam nejvěrnějších) se pak nemusí měnit.
+// ─────────────────────────────────────────────────────────────
+function getRetentionRecords() {
+  return [
+    { id: 'r1',  name: 'Petr N.',    hires: 4 },
+    { id: 'r2',  name: 'Klára V.',   hires: 3 },
+    { id: 'r3',  name: 'Tomáš M.',   hires: 3 },
+    { id: 'r4',  name: 'Eliška Š.',  hires: 2 },
+    { id: 'r5',  name: 'Adam P.',    hires: 2 },
+    { id: 'r6',  name: 'Markéta L.', hires: 1 },
+    { id: 'r7',  name: 'Jakub V.',   hires: 1 },
+    { id: 'r8',  name: 'Sára D.',    hires: 1 },
+    { id: 'r9',  name: 'David K.',   hires: 1 },
+    { id: 'r10', name: 'Nikola H.',  hires: 1 },
+    { id: 'r11', name: 'Filip R.',   hires: 1 },
+  ];
+}
+
+function computeRetentionStats(records) {
+  const total = records.length;
+  const returning = records.filter(r => r.hires >= 2).length;
+  const pct = total > 0 ? Math.round((returning / total) * 100) : null;
+  const top = [...records].sort((a, b) => b.hires - a.hires).filter(r => r.hires >= 2).slice(0, 5);
+
+  // Rozpad podle počtu brigád — pro firmy s víc inzeráty/kandidáty vypovídá líp než jmenovky
+  const tiers = [
+    { key: '1', label: '1× najato',   test: h => h === 1 },
+    { key: '2', label: '2× najato',   test: h => h === 2 },
+    { key: '3+', label: '3+ × najato', test: h => h >= 3 },
+  ];
+  const breakdown = tiers.map(t => {
+    const count = records.filter(r => t.test(r.hires)).length;
+    return { ...t, count, pct: total ? Math.round((count / total) * 100) : 0 };
+  });
+
+  return { total, returning, pct, top, breakdown, hasEnoughData: total >= 5 };
+}
+
+// Tarif firmy rozhoduje, jestli dává smysl vypisovat konkrétní jména (malá firma, pár inzerátů)
+// nebo procentuální rozpad (větší firma s víc inzeráty — jmenovky by u desítek kandidátů nic neřekly).
+// Stejná normalizace starých názvů tarifů jako v EPricing (ECOMPANY.plan v datech zatím ukládá
+// staré názvy — Standard, Business, Enterprise…).
+function _planTier() {
+  const planName = ((typeof ECOMPANY !== 'undefined' && ECOMPANY.plan) || '').toLowerCase();
+  if (planName.includes('enterprise') || planName.includes('vlastní') || planName.includes('vlastni')) return 'vlastni';
+  if (planName.includes('business') || planName.includes('premium') || planName.includes('maximální') || planName.includes('maximalni')) return 'maximalni';
+  if (planName.includes('dynamick')) return 'dynamicky';
+  if (planName.includes('standard') || planName.includes('výhodný') || planName.includes('vyhodny')) return 'vyhodny';
+  return 'zakladni';
+}
+
+function RetentionCard() {
+  const stats = computeRetentionStats(getRetentionRecords()); // TODO: napojit na reálný "Najato" stav
+  const showNamed = ['zakladni', 'vyhodny'].includes(_planTier());
+
+  return (
+    <>
+      <SectionHeader title="Retence kandidátů" subtitle="Kolik lidí se k vám vrací" />
+
+      {!stats.hasEnoughData && (
+        <div style={{ padding: '18px 0 6px', color: T.cardMuted, fontFamily: T.fontUI, fontSize: 13, lineHeight: 1.55 }}>
+          Zatím nedostatek dat — potřebujeme alespoň 5 najatých kandidátů pro spolehlivou statistiku.
+        </div>
+      )}
+
+      {stats.hasEnoughData && (
+        <>
+          <div style={{ padding: '18px 0 6px' }}>
+            <div style={{ color: '#0020F6', fontFamily: T.fontMono, fontSize: 34, fontWeight: 800, letterSpacing: -1, lineHeight: 1 }}>
+              {stats.pct}<span style={{ fontSize: 18, fontWeight: 700 }}>%</span>
+            </div>
+            <div style={{ marginTop: 8, color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5 }}>
+              {stats.returning} z {stats.total} najatých kandidátů u vás pracovalo opakovaně
+            </div>
+          </div>
+
+          {showNamed && stats.top.length > 0 && (
+            <div style={{ marginTop: 6 }}>
+              <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+                Nejvěrnější kandidáti
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {stats.top.map(c => (
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 9, background: T.cardSoft, border: '1px solid ' + T.cardBorder }}>
+                    <span style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600 }}>{c.name}</span>
+                    <span style={{ color: '#0020F6', fontFamily: T.fontMono, fontSize: 12, fontWeight: 800 }}>{c.hires}× brigáda</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!showNamed && (
+            <div style={{ marginTop: 6 }}>
+              <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+                Rozpad podle počtu brigád
+              </div>
+              {stats.breakdown.map(t => (
+                <div key={t.key} style={{ marginBottom: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, fontFamily: T.fontUI, marginBottom: 4 }}>
+                    <span style={{ color: T.cardLight }}>{t.label}</span>
+                    <span style={{ color: T.cardText, fontFamily: T.fontMono, fontWeight: 700 }}>{t.count} · {t.pct} %</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 3, background: T.cardSoft }}>
+                    <div style={{ height: '100%', width: t.pct + '%', borderRadius: 3, background: '#0020F6' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      <div style={{ marginTop: 12, color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 10.5, lineHeight: 1.5 }}>
+        Počítáno za celou historii firmy napříč všemi inzeráty, nezávisle na zvoleném období.
+      </div>
+    </>
   );
 }
 
@@ -308,15 +775,17 @@ function AnalyticsDemo() {
   return (
     <>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-        <ECard>
+        <ECard style={{ display: 'flex', flexDirection: 'column' }}>
           <SectionHeader title="Věk" />
-          <BarChart width={300} height={200} data={[
-            { l: '15-17', v: 22 }, { l: '18-21', v: 87 }, { l: '22-25', v: 68 }, { l: '26-30', v: 31 }, { l: '30+', v: 14 },
-          ]} color="#0020F6" />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <BarChart width={300} height={200} data={[
+              { l: '15-17', v: 22 }, { l: '18-21', v: 87 }, { l: '22-25', v: 68 }, { l: '26-30', v: 31 }, { l: '30+', v: 14 },
+            ]} color="#0020F6" />
+          </div>
         </ECard>
-        <ECard>
+        <ECard style={{ display: 'flex', flexDirection: 'column' }}>
           <SectionHeader title="Pohlaví" />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 14 }}>
             <Donut size={130} thickness={20} data={[{ v: 58, color: '#5B6BFF' }, { v: 41, color: '#FFD166' }, { v: 1, color: '#E0B0FF' }]} />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, fontFamily: T.fontUI, fontSize: 12 }}>
               {[
@@ -336,24 +805,26 @@ function AnalyticsDemo() {
             </div>
           </div>
         </ECard>
-        <ECard>
+        <ECard style={{ display: 'flex', flexDirection: 'column' }}>
           <SectionHeader title="Zaměstnanecký status" />
-          {[
-            { l: 'Středoškolák', v: 38, c: '#0020F6' },
-            { l: 'Vysokoškolák', v: 42, c: '#5B6BFF' },
-            { l: 'Pracující na vedlejšák', v: 14, c: '#FFD166' },
-            { l: 'Bez práce', v: 6, c: '#E0B0FF' },
-          ].map((x, i) => (
-            <div key={i} style={{ marginBottom: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, fontFamily: T.fontUI, marginBottom: 4 }}>
-                <span style={{ color: T.cardLight }}>{x.l}</span>
-                <span style={{ color: T.cardText, fontFamily: T.fontMono, fontWeight: 700 }}>{x.v} %</span>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            {[
+              { l: 'Středoškolák', v: 38, c: '#0020F6' },
+              { l: 'Vysokoškolák', v: 42, c: '#5B6BFF' },
+              { l: 'Pracující na vedlejšák', v: 14, c: '#FFD166' },
+              { l: 'Bez práce', v: 6, c: '#E0B0FF' },
+            ].map((x, i) => (
+              <div key={i} style={{ marginBottom: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, fontFamily: T.fontUI, marginBottom: 4 }}>
+                  <span style={{ color: T.cardLight }}>{x.l}</span>
+                  <span style={{ color: T.cardText, fontFamily: T.fontMono, fontWeight: 700 }}>{x.v} %</span>
+                </div>
+                <div style={{ height: 6, borderRadius: 3, background: T.cardSoft }}>
+                  <div style={{ height: '100%', width: x.v + '%', borderRadius: 3, background: x.c }} />
+                </div>
               </div>
-              <div style={{ height: 6, borderRadius: 3, background: T.cardSoft }}>
-                <div style={{ height: '100%', width: x.v + '%', borderRadius: 3, background: x.c }} />
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </ECard>
       </div>
     </>

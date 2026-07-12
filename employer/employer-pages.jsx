@@ -107,6 +107,7 @@ function EJobs({ onTab }) {
   const [sort, setSort] = useStateE('newest');
   const [minPay, setMinPay] = useStateE('');
   const [maxPay, setMaxPay] = useStateE('');
+  const [statsJob, setStatsJob] = useStateE(null);
 
   const ALL_CANDS_FLAT = buildCandsFlat();
 
@@ -339,6 +340,13 @@ function EJobs({ onTab }) {
                     fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600,
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                   }}><Icon name="rocket-2-bold" size={12} color="#FFD166"/>Boostnout</button>
+                  <button onClick={() => setStatsJob(j)} style={{
+                    padding: '8px 12px', borderRadius: 9,
+                    background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder,
+                    color: T.cardLight, cursor: 'pointer',
+                    fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600,
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  }}><Icon name="chart-2-bold" size={12} color="#0020F6"/>Zobrazit statistiky</button>
                   <button style={{
                     padding: '8px 12px', borderRadius: 9,
                     background: 'transparent', border: '1px solid ' + T.cardBorder,
@@ -352,6 +360,8 @@ function EJobs({ onTab }) {
           );
         })}
       </div>
+
+      {statsJob && <JobStatsDrawer job={statsJob} onClose={() => setStatsJob(null)} />}
     </div>
   );
 }
@@ -366,6 +376,162 @@ function BarMetric({ label, value, max, suffix = '' }) {
       </div>
       <div style={{ height: 5, borderRadius: 3, background: 'rgba(0,32,246,0.09)', overflow: 'hidden' }}>
         <div style={{ height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #5B6BFF, #0020F6)' }} />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// STATISTIKY JEDNOTLIVÉHO INZERÁTU — drawer nad seznamem inzerátů
+// Reálná data (z job.candidates, doplněných v employer-supabase.jsx):
+//   unikátní/noví kandidáti, rychlost swipnutí po zveřejnění (job.created_at vs matched_at)
+// Pohlaví a věk zatím profily neukládají — deterministické zástupné hodnoty
+// odvozené z worker_id (stejný kandidát = stejný výsledek), dokud tato pole nepřibudou v DB.
+// ─────────────────────────────────────────────────────────────
+
+const AGE_BUCKETS = ['15-17', '18-21', '22-25', '26-30', '30+'];
+const AGE_WEIGHTS = [0.12, 0.40, 0.28, 0.13, 0.07];
+
+function _hashSeed(str) {
+  let h = 0;
+  for (let i = 0; i < (str || '').length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
+  return Math.abs(h);
+}
+
+function _mockGender(workerId) {
+  const r = _seededRnd(_hashSeed(workerId) + 1)();
+  if (r < 0.56) return 'F';
+  if (r < 0.985) return 'M';
+  return 'other';
+}
+
+function _mockAgeBucket(workerId) {
+  const r = _seededRnd(_hashSeed(workerId) + 2)();
+  let acc = 0;
+  for (let i = 0; i < AGE_BUCKETS.length; i++) {
+    acc += AGE_WEIGHTS[i];
+    if (r <= acc) return AGE_BUCKETS[i];
+  }
+  return AGE_BUCKETS[AGE_BUCKETS.length - 1];
+}
+
+function JobStatsDrawer({ job, onClose }) {
+  const jobsList = (typeof E_JOBS !== 'undefined' ? E_JOBS : []);
+  const rawCandidates = job.candidates || [];
+
+  const seen = new Map();
+  rawCandidates.forEach(c => { if (!seen.has(c.worker_id)) seen.set(c.worker_id, c); });
+  const uniqueCandidates = Array.from(seen.values());
+
+  // Noví = kandidát dosud neměl match na jiném vašem inzerátu před tímto swipem
+  const newCount = uniqueCandidates.filter(c => {
+    const seenElsewhereEarlier = jobsList.some(j2 => j2.id !== job.id && (j2.candidates || []).some(c2 =>
+      c2.worker_id === c.worker_id && new Date(c2.matched_at).getTime() < new Date(c.matched_at).getTime()
+    ));
+    return !seenElsewhereEarlier;
+  }).length;
+
+  // Rychlost swipnutí po zveřejnění inzerátu
+  const publishedMs = job.created_at ? new Date(job.created_at).getTime() : null;
+  const swipeSpeeds = publishedMs != null
+    ? uniqueCandidates.map(c => (new Date(c.matched_at).getTime() - publishedMs) / 60000).filter(m => m >= 0)
+    : [];
+  const speedBuckets = RESPONSE_BUCKETS.filter(b => b.key !== 'none');
+  const speedCounts = {};
+  speedBuckets.forEach(b => speedCounts[b.key] = 0);
+  swipeSpeeds.forEach(m => { const k = _bucketForMinutes(m); if (speedCounts[k] != null) speedCounts[k]++; });
+  const speedChartData = speedBuckets.map(b => ({ l: b.label, v: speedCounts[b.key], color: b.color }));
+  const avgSpeed = swipeSpeeds.length ? swipeSpeeds.reduce((a, m) => a + m, 0) / swipeSpeeds.length : null;
+
+  // Pohlaví a věk — zástupné hodnoty, viz komentář výše
+  const genderCounts = { F: 0, M: 0, other: 0 };
+  uniqueCandidates.forEach(c => { genderCounts[_mockGender(c.worker_id)]++; });
+  const ageCounts = {};
+  AGE_BUCKETS.forEach(b => ageCounts[b] = 0);
+  uniqueCandidates.forEach(c => { ageCounts[_mockAgeBucket(c.worker_id)]++; });
+
+  const hasData = uniqueCandidates.length > 0;
+  const sectionLabel = { color: '#6B7280', fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 };
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, right: 0, bottom: 0, width: 420,
+      background: '#fff', borderLeft: '1px solid #E5E7EB',
+      boxShadow: '-20px 0 60px rgba(0,0,0,0.12)',
+      zIndex: 100, display: 'flex', flexDirection: 'column',
+      animation: 'mkBubbleIn .25s',
+    }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' }}>Statistiky inzerátu</div>
+          <div style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 14, fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 }}>{job.title}</div>
+        </div>
+        <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, background: '#F9FAFB', border: '1px solid #E5E7EB', cursor: 'pointer', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+          <Icon name="close-square-bold" size={16} color="#6B7280"/>
+        </button>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {!hasData && (
+          <div style={{ textAlign: 'center', padding: '30px 10px', color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 13, lineHeight: 1.6 }}>
+            Zatím žádní kandidáti na tento inzerát. Statistiky se zobrazí, jakmile někdo swipne.
+          </div>
+        )}
+
+        {hasData && (
+          <>
+            <div>
+              <div style={sectionLabel}>Kandidáti</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div style={{ flex: 1, padding: '12px 14px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
+                  <div style={{ color: '#111827', fontFamily: T.fontMono, fontSize: 22, fontWeight: 800 }}>{uniqueCandidates.length}</div>
+                  <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 11 }}>unikátních</div>
+                </div>
+                <div style={{ flex: 1, padding: '12px 14px', borderRadius: 10, background: 'rgba(0,32,246,0.05)', border: '1px solid rgba(0,32,246,0.15)' }}>
+                  <div style={{ color: '#0020F6', fontFamily: T.fontMono, fontSize: 22, fontWeight: 800 }}>{newCount}</div>
+                  <div style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 11 }}>nových u vás</div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div style={sectionLabel}>Jak rychle lidé swipli po zveřejnění</div>
+              <BarChart width={380} height={170} data={speedChartData} />
+              <div style={{ marginTop: 6, color: '#6B7280', fontFamily: T.fontUI, fontSize: 11 }}>
+                Průměrně: <span style={{ color: '#111827', fontFamily: T.fontMono, fontWeight: 700 }}>{_fmtMinutes(avgSpeed)}</span>
+              </div>
+            </div>
+
+            <div>
+              <div style={sectionLabel}>Pohlaví</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <Donut size={90} thickness={14} data={[
+                  { v: genderCounts.F, color: '#5B6BFF' },
+                  { v: genderCounts.M, color: '#FFD166' },
+                  { v: genderCounts.other, color: '#E0B0FF' },
+                ]} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, fontFamily: T.fontUI, fontSize: 12 }}>
+                  {[['Žena', genderCounts.F, '#5B6BFF'], ['Muž', genderCounts.M, '#FFD166'], ['Jiné', genderCounts.other, '#E0B0FF']].map(([l, n, c]) => (
+                    <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 2, background: c }} />
+                      <span style={{ color: '#374151', flex: 1 }}>{l}</span>
+                      <span style={{ color: '#111827', fontFamily: T.fontMono, fontWeight: 700 }}>{n}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div style={sectionLabel}>Věk</div>
+              <BarChart width={380} height={170} data={AGE_BUCKETS.map(b => ({ l: b, v: ageCounts[b] }))} color={T.primary} />
+            </div>
+
+            <div style={{ color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 10, lineHeight: 1.5 }}>
+              Pohlaví a věk jsou orientační — profily kandidátů zatím tyto údaje neukládají.
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

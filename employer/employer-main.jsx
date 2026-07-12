@@ -617,7 +617,7 @@ function EmployerApp() {
   } else if (noData && tab === 'dash') {
     body = <EEmptyState />;
   } else if (tab === 'dash')        body = <EDashboard key={tick + period} period={period} onTab={setTab} />;
-  else if (tab === 'analytics')     body = <EAnalytics key={tick} />;
+  else if (tab === 'analytics')     body = <EAnalytics key={tick + period} period={period} />;
   else if (tab === 'jobs')          body = <EJobs key={tick} onTab={setTab} />;
   else if (tab === 'candidates')    body = <ECandidates key={tick} onOpenChat={openChat} />;
   else if (tab === 'chat')          body = <EMessages key={tick + '-' + openThreadId} initialThreadId={openThreadId} />;
