@@ -982,26 +982,52 @@ const PLANS = [
   {
     id: 'zakladni', name: 'Základní', price: 0, free: true, period: 'navždy zdarma',
     color: '#8AB4FF', icon: 'hand-shake-bold',
+    highlights: [
+      { ok: true,  text: '1 aktivní inzerát' },
+      { ok: true,  text: 'Oslovování brigádníků 1×/měs' },
+      { ok: false, text: 'Topování inzerátu' },
+      { ok: false, text: 'Ověřená firma' },
+    ],
     cta: 'Začít zdarma', contact: false,
   },
   {
     id: 'vyhodny', name: 'Výhodný', price: 499, annualPrice: 424, period: 'za měsíc bez DPH',
     color: '#5B6BFF', icon: 'bolt-bold', badge: 'Nejoblíbenější', popular: true,
+    highlights: [
+      { ok: true, text: '2 aktivní inzeráty' },
+      { ok: true, text: 'Topování inzerátu 1×/měs' },
+      { ok: true, text: 'Ověřená firma + branding' },
+      { ok: true, text: 'Oslovování brigádníků 10×/měs' },
+    ],
     cta: 'Vybrat Výhodný', contact: false,
   },
   {
     id: 'dynamicky', name: 'Dynamický', price: 2000, period: 'za měsíc bez DPH',
     color: '#5BD68A', icon: 'bolt-bold',
+    highlights: [
+      { tbd: true, text: 'Funkce doplníme společně' },
+    ],
     cta: 'Vybrat Dynamický', contact: false,
   },
   {
     id: 'maximalni', name: 'Maximální', price: 4999, annualPrice: 4249, period: 'za měsíc bez DPH',
     color: '#FFD166', icon: 'crown-star-bold',
+    highlights: [
+      { ok: true, text: '10 aktivních inzerátů' },
+      { ok: true, text: 'Topování inzerátu 5×/měs' },
+      { ok: true, text: 'SMS Urgent + prémiový badge' },
+      { ok: true, text: 'Pokročilá analytika' },
+    ],
     cta: 'Vybrat Maximální', contact: false,
   },
   {
     id: 'vlastni', name: 'Vlastní', price: 9999, pricePrefix: 'od ', period: 'kalkulace na míru',
     color: '#E0B0FF', icon: 'buildings-2-bold',
+    highlights: [
+      { ok: true, text: 'Vše z Maximální' },
+      { ok: true, text: 'Custom integrace (HR)' },
+      { ok: true, text: 'Dedikovaný account manager' },
+    ],
     cta: 'Nezávazná poptávka', contact: true,
   },
 ];
@@ -1050,7 +1076,7 @@ function FeatureCell({ value }) {
   if (value === 'tbd') {
     return <span style={{ display: 'inline-block', padding: '2px 9px', borderRadius: 6, background: '#F3F4F6', color: '#9CA3AF', fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 700 }}>brzy</span>;
   }
-  if (value === true)  return <Icon name="check-circle-bold" size={17} color="#059669" />;
+  if (value === true)  return <Icon name="check-circle-bold" size={17} color="#00f60a" />;
   if (value === false) return <span style={{ color: '#D1D5DB', fontSize: 15, fontWeight: 700 }}>–</span>;
   return <span style={{ color: '#111827', fontFamily: T.fontMono, fontSize: 12, fontWeight: 700 }}>{value}</span>;
 }
@@ -1181,10 +1207,7 @@ function EPricing({ onTab, onPlanChange }) {
                     borderRadius: 99, padding: '3px 8px', letterSpacing: 0.5,
                   }}>AKTUÁLNÍ</div>
                 )}
-                <div style={{ marginTop: plan.badge ? 16 : 6 }}>
-                  <Icon name={plan.icon} size={22} color={plan.color} />
-                </div>
-                <div style={{ fontFamily: T.fontUI, fontSize: 11, fontWeight: 800, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1.4, marginTop: 8, marginBottom: 12 }}>{plan.name}</div>
+                <div style={{ fontFamily: T.fontUI, fontSize: 11, fontWeight: 800, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 1.4, marginTop: plan.badge ? 22 : 8, marginBottom: 12 }}>{plan.name}</div>
 
                 <div style={{ minHeight: 44, display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4, flexWrap: 'wrap' }}>
                   {plan.free ? (
@@ -1212,6 +1235,24 @@ function EPricing({ onTab, onPlanChange }) {
                     </span>
                   ) : null}
                 </div>
+
+                {plan.highlights && plan.highlights.length > 0 && (
+                  <>
+                    <div style={{ borderTop: '1px solid rgba(0,0,0,0.07)', margin: '4px 0 14px' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 16, textAlign: 'left' }}>
+                      {plan.highlights.map((h, hi) => (
+                        <div key={hi} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                          {h.tbd ? (
+                            <Icon name="clock-circle-bold" size={15} color="#9CA3AF" />
+                          ) : (
+                            <Icon name={h.ok ? 'check-circle-bold' : 'close-circle-bold'} size={15} color={h.ok ? '#00f60a' : '#D1D5DB'} />
+                          )}
+                          <span style={{ color: h.tbd ? '#9CA3AF' : (h.ok ? '#374151' : '#9CA3AF'), fontSize: 12, fontWeight: 600, fontFamily: T.fontUI, lineHeight: 1.3 }}>{h.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
 
                 <div style={{ marginTop: 'auto', paddingTop: 8 }}>
                   {plan.contact ? (
@@ -1282,7 +1323,6 @@ function EPricing({ onTab, onPlanChange }) {
                     borderTop: '4px solid ' + plan.color,
                     background: plan.popular ? 'rgba(0,32,246,0.05)' : '#F9FAFB',
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}><Icon name={plan.icon} size={18} color={plan.color} /></div>
                     <div style={{ fontFamily: T.fontUI, fontSize: 11, fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: 0.8 }}>{plan.name}</div>
                     <div style={{ fontFamily: T.fontMono, fontSize: 12, fontWeight: 700, color: '#6B7280', marginTop: 3 }}>
                       {plan.free ? 'Zdarma' : plan.priceLabel ? plan.priceLabel : (plan.pricePrefix || '') + (annual && plan.annualPrice ? plan.annualPrice : plan.price).toLocaleString('cs-CZ') + ' Kč'}
