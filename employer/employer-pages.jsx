@@ -97,9 +97,22 @@ function JobCountdown({ activeUntil, status }) {
 const STATUS_META = {
   active: { label: 'Aktivní', color: '#5BD68A', dot: true },
   urgent: { label: 'ASAP · spěchá', color: '#f43f5e', dot: true, pulse: true },
-  paused: { label: 'Pozastaveno', color: '#FFD166' },
+  paused: { label: 'Neaktivní', color: '#9AA0AE' },
   filled: { label: 'Naplněno', color: '#8AB4FF' },
 };
+
+// Maximální počet současně aktivních inzerátů podle tarifu firmy (viz PLANS v employer-pages3.jsx).
+// Firma může mít libovolně mnoho předpřipravených (neaktivních) inzerátů, ale aktivních jen do limitu.
+const EMPLOYER_MAX_ACTIVE = { zakladni: 1, vyhodny: 2, dynamicky: 5, maximalni: 10, vlastni: Infinity };
+
+function _employerPlanTier() {
+  const planName = ((typeof ECOMPANY !== 'undefined' && ECOMPANY.plan) || '').toLowerCase();
+  if (planName.includes('enterprise') || planName.includes('vlastní') || planName.includes('vlastni')) return 'vlastni';
+  if (planName.includes('business') || planName.includes('premium') || planName.includes('maximální') || planName.includes('maximalni')) return 'maximalni';
+  if (planName.includes('dynamick')) return 'dynamicky';
+  if (planName.includes('standard') || planName.includes('výhodný') || planName.includes('vyhodny')) return 'vyhodny';
+  return 'zakladni';
+}
 
 function EJobs({ onTab }) {
   const [filter, setFilter] = useStateE('active');
@@ -108,11 +121,47 @@ function EJobs({ onTab }) {
   const [minPay, setMinPay] = useStateE('');
   const [maxPay, setMaxPay] = useStateE('');
   const [statsJob, setStatsJob] = useStateE(null);
+  // Lokální přepis stavu inzerátu (aktivní/neaktivní). Zatím jen v prohlížeči — až přibude
+  // updateJobStatus v Supabase vrstvě, stačí sem přidat volání a zbytek se nemění.
+  // TODO: perzistovat do Supabase (jobs.status) + budoucí automatické časování aktivace.
+  const [statusOverrides, setStatusOverrides] = useStateE({});
+  const [openStatusMenu, setOpenStatusMenu] = useStateE(null);
+  const [limitModal, setLimitModal] = useStateE(false);
+  const [confirmJob, setConfirmJob] = useStateE(null);
 
   const ALL_CANDS_FLAT = buildCandsFlat();
 
+  // Efektivní stav = lokální přepis, jinak stav z dat
+  const jobsEff = E_JOBS.map(j => ({ ...j, status: statusOverrides[j.id] || j.status }));
+
+  const planTier    = _employerPlanTier();
+  const activeLimit = EMPLOYER_MAX_ACTIVE[planTier] != null ? EMPLOYER_MAX_ACTIVE[planTier] : Infinity;
+  const activeCount = jobsEff.filter(j => j.status === 'active' || j.status === 'urgent').length;
+
+  function applyJobStatus(job, next) {
+    setStatusOverrides(o => ({ ...o, [job.id]: next }));
+  }
+
+  function setJobStatus(job, next) {
+    setOpenStatusMenu(null);
+    const cur = statusOverrides[job.id] || job.status;
+    if (cur === next) return;
+    const curActive  = cur === 'active' || cur === 'urgent';
+    const nextActive = next === 'active';
+    if (nextActive && !curActive && activeCount >= activeLimit) {
+      setLimitModal(true);
+      return;
+    }
+    // Deaktivace aktivního inzerátu — vyžádat potvrzení
+    if (next === 'paused' && curActive) {
+      setConfirmJob(job);
+      return;
+    }
+    applyJobStatus(job, next);
+  }
+
   const filtered = React.useMemo(() => {
-    let jobs = filter === 'all' ? E_JOBS : E_JOBS.filter(j => j.status === filter);
+    let jobs = filter === 'all' ? jobsEff : jobsEff.filter(j => j.status === filter);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       jobs = jobs.filter(j =>
@@ -132,7 +181,7 @@ function EJobs({ onTab }) {
       return 0;
     });
     return jobs;
-  }, [filter, search, sort, minPay, maxPay]);
+  }, [filter, search, sort, minPay, maxPay, statusOverrides]);
 
   const inputStyle = {
     paddingLeft: 10, paddingRight: 10, paddingTop: 7, paddingBottom: 7,
@@ -145,10 +194,10 @@ function EJobs({ onTab }) {
       {/* Summary */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
         {[
-          { label: 'Aktivních', value: E_JOBS.filter(j=>j.status==='active'||j.status==='urgent').length, sub: (n => n === 1 ? 'inzerát' : n <= 4 ? 'inzeráty' : 'inzerátů')(E_JOBS.filter(j=>j.status==='active'||j.status==='urgent').length), color: '#5BD68A' },
-          { label: 'Celkem zhlédnutí', value: E_JOBS.reduce((a,j)=>a+j.views,0).toLocaleString('cs-CZ').replace(/,/g,' '), sub: 'za 30 dní', color: '#5B6BFF' },
-          { label: 'Průměrný CTR', value: (E_JOBS.length ? (E_JOBS.reduce((a,j)=>a+j.ctr,0)/E_JOBS.length) : 0).toFixed(1)+'%', sub: 'swajp → match', color: '#FFD166' },
-          { label: 'Najato celkem', value: E_JOBS.reduce((a,j)=>a+j.hired,0), sub: 'v tomto měsíci', color: '#5BD68A' },
+          { label: 'Aktivních', value: activeCount, sub: activeLimit === Infinity ? 'bez limitu' : `z ${activeLimit} v tarifu`, color: '#5BD68A' },
+          { label: 'Celkem zhlédnutí', value: jobsEff.reduce((a,j)=>a+j.views,0).toLocaleString('cs-CZ').replace(/,/g,' '), sub: 'za 30 dní', color: '#5B6BFF' },
+          { label: 'Průměrný CTR', value: (jobsEff.length ? (jobsEff.reduce((a,j)=>a+j.ctr,0)/jobsEff.length) : 0).toFixed(1)+'%', sub: 'swajp → match', color: '#FFD166' },
+          { label: 'Najato celkem', value: jobsEff.reduce((a,j)=>a+j.hired,0), sub: 'v tomto měsíci', color: '#5BD68A' },
         ].map((s, i) => (
           <ECard key={i} padding={16}>
             <div style={{ color: T.cardMuted, fontSize: 11, fontFamily: T.fontUI, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase' }}>{s.label}</div>
@@ -163,11 +212,11 @@ function EJobs({ onTab }) {
       {/* Filter + search row */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         {[
-          { k: 'all', l: 'Vše', n: E_JOBS.length },
-          { k: 'active', l: 'Aktivní', n: E_JOBS.filter(j=>j.status==='active').length },
-          { k: 'urgent', l: 'ASAP', n: E_JOBS.filter(j=>j.status==='urgent').length },
-          { k: 'paused', l: 'Pozastaveno', n: E_JOBS.filter(j=>j.status==='paused').length },
-          { k: 'filled', l: 'Naplněno', n: E_JOBS.filter(j=>j.status==='filled').length },
+          { k: 'all', l: 'Vše', n: jobsEff.length },
+          { k: 'active', l: 'Aktivní', n: jobsEff.filter(j=>j.status==='active').length },
+          { k: 'urgent', l: 'ASAP', n: jobsEff.filter(j=>j.status==='urgent').length },
+          { k: 'paused', l: 'Neaktivní', n: jobsEff.filter(j=>j.status==='paused').length },
+          { k: 'filled', l: 'Naplněno', n: jobsEff.filter(j=>j.status==='filled').length },
         ].map(f => (
           <button key={f.k} onClick={() => setFilter(f.k)} style={{
             padding: '8px 14px', borderRadius: 9,
@@ -227,8 +276,6 @@ function EJobs({ onTab }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {filtered.map(j => {
           const status = STATUS_META[j.status];
-          const matchRate = (j.swipes > 0 ? (j.matches / j.swipes) * 100 : 0).toFixed(1);
-          const hireRate = (j.matches > 0 ? (j.hired / j.matches) * 100 : 0).toFixed(1);
           let activeUntil;
           if (j.date) {
             let d = new Date(j.date);
@@ -248,113 +295,189 @@ function EJobs({ onTab }) {
             activeUntil = new Date(created.getTime() + planDays * 86400000);
           }
           const now = new Date();
-          const fmtD = d => d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' });
+          const fmtD = d => d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
+          const daysLeft = Math.ceil((activeUntil - now) / 86400000);
+          const plZaj = n => n === 1 ? 'zájemce' : (n >= 2 && n <= 4 ? 'zájemci' : 'zájemců');
+          // Fáze náboru — v jaké je inzerát fázi a na čem stojí (reálná data: matches, hired, status)
+          const phases = [
+            { label: 'Zveřejněno', icon: 'document-text-bold',       reached: true,                  stat: j.created_at ? fmtD(new Date(j.created_at)) : '—' },
+            { label: 'Má zájemce', icon: 'heart-bold',               reached: j.matches > 0,         stat: j.matches + ' ' + plZaj(j.matches) },
+            { label: 'Nabírá',     icon: 'users-group-rounded-bold', reached: j.hired > 0,           stat: j.hired + ' najato' },
+            { label: 'Obsazeno',   icon: 'check-circle-bold',        reached: j.status === 'filled', stat: j.status === 'filled' ? 'hotovo' : '—' },
+          ];
+          let currentIdx = 0;
+          phases.forEach((p, i) => { if (p.reached) currentIdx = i; });
+          const btnBase = { padding: '9px 14px', borderRadius: 9, cursor: 'pointer', fontFamily: T.fontUI, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 };
           return (
             <ECard key={j.id} padding={0} style={{ overflow: 'hidden' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr 200px', alignItems: 'stretch' }}>
-                {/* Left: title + status */}
-                <div style={{ padding: 18, borderRight: '1px solid ' + T.cardBorder, display: 'flex', flexDirection: 'column', gap: 10, position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 8 }}>
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 5,
-                      padding: '3px 8px', borderRadius: 6,
-                      background: status.color + '33',
-                      color: status.color,
-                      fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 0.5, textTransform: 'uppercase',
-                    }}>
-                      {status.dot ? <span style={{ width: 6, height: 6, borderRadius: 999, background: status.color, animation: status.pulse ? 'mkBubbleIn 1s infinite alternate' : 'none' }} /> : null}
-                      {status.label}
-                    </span>
-                    <span style={{ fontSize: 10, fontFamily: T.fontMono, color: T.cardMuted }}>{j.plan}</span>
-                    <span style={{ fontSize: 10, fontFamily: T.fontMono, color: T.cardMuted, marginLeft: 'auto', opacity: 0.5 }}>#{String(j.id).slice(0, 8)}</span>
-                  </div>
-                  <div style={{ paddingLeft: 8, display: 'flex', flexDirection: 'column', gap: 0, flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, color: T.cardText, letterSpacing: -0.3, lineHeight: 1.2 }}>{j.title}</div>
-                      {ALL_CANDS_FLAT.some(c => c.jobTitle === j.title && c.rating >= 4.8 && c.jobsDone >= 15) && (
-                        <img src="star.png" title="Má kandidáty Všemi oblíbení" style={{ width: 20, height: 20, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }} />
-                      )}
-                      {ALL_CANDS_FLAT.some(c => c.jobTitle === j.title && c.workedHere) && (
-                        <img src="handshake.png" title="Má kandidáty Už se známe" style={{ width: 20, height: 20, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }} />
-                      )}
-                      {ALL_CANDS_FLAT.some(c => c.jobTitle === j.title && c.sameIndustry) && (
-                        <img src="briefcase.png" title="Má kandidáty s zkušeností" style={{ width: 20, height: 20, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }} />
-                      )}
-                    </div>
-                    <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{
+              {/* Hlavička */}
+              <div style={{ padding: '18px 22px 4px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                {(() => {
+                  const canToggle = j.status !== 'filled';
+                  const isActive = j.status === 'active' || j.status === 'urgent';
+                  return (
+                    <span style={{ position: 'relative' }}>
+                      <button onClick={() => canToggle && setOpenStatusMenu(openStatusMenu === j.id ? null : j.id)} style={{
                         display: 'inline-flex', alignItems: 'center', gap: 5,
-                        padding: '5px 12px', borderRadius: 999,
-                        background: 'rgba(91,214,138,0.15)',
-                        border: '1px solid rgba(91,214,138,0.35)',
-                        color: '#5BD68A',
-                        fontFamily: T.fontMono, fontSize: 13, fontWeight: 800,
+                        padding: '3px 9px', borderRadius: 6, border: 'none',
+                        background: status.color + '22', color: status.color,
+                        fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 0.5, textTransform: 'uppercase',
+                        cursor: canToggle ? 'pointer' : 'default',
                       }}>
-                        <Icon name="dollar-bold" size={13} color="#5BD68A" />
-                        {j.pay} Kč/h
-                      </span>
-                    </div>
-                    <div style={{ marginTop: 'auto', paddingTop: 14, fontSize: 11, fontFamily: T.fontUI, color: T.cardMuted }}>
-                      Zveřejněno: <span style={{ fontFamily: T.fontMono, color: T.cardText, fontWeight: 600 }}>
-                        {j.created_at ? new Date(j.created_at).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' }) : '—'}
-                      </span>
+                        {status.dot ? <span style={{ width: 6, height: 6, borderRadius: 999, background: status.color, animation: status.pulse ? 'mkBubbleIn 1s infinite alternate' : 'none' }} /> : null}
+                        {status.label}
+                        {canToggle && <Icon name="alt-arrow-down-line-duotone" size={11} color={status.color} />}
+                      </button>
+                      {openStatusMenu === j.id && (
+                        <>
+                          <div onClick={() => setOpenStatusMenu(null)} style={{ position: 'fixed', inset: 0, zIndex: 30 }} />
+                          <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 31, background: '#fff', border: '1px solid #E5E7EB', borderRadius: 10, boxShadow: '0 12px 32px rgba(0,0,0,0.14)', padding: 5, minWidth: 190 }}>
+                            {[
+                              { key: 'active', label: 'Aktivní', color: '#5BD68A', desc: 'Vidí ho brigádníci' },
+                              { key: 'paused', label: 'Neaktivní', color: '#9AA0AE', desc: 'Skrytý, předpřipravený' },
+                            ].map(opt => {
+                              const isCur = opt.key === 'active' ? isActive : j.status === opt.key;
+                              return (
+                                <button key={opt.key} onClick={() => setJobStatus(j, opt.key)} style={{
+                                  width: '100%', display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 7,
+                                  background: isCur ? 'rgba(0,32,246,0.05)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left',
+                                }}>
+                                  <span style={{ width: 8, height: 8, borderRadius: 999, background: opt.color, flexShrink: 0 }} />
+                                  <span style={{ flex: 1 }}>
+                                    <span style={{ display: 'block', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700, color: '#111827' }}>{opt.label}</span>
+                                    <span style={{ display: 'block', fontFamily: T.fontUI, fontSize: 10.5, color: '#9CA3AF' }}>{opt.desc}</span>
+                                  </span>
+                                  {isCur && <Icon name="check-read-linear" size={15} color="#0020F6" />}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </>
+                      )}
+                    </span>
+                  );
+                })()}
+                <div style={{ fontFamily: T.fontHead, fontSize: 17, fontWeight: 800, color: T.cardText, letterSpacing: -0.3 }}>{j.title}</div>
+                {ALL_CANDS_FLAT.some(c => c.jobTitle === j.title && c.rating >= 4.8 && c.jobsDone >= 15) && (
+                  <img src="star.png" title="Má kandidáty Všemi oblíbení" style={{ width: 20, height: 20, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }} />
+                )}
+                {ALL_CANDS_FLAT.some(c => c.jobTitle === j.title && c.workedHere) && (
+                  <img src="handshake.png" title="Má kandidáty Už se známe" style={{ width: 20, height: 20, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }} />
+                )}
+                {ALL_CANDS_FLAT.some(c => c.jobTitle === j.title && c.sameIndustry) && (
+                  <img src="briefcase.png" title="Má kandidáty s zkušeností" style={{ width: 20, height: 20, objectFit: 'contain', imageRendering: 'pixelated', flexShrink: 0 }} />
+                )}
+
+                <div style={{ flex: 1 }} />
+
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontFamily: T.fontUI, color: T.cardMuted }}>
+                  <Icon name="clock-circle-bold" size={13} color={T.cardMutedSoft} />
+                  {daysLeft > 0 ? 'Aktivní do' : 'Vypršelo'}
+                  <span style={{ fontFamily: T.fontMono, color: T.cardText, fontWeight: 600 }}>{fmtD(activeUntil)}</span>
+                  {daysLeft > 0 && (
+                    <span style={{ padding: '1px 7px', borderRadius: 999, background: daysLeft <= 3 ? 'rgba(244,63,94,0.12)' : 'rgba(0,32,246,0.07)', color: daysLeft <= 3 ? '#f43f5e' : T.cardMuted, fontFamily: T.fontMono, fontSize: 10, fontWeight: 700 }}>{daysLeft} d</span>
+                  )}
+                </span>
+
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '6px 13px', borderRadius: 999,
+                  background: 'rgba(91,214,138,0.14)', border: '1px solid rgba(91,214,138,0.35)',
+                  color: '#3aab63', fontFamily: T.fontMono, fontSize: 14, fontWeight: 800,
+                }}>
+                  <Icon name="dollar-bold" size={13} color="#3aab63" />
+                  {j.pay} Kč/h
+                </span>
+              </div>
+
+              {/* Tělo: výkon inzerátu + fáze náboru vedle sebe */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', alignItems: 'stretch' }}>
+                {/* Levá půlka — výkon inzerátu */}
+                <div style={{ padding: '16px 24px 20px', borderRight: '1px solid ' + T.cardBorder, display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Výkon inzerátu</div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14, paddingTop: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+                      {[
+                        { l: 'Zájem', v: j.matches },
+                        { l: 'Čeká na vás', v: j.pending != null ? j.pending : Math.max(0, j.matches - j.hired) },
+                        { l: 'Najato', v: j.hired },
+                      ].map((m, i) => (
+                        <div key={i}>
+                          <div style={{ color: T.cardMuted, fontSize: 10, fontFamily: T.fontUI, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' }}>{m.l}</div>
+                          <div style={{ color: T.cardText, fontFamily: T.fontMono, fontSize: 20, fontWeight: 700, marginTop: 3, letterSpacing: -0.6 }}>{Number(m.v).toLocaleString('cs-CZ').replace(/,/g, ' ')}</div>
+                        </div>
+                      ))}
+                      {(() => {
+                        const s = (j.hired > 0 || j.status === 'filled')
+                          ? { icon: 'check-circle-bold', color: '#3aab63', label: 'Obsazeno' }
+                          : (j.status === 'active' || j.status === 'urgent'
+                              ? { icon: 'question-circle-bold', color: '#0020F6', label: 'Hledáme' }
+                              : { icon: 'close-circle-bold', color: '#f43f5e', label: 'Neobsazeno' });
+                        return (
+                          <div>
+                            <div style={{ color: T.cardMuted, fontSize: 10, fontFamily: T.fontUI, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' }}>Stav</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
+                              <Icon name={s.icon} size={20} color={s.color} />
+                              <span style={{ color: s.color, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700 }}>{s.label}</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
 
-                {/* Middle: metrics + bars */}
-                <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-                    {[
-                      { l: 'Zhlédnutí', v: j.views.toLocaleString('cs-CZ').replace(/,/g,' '), c: '#5B6BFF' },
-                      { l: 'Swipe right', v: j.swipes.toLocaleString('cs-CZ').replace(/,/g,' '), c: '#FFD166' },
-                      { l: 'Matche', v: j.matches, c: '#0020F6' },
-                      { l: 'Najato', v: j.hired, c: '#5BD68A' },
-                    ].map((m, i) => (
-                      <div key={i}>
-                        <div style={{ color: T.cardMuted, fontSize: 10, fontFamily: T.fontUI, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' }}>{m.l}</div>
-                        <div style={{ color: T.cardText, fontFamily: T.fontMono, fontSize: 20, fontWeight: 700, marginTop: 3, letterSpacing: -0.6 }}>{m.v}</div>
+                {/* Pravá půlka — fázový ukazatel */}
+                <div style={{ padding: '16px 30px 24px', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Fáze náboru</div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: 18 }}>
+                    <div style={{ position: 'relative' }}>
+                      {/* Kolej za uzly */}
+                      <div style={{ position: 'absolute', top: 13, left: '12.5%', right: '12.5%', height: 3, background: '#E8EAF0', borderRadius: 2 }} />
+                      <div style={{ position: 'absolute', top: 13, left: '12.5%', width: (currentIdx * 25) + '%', height: 3, background: '#0020F6', borderRadius: 2 }} />
+                      {/* Uzly */}
+                      <div style={{ display: 'flex', position: 'relative', zIndex: 1 }}>
+                        {phases.map((p, i) => {
+                          const reached = i <= currentIdx;
+                          const isCurrent = i === currentIdx;
+                          return (
+                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                              <div style={{
+                                width: 28, height: 28, borderRadius: '50%',
+                                background: reached ? '#0020F6' : '#fff',
+                                border: reached ? 'none' : '2px solid #E8EAF0',
+                                boxShadow: isCurrent ? '0 0 0 4px rgba(0,32,246,0.14)' : 'none',
+                                display: 'grid', placeItems: 'center',
+                              }}>
+                                <Icon name={p.icon} size={15} color={reached ? '#fff' : '#B6BAC3'} />
+                              </div>
+                              <div style={{ marginTop: 10, fontFamily: T.fontUI, fontSize: 11.5, fontWeight: isCurrent ? 800 : 700, color: reached ? T.cardText : T.cardMutedSoft }}>{p.label}</div>
+                              <div style={{ marginTop: 2, fontFamily: T.fontMono, fontSize: 10, color: reached ? T.cardMuted : T.cardMutedSoft }}>{p.stat}</div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    ))}
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, paddingTop: 4, borderTop: '1px solid ' + T.cardBorder }}>
-                    <BarMetric label="CTR (zhlédnuto → swajp)" value={j.ctr} max={30} suffix="%" />
-                    <BarMetric label="Match rate (swajp → match)" value={parseFloat(matchRate)} max={20} suffix="%" />
-                    <BarMetric label="Hire rate (match → najato)" value={parseFloat(hireRate)} max={30} suffix="%" />
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Right: actions */}
-                <div style={{ padding: 18, borderLeft: '1px solid ' + T.cardBorder, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
-                  <button onClick={() => onTab?.('candidates')} style={{
-                    padding: '10px 12px', borderRadius: 9,
-                    background: 'linear-gradient(135deg, #0020F6, #2D2CA7)',
-                    border: 'none', color: '#fff', cursor: 'pointer',
-                    fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700,
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  }}><Icon name="users-group-rounded-bold" size={14} color="#fff"/>Kandidáti ({j.matches})</button>
-                  <button style={{
-                    padding: '8px 12px', borderRadius: 9,
-                    background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder,
-                    color: T.cardLight, cursor: 'pointer',
-                    fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600,
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  }}><Icon name="rocket-2-bold" size={12} color="#FFD166"/>Boostnout</button>
-                  <button onClick={() => setStatsJob(j)} style={{
-                    padding: '8px 12px', borderRadius: 9,
-                    background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder,
-                    color: T.cardLight, cursor: 'pointer',
-                    fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600,
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  }}><Icon name="chart-2-bold" size={12} color="#0020F6"/>Zobrazit statistiky</button>
-                  <button style={{
-                    padding: '8px 12px', borderRadius: 9,
-                    background: 'transparent', border: '1px solid ' + T.cardBorder,
-                    color: T.cardMuted, cursor: 'pointer',
-                    fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600,
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  }}><Icon name="pen-2-linear" size={12} color={T.cardMuted}/>Upravit</button>
-                </div>
+              {/* Akce */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '13px 22px', borderTop: '1px solid ' + T.cardBorder, background: 'rgba(0,32,246,0.015)' }}>
+                <button onClick={() => onTab?.('candidates')} style={{
+                  ...btnBase, background: 'linear-gradient(135deg, #0020F6, #2D2CA7)', border: 'none', color: '#fff',
+                  boxShadow: '0 2px 10px rgba(0,32,246,0.22)',
+                }}><Icon name="users-group-rounded-bold" size={14} color="#fff"/>Kandidáti ({j.matches})</button>
+                <button onClick={() => setStatsJob(j)} style={{
+                  ...btnBase, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder, color: T.cardLight,
+                }}><Icon name="chart-2-bold" size={12} color="#0020F6"/>Zobrazit statistiky</button>
+                <button style={{
+                  ...btnBase, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder, color: T.cardLight,
+                }}><Icon name="rocket-2-bold" size={12} color="#FFD166"/>Boostnout</button>
+                <div style={{ flex: 1 }} />
+                <button style={{
+                  ...btnBase, background: 'transparent', border: '1px solid ' + T.cardBorder, color: T.cardMuted,
+                }}><Icon name="pen-2-linear" size={12} color={T.cardMuted}/>Upravit</button>
               </div>
             </ECard>
           );
@@ -362,21 +485,60 @@ function EJobs({ onTab }) {
       </div>
 
       {statsJob && <JobStatsDrawer job={statsJob} onClose={() => setStatsJob(null)} />}
-    </div>
-  );
-}
 
-function BarMetric({ label, value, max, suffix = '' }) {
-  const pct = Math.min(100, (value / max) * 100);
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ color: T.cardMuted, fontSize: 10.5, fontFamily: T.fontUI, fontWeight: 600 }}>{label}</span>
-        <span style={{ color: T.cardText, fontFamily: T.fontMono, fontSize: 11.5, fontWeight: 700 }}>{value}{suffix}</span>
-      </div>
-      <div style={{ height: 5, borderRadius: 3, background: 'rgba(0,32,246,0.09)', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #5B6BFF, #0020F6)' }} />
-      </div>
+      {confirmJob && (
+        <div onClick={() => setConfirmJob(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,15,35,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 'min(400px, 100%)', background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 24px 70px rgba(0,0,0,0.3)' }}>
+            <div style={{ fontFamily: T.fontHead, fontSize: 16.5, fontWeight: 800, color: '#111827', marginBottom: 12 }}>Označit jako neaktivní?</div>
+            <div style={{ color: '#4B5563', fontFamily: T.fontUI, fontSize: 13, lineHeight: 1.6, marginBottom: 20 }}>
+              Inzerát <strong style={{ color: '#111827' }}>„{confirmJob.title}"</strong> se skryje brigádníkům a přestane sbírat nové zájemce. Můžete ho kdykoli znovu aktivovat.
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button onClick={() => setConfirmJob(null)} style={{
+                padding: '9px 16px', borderRadius: 9, background: '#F3F4F6', border: '1px solid #E5E7EB',
+                color: '#374151', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+              }}>Zrušit</button>
+              <button onClick={() => { applyJobStatus(confirmJob, 'paused'); setConfirmJob(null); }} style={{
+                padding: '9px 16px', borderRadius: 9, background: '#0020F6', border: 'none',
+                color: '#fff', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+                boxShadow: '0 2px 10px rgba(0,32,246,0.25)',
+              }}>Opravdu chci inzerát skrýt</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {limitModal && (
+        <div onClick={() => setLimitModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,15,35,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 'min(420px, 100%)', background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 24px 70px rgba(0,0,0,0.3)' }}>
+            <div style={{ fontFamily: T.fontHead, fontSize: 16.5, fontWeight: 800, color: '#111827', marginBottom: 12 }}>Limit vašeho tarifu</div>
+            <div style={{ color: '#4B5563', fontFamily: T.fontUI, fontSize: 13, lineHeight: 1.6, marginBottom: 16 }}>
+              Momentálně máte aktivní <strong style={{ color: '#111827' }}>{activeLimit}</strong> {activeLimit === 1 ? 'inzerát' : activeLimit <= 4 ? 'inzeráty' : 'inzerátů'} — to je maximum ve vašem tarifu. Situaci vyřešíte dvěma způsoby:
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gridAutoRows: '1fr', gap: 8, marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '10px 12px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #E5E7EB', height: '100%' }}>
+                <span style={{ width: 18, height: 18, borderRadius: 999, background: '#0020F6', color: '#fff', fontFamily: T.fontMono, fontSize: 11, fontWeight: 800, display: 'grid', placeItems: 'center', flexShrink: 0 }}>1</span>
+                <span style={{ color: '#374151', fontFamily: T.fontUI, fontSize: 12.5, lineHeight: 1.5 }}>Deaktivujte jeden ze svých aktivních inzerátů a nahraďte ho tímto.</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '10px 12px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #E5E7EB', height: '100%' }}>
+                <span style={{ width: 18, height: 18, borderRadius: 999, background: '#0020F6', color: '#fff', fontFamily: T.fontMono, fontSize: 11, fontWeight: 800, display: 'grid', placeItems: 'center', flexShrink: 0 }}>2</span>
+                <span style={{ color: '#374151', fontFamily: T.fontUI, fontSize: 12.5, lineHeight: 1.5 }}>Přejděte na vyšší tarif s více aktivními inzeráty.</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between' }}>
+              <button onClick={() => setLimitModal(false)} style={{
+                padding: '9px 16px', borderRadius: 9, background: '#F3F4F6', border: '1px solid #E5E7EB',
+                color: '#374151', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+              }}>Zavřít</button>
+              <button onClick={() => { setLimitModal(false); onTab?.('pricing'); }} style={{
+                padding: '9px 16px', borderRadius: 9, background: '#0020F6', border: 'none',
+                color: '#fff', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+                boxShadow: '0 2px 10px rgba(0,32,246,0.25)',
+              }}>Chci upgrade</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

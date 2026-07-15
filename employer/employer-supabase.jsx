@@ -94,8 +94,9 @@ async function fetchEmployerData(employerId) {
 
     // ── E_JOBS ───────────────────────────────────────────────────────────────
     const newJobs = jobs.map(job => {
-      const jm     = matches.filter(m => m.job_id === job.id);
-      const hired  = jm.filter(m => m.status === 'accepted').length;
+      const jm      = matches.filter(m => m.job_id === job.id);
+      const hired   = jm.filter(m => m.status === 'accepted').length;
+      const pending = jm.filter(m => m.status === 'pending').length;
       let daysLeft = 0;
       if (job.date) {
         let d = new Date(job.date);
@@ -117,7 +118,7 @@ async function fetchEmployerData(employerId) {
         id: job.id, title: job.title,
         company: job.company || companyName,
         status, plan: 'Standard',
-        views: 0, swipes: jm.length, matches: jm.length, hired, ctr: 0,
+        views: 0, swipes: jm.length, matches: jm.length, hired, pending, ctr: 0,
         daysLeft, pay: job.pay, payUnit: job.pay_unit || 'Kč/h',
         accent: _strColor(job.id),
         location: job.location, date: job.date,

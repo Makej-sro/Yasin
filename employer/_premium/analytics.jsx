@@ -509,16 +509,25 @@ function CohortTable() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// MZDOVÝ BENCHMARK — ručně udržovaná distribuce mezd napříč firmami na platformě
-// (percentil → Kč/h). Místo nejasného "min/max trhu" (vůči čemu?) ukazujeme
-// srozumitelnější věc: kolik procent firem na Makej! platí míň než vy.
+// MZDOVÝ BENCHMARK — ručně udržovaná distribuce mezd napříč firmami na platformě.
+// Žádný region/obor (to dřív vedlo k zavádějícímu srovnání) — obecný trh, zobrazený
+// jako histogram (kolik firem platí v jakém pásmu), s vaším pásmem zvýrazněným.
 //
 // TODO: nahradit živým výpočtem — potřebuje agregaci hodinovek napříč VŠEMI
 // aktivními inzeráty VŠECH zaměstnavatelů na platformě (ne jen vlastní firmy),
-// tu zatím nemáme. Do té doby getWagePercentiles() vrací ručně udržovanou
-// referenční křivku — zbytek komponenty (odhad percentilu, barvy, popisky)
-// se pak nemusí měnit.
+// tu zatím nemáme. Do té doby getWageDistribution()/getWagePercentiles() vrací
+// ručně udržovaná referenční data — zbytek komponenty (bucketing, percentil,
+// barvy) se pak nemusí měnit.
 // ─────────────────────────────────────────────────────────────
+const WAGE_DISTRIBUTION = [
+  { bucket_kc_h: 120, count: 18 },
+  { bucket_kc_h: 140, count: 42 },
+  { bucket_kc_h: 160, count: 65 },
+  { bucket_kc_h: 180, count: 48 },
+  { bucket_kc_h: 200, count: 34 },
+  { bucket_kc_h: 220, count: 16 },
+  { bucket_kc_h: 240, count: 7 },
+];
 const WAGE_PERCENTILES = [
   { pct: 5,  wage_kc_h: 120 },
   { pct: 25, wage_kc_h: 145 },
@@ -526,11 +535,15 @@ const WAGE_PERCENTILES = [
   { pct: 75, wage_kc_h: 195 },
   { pct: 95, wage_kc_h: 230 },
 ];
+const WAGE_TOP10_KC_H = 220;
 const WAGE_BENCHMARK_UPDATED = '2026-04-01';
 const WAGE_BENCHMARK_EMAIL = 'data@makej.eu';
 
-// Jediné místo, které zná zdroj dat. Později stačí přepsat tělo této funkce
+// Jediné místo, které zná zdroj dat. Později stačí přepsat tělo těchto funkcí
 // (např. na fetch živých dat z platformy) — zbytek komponenty zůstane beze změny.
+function getWageDistribution() {
+  return WAGE_DISTRIBUTION;
+}
 function getWagePercentiles() {
   return WAGE_PERCENTILES;
 }
@@ -550,7 +563,16 @@ function estimateWagePercentile(wage, points) {
   return 50;
 }
 
+// Do kterého pásma histogramu vaše mzda spadá (poslední pásmo je otevřené — "240+")
+function _wageBucketIndex(wage, distribution) {
+  for (let i = distribution.length - 1; i >= 0; i--) {
+    if (wage >= distribution[i].bucket_kc_h) return i;
+  }
+  return 0;
+}
+
 function WageBenchmark() {
+  const distribution = getWageDistribution();
   const points = getWagePercentiles();
   const median = points.find(p => p.pct === 50);
 
@@ -560,7 +582,7 @@ function WageBenchmark() {
   };
 
   // Fallback pro jistotu, kdyby benchmark data chyběla (v běžném provozu nenastane)
-  if (!points.length || !median) {
+  if (!distribution.length || !median) {
     return (
       <>
         <SectionHeader title="Průměrná hodinovka brigádníků" />
@@ -576,60 +598,71 @@ function WageBenchmark() {
   const jobs = (typeof E_JOBS !== 'undefined' ? E_JOBS : []).filter(j => j.status === 'active' || j.status === 'urgent');
   const yourWage = jobs.length ? Math.round(jobs.reduce((a, j) => a + Number(j.pay || 0), 0) / jobs.length) : null;
   const percentile = yourWage != null ? estimateWagePercentile(yourWage, points) : null;
+  const yourBucketIdx = yourWage != null ? _wageBucketIndex(yourWage, distribution) : -1;
 
   // Barevná logika podle percentilu: zelená nad polovinou trhu, žlutá kolem mediánu, červená pod
   let cmp = null;
   if (percentile != null) {
-    if (percentile >= 60)      cmp = { color: '#1a9e4d', bg: 'rgba(26,158,77,0.10)', border: 'rgba(26,158,77,0.30)', label: 'nad trhem' };
-    else if (percentile >= 40) cmp = { color: '#c99400', bg: 'rgba(201,148,0,0.10)', border: 'rgba(201,148,0,0.30)', label: 'na úrovni trhu' };
-    else                       cmp = { color: '#f43f5e', bg: 'rgba(244,63,94,0.10)', border: 'rgba(244,63,94,0.30)', label: 'pod trhem' };
+    if (percentile >= 60)      cmp = { color: '#1a9e4d', label: 'nad trhem' };
+    else if (percentile >= 40) cmp = { color: '#c99400', label: 'na úrovni trhu' };
+    else                       cmp = { color: '#f43f5e', label: 'pod trhem' };
   }
+
+  const maxCount = Math.max(...distribution.map(d => d.count));
+  const BAR_TRACK_H = 110;
 
   return (
     <>
       <SectionHeader title="Průměrná hodinovka brigádníků" subtitle={`Napříč trhem · aktualizováno ${fmtDate(WAGE_BENCHMARK_UPDATED)}`} />
 
-      <div style={{ padding: '20px 0 6px' }}>
-        <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 }}>Medián trhu</div>
-        <div style={{ color: T.cardText, fontFamily: T.fontMono, fontSize: 34, fontWeight: 800, letterSpacing: -1, lineHeight: 1 }}>
-          {median.wage_kc_h}<span style={{ fontSize: 14, color: T.cardMuted, fontWeight: 600 }}> Kč/h</span>
+      {percentile != null && (
+        <div style={{ color: cmp.color, fontFamily: T.fontUI, fontSize: 15.5, fontWeight: 800, lineHeight: 1.3, marginTop: 4 }}>
+          Platíte {percentile >= 50 ? 'více' : 'méně'} než {percentile}&nbsp;% firem na Makej!
+        </div>
+      )}
+
+      {/* Histogram — kolik firem platí v jakém pásmu, vaše pásmo zvýrazněné */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: BAR_TRACK_H + 24, marginTop: 18 }}>
+        {distribution.map((d, i) => {
+          const isYou = i === yourBucketIdx;
+          const h = maxCount ? Math.max(4, Math.round((d.count / maxCount) * BAR_TRACK_H)) : 4;
+          return (
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100%' }}>
+              <div style={{ height: 16, width: '100%', textAlign: 'center' }}>
+                {isYou && <span style={{ color: cmp.color, fontFamily: T.fontUI, fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 }}>Vy</span>}
+              </div>
+              <div style={{ width: '100%', height: h, borderRadius: '8px 8px 3px 3px', background: isYou ? cmp.color : 'rgba(91,107,255,0.45)', marginTop: 4 }} />
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+        {distribution.map((d, i) => (
+          <div key={i} style={{ flex: 1, textAlign: 'center', color: T.cardMutedSoft, fontFamily: T.fontMono, fontSize: 10 }}>
+            {i === distribution.length - 1 ? `${d.bucket_kc_h}+` : d.bucket_kc_h}
+          </div>
+        ))}
+      </div>
+
+      {/* Souhrn — medián trhu / vy / top 10 % */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 20, paddingTop: 14, borderTop: '1px solid ' + T.cardBorder }}>
+        <div>
+          <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Medián trhu</div>
+          <div style={{ color: T.cardText, fontFamily: T.fontMono, fontSize: 19, fontWeight: 800 }}>{median.wage_kc_h}<span style={{ fontSize: 12, fontWeight: 600, color: T.cardMuted }}> Kč</span></div>
+        </div>
+        {yourWage != null && (
+          <div>
+            <div style={{ color: cmp.color, fontFamily: T.fontUI, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Vy</div>
+            <div style={{ color: cmp.color, fontFamily: T.fontMono, fontSize: 19, fontWeight: 800 }}>{yourWage}<span style={{ fontSize: 12, fontWeight: 600 }}> Kč</span></div>
+          </div>
+        )}
+        <div>
+          <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Top 10 %</div>
+          <div style={{ color: T.cardText, fontFamily: T.fontMono, fontSize: 19, fontWeight: 800 }}>{WAGE_TOP10_KC_H}+<span style={{ fontSize: 12, fontWeight: 600, color: T.cardMuted }}> Kč</span></div>
         </div>
       </div>
 
-      {percentile != null ? (
-        <>
-          <div style={{ marginTop: 14 }}>
-            <div style={{ color: cmp.color, fontFamily: T.fontUI, fontSize: 18, fontWeight: 800, lineHeight: 1.3 }}>
-              Platíte {percentile >= 50 ? 'více' : 'méně'} než {percentile}&nbsp;% firem na Makej!
-            </div>
-            <div style={{ marginTop: 4, color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5 }}>
-              Váš průměr (všechny inzeráty): <span style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.cardText }}>{yourWage} Kč/h</span>
-            </div>
-          </div>
-
-          {/* Vizuální škála 0–100 % — pozice mezi firmami podle percentilu, ne podle Kč */}
-          <div style={{ margin: '26px 6px 0' }}>
-            <div style={{ position: 'relative', height: 8, borderRadius: 999, background: 'rgba(0,32,246,0.10)' }}>
-              <div style={{
-                position: 'absolute', top: '50%', left: percentile + '%', transform: 'translate(-50%, -50%)',
-                width: 14, height: 14, borderRadius: '50%', background: cmp.color,
-                border: '2px solid #fff', boxShadow: '0 1px 5px rgba(0,0,0,0.3)', zIndex: 2,
-              }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontFamily: T.fontUI, fontSize: 9, color: T.cardMutedSoft, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-              <span>Nižší mzdy</span>
-              <span>Vyšší mzdy</span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 14px', borderRadius: 10, background: cmp.bg, border: '1px solid ' + cmp.border, marginTop: 14 }}>
-            <span style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 600 }}>Vaše pozice na trhu</span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: cmp.color, fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 800 }}>
-              <span style={{ width: 8, height: 8, borderRadius: 999, background: cmp.color }} /> {cmp.label}
-            </span>
-          </div>
-        </>
-      ) : (
+      {yourWage == null && (
         <div style={{ marginTop: 14, color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5, lineHeight: 1.55 }}>
           Zatím nemáte žádný aktivní inzerát, se kterým bychom vás mohli srovnat s trhem.
         </div>
