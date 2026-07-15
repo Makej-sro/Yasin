@@ -26,7 +26,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="/iconify-solar.js"></script>
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" async></script>
-  <link rel="stylesheet" href="style.css?v=22" />
+  <link rel="stylesheet" href="style.css?v=29" />
   <style>
     /* Bolt-style střídavé kroky (foto + text) */
     .bolt-head { text-align: center; max-width: 1080px; margin: 0 auto 56px; padding: 0 24px; }
@@ -511,16 +511,16 @@
         transition: transform 0.4s cubic-bezier(.2,.8,.2,1);
         animation: peekerIn 0.45s cubic-bezier(.2,.8,.2,1) both;
       ">
-        <div style="width:88px;height:76px;background:linear-gradient(160deg,#4848c4 0%,#1c1c7a 100%);border-radius:50% 50% 44% 44%;position:relative;box-shadow:0 14px 36px rgba(0,0,60,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:2px solid rgba(140,140,255,0.3);">
+        <div style="width:88px;height:76px;background:linear-gradient(160deg,#2a39ff 0%,#0a17d2 100%);border-radius:50% 50% 44% 44%;position:relative;box-shadow:0 14px 36px rgba(0,0,60,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:2px solid rgba(120,145,255,0.35);">
           <div id="main-browL" style="position:absolute;left:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
           <div id="main-browR" style="position:absolute;right:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
           <div id="main-eyeL" style="position:absolute;left:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
             <div id="main-pupilL" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
-            <div id="main-lidL" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+            <div id="main-lidL" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#4358ff,#0f22cc);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
           </div>
           <div id="main-eyeR" style="position:absolute;right:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
             <div id="main-pupilR" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
-            <div id="main-lidR" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+            <div id="main-lidR" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#4358ff,#0f22cc);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
           </div>
           <div style="position:absolute;bottom:11px;left:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
           <div style="position:absolute;bottom:11px;right:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
@@ -528,30 +528,60 @@
       </div>
       <button class="modal-close" id="login-close" aria-label="Zavřít">✕</button>
       <div class="modal-logo">Makej!</div>
-      <h2 class="modal-title">Přihlásit se</h2>
-      <p class="modal-subtitle">Vítej zpět! Přihlaš se ke svému účtu.</p>
-      <div class="modal-error" id="login-error"></div>
-      <form id="login-form" novalidate>
-        <div class="form-group">
-          <label class="form-label" for="login-email">Email</label>
-          <input class="form-input" type="email" id="login-email" placeholder="tvuj@email.cz" autocomplete="email" required />
+      <!-- Krok 1: výběr role -->
+      <div id="login-step-1">
+        <h2 class="modal-title">Přihlásit se</h2>
+        <div class="role-cards">
+          <button type="button" class="role-card" data-login-role="worker">
+            <span class="role-ic role-ic--user"></span>
+            <strong>Brigádník</strong>
+            <small>Hledám práci</small>
+          </button>
+          <button type="button" class="role-card" data-login-role="employer">
+            <span class="role-ic role-ic--company"></span>
+            <strong>Zaměstnavatel</strong>
+            <small>Hledám brigádníky</small>
+          </button>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="login-password">Heslo</label>
-          <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
-        </div>
-        <button type="submit" class="btn-primary btn-full btn-lg" id="login-submit">Přihlásit se</button>
-      </form>
-      <div class="modal-divider"><span>nebo</span></div>
-      <button class="btn-google" id="login-google">
-        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
-          <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.6 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
-          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-          <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.3C29.4 35.5 26.8 36.5 24 36.5c-5.2 0-9.6-3.4-11.2-8l-6.6 5C9.7 39.7 16.3 44 24 44z"/>
-          <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.7l6.2 5.3C37.5 39.7 44 35.4 44 24c0-1.3-.1-2.6-.4-3.9z"/>
-        </svg>
-        Pokračovat s Google
-      </button>
+      </div>
+
+      <!-- Krok 2: přihlašovací údaje -->
+      <div id="login-step-2" style="display:none">
+        <button class="modal-back" id="login-back">
+          <span class="back-ic"></span>
+          Zpět
+        </button>
+        <h2 class="modal-title">Přihlásit se</h2>
+        <p class="modal-subtitle" id="login-role-subtitle">Brigádník</p>
+        <div class="modal-error" id="login-error"></div>
+        <form id="login-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email</label>
+            <input class="form-input" type="email" id="login-email" placeholder="tvuj@email.cz" autocomplete="email" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">Heslo</label>
+            <div class="password-wrap">
+              <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
+              <button type="button" class="pw-toggle pw-toggle--text" id="login-pw-toggle" tabindex="-1"><span id="login-pw-label">Zobrazit</span></button>
+            </div>
+          </div>
+          <div class="login-forgot-row">
+            <a href="#" id="login-forgot" class="login-forgot">Zapomněl jsem heslo?</a>
+          </div>
+          <button type="submit" class="btn-primary btn-full btn-lg" id="login-submit">Přihlásit se</button>
+        </form>
+        <div class="modal-divider"><span>nebo</span></div>
+        <button class="btn-google" id="login-google">
+          <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.6 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
+            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+            <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.3C29.4 35.5 26.8 36.5 24 36.5c-5.2 0-9.6-3.4-11.2-8l-6.6 5C9.7 39.7 16.3 44 24 44z"/>
+            <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.7l6.2 5.3C37.5 39.7 44 35.4 44 24c0-1.3-.1-2.6-.4-3.9z"/>
+          </svg>
+          Pokračovat s Google
+        </button>
+      </div>
       <p class="modal-switch">Nemáš účet? <a href="#" id="switch-to-register">Zaregistruj se</a></p>
     </div>
 
@@ -566,12 +596,12 @@
         <p class="modal-subtitle">Kdo jsi?</p>
         <div class="role-cards">
           <button type="button" class="role-card" data-role="worker">
-            <iconify-icon icon="solar:user-bold" width="32"></iconify-icon>
+            <span class="role-ic role-ic--user"></span>
             <strong>Brigádník</strong>
             <small>Hledám práci</small>
           </button>
           <button type="button" class="role-card" data-role="employer">
-            <iconify-icon icon="solar:buildings-bold" width="32"></iconify-icon>
+            <span class="role-ic role-ic--company"></span>
             <strong>Zaměstnavatel</strong>
             <small>Hledám brigádníky</small>
           </button>
@@ -604,24 +634,20 @@
             <label class="form-label" for="reg-password">Heslo</label>
             <div class="password-wrap">
               <input class="form-input" type="password" id="reg-password" placeholder="Min. 6 znaků" autocomplete="new-password" required />
-              <button type="button" class="pw-toggle" id="reg-pw-toggle" aria-label="Zobrazit heslo" tabindex="-1">
-                <iconify-icon icon="solar:eye-bold" width="18" id="reg-pw-icon"></iconify-icon>
-              </button>
+              <button type="button" class="pw-toggle pw-toggle--text" id="reg-pw-toggle" tabindex="-1">Zobrazit</button>
             </div>
           </div>
           <div class="form-group">
             <label class="form-label" for="reg-password2">Heslo znovu</label>
             <div class="password-wrap">
               <input class="form-input" type="password" id="reg-password2" placeholder="Zopakuj heslo" autocomplete="new-password" required />
-              <button type="button" class="pw-toggle" id="reg-pw2-toggle" aria-label="Zobrazit heslo" tabindex="-1">
-                <iconify-icon icon="solar:eye-bold" width="18" id="reg-pw2-icon"></iconify-icon>
-              </button>
+              <button type="button" class="pw-toggle pw-toggle--text" id="reg-pw2-toggle" tabindex="-1">Zobrazit</button>
             </div>
           </div>
           <button type="submit" class="btn-primary btn-full btn-lg" id="register-submit">Vytvořit účet</button>
-          <p style="font-size:.78rem;color:var(--muted-fg);text-align:center;margin-top:12px;line-height:1.5;">
-            Registrací souhlasíš s našimi <a href="/terms.html" target="_blank" style="color:var(--secondary)">Obchodními podmínkami</a>
-            a <a href="/privacy.html" target="_blank" style="color:var(--secondary)">Zásadami ochrany osobních údajů</a>.
+          <p style="font-size:.78rem;color:rgba(10,13,46,.55);text-align:center;margin-top:12px;line-height:1.5;">
+            Registrací souhlasíš s našimi <a href="/terms.html" target="_blank" style="color:var(--primary);font-weight:600">Obchodními podmínkami</a>
+            a <a href="/privacy.html" target="_blank" style="color:var(--primary);font-weight:600">Zásadami ochrany osobních údajů</a>.
           </p>
         </form>
       </div>
@@ -646,7 +672,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="script.js?v=10"></script>
+  <script src="script.js?v=17"></script>
 
   <!-- ── App Demo ── -->
   <script>

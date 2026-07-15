@@ -762,6 +762,94 @@ img { max-width: 100%; display: block; }
 }
 .modal-back:hover { color: var(--secondary); }
 
+/* ── Světlé auth modály (přebíjí tmavé styly výše, scopnuto pod .modal) ── */
+.modal {
+  background: #fff;
+  border: 1px solid rgba(10,13,46,.08);
+  box-shadow: 0 30px 80px rgba(5,7,26,.45);
+  color: #0a0d2e;
+}
+.modal .modal-title { color: #0a0d2e; }
+.modal .modal-subtitle,
+.modal .modal-switch,
+.modal .modal-divider,
+.modal .modal-back { color: rgba(10,13,46,.55); }
+.modal .modal-divider::before,
+.modal .modal-divider::after { background: rgba(10,13,46,.1); }
+.modal .modal-back:hover,
+.modal .modal-switch a { color: var(--primary); }
+
+.modal .modal-close { background: rgba(10,13,46,.06); color: rgba(10,13,46,.5); }
+.modal .modal-close:hover { background: rgba(10,13,46,.12); color: #0a0d2e; }
+
+.modal .form-label { color: #0a0d2e; }
+.modal .form-input {
+  background: #f5f6fb; border: 1px solid rgba(10,13,46,.12); color: #0a0d2e;
+}
+.modal .form-input::placeholder { color: rgba(10,13,46,.4); }
+.modal .form-input:focus { background: #fff; border-color: var(--primary); }
+.modal .pw-toggle { color: rgba(10,13,46,.45); }
+.modal .pw-toggle:hover { color: var(--primary); }
+
+.modal .modal-error { background: rgba(244,63,94,.08); border-color: rgba(244,63,94,.25); color: #d92d4b; }
+
+.modal .btn-google {
+  background: #fff; border: 1px solid rgba(10,13,46,.14); color: #0a0d2e;
+}
+.modal .btn-google:hover { background: #f5f6fb; border-color: rgba(10,13,46,.28); }
+
+.modal .role-card {
+  background: #f5f6fb; border: 1px solid rgba(10,13,46,.08); color: #0a0d2e;
+}
+@media (hover: hover) and (pointer: fine) {
+  .modal .role-card:hover { background: #eef0f9; border-color: var(--primary); }
+}
+.modal .role-card iconify-icon { color: var(--primary); }
+.modal .role-card small { color: rgba(10,13,46,.55); }
+
+/* Ikony rolí (PNG glyfy obarvené maskou na firemní modrou) */
+.role-ic {
+  width: 34px; height: 34px; display: block;
+  background-color: var(--primary);
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+  -webkit-mask-size: contain; mask-size: contain;
+}
+.role-ic--user { -webkit-mask-image: url('/employer/user.png'); mask-image: url('/employer/user.png'); }
+.role-ic--company { -webkit-mask-image: url('/employer/company.png'); mask-image: url('/employer/company.png'); }
+
+/* Odkaz „Zapomněl jsem heslo?" v přihlašovacím modálu */
+.modal .login-forgot-row { display: flex; justify-content: flex-end; margin: -6px 0 14px; }
+.modal .login-forgot {
+  font-size: .8rem; font-weight: 600; color: rgba(10,13,46,.55);
+  transition: color .2s ease;
+}
+.modal .login-forgot:hover { color: var(--primary); text-decoration: underline; }
+
+/* Přepínač hesla textem (Zobrazit / Skrýt) */
+.modal .pw-toggle--text {
+  font-family: var(--font-sans); font-size: .78rem; font-weight: 700;
+  color: rgba(10,13,46,.55); letter-spacing: .01em;
+  padding: 4px 2px; transition: color .2s ease;
+  user-select: none; -webkit-user-select: none; touch-action: none;
+}
+.modal .pw-toggle--text:active { color: var(--primary); }
+.modal .pw-toggle--text:hover { color: var(--primary); }
+.modal .password-wrap:has(.pw-toggle--text) .form-input { padding-right: 76px; }
+
+/* Chevron „Zpět" v přihlašovacím modálu — šedý, na hover zmodrá spolu s textem */
+.modal .modal-back .back-ic {
+  width: 13px; height: 13px; flex-shrink: 0;
+  background-color: rgba(10,13,46,.55);
+  -webkit-mask: url('/employer/chevron.png') center/contain no-repeat;
+  mask: url('/employer/chevron.png') center/contain no-repeat;
+  transition: background-color .2s ease, transform .2s ease;
+}
+.modal .modal-back:hover .back-ic {
+  background-color: var(--primary);
+  transform: translateX(-2px);
+}
+
 .nav-user-greeting { color: var(--secondary); font-weight: 600; font-size: .85rem; }
 
 .auth-toast {

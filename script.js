@@ -219,6 +219,7 @@ function initAuth() {
     if (type === 'login') {
       loginModal.classList.add('active');
       registerModal.classList.remove('active');
+      if (role) { applyLoginRole(role); showLoginStep(2); } else { showLoginStep(1); }
       // Restart peeker animation
       const p = document.getElementById('main-peeker');
       if (p) { p.style.animation = 'none'; requestAnimationFrame(() => { p.style.animation = 'peekerIn 0.45s cubic-bezier(.2,.8,.2,1) both'; }); }
@@ -269,6 +270,34 @@ function initAuth() {
     document.getElementById('reg-company-group').style.display =
       role === 'employer' ? 'block' : 'none';
   }
+
+  // ─── Login steps (rozcestník brigádník / zaměstnavatel) ───
+  let loginRole = 'worker';
+  let skipAutoRedirect = false;
+
+  function showLoginStep(n) {
+    const s1 = document.getElementById('login-step-1');
+    const s2 = document.getElementById('login-step-2');
+    if (!s1 || !s2) return;
+    s1.style.display = n === 1 ? 'block' : 'none';
+    s2.style.display = n === 2 ? 'block' : 'none';
+  }
+
+  function applyLoginRole(role) {
+    loginRole = role;
+    const sub = document.getElementById('login-role-subtitle');
+    if (sub) sub.textContent = role === 'worker' ? 'Brigádník' : 'Zaměstnavatel';
+  }
+
+  document.querySelectorAll('[data-login-role]').forEach(card => {
+    card.addEventListener('click', () => {
+      applyLoginRole(card.dataset.loginRole);
+      showLoginStep(2);
+    });
+  });
+
+  const loginBackBtn = document.getElementById('login-back');
+  if (loginBackBtn) loginBackBtn.addEventListener('click', () => { clearErrors(); showLoginStep(1); });
 
   // ─── Nav update ───
   // Voláno z onAuthStateChange — jednoduše vymění obsah nav a přidá listenery na nové prvky
@@ -368,7 +397,8 @@ function initAuth() {
   document.getElementById('switch-to-login').addEventListener('click', e => { e.preventDefault(); openModal('login'); });
   document.getElementById('reg-back').addEventListener('click', () => showRegStep(1));
 
-  document.querySelectorAll('.role-card').forEach(card => {
+  // pozor: role-card je i v login rozcestníku → bereme jen ty registrační
+  document.querySelectorAll('.role-card[data-role]').forEach(card => {
     card.addEventListener('click', () => {
       applyRole(card.dataset.role);
       showRegStep(2);
@@ -386,9 +416,13 @@ function initAuth() {
     btn.disabled = true;
     btn.textContent = 'Přihlašování...';
 
-    const { error } = await sb.auth.signInWithPassword({ email, password });
+    // SIGNED_IN by jinak přesměroval dřív, než ověříme roli — redirect si řídíme sami
+    skipAutoRedirect = true;
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
     if (error) {
+      skipAutoRedirect = false;
       showError('login-error',
         error.message === 'Invalid login credentials'
           ? 'Nesprávný email nebo heslo'
@@ -396,23 +430,75 @@ function initAuth() {
       );
       btn.disabled = false;
       btn.textContent = 'Přihlásit se';
-    } else {
-      closeModals();
+      return;
     }
+
+    // Účet má roli v profilu — musí sedět s tím, co si uživatel vybral v rozcestníku
+    const { data: profile } = await sb
+      .from('profiles').select('role').eq('id', data.user.id).single();
+
+    if (profile && profile.role !== loginRole) {
+      await sb.auth.signOut();
+      skipAutoRedirect = false;
+      showError('login-error', profile.role === 'employer'
+        ? 'Tenhle účet je zaměstnavatelský. Vrať se zpět a přihlas se jako zaměstnavatel.'
+        : 'Tenhle účet je brigádnický. Vrať se zpět a přihlas se jako brigádník.');
+      btn.disabled = false;
+      btn.textContent = 'Přihlásit se';
+      return;
+    }
+
+    // Role sedí → teprve teď pryč. Redirect (a ne jen zavření modálu) je zároveň
+    // signál pro správce hesel v prohlížeči, že přihlášení dopadlo dobře.
+    const role = (profile && profile.role) || data.user.user_metadata?.role;
+    window.location.href = role === 'employer' ? '/employer/' : '/worker/';
   });
 
-  // ─── Zobrazit / skrýt heslo ───
-  function setupPwToggle(toggleId, inputId, iconId) {
-    document.getElementById(toggleId).addEventListener('click', () => {
-      const input = document.getElementById(inputId);
-      const icon  = document.getElementById(iconId);
-      const show  = input.type === 'password';
-      input.type  = show ? 'text' : 'password';
-      icon.setAttribute('icon', show ? 'solar:eye-closed-bold' : 'solar:eye-bold');
+  // ─── Zapomenuté heslo — pošle reset odkaz na email ───
+  const forgotLink = document.getElementById('login-forgot');
+  if (forgotLink) {
+    forgotLink.addEventListener('click', async e => {
+      e.preventDefault();
+      clearErrors();
+      const email = document.getElementById('login-email').value.trim();
+      if (!email) {
+        showError('login-error', 'Nejdřív napiš svůj email a pak klikni na „Zapomněl jsem heslo?".');
+        document.getElementById('login-email').focus();
+        return;
+      }
+      forgotLink.textContent = 'Odesílám…';
+      forgotLink.style.pointerEvents = 'none';
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/obnova-hesla.html',
+      });
+      forgotLink.textContent = 'Zapomněl jsem heslo?';
+      forgotLink.style.pointerEvents = '';
+      if (error) {
+        showError('login-error', translateAuthError(error.message));
+      } else {
+        closeModals();
+        showToast('Poslali jsme ti odkaz na obnovu hesla na ' + email + '.');
+      }
     });
   }
-  setupPwToggle('reg-pw-toggle',  'reg-password',  'reg-pw-icon');
-  setupPwToggle('reg-pw2-toggle', 'reg-password2', 'reg-pw2-icon');
+
+  // ─── Heslo je vidět jen po dobu držení tlačítka „Zobrazit" (login i registrace) ───
+  function setupHoldToShow(toggleId, inputId) {
+    const toggle = document.getElementById(toggleId);
+    if (!toggle) return;
+    const input  = () => document.getElementById(inputId);
+    const reveal = e => { e.preventDefault(); const i = input(); if (i) i.type = 'text'; };
+    const hide   = () => { const i = input(); if (i) i.type = 'password'; };
+    toggle.addEventListener('pointerdown', reveal);
+    toggle.addEventListener('pointerup', hide);
+    toggle.addEventListener('pointerleave', hide);
+    toggle.addEventListener('pointercancel', hide);
+    // pojistka: kdyby uživatel pustil tlačítko mimo prvek
+    window.addEventListener('pointerup', hide);
+  }
+  setupHoldToShow('login-pw-toggle', 'login-password');
+  setupHoldToShow('reg-pw-toggle',   'reg-password');
+  setupHoldToShow('reg-pw2-toggle',  'reg-password2');
 
   // ─── Register form — stejná logika jako makej/src/app/(auth)/register/page.tsx ───
   document.getElementById('register-form').addEventListener('submit', async e => {
@@ -481,7 +567,8 @@ function initAuth() {
 
     // INITIAL_SESSION = obnova existující session při načtení stránky → nepřesměrovávat
     // SIGNED_IN = aktivní přihlášení (formulář / Google OAuth callback) → přesměrovat
-    if (event === 'SIGNED_IN' && session?.user) {
+    // skipAutoRedirect = login formulář si redirect řídí sám (až po kontrole role)
+    if (event === 'SIGNED_IN' && session?.user && !skipAutoRedirect) {
       const role = session.user.user_metadata?.role;
       window.location.href = role === 'employer' ? '/employer/' : '/worker/';
     }

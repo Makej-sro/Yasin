@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="/iconify-solar.js"></script>
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" async></script>
-  <link rel="stylesheet" href="/style.css?v=22" />
+  <link rel="stylesheet" href="/style.css?v=29" />
   <style>
     .pg-page { padding: 80px 0 100px; }
 
@@ -284,25 +284,55 @@
     <div class="modal" id="login-modal">
       <button class="modal-close" id="login-close" aria-label="Zavřít">✕</button>
       <div class="modal-logo">Makej!</div>
-      <h2 class="modal-title">Přihlásit se</h2>
-      <p class="modal-subtitle">Vítej zpět! Přihlaš se ke svému účtu.</p>
-      <div class="modal-error" id="login-error"></div>
-      <form id="login-form" novalidate>
-        <div class="form-group">
-          <label class="form-label" for="login-email">Email</label>
-          <input class="form-input" type="email" id="login-email" placeholder="tvuj@email.cz" autocomplete="email" required />
+      <!-- Krok 1: výběr role -->
+      <div id="login-step-1">
+        <h2 class="modal-title">Přihlásit se</h2>
+        <div class="role-cards">
+          <button type="button" class="role-card" data-login-role="worker">
+            <span class="role-ic role-ic--user"></span>
+            <strong>Brigádník</strong>
+            <small>Hledám práci</small>
+          </button>
+          <button type="button" class="role-card" data-login-role="employer">
+            <span class="role-ic role-ic--company"></span>
+            <strong>Zaměstnavatel</strong>
+            <small>Hledám brigádníky</small>
+          </button>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="login-password">Heslo</label>
-          <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
-        </div>
-        <button type="submit" class="btn-primary btn-full btn-lg" id="login-submit">Přihlásit se</button>
-      </form>
-      <div class="modal-divider"><span>nebo</span></div>
-      <button class="btn-google" id="login-google">
-        <iconify-icon icon="flat-color-icons:google" width="18"></iconify-icon>
-        Pokračovat přes Google
-      </button>
+      </div>
+
+      <!-- Krok 2: přihlašovací údaje -->
+      <div id="login-step-2" style="display:none">
+        <button class="modal-back" id="login-back">
+          <span class="back-ic"></span>
+          Zpět
+        </button>
+        <h2 class="modal-title">Přihlásit se</h2>
+        <p class="modal-subtitle" id="login-role-subtitle">Brigádník</p>
+        <div class="modal-error" id="login-error"></div>
+        <form id="login-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email</label>
+            <input class="form-input" type="email" id="login-email" placeholder="tvuj@email.cz" autocomplete="email" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">Heslo</label>
+            <div class="password-wrap">
+              <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
+              <button type="button" class="pw-toggle pw-toggle--text" id="login-pw-toggle" tabindex="-1"><span id="login-pw-label">Zobrazit</span></button>
+            </div>
+          </div>
+          <div class="login-forgot-row">
+            <a href="#" id="login-forgot" class="login-forgot">Zapomněl jsem heslo?</a>
+          </div>
+          <button type="submit" class="btn-primary btn-full btn-lg" id="login-submit">Přihlásit se</button>
+        </form>
+        <div class="modal-divider"><span>nebo</span></div>
+        <button class="btn-google" id="login-google">
+          <iconify-icon icon="flat-color-icons:google" width="18"></iconify-icon>
+          Pokračovat přes Google
+        </button>
+      </div>
       <p class="modal-switch">Nemáš účet? <a href="#" id="switch-to-register">Zaregistruj se</a></p>
     </div>
 
@@ -317,12 +347,12 @@
         <p class="modal-subtitle">Kdo jsi?</p>
         <div class="role-cards">
           <button type="button" class="role-card" data-role="worker">
-            <iconify-icon icon="solar:user-bold" width="32"></iconify-icon>
+            <span class="role-ic role-ic--user"></span>
             <strong>Brigádník</strong>
             <small>Hledám práci</small>
           </button>
           <button type="button" class="role-card" data-role="employer">
-            <iconify-icon icon="solar:buildings-bold" width="32"></iconify-icon>
+            <span class="role-ic role-ic--company"></span>
             <strong>Zaměstnavatel</strong>
             <small>Hledám brigádníky</small>
           </button>
@@ -355,24 +385,20 @@
             <label class="form-label" for="reg-password">Heslo</label>
             <div class="password-wrap">
               <input class="form-input" type="password" id="reg-password" placeholder="Min. 6 znaků" autocomplete="new-password" required />
-              <button type="button" class="pw-toggle" id="reg-pw-toggle" aria-label="Zobrazit heslo" tabindex="-1">
-                <iconify-icon icon="solar:eye-bold" width="18" id="reg-pw-icon"></iconify-icon>
-              </button>
+              <button type="button" class="pw-toggle pw-toggle--text" id="reg-pw-toggle" tabindex="-1">Zobrazit</button>
             </div>
           </div>
           <div class="form-group">
             <label class="form-label" for="reg-password2">Heslo znovu</label>
             <div class="password-wrap">
               <input class="form-input" type="password" id="reg-password2" placeholder="Zopakuj heslo" autocomplete="new-password" required />
-              <button type="button" class="pw-toggle" id="reg-pw2-toggle" aria-label="Zobrazit heslo" tabindex="-1">
-                <iconify-icon icon="solar:eye-bold" width="18" id="reg-pw2-icon"></iconify-icon>
-              </button>
+              <button type="button" class="pw-toggle pw-toggle--text" id="reg-pw2-toggle" tabindex="-1">Zobrazit</button>
             </div>
           </div>
           <button type="submit" class="btn-primary btn-full btn-lg" id="register-submit">Vytvořit účet</button>
-          <p style="font-size:.78rem;color:var(--muted-fg);text-align:center;margin-top:12px;line-height:1.5;">
-            Registrací souhlasíš s našimi <a href="/terms.html" target="_blank" style="color:var(--secondary)">Obchodními podmínkami</a>
-            a <a href="/privacy.html" target="_blank" style="color:var(--secondary)">Zásadami ochrany osobních údajů</a>.
+          <p style="font-size:.78rem;color:rgba(10,13,46,.55);text-align:center;margin-top:12px;line-height:1.5;">
+            Registrací souhlasíš s našimi <a href="/terms.html" target="_blank" style="color:var(--primary);font-weight:600">Obchodními podmínkami</a>
+            a <a href="/privacy.html" target="_blank" style="color:var(--primary);font-weight:600">Zásadami ochrany osobních údajů</a>.
           </p>
         </form>
       </div>
@@ -408,7 +434,7 @@
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="/script.js?v=10"></script>
+  <script src="/script.js?v=17"></script>
   <script src="/chat-widget.js"></script>
 </body>
 </html>
