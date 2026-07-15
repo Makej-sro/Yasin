@@ -750,77 +750,76 @@ function showToast(msg) {
 })();
 
 
-/* ═══════════ MAKÁČI CAROUSEL ═══════════ */
+/* ═══════════ REFERENCE — kroužkový sešit s listováním ═══════════ */
 (function () {
-  var N = 8;
-  var center = 2; // Makač basic starts in center
-  var wrappers = Array.from(document.querySelectorAll('.makac-wrap[data-makac]'));
-  var dots = Array.from(document.querySelectorAll('.makaci-dot[data-dot]'));
-  var timer;
+  // Placeholdery — nahradit skutečnými ohlasy a fotkami. Bez firem a „ověřeno".
+  // photo: cesta k fotce uživatele (až budou reálné); zatím fallback = avatar s iniciálou.
+  var reviews = [
+    { text: 'Za tři dny jsem měl první brigádu. Večer jsem swipnul pár nabídek a ráno mi napsala kavárna.', name: 'Tomáš H.', role: 'Barista', date: '14. 6. 2025', photo: '' },
+    { text: 'Konečně appka, kde ke každé nabídce nemusím psát životopis. Pár tapů a je to.', name: 'Klára M.', role: 'Servírka', date: '2. 7. 2025', photo: '' },
+    { text: 'Bral jsem to jako přivýdělek při škole, teď tam chodím pravidelně. Firmy odpovídají fakt rychle.', name: 'Petr V.', role: 'Skladník', date: '21. 6. 2025', photo: '' },
+    { text: 'Líbí se mi, že vidím hodinovku hned — žádné „mzda dle dohody".', name: 'Aneta L.', role: 'Výpomoc na eventech', date: '9. 7. 2025', photo: '' },
+    { text: 'Jsem tu skoro od začátku a je vidět, že se to pořád zlepšuje. Super práce!', name: 'Pavel K.', role: 'Rozvoz', date: '18. 7. 2025', photo: '' },
+  ];
 
-  if (!wrappers.length) return;
+  var stack = document.getElementById('ref-stack');
+  if (!stack) return;
 
-  function getPos(i) {
-    var diff = ((i - center) % N + N) % N;
-    if (diff > 2) diff -= N;
-    return diff;
+  function fill(cardEl, r) {
+    cardEl.querySelector('.ref-name').textContent = r.name;
+    cardEl.querySelector('.ref-meta').textContent = r.role + ' · ' + r.date;
+    cardEl.querySelector('.ref-text').textContent = r.text;
   }
 
-  function update() {
-    wrappers.forEach(function (el, i) {
-      var oldPos = parseInt(el.getAttribute('data-pos') || '99');
-      var newPos = getPos(i);
-
-      // Both off-screen — teleport instantly to avoid cross-screen animation
-      if (Math.abs(oldPos) >= 2 && Math.abs(newPos) >= 2 && oldPos !== newPos) {
-        el.classList.add('no-transition');
-        el.setAttribute('data-pos', newPos);
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            el.classList.remove('no-transition');
-          });
-        });
-      } else {
-        el.setAttribute('data-pos', newPos);
-      }
-    });
-
-    dots.forEach(function (d) {
-      d.classList.toggle('active', parseInt(d.getAttribute('data-dot')) === center);
-    });
+  // Postav viditelné karty balíčku (max 3)
+  var VISIBLE = Math.min(3, reviews.length);
+  var nodes = [];
+  for (var k = 0; k < VISIBLE; k++) {
+    var c = document.createElement('div');
+    c.className = 'rs-card';
+    c.dataset.slot = k;
+    c.innerHTML = '<div class="ref-name"></div><div class="ref-meta"></div><p class="ref-text"></p>';
+    fill(c, reviews[k]);
+    nodes.push(c);
+    stack.appendChild(c);
   }
 
-  function rotate() {
-    center = (center + 1) % N;
-    update();
+  var nextRev = VISIBLE % reviews.length;
+  var busy = false, timer;
+
+  function nodeAtSlot(s) {
+    for (var n = 0; n < nodes.length; n++) if (+nodes[n].dataset.slot === s) return nodes[n];
+    return null;
   }
 
-  function startTimer() {
+  function advance() {
+    if (busy || reviews.length <= 1) return;
+    busy = true;
     clearInterval(timer);
-    timer = setInterval(rotate, 5000);
+
+    var leaving = nodeAtSlot(0);
+    // ostatní popojedou o slot dopředu
+    for (var s = 1; s < VISIBLE; s++) {
+      var nd = nodeAtSlot(s);
+      if (nd) nd.dataset.slot = s - 1;
+    }
+    // 1. fáze — přední karta odjede nahoru a zmizí
+    leaving.classList.add('leaving');
+
+    setTimeout(function () {
+      // 2. fáze — vymění obsah a sjede dozadu za ostatní (nafejduje se)
+      fill(leaving, reviews[nextRev]);
+      nextRev = (nextRev + 1) % reviews.length;
+      leaving.dataset.slot = VISIBLE - 1;
+      leaving.classList.remove('leaving');
+      setTimeout(function () { busy = false; startTimer(); }, 720);
+    }, 540);
   }
 
-  // Click dot to jump to character
-  dots.forEach(function (d) {
-    d.addEventListener('click', function () {
-      center = parseInt(d.getAttribute('data-dot'));
-      update();
-      startTimer();
-    });
-  });
+  function startTimer() { clearInterval(timer); timer = setInterval(advance, 6000); }
 
-  // Click side characters to bring them to center
-  wrappers.forEach(function (el) {
-    el.addEventListener('click', function () {
-      var pos = parseInt(el.getAttribute('data-pos') || '0');
-      if (pos !== 0) {
-        center = (center + pos + N) % N;
-        update();
-        startTimer();
-      }
-    });
-  });
+  // Klik na balíček = další reference
+  stack.addEventListener('click', function () { if (!busy) { advance(); startTimer(); } });
 
-  update();
   startTimer();
 })();
