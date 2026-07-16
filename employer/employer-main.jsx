@@ -67,9 +67,8 @@ const JOB_TYPES = [
 
 const CONTRACT_TYPES = ['HPP', 'DPP', 'DPČ', 'Živnostenský list'];
 
-function ENewJobModal({ onClose, onCreated }) {
+function ENewJobModal({ onClose, onPublish }) {
   const [form,   setForm]   = useStateE(EMPTY_JOB_FORM);
-  const [saving, setSaving] = useStateE(false);
   const [err,    setErr]    = useStateE('');
 
   function setF(k, v) { setForm(f => ({ ...f, [k]: v })); }
@@ -80,18 +79,14 @@ function ENewJobModal({ onClose, onCreated }) {
   const isFullTime = form.job_type === 'full_time';
   const isShortTerm = isOneshot || isBrigada;
 
-  async function handleSubmit() {
+  function handleSubmit() {
     if (!form.title.trim())    { setErr('Vyplň název pozice.'); return; }
     if (!form.pay)             { setErr('Vyplň mzdu.'); return; }
     if (!form.location.trim()) { setErr('Vyplň místo.'); return; }
-    setSaving(true); setErr('');
-    const { data: { session } } = await sb.auth.getSession();
+    setErr('');
     const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
     const reqs = form.requirements.split(',').map(r => r.trim()).filter(Boolean);
-    const result = await createJobE(session.user.id, { ...form, tags, requirements: reqs });
-    setSaving(false);
-    if (!result) { setErr('Nepodařilo se přidat inzerát. Zkus to znovu.'); return; }
-    onCreated();
+    onPublish({ ...form, tags, requirements: reqs });   // parent řídí publikaci + „pill"
   }
 
   const inputStyle = {
@@ -324,15 +319,14 @@ function ENewJobModal({ onClose, onCreated }) {
 
         <button
           onClick={handleSubmit}
-          disabled={saving}
           style={{
             width: '100%', padding: '13px', borderRadius: 11,
             background: 'linear-gradient(135deg, #0020F6, #3a3a99)',
             border: 'none', color: '#fff',
             fontFamily: T.fontHead, fontSize: 15, fontWeight: 800,
-            cursor: 'pointer', opacity: saving ? 0.6 : 1, marginTop: 4,
+            cursor: 'pointer', marginTop: 4,
           }}>
-          {saving ? 'Přidávám…' : 'Přidat inzerát'}
+          Přidat inzerát
         </button>
       </div>
     </div>
@@ -524,11 +518,50 @@ function EWorkerProfileModal({ workerId, fallback, onClose }) {
   );
 }
 
+// Publikační „pill" — načítání (šipka + prstenec) → zelené „Hotovo"
+function EPublishPill({ state }) {
+  const done = state === 'done' || state === 'pop';
+  const popping = state === 'pop';
+  return (
+    <div style={{
+      position: 'fixed', left: '50%', bottom: 30, transform: 'translateX(-50%)', zIndex: 400,
+      display: 'flex', alignItems: 'center', gap: 12, padding: '12px 24px 12px 14px', borderRadius: 999,
+      background: done ? '#16a34a' : '#26262e', color: '#fff',
+      fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, letterSpacing: -0.2,
+      boxShadow: done ? '0 14px 34px rgba(22,163,74,0.42)' : '0 14px 34px rgba(0,0,0,0.34)',
+      transition: 'background .45s ease, box-shadow .45s ease',
+      animation: popping ? 'empPillPop .45s ease-out forwards' : 'empPillIn .34s cubic-bezier(.2,.8,.2,1)',
+    }}>
+      <div style={{ position: 'relative', width: 30, height: 30, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+        {done ? (
+          <>
+            <span style={{ position: 'absolute', animation: 'empArrowFly .42s cubic-bezier(.4,0,.2,1) forwards' }}>
+              <img src="/right-arrow.png" alt="" style={{ width: 13, display: 'block', transform: 'rotate(-90deg)', filter: 'brightness(0) invert(1)' }} />
+            </span>
+            <img src="/checked.png" alt="" style={{ width: 27, height: 27, display: 'block', filter: 'brightness(0) invert(1)', animation: 'empCheckIn .38s .24s both' }} />
+          </>
+        ) : (
+          <>
+            <svg viewBox="0 0 36 36" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+              <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="3.2" />
+              <circle cx="18" cy="18" r="16" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round"
+                style={{ strokeDasharray: 100.53, strokeDashoffset: 100.53, transform: 'rotate(-90deg)', transformOrigin: '50% 50%', animation: 'empRingFill 3s linear forwards' }} />
+            </svg>
+            <img src="/right-arrow.png" alt="" style={{ width: 13, display: 'block', position: 'relative', transform: 'rotate(-90deg)', filter: 'brightness(0) invert(1)' }} />
+          </>
+        )}
+      </div>
+      <span>{done ? 'Hotovo' : 'Publikuji…'}</span>
+    </div>
+  );
+}
+
 function EmployerApp() {
   const [tab,       setTab]       = useStateE('dash');
   const [loaded,    setLoaded]    = useStateE(false);
   const [tick,      setTick]      = useStateE(0);
   const [showNewJob, setShowNewJob] = useStateE(false);
+  const [publish,   setPublish]   = useStateE(null);   // null | 'loading' | 'done'
   const [toasts,    setToasts]    = useStateE([]);
   const [period,    setPeriod]    = useStateE('30d');
   const [openThreadId, setOpenThreadId] = useStateE(null);
@@ -552,6 +585,40 @@ function EmployerApp() {
   }
   // Bridge: nech volat toasty i z child komponent (shell, pages) bez prop drilling
   if (typeof window !== 'undefined') window.empToast = addToast;
+
+  // Publikace inzerátu s „pill" feedbackem: načítání → zelené Hotovo
+  async function handlePublish(fields) {
+    setShowNewJob(false);
+    setPublish('loading');
+    const started = Date.now();
+    let result = null;
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session?.user) result = await createJobE(session.user.id, fields);
+    } catch (e) { result = null; }
+    if (!result) {
+      setPublish(null);
+      addToast('Nepovedlo se', 'Inzerát se nepodařilo přidat. Zkus to prosím znovu.', '⚠️', 'error');
+      return;
+    }
+    await fetchEmployerData(empId.current);
+    setTick(t => t + 1);
+    // Načítání ukaž aspoň chvíli, ať to nepřeskočí (i když se uloží hned)
+    const MIN_LOADING = 2600;
+    setTimeout(() => {
+      setPublish('done');
+      setTimeout(() => setPublish('pop'), 1800);   // prasknutí jako balónek
+      setTimeout(() => setPublish(null), 2300);
+    }, Math.max(0, MIN_LOADING - (Date.now() - started)));
+  }
+
+  // Jen spustí animaci pillu (bez zakládání inzerátu) — na testování
+  function testPublish() {
+    setPublish('loading');
+    setTimeout(() => setPublish('done'), 3000);   // až se prstenec naplní
+    setTimeout(() => setPublish('pop'), 4600);    // prasknutí jako balónek
+    setTimeout(() => setPublish(null), 5100);
+  }
 
   // Theme toggle re-render
   useEffectE(() => {
@@ -659,12 +726,19 @@ function EmployerApp() {
       {showNewJob && (
         <ENewJobModal
           onClose={() => setShowNewJob(false)}
-          onCreated={async () => {
-            setShowNewJob(false);
-            await fetchEmployerData(empId.current);
-            setTick(t => t + 1);
-          }}
+          onPublish={handlePublish}
         />
+      )}
+
+      {publish && <EPublishPill state={publish} />}
+
+      {loaded && (
+        <button onClick={testPublish} title="Spustí jen animaci publikace" style={{
+          position: 'fixed', left: 16, bottom: 16, zIndex: 390,
+          padding: '8px 15px', borderRadius: 999, cursor: 'pointer',
+          background: '#26262e', color: '#fff', border: '1px solid rgba(255,255,255,0.16)',
+          fontFamily: T.fontHead, fontSize: 12, fontWeight: 800, opacity: 0.85,
+        }}>Test inzerát</button>
       )}
 
       {profileWorker && (

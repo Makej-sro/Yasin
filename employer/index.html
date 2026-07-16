@@ -33,6 +33,21 @@
     @keyframes empSpin { to { transform: rotate(360deg); } }
     @keyframes empPop { 0% { transform: scale(0.92) translateY(12px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
     @keyframes onlinePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); } 50% { box-shadow: 0 0 0 5px rgba(34,197,94,0); } }
+    @keyframes empPillIn { 0% { transform: translate(-50%, 26px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
+    @keyframes empPillPop { 0% { transform: translate(-50%,0) scale(1); opacity: 1; } 25% { transform: translate(-50%,0) scale(0.9); opacity: 1; } 60% { transform: translate(-50%,0) scale(1.35); opacity: 1; } 100% { transform: translate(-50%,0) scale(1.8); opacity: 0; } }
+    @keyframes empCheckIn { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes empArrowFly { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-28px); opacity: 0; } }
+    @keyframes empUpBob { 0% { transform: translateY(4px); opacity: 0; } 28% { transform: translateY(0); opacity: 1; } 72% { transform: translateY(-3px); opacity: 1; } 100% { transform: translateY(-7px); opacity: 0; } }
+    @keyframes empRingFill {
+      0%   { stroke-dashoffset: 100.53; }
+      15%  { stroke-dashoffset: 75; }    /* rychlejší rozjezd */
+      30%  { stroke-dashoffset: 68; }    /* zpomalí kolem třetiny */
+      45%  { stroke-dashoffset: 58; }    /* mírně dál */
+      55%  { stroke-dashoffset: 42; }    /* zrychlí za půlku */
+      70%  { stroke-dashoffset: 36; }    /* zase zpomalí */
+      85%  { stroke-dashoffset: 20; }    /* zrychlí */
+      100% { stroke-dashoffset: 0; }     /* dojede */
+    }
 
     /* Auth gate */
     #auth-gate {
@@ -200,6 +215,6 @@
   <script type="text/babel" src="_premium/kraje-map.jsx?v=19"></script>
   <script type="text/babel" src="_premium/analytics.jsx?v=24"></script>
   <script type="text/babel" src="employer-supabase.jsx?v=5"></script>
-  <script type="text/babel" src="employer-main.jsx?v=10"></script>
+  <script type="text/babel" src="employer-main.jsx?v=21"></script>
 </body>
 </html>
