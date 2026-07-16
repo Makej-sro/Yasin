@@ -612,14 +612,6 @@ function EmployerApp() {
     }, Math.max(0, MIN_LOADING - (Date.now() - started)));
   }
 
-  // Jen spustí animaci pillu (bez zakládání inzerátu) — na testování
-  function testPublish() {
-    setPublish('loading');
-    setTimeout(() => setPublish('done'), 3000);   // až se prstenec naplní
-    setTimeout(() => setPublish('pop'), 4600);    // prasknutí jako balónek
-    setTimeout(() => setPublish(null), 5100);
-  }
-
   // Theme toggle re-render
   useEffectE(() => {
     const handler = () => setTick(t => t + 1);
@@ -731,15 +723,6 @@ function EmployerApp() {
       )}
 
       {publish && <EPublishPill state={publish} />}
-
-      {loaded && (
-        <button onClick={testPublish} title="Spustí jen animaci publikace" style={{
-          position: 'fixed', left: 16, bottom: 16, zIndex: 390,
-          padding: '8px 15px', borderRadius: 999, cursor: 'pointer',
-          background: '#26262e', color: '#fff', border: '1px solid rgba(255,255,255,0.16)',
-          fontFamily: T.fontHead, fontSize: 12, fontWeight: 800, opacity: 0.85,
-        }}>Test inzerát</button>
-      )}
 
       {profileWorker && (
         <EWorkerProfileModal
