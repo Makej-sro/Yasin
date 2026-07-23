@@ -50,9 +50,57 @@ function EEmptyState() {
   );
 }
 
+// ── Kraje ────────────────────────────────────────────────────────
+// Id musí souhlasit s KRAJE_W ve worker appce (www/worker-swipe.jsx) —
+// brigádník podle nich filtruje. Jiná id = filtr nic nenajde.
+const KRAJE_E = [
+  { id: 'praha', name: 'Praha' }, { id: 'stredocesky', name: 'Středočeský' },
+  { id: 'jihocesky', name: 'Jihočeský' }, { id: 'plzensky', name: 'Plzeňský' },
+  { id: 'karlovarsky', name: 'Karlovarský' }, { id: 'ustecky', name: 'Ústecký' },
+  { id: 'liberecky', name: 'Liberecký' }, { id: 'kralovehradecky', name: 'Královéhradecký' },
+  { id: 'pardubicky', name: 'Pardubický' }, { id: 'vysocina', name: 'Vysočina' },
+  { id: 'jihomoravsky', name: 'Jihomoravský' }, { id: 'olomoucky', name: 'Olomoucký' },
+  { id: 'zlinsky', name: 'Zlínský' }, { id: 'moravskoslezsky', name: 'Moravskoslezský' },
+];
+
+// Odvození kraje z adresy — ať firma nevyplňuje podruhé to, co už napsala.
+// Nezná každou obec; když netrefí, vybere se ručně (pole jde vždy přepsat).
+const _MESTA_KRAJ = {
+  praha: ['praha', 'prague'],
+  stredocesky: ['kladno', 'mladá boleslav', 'mlada boleslav', 'příbram', 'pribram', 'kolín', 'kolin',
+    'kutná hora', 'kutna hora', 'beroun', 'mělník', 'melnik', 'nymburk', 'benešov', 'benesov', 'rakovník', 'rakovnik'],
+  jihocesky: ['české budějovice', 'ceske budejovice', 'budějovice', 'budejovice', 'tábor', 'tabor',
+    'písek', 'pisek', 'strakonice', 'jindřichův hradec', 'jindrichuv hradec', 'český krumlov', 'cesky krumlov', 'prachatice'],
+  plzensky: ['plzeň', 'plzen', 'klatovy', 'rokycany', 'domažlice', 'domazlice', 'tachov', 'sušice', 'susice'],
+  karlovarsky: ['karlovy vary', 'cheb', 'sokolov', 'mariánské lázně', 'marianske lazne'],
+  ustecky: ['ústí nad labem', 'usti nad labem', 'most', 'děčín', 'decin', 'teplice', 'chomutov',
+    'litoměřice', 'litomerice', 'louny', 'žatec', 'zatec'],
+  liberecky: ['liberec', 'jablonec', 'česká lípa', 'ceska lipa', 'turnov', 'semily'],
+  kralovehradecky: ['hradec králové', 'hradec kralove', 'trutnov', 'náchod', 'nachod', 'jičín', 'jicin',
+    'rychnov', 'dvůr králové', 'dvur kralove'],
+  pardubicky: ['pardubice', 'chrudim', 'svitavy', 'ústí nad orlicí', 'usti nad orlici', 'česká třebová', 'ceska trebova'],
+  vysocina: ['jihlava', 'třebíč', 'trebic', 'žďár', 'zdar', 'havlíčkův brod', 'havlickuv brod', 'pelhřimov', 'pelhrimov'],
+  jihomoravsky: ['brno', 'znojmo', 'břeclav', 'breclav', 'hodonín', 'hodonin', 'vyškov', 'vyskov',
+    'blansko', 'kyjov', 'boskovice'],
+  olomoucky: ['olomouc', 'přerov', 'prerov', 'prostějov', 'prostejov', 'šumperk', 'sumperk', 'jeseník', 'jesenik'],
+  zlinsky: ['zlín', 'zlin', 'kroměříž', 'kromeriz', 'uherské hradiště', 'uherske hradiste', 'vsetín', 'vsetin',
+    'valašské meziříčí', 'valasske mezirici', 'otrokovice'],
+  moravskoslezsky: ['ostrava', 'havířov', 'havirov', 'karviná', 'karvina', 'frýdek', 'frydek', 'opava',
+    'třinec', 'trinec', 'nový jičín', 'novy jicin', 'bruntál', 'bruntal'],
+};
+
+function _krajZAdresy(text) {
+  const s = (text || '').toLowerCase();
+  if (!s.trim()) return '';
+  for (const kraj of Object.keys(_MESTA_KRAJ)) {
+    if (_MESTA_KRAJ[kraj].some(m => s.includes(m))) return kraj;
+  }
+  return '';
+}
+
 const EMPTY_JOB_FORM = {
   title: '', description: '', pay: '', pay_unit: 'Kč/h',
-  location: '', date: '', time_start: '', time_end: '',
+  location: '', kraj: '', date: '', time_start: '', time_end: '',
   tags: '', requirements: '', job_type: 'brigada',
   hours_per_week: '', start_date: '', contract_duration: '',
   contract_type: 'HPP', benefits: '',
@@ -83,6 +131,8 @@ function ENewJobModal({ onClose, onPublish }) {
     if (!form.title.trim())    { setErr('Vyplň název pozice.'); return; }
     if (!form.pay)             { setErr('Vyplň mzdu.'); return; }
     if (!form.location.trim()) { setErr('Vyplň místo.'); return; }
+    // Bez kraje by inzerát nešel v appce najít přes filtr — proto povinný
+    if (!form.kraj) { setErr('Vyber kraj — podle něj brigádníci filtrují nabídky.'); return; }
     setErr('');
     const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
     const reqs = form.requirements.split(',').map(r => r.trim()).filter(Boolean);
@@ -188,10 +238,32 @@ function ENewJobModal({ onClose, onPublish }) {
           </div>
         </div>
 
-        {/* Místo — vždy */}
-        <div style={rowStyle}>
-          <label style={labelStyle}>Místo *</label>
-          <input style={inputStyle} placeholder="např. Brno — Veveří" value={form.location} onChange={e => setF('location', e.target.value)} />
+        {/* Místo + kraj — kraj se odvodí z adresy, ale jde přepsat */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 12, marginBottom: 14 }}>
+          <div>
+            <label style={labelStyle}>Místo *</label>
+            <input
+              style={inputStyle}
+              placeholder="např. Brno — Veveří"
+              value={form.location}
+              onChange={e => {
+                const loc = e.target.value;
+                const auto = _krajZAdresy(loc);
+                // kraj přepiš jen dokud ho uživatel nezvolil sám
+                setForm(f => ({ ...f, location: loc, kraj: f.krajRucne ? f.kraj : (auto || f.kraj) }));
+              }}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Kraj *</label>
+            <select
+              style={inputStyle}
+              value={form.kraj}
+              onChange={e => setForm(f => ({ ...f, kraj: e.target.value, krajRucne: true }))}>
+              <option value="">Vyber kraj…</option>
+              {KRAJE_E.map(k => <option key={k.id} value={k.id}>{k.name}</option>)}
+            </select>
+          </div>
         </div>
 
         {/* Krátkodobé: datum + čas (jednorázová / brigáda) */}

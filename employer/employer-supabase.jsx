@@ -38,6 +38,51 @@ function _fmtTime(iso) {
   return new Date(iso).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
 }
 
+// ── Přílohy v chatu ────────────────────────────────────────────
+// Brigádník je posílá z appky do neveřejného bucketu `chat-prilohy`.
+// Neveřejný = prostá adresa obrázek nenačte, ke každému se musí vyžádat
+// podepsaný odkaz s omezenou platností. Mezipaměť níž brání tomu, aby se
+// pro jednu fotku podepisovalo při každém překreslení chatu.
+const E_BUCKET_PRILOHY   = 'chat-prilohy';
+const E_PRILOHA_PLATNOST = 3600;   // sekund
+
+const _E_PODPISY = new Map();      // cesta → { url, doKdy }
+
+async function eOdkazPrilohy(cesta) {
+  if (!cesta) return null;
+  const ted = Date.now();
+  const drzeny = _E_PODPISY.get(cesta);
+  if (drzeny && drzeny.doKdy > ted + 60000) return drzeny.url;   // minutová rezerva
+  const { data, error } = await sb.storage
+    .from(E_BUCKET_PRILOHY).createSignedUrl(cesta, E_PRILOHA_PLATNOST);
+  if (error || !data) { console.error('eOdkazPrilohy:', error); return null; }
+  _E_PODPISY.set(cesta, { url: data.signedUrl, doKdy: ted + E_PRILOHA_PLATNOST * 1000 });
+  return data.signedUrl;
+}
+
+// Řádek zprávy s přílohou → tvar pro vykreslení bubliny
+function _ePrilohaZRadku(msg) {
+  return {
+    cesta:    msg.file_url,
+    typ:      msg.file_type || 'file',
+    nazev:    msg.file_name || 'Příloha',
+    velikost: msg.file_size || 0,
+  };
+}
+
+// Náhled do seznamu konverzací místo prázdného textu
+function _ePrilohaNahled(msg) {
+  if (msg.file_type === 'image') return '📷 Fotka';
+  if (msg.file_type === 'audio') return '🎤 Hlasová zpráva';
+  return '📎 ' + (msg.file_name || 'Příloha');
+}
+
+function eVelikostPrilohy(b) {
+  if (!b) return '';
+  return b < 1024 * 1024 ? Math.max(1, Math.round(b / 1024)) + ' kB'
+                         : (b / 1024 / 1024).toFixed(1).replace('.', ',') + ' MB';
+}
+
 async function fetchEmployerData(employerId) {
   try {
     const [profileRes, jobsRes] = await Promise.all([
@@ -182,6 +227,10 @@ async function fetchEmployerData(employerId) {
         .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
         .map(msg => {
           const from = msg.sender_id === employerId ? 'me' : 'them';
+          if (msg.file_url) return {
+            from, kind: 'file', file: _ePrilohaZRadku(msg),
+            t: _fmtTime(msg.created_at), id: msg.id,
+          };
           if (msg.type === 'shift_offer' && msg.metadata) return {
             from, kind: 'shift',
             shift: { role: msg.metadata.role, date: msg.metadata.date, time: msg.metadata.time, pay: msg.metadata.pay },
@@ -207,7 +256,7 @@ async function fetchEmployerData(employerId) {
         jobsDone: w.jobs_done || 0, level: w.level || 1, cvUrl: w.cv_url || '',
         verified: !!w.verified,
         skills: Array.isArray(w.skills) ? w.skills : [],
-        last: lastMsg ? (lastMsg.kind === 'shift' ? '📅 Nabídka směny' : lastMsg.kind === 'interview' ? '🗓️ Pozvánka na pohovor' : lastMsg.text) || 'Nová shoda' : 'Nová shoda',
+        last: lastMsg ? (lastMsg.kind === 'shift' ? '📅 Nabídka směny' : lastMsg.kind === 'interview' ? '🗓️ Pozvánka na pohovor' : lastMsg.kind === 'file' ? (lastMsg.file.typ === 'image' ? '📷 Fotka' : '📎 ' + lastMsg.file.nazev) : lastMsg.text) || 'Nová shoda' : 'Nová shoda',
         time: _relTime(match.created_at),
         unread: 0, online: false, msgs: threadMsgs,
       };
@@ -319,6 +368,7 @@ async function createJobE(employerId, fields) {
     pay:         parseInt(fields.pay) || 0,
     pay_unit:    fields.pay_unit || 'Kč/h',
     location:    fields.location || '',
+    kraj:        fields.kraj || null,   // podle něj filtruje brigádník ve worker appce
     date:        fields.date || new Date().toISOString().slice(0, 10),
     time_start:  ts,
     time_end:    te,

@@ -26,6 +26,76 @@ const E_THREADS = [
     msgs: [{ from: 'them', text: 'Mám zájem.', t: 'pondělí' }] },
 ];
 
+// Fotka v bublině. Bucket je neveřejný, takže se adresa musí nejdřív podepsat —
+// než se podpis vrátí, drží místo šedý rámeček, ať zpráva neposkakuje.
+function EPrilohaFotka({ priloha, onOtevri }) {
+  const [url, setUrl]     = useStateE(null);
+  const [chyba, setChyba] = useStateE(false);
+  useEffectE(() => {
+    if (!priloha.cesta) { setChyba(true); return; }
+    let zivy = true;
+    eOdkazPrilohy(priloha.cesta).then(u => {
+      if (!zivy) return;
+      if (u) setUrl(u); else setChyba(true);   // podpis selhal → ať kolečko netočí donekonečna
+    });
+    return () => { zivy = false; };
+  }, [priloha.cesta]);
+  return (
+    <div
+      onClick={() => url && onOtevri && onOtevri(url)}
+      style={{
+        width: 220, maxWidth: '100%', minHeight: url ? 0 : 150,
+        borderRadius: 14, overflow: 'hidden', background: 'rgba(0,32,246,0.05)',
+        border: '1px solid ' + T.cardBorder, cursor: url ? 'zoom-in' : 'default',
+        display: url ? 'block' : 'grid', placeItems: 'center', padding: url ? 0 : 12,
+      }}>
+      {url
+        ? <img src={url} alt={priloha.nazev || 'Fotka'} style={{ display: 'block', width: '100%', height: 'auto' }} />
+        : chyba
+        ? <span style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12, fontWeight: 600, textAlign: 'center', lineHeight: 1.4 }}>Fotku se nepodařilo načíst</span>
+        : <span style={{ width: 24, height: 24, borderRadius: 999, border: '2.5px solid rgba(0,32,246,0.2)', borderTopColor: T.primary, animation: 'empSpin .7s linear infinite' }} />}
+    </div>
+  );
+}
+
+// Ostatní přílohy (dokumenty) — ke stažení přes podepsaný odkaz
+function EPrilohaSoubor({ priloha }) {
+  async function stahni() {
+    const url = await eOdkazPrilohy(priloha.cesta);
+    if (url) window.open(url, '_blank', 'noopener');
+  }
+  return (
+    <button onClick={stahni} style={{
+      display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
+      padding: '10px 13px', borderRadius: 12, cursor: 'pointer', maxWidth: 240,
+      background: 'rgba(0,32,246,0.05)', border: '1px solid ' + T.cardBorder,
+    }}>
+      <Icon name="paperclip-bold" size={16} color={T.primary} />
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: 'block', color: T.cardText, fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{priloha.nazev}</span>
+        {priloha.velikost > 0 && <span style={{ display: 'block', color: T.cardMutedSoft, fontFamily: T.fontMono, fontSize: 10.5 }}>{eVelikostPrilohy(priloha.velikost)}</span>}
+      </span>
+    </button>
+  );
+}
+
+// Fotka přes celou obrazovku po kliknutí
+function ELupa({ url, onClose }) {
+  useEffectE(() => {
+    const esc = e => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, []);
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(6,8,20,0.92)',
+      display: 'grid', placeItems: 'center', padding: 24, cursor: 'zoom-out',
+    }}>
+      <img src={url} alt="" style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 10 }} />
+    </div>
+  );
+}
+
 function EMessages({ initialThreadId } = {}) {
   // Local thread state — initialized from (possibly mutated) global E_THREADS
   const [threads, setThreads]   = useStateE(() => [...E_THREADS]);
@@ -40,6 +110,7 @@ function EMessages({ initialThreadId } = {}) {
   const [shiftForm, setShiftForm] = useStateE({ role: '', date: '', time: '', pay: '', location: '' });
   const [showInterviewModal, setShowInterviewModal] = useStateE(false);
   const [interviewForm, setInterviewForm] = useStateE({ date: '', time: '', location: '', note: '' });
+  const [lupa,    setLupa]      = useStateE(null);   // fotka přes celou obrazovku
   const userId                  = useRefE(null);
   const scrollRef               = useRefE(null);
 
@@ -56,7 +127,7 @@ function EMessages({ initialThreadId } = {}) {
     const chan = sb.channel('e-msgs-global')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         const msg = payload.new;
-        const preview = msg.type === 'shift_offer' ? '📅 Nabídka směny' : msg.type === 'interview_offer' ? '🗓️ Pozvánka na pohovor' : msg.text;
+        const preview = msg.file_url ? _ePrilohaNahled(msg) : msg.type === 'shift_offer' ? '📅 Nabídka směny' : msg.type === 'interview_offer' ? '🗓️ Pozvánka na pohovor' : msg.text;
         setThreads(prev => prev.map(t => {
           if (t.id !== msg.match_id) return t;
           const isMine = msg.sender_id === userId.current;
@@ -90,16 +161,19 @@ function EMessages({ initialThreadId } = {}) {
           if (t.id !== active) return t;
           if (t.msgs.some(m => m.id === msg.id)) return t;
           const from = msg.sender_id === userId.current ? 'me' : 'them';
+          const jePriloha = !!msg.file_url;
           const isShift = msg.type === 'shift_offer' && msg.metadata;
           const isInterview = msg.type === 'interview_offer' && msg.metadata;
-          const newMsg = isShift
+          const newMsg = jePriloha
+            ? { from, kind: 'file', file: _ePrilohaZRadku(msg), t: _fmtTime(msg.created_at), id: msg.id }
+            : isShift
             ? { from, kind: 'shift', shift: { role: msg.metadata.role, date: msg.metadata.date, time: msg.metadata.time, pay: msg.metadata.pay }, t: _fmtTime(msg.created_at), id: msg.id }
             : isInterview
             ? { from, kind: 'interview', interview: { date: msg.metadata.date, time: msg.metadata.time, location: msg.metadata.location, note: msg.metadata.note }, t: _fmtTime(msg.created_at), id: msg.id }
             : { from, text: msg.text, t: _fmtTime(msg.created_at), id: msg.id };
           return {
             ...t,
-            last: isShift ? '📅 Nabídka směny' : isInterview ? '🗓️ Pozvánka na pohovor' : msg.text,
+            last: jePriloha ? _ePrilohaNahled(msg) : isShift ? '📅 Nabídka směny' : isInterview ? '🗓️ Pozvánka na pohovor' : msg.text,
             msgs: [...t.msgs, newMsg],
           };
         }));
@@ -349,6 +423,17 @@ function EMessages({ initialThreadId } = {}) {
                 </div>
               );
             }
+            if (m.kind === 'file') {
+              // Příloha nemá bublinu — obrázek je sám o sobě dost výrazný
+              return (
+                <div key={i} style={{ alignSelf: m.from === 'me' ? 'flex-end' : 'flex-start', maxWidth: '75%' }}>
+                  {m.file.typ === 'image'
+                    ? <EPrilohaFotka priloha={m.file} onOtevri={setLupa} />
+                    : <EPrilohaSoubor priloha={m.file} />}
+                  <div style={{ color: T.cardMutedSoft, fontFamily: T.fontMono, fontSize: 10, marginTop: 4, textAlign: m.from === 'me' ? 'right' : 'left' }}>{m.t}</div>
+                </div>
+              );
+            }
             return (
               <div key={i} style={{ alignSelf: m.from === 'me' ? 'flex-end' : 'flex-start', maxWidth: '65%' }}>
                 <div style={{
@@ -463,6 +548,8 @@ function EMessages({ initialThreadId } = {}) {
       </aside>
 
       {/* Shift offer modal */}
+      {lupa && <ELupa url={lupa} onClose={() => setLupa(null)} />}
+
       {showShiftModal && (
         <div onClick={e => { if (e.target === e.currentTarget) setShowShiftModal(false); }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', display: 'grid', placeItems: 'center', zIndex: 200 }}>
           <div style={{ background: '#ffffff', border: '1px solid ' + T.cardBorder, borderRadius: 18, padding: 28, width: 380, position: 'relative' }}>
