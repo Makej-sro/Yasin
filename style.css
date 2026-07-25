@@ -517,34 +517,34 @@ img { max-width: 100%; display: block; }
 }
 
 /* ═══════════ DOWNLOAD ═══════════ */
-#download { padding: 120px 0; }
+/* Stahovací sekce = modrý konec stránky (jako zápatí u Podpory), v něm bílá karta */
+#download { padding: 120px 0; background: #0020f6; }
 .download-card {
   position: relative; padding: 80px 48px; border-radius: 28px;
-  background: linear-gradient(135deg, rgba(0,32,246,.3), rgba(5,7,26,.85));
-  border: 1px solid rgba(208,208,255,.12);
+  background: #ffffff;
+  border: 1px solid rgba(0,32,246,.10);
+  box-shadow: 0 30px 80px rgba(0,0,40,.32);
   text-align: center; overflow: hidden;
 }
-.download-glow {
-  position: absolute; width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(58,58,153,.4), transparent 70%);
-  top: -100px; right: -100px; filter: blur(80px);
-}
+.download-glow { display: none; }
 .download-content { position: relative; z-index: 2; }
-.download-content h2 { font-family: var(--font-heading); font-size: clamp(2rem,5vw,3rem); font-weight: 800; margin-bottom: 16px; }
-.download-content > p { color: var(--muted-fg); font-size: 1.1rem; margin-bottom: 32px; }
+.download-content h2 { font-family: var(--font-heading); font-size: clamp(2rem,5vw,3rem); font-weight: 800; margin-bottom: 16px; color: #0d0d28; }
+/* Zvýrazněná část („Makat?") v bílé kartě — primární modrá místo bledě fialové */
+.download-content h2 .gradient-text { color: #0020f6; -webkit-text-fill-color: #0020f6; }
+.download-content > p { color: #565c7a; font-size: 1.1rem; margin-bottom: 32px; }
 .download-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
 .store-btn {
   display: flex; align-items: center; gap: 12px;
   padding: 14px 28px; border-radius: 14px;
-  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+  background: #f3f5fc; border: 1px solid rgba(0,32,246,.12);
   transition: transform 200ms cubic-bezier(0.23,1,0.32,1), background 200ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
-  .store-btn:hover { background: rgba(255,255,255,.14); transform: translateY(-2px); }
+  .store-btn:hover { background: #e9edfb; transform: translateY(-2px); }
 }
 .store-btn:active { transform: scale(0.97); transition-duration: 120ms; }
-.store-btn small { display: block; font-size: .7rem; color: var(--muted-fg); text-align: left; }
-.store-btn strong { display: block; font-size: 1rem; text-align: left; }
+.store-btn small { display: block; font-size: .7rem; color: #6a7090; text-align: left; }
+.store-btn strong { display: block; font-size: 1rem; text-align: left; color: #0d0d28; }
 .store-btn--soon { opacity: .55; cursor: not-allowed; pointer-events: none; }
 
 /* ═══════════ COOKIE BANNER ═══════════ */
@@ -574,10 +574,25 @@ img { max-width: 100%; display: block; }
 .cookie-btn:hover { opacity: .85; }
 .cookie-btn-accept { background: linear-gradient(135deg,var(--primary),var(--accent)); color: #fff; }
 .cookie-btn-reject { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); color: rgba(255,255,255,.8); }
-.download-note { color: var(--muted-fg); font-size: .85rem; }
+.download-note { color: #6a7090; font-size: .85rem; }
 
 /* ═══════════ FOOTER ═══════════ */
 #footer { padding: 80px 0 32px; border-top: 1px solid rgba(208,208,255,.06); }
+
+/* Modrá patička na stránkách se stahovací sekcí (index, pro zaměstnavatele,
+   hledám si práci) — plynule navazuje na modrý konec sekce #download. Cílíme
+   jen na patičku hned za #download, takže ostatní stránky zůstanou beze změny.
+   Stejný vzhled jako u Podpory. */
+#download + #footer { background: #0020f6; border-top: none; }
+#download + #footer .footer-logo { background: none !important; -webkit-text-fill-color: #fff !important; color: #fff !important; }
+#download + #footer .footer-brand > p,
+#download + #footer .footer-col h4,
+#download + #footer .footer-col a,
+#download + #footer .footer-bottom span { color: rgba(255,255,255,.85) !important; }
+#download + #footer .footer-col a:hover { color: #fff !important; }
+#download + #footer .footer-bottom { border-top-color: rgba(255,255,255,.18); }
+#download + #footer .footer-social a { background: rgba(255,255,255,.12); color: #fff; }
+#download + #footer .footer-social a:hover { background: rgba(255,255,255,.22); }
 .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; }
 .footer-logo {
   font-family: var(--font-heading); font-size: 1.6rem; font-weight: 900;
@@ -1622,3 +1637,138 @@ html { scroll-padding-top: 92px; }
 }
 #navbar.nav-over-light #nav-login-btn:hover { background: rgba(0,32,246,.06); border-color: rgba(0,32,246,.5); }
 #navbar.nav-over-light #nav-register-btn { background: linear-gradient(135deg,#0020f6,#3a3a99) !important; color: #fff !important; border-color: transparent !important; }
+
+/* ═══════════ ČEKACÍ LIST (WAITLIST) — full-screen split ═══════════ */
+.wl-fs {
+  position: fixed; inset: 0; z-index: 4000;
+  background: #fff; overflow-y: auto;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none; transition: opacity .3s ease;
+}
+.wl-fs.active { opacity: 1; pointer-events: auto; }
+.wl-fs-close {
+  position: fixed; top: 16px; right: 18px; z-index: 6;
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  background: rgba(10,13,46,.07); color: #0a0d2e;
+  font-size: 1.15rem; cursor: pointer; line-height: 1;
+  transition: background .15s;
+}
+.wl-fs-close:hover { background: rgba(10,13,46,.14); }
+.wl-fs-inner { flex: 1; display: flex; flex-direction: column; }
+.wl-fs-head { text-align: center; padding: 2.6rem 1.5rem 1.4rem; }
+.wl-badge {
+  display: inline-block; background: rgba(0,32,246,.09); color: var(--primary);
+  font-size: .74rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+  padding: .4rem .8rem; border-radius: 999px; margin-bottom: 1rem;
+}
+.wl-fs-title {
+  font-size: clamp(1.8rem, 4.4vw, 2.7rem); font-weight: 800;
+  color: #0a0d2e; letter-spacing: -.02em; line-height: 1.1; margin: 0;
+}
+.wl-fs-sub {
+  color: #252525; max-width: 580px; margin: .7rem auto 0;
+  font-size: 1.02rem; line-height: 1.5; font-weight: 700;
+}
+.wl-ig {
+  display: inline-flex; align-items: center; gap: .5rem;
+  margin-top: .7rem; color: #252525; font-weight: 700; font-size: .95rem;
+  text-decoration: none; transition: transform .2s ease;
+  transform-origin: center;
+}
+.wl-ig-icon {
+  width: 30px; height: 30px; display: inline-block; flex-shrink: 0;
+  background-color: var(--primary);
+  -webkit-mask: url("/instagram.png") center / contain no-repeat;
+  mask: url("/instagram.png") center / contain no-repeat;
+}
+.wl-ig:hover, .wl-ig:focus { text-decoration: none; opacity: 1; }
+.wl-ig:hover { transform: scale(1.1); }
+
+/* Odpočet do spuštění */
+.wl-countdown { display: flex; gap: .5rem; justify-content: center; align-items: flex-start; margin: 1.4rem 0 .5rem; }
+.wl-cd-unit { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
+.wl-cd-num { font-size: clamp(2rem, 5.5vw, 3.1rem); font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; line-height: 1; }
+.wl-cd-lbl { font-size: .7rem; text-transform: uppercase; letter-spacing: .09em; color: #252525; margin-top: .45rem; font-weight: 700; }
+.wl-cd-sep { font-size: clamp(1.5rem, 4vw, 2.4rem); font-weight: 800; color: #252525; line-height: 1.05; }
+
+/* Karty — obě v primární modré na bílém pozadí */
+.wl-split {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem;
+  max-width: 1060px; width: 100%; margin: 0 auto;
+  padding: .4rem clamp(1rem, 4vw, 2rem) 2.8rem;
+}
+.wl-side {
+  background: var(--primary); color: #fff;
+  border-radius: 22px; padding: 2rem clamp(1.4rem, 2.6vw, 2.1rem) 2rem;
+  display: flex; flex-direction: column;
+  box-shadow: 0 22px 44px -22px rgba(0,32,246,.55);
+}
+.wl-side-tag { font-size: .76rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #bcc8ff; }
+.wl-side-title { font-size: clamp(1.4rem, 2.6vw, 1.95rem); font-weight: 800; margin: .35rem 0 1.3rem; line-height: 1.15; }
+.wl-benefits { list-style: none; padding: 0; margin: 0 0 1.6rem; display: flex; flex-direction: column; gap: .72rem; }
+.wl-benefits li { position: relative; padding-left: 2rem; font-size: .95rem; line-height: 1.4; color: rgba(255,255,255,.92); }
+.wl-benefits li::before {
+  content: '✓'; position: absolute; left: 0; top: -1px;
+  width: 1.35rem; height: 1.35rem; border-radius: 50%;
+  display: grid; place-items: center; font-size: .78rem; font-weight: 800;
+  background: rgba(255,255,255,.2); color: #fff;
+}
+
+/* Odměnová karta (hlavní early-bird lákadlo) */
+.wl-reward {
+  border-radius: 16px; padding: 1.1rem 1.2rem; margin-bottom: 1.4rem;
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28);
+}
+.wl-reward-badge {
+  display: inline-block; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em;
+  padding: .32rem .65rem; border-radius: 999px; margin-bottom: .6rem;
+  background: #fff; color: var(--primary);
+}
+.wl-reward-text { margin: 0; font-size: 1rem; line-height: 1.45; color: #fff; }
+.wl-reward-text strong { font-weight: 800; }
+
+.wl-cta {
+  margin-top: auto; width: 100%; height: 54px; border-radius: 14px;
+  font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; border: none;
+  transition: transform .12s, box-shadow .2s;
+  background: #fff; color: var(--primary); box-shadow: 0 14px 28px -14px rgba(0,0,0,.45);
+}
+.wl-cta:hover { transform: translateY(-2px); }
+.wl-cta:active { transform: scale(.99); }
+
+/* Formulářový panel (překryje split po kliknutí na CTA) */
+.wl-panel {
+  position: fixed; inset: 0; z-index: 4100;
+  background: rgba(10,13,46,.55); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.wl-panel.active { display: flex; }
+.wl-panel-card {
+  background: #fff; border-radius: 1.5rem; padding: 2.4rem;
+  width: min(430px, 100%); max-height: calc(100vh - 40px); overflow-y: auto;
+  position: relative;
+}
+.wl-panel-back { background: none; border: none; color: var(--primary); font-weight: 600; font-size: .9rem; cursor: pointer; margin-bottom: .9rem; padding: 0; }
+.wl-panel-card .modal-logo { margin-bottom: .8rem; }
+.wl-form-title { font-size: 1.5rem; font-weight: 800; color: #0a0d2e; margin: 0 0 .3rem; }
+.wl-form-sub { color: rgba(10,13,46,.6); margin: 0 0 1.2rem; font-size: .95rem; line-height: 1.5; }
+/* Světlé formulářové prvky uvnitř panelu (globální jsou pro tmavý motiv) */
+.wl-panel-card .form-label { color: #0a0d2e; }
+.wl-panel-card .form-input { background: #f4f6fb; border-color: #e6e8f2; color: #0a0d2e; }
+.wl-panel-card .form-input::placeholder { color: rgba(10,13,46,.4); }
+.wl-panel-card .form-input:focus { background: #fff; border-color: var(--primary); }
+.wl-panel-card .modal-error { background: rgba(244,63,94,.08); border-color: rgba(244,63,94,.25); color: #d92d4b; }
+.wl-fineprint { font-size: .76rem; color: rgba(10,13,46,.5); text-align: center; margin-top: .85rem; line-height: 1.5; }
+#wl-done { text-align: center; }
+.wl-done-ic {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg,#16a34a,#22c55e);
+  display: grid; place-items: center; margin: .4rem auto 1.1rem;
+  box-shadow: 0 12px 26px -10px rgba(34,197,94,.6);
+}
+
+@media (max-width: 760px) {
+  .wl-split { grid-template-columns: 1fr; }
+  .wl-fs-head { padding: 3.4rem 1.3rem 1rem; }
+  .wl-side { padding: 1.8rem 1.4rem 2.2rem; }
+}

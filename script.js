@@ -384,6 +384,14 @@ function initAuth() {
   if (heroRegisterBtn) heroRegisterBtn.addEventListener('click', e => { e.preventDefault(); openModal('register'); });
   if (heroLoginBtn)    heroLoginBtn.addEventListener('click',    e => { e.preventDefault(); openModal('login'); });
 
+  // Hluboký odkaz na přihlášení: /?login=employer (nebo worker) otevře rovnou
+  // přihlašovací modál s vybranou rolí. Sem míří i dashboard, když ho někdo
+  // otevře nepřihlášený — jedno přihlášení s rozcestníkem pro obojí, žádná
+  // druhá přihlašovačka navíc.
+  const _loginParam = new URLSearchParams(location.search).get('login');
+  if (_loginParam === 'employer' || _loginParam === 'worker') openModal('login', _loginParam);
+  else if (_loginParam !== null) openModal('login');
+
   // Escape key zavře modál
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeModals();
@@ -552,6 +560,134 @@ function initAuth() {
       showToast('Registrace proběhla! Zkontroluj svůj email pro potvrzení.');
     }
   });
+
+  // ═══════════ ČEKACÍ LIST (WAITLIST) — full-screen split ═══════════
+  const wlOverlay   = document.getElementById('wl-overlay');
+  const wlPanel     = document.getElementById('wl-panel');
+  const wlCompanyGr = document.getElementById('wl-company-group');
+  const wlPhoneGr   = document.getElementById('wl-phone-group');
+  let   wlRole      = 'worker';
+
+  function openWaitlist() {
+    if (!wlOverlay) return;
+    document.body.style.overflow = 'hidden';
+    wlOverlay.classList.add('active');
+    wlOverlay.setAttribute('aria-hidden', 'false');
+  }
+  function closeWaitlist(dismissed) {
+    if (!wlOverlay) return;
+    wlOverlay.classList.remove('active');
+    wlPanel.classList.remove('active');
+    wlOverlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (dismissed) { try { sessionStorage.setItem('wl-dismissed', '1'); } catch (e) {} }
+  }
+  function openWlForm(role) {
+    wlRole = role;
+    wlCompanyGr.style.display = role === 'employer' ? 'block' : 'none';
+    wlPhoneGr.style.display   = role === 'employer' ? 'block' : 'none';
+    document.getElementById('wl-form-title').textContent = 'Zapiš se na čekací list';
+    document.getElementById('wl-form-sub').textContent =
+      role === 'employer'
+        ? 'Ozveme se vám na e-mail, jakmile 1. 10. spustíme.'
+        : 'Ozveme se ti na e-mail, jakmile 1. 10. spustíme.';
+    document.getElementById('wl-error').style.display = 'none';
+    document.getElementById('wl-form-wrap').style.display = 'block';
+    document.getElementById('wl-done').style.display = 'none';
+    wlPanel.classList.add('active');
+    setTimeout(() => { const n = document.getElementById('wl-name'); if (n) n.focus(); }, 60);
+  }
+
+  document.getElementById('wl-close').addEventListener('click', () => closeWaitlist(true));
+  document.getElementById('wl-done-close').addEventListener('click', () => closeWaitlist(false));
+  document.getElementById('wl-back').addEventListener('click', () => wlPanel.classList.remove('active'));
+  wlPanel.addEventListener('click', e => { if (e.target === wlPanel) wlPanel.classList.remove('active'); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (wlPanel.classList.contains('active')) wlPanel.classList.remove('active');
+    else if (wlOverlay.classList.contains('active')) closeWaitlist(true);
+  });
+
+  // CTA na každé straně → otevři formulář s danou rolí
+  document.querySelectorAll('.wl-cta').forEach(btn => {
+    btn.addEventListener('click', () => openWlForm(btn.dataset.wlRole));
+  });
+
+  // Odpočet do spuštění (1. 10. 2026)
+  (function () {
+    const cdD = document.getElementById('wl-cd-d');
+    if (!cdD) return;
+    const target = new Date(2026, 9, 1, 0, 0, 0).getTime();
+    const pad = n => String(n).padStart(2, '0');
+    function tick() {
+      let diff = Math.max(0, target - Date.now());
+      const d = Math.floor(diff / 86400000); diff -= d * 86400000;
+      const h = Math.floor(diff / 3600000);  diff -= h * 3600000;
+      const m = Math.floor(diff / 60000);     diff -= m * 60000;
+      const s = Math.floor(diff / 1000);
+      cdD.textContent = d;
+      document.getElementById('wl-cd-h').textContent = pad(h);
+      document.getElementById('wl-cd-m').textContent = pad(m);
+      document.getElementById('wl-cd-s').textContent = pad(s);
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+
+  // Odeslání na čekací list
+  document.getElementById('wl-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    document.getElementById('wl-error').style.display = 'none';
+    const btn     = document.getElementById('wl-submit');
+    const name    = document.getElementById('wl-name').value.trim();
+    const email   = document.getElementById('wl-email').value.trim();
+    const company = document.getElementById('wl-company').value.trim();
+    const phone   = document.getElementById('wl-phone').value.trim();
+
+    if (!name) { showError('wl-error', 'Zadej své jméno.'); return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('wl-error', 'Zadej platný email.'); return; }
+    if (wlRole === 'employer' && !company) { showError('wl-error', 'Zadej název firmy.'); return; }
+    if (wlRole === 'employer' && !phone) { showError('wl-error', 'Zadej telefon, ať se ti můžeme ozvat.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Ukládám…';
+
+    const { error } = await sb.from('waitlist').insert({
+      role: wlRole,
+      name,
+      email,
+      company_name: wlRole === 'employer' ? company : null,
+      phone: wlRole === 'employer' ? phone : null,
+    });
+
+    if (error) {
+      if (error.code === '23505') {
+        // už na seznamu je → ber to jako úspěch
+        try { localStorage.setItem('wl-joined', '1'); } catch (er) {}
+        document.getElementById('wl-form-wrap').style.display = 'none';
+        document.getElementById('wl-done').style.display = 'block';
+        return;
+      }
+      showError('wl-error', 'Nepodařilo se uložit. Zkus to prosím za chvíli.');
+      btn.disabled = false;
+      btn.textContent = 'Chci být u toho';
+      return;
+    }
+
+    try { localStorage.setItem('wl-joined', '1'); } catch (er) {}
+    document.getElementById('wl-form-wrap').style.display = 'none';
+    document.getElementById('wl-done').style.display = 'block';
+  });
+
+  // Auto-otevření po načtení — ne když už je zapsán/zavřel to, nebo je přihlášený
+  const wlForce  = (() => { try { return new URLSearchParams(location.search).has('wl'); } catch (e) { return false; } })();
+  const wlSeen   = (() => { try { return localStorage.getItem('wl-joined') || sessionStorage.getItem('wl-dismissed'); } catch (e) { return null; } })();
+  const wlLogged = (() => { try { return !!localStorage.getItem('makej-auth'); } catch (e) { return false; } })();
+  if (wlForce) {
+    setTimeout(openWaitlist, 300);              // ?wl v adrese = vždy ukázat (ladění/promo)
+  } else if (!wlSeen && !wlLogged) {
+    setTimeout(openWaitlist, 900);
+  }
 
   // ─── Google OAuth — stejný provider jako v makej ───
   document.getElementById('login-google').addEventListener('click', async () => {
