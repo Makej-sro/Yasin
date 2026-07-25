@@ -414,21 +414,26 @@ function EToast({ toasts, onRemove }) {
       width: 'min(360px, calc(100vw - 48px))', pointerEvents: 'none',
     }}>
       {toasts.map(t => (
-        <div key={t.id} style={{
-          background: 'rgba(255,255,255,0.97)',
-          border: '1px solid ' + (t.type === 'success' ? 'rgba(91,214,138,0.45)' : 'rgba(91,107,255,0.45)'),
-          borderRadius: 14, padding: '13px 16px',
-          display: 'flex', alignItems: 'flex-start', gap: 10,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-          animation: 'empPop .3s cubic-bezier(.2,.8,.2,1)',
-          pointerEvents: 'auto',
+        <div key={t.id} onClick={() => onRemove(t.id)} style={{
+          display: 'flex', gap: 11, alignItems: 'center', padding: '12px 14px',
+          borderRadius: 20,
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          border: '0.5px solid rgba(255,255,255,0.9)',
+          boxShadow: '0 12px 32px -10px rgba(20,22,40,0.35), 0 2px 6px rgba(20,22,40,0.08)',
+          cursor: 'pointer', pointerEvents: 'auto',
+          animation: 'wToastIn .42s cubic-bezier(.16,1,.3,1)',
         }}>
-          <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>{t.icon}</span>
+          {t.avatar
+            ? <span style={{ width: 40, height: 40, borderRadius: 999, flexShrink: 0, background: t.avatar.color || '#5B6BFF', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 14 }}>{t.avatar.initials || '?'}</span>
+            : <span style={{ width: 40, height: 40, borderRadius: 999, flexShrink: 0, background: 'rgba(0,32,246,0.10)', display: 'grid', placeItems: 'center', fontSize: 20 }}>{t.icon}</span>}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {t.title && <div style={{ color: '#0020F6', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{t.title}</div>}
-            <div style={{ color: '#2D2CA7', fontFamily: T.fontUI, fontSize: 12, lineHeight: 1.4 }}>{t.text}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span style={{ flex: 1, minWidth: 0, color: '#0a0a1a', fontFamily: T.fontHead, fontSize: 14, fontWeight: 800, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</span>
+              <span style={{ color: '#8a90b0', fontFamily: T.fontUI, fontSize: 11.5, flexShrink: 0 }}>teď</span>
+            </div>
+            {t.text && <div style={{ color: '#5b6080', fontFamily: T.fontUI, fontSize: 12.5, marginTop: 2, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{t.text}</div>}
           </div>
-          <button onClick={() => onRemove(t.id)} style={{ background: 'none', border: 'none', color: '#99aadd', cursor: 'pointer', padding: 2, lineHeight: 1, flexShrink: 0 }}>✕</button>
         </div>
       ))}
     </div>
@@ -632,6 +637,7 @@ function EmployerApp() {
   const [tab,       setTab]       = useStateE('dash');
   const [loaded,    setLoaded]    = useStateE(false);
   const [tick,      setTick]      = useStateE(0);
+  const [unreadNudge, setUnreadNudge] = useStateE(0);   // překreslí sidebar/badge, aniž by se přemountoval chat
   const [showNewJob, setShowNewJob] = useStateE(false);
   const [publish,   setPublish]   = useStateE(null);   // null | 'loading' | 'done'
   const [toasts,    setToasts]    = useStateE([]);
@@ -650,7 +656,7 @@ function EmployerApp() {
     setTab('chat');
   }
 
-  function addToast(title, text, icon = '🔔', type = 'info') {
+  function addToast(title, text, icon = '🔔', type = 'info', avatar = null) {
     const id = Date.now() + Math.random();
     setToasts(prev => [...prev, { id, title, text, icon, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 6000);
@@ -695,12 +701,20 @@ function EmployerApp() {
   useEffectE(() => {
     sb.auth.getSession().then(({ data: { session } }) => {
       if (!session?.user) return;
+      // Realtime s RLS potřebuje přihlašovací token, jinak socket běží anonymně
+      // a živé události (zprávy, oznámení) nedorazí — přijdou až po refreshi.
+      if (session.access_token) { try { sb.realtime.setAuth(session.access_token); } catch (e) {} }
       empId.current = session.user.id;
       fetchEmployerData(session.user.id).then(() => {
         setLoaded(true);
         setTick(1);
       });
     });
+    // Token drž aktuální i po obnově session
+    const { data: sub } = sb.auth.onAuthStateChange((_e, session) => {
+      if (session?.access_token) { try { sb.realtime.setAuth(session.access_token); } catch (e) {} }
+    });
+    return () => { try { sub.subscription.unsubscribe(); } catch (e) {} };
   }, []);
 
   // Realtime: refresh data when matches or jobs change
@@ -730,7 +744,47 @@ function EmployerApp() {
       })
       .subscribe();
 
-    return () => { try { sb.removeChannel(channel); } catch(e) {} };
+    // Otevření threadu jinde → jen překresli badge v menu
+    const onRefreshUnread = () => setUnreadNudge(n => n + 1);
+    window.addEventListener('emp-refresh-unread', onRefreshUnread);
+
+    return () => { try { sb.removeChannel(channel); } catch(e) {} window.removeEventListener('emp-refresh-unread', onRefreshUnread); };
+  }, [loaded]);
+
+  // Vždy-běžící odběr příchozích zpráv (na jakékoliv záložce). Vlastní kanál vytvořený
+  // až PO getSession + setAuth, aby realtime nezůstal anonymní — to byl důvod, proč to
+  // na jiných záložkách nechodilo. Zprávu přidá i do vlákna, ať se ukáže po přepnutí do chatu.
+  useEffectE(() => {
+    if (!loaded) return;
+    let chan;
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) return;
+      const id = session.user.id;
+      try { sb.realtime.setAuth(session.access_token); } catch (e) {}
+      chan = sb.channel('emp-allmsg-' + id)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+          const msg = payload.new; if (!msg || msg.sender_id === id) return;
+          const t = E_THREADS.find(x => x.id === msg.match_id);
+          if (!t) return;
+          const open = window.__empOpenThread || null;
+          const preview = (msg.file_url ? 'Příloha' : (msg.type === 'shift_offer' ? 'Nabídka směny' : msg.type === 'interview_offer' ? 'Pozvánka na pohovor' : msg.text)) || '';
+          t.last = msg.file_url ? '📎 Příloha' : (msg.type === 'shift_offer' ? '📅 Nabídka směny' : msg.type === 'interview_offer' ? '🗓️ Pozvánka na pohovor' : msg.text) || t.last;
+          if (Array.isArray(t.msgs) && !t.msgs.some(m => m.id === msg.id)) {
+            const bubble = msg.file_url
+              ? { from: 'them', kind: 'file', file: _ePrilohaZRadku(msg), t: _fmtTime(msg.created_at), id: msg.id }
+              : (msg.type === 'shift_offer' && msg.metadata) ? { from: 'them', kind: 'shift', shift: { role: msg.metadata.role, date: msg.metadata.date, time: msg.metadata.time, pay: msg.metadata.pay }, t: _fmtTime(msg.created_at), id: msg.id }
+              : (msg.type === 'interview_offer' && msg.metadata) ? { from: 'them', kind: 'interview', interview: { date: msg.metadata.date, time: msg.metadata.time, location: msg.metadata.location, note: msg.metadata.note }, t: _fmtTime(msg.created_at), id: msg.id }
+              : { from: 'them', text: msg.text, t: _fmtTime(msg.created_at), id: msg.id };
+            t.msgs = [...t.msgs, bubble];
+          }
+          if (msg.match_id === open) { try { localStorage.setItem('emp-lastread-' + msg.match_id, Date.now()); } catch (e) {} }
+          else { t.unread = (t.unread || 0) + 1; addToast(t.name || 'Nová zpráva', preview, '💬', 'info', { initials: t.avatar, color: t.color }); }
+          setUnreadNudge(n => n + 1);
+          window.dispatchEvent(new CustomEvent('emp-new-message', { detail: { id: msg.id, matchId: msg.match_id, title: t.name || 'Nová zpráva', text: preview, ts: msg.created_at ? new Date(msg.created_at).getTime() : Date.now(), read: msg.match_id === open } }));
+        })
+        .subscribe();
+    });
+    return () => { if (chan) { try { sb.removeChannel(chan); } catch (e) {} } };
   }, [loaded]);
 
   async function handleSignOut() {

@@ -679,12 +679,17 @@ function initAuth() {
     document.getElementById('wl-done').style.display = 'block';
   });
 
+  // ⚠️⚠️ DOČASNÉ – JEN PRO VÝVOJ: popup vyskočí VŽDY po každém refreshi.
+  //   PŘED SPUŠTĚNÍM PRO REÁLNÉ UŽIVATELE DÁT NA false (nebo smazat)!
+  //   Reální uživatelé mají vidět popup jen jednou (viz větev níž).
+  const WL_DEV_ALWAYS = true;
+
   // Auto-otevření po načtení — ne když už je zapsán/zavřel to, nebo je přihlášený
   const wlForce  = (() => { try { return new URLSearchParams(location.search).has('wl'); } catch (e) { return false; } })();
   const wlSeen   = (() => { try { return localStorage.getItem('wl-joined') || sessionStorage.getItem('wl-dismissed'); } catch (e) { return null; } })();
   const wlLogged = (() => { try { return !!localStorage.getItem('makej-auth'); } catch (e) { return false; } })();
-  if (wlForce) {
-    setTimeout(openWaitlist, 300);              // ?wl v adrese = vždy ukázat (ladění/promo)
+  if (WL_DEV_ALWAYS || wlForce) {
+    setTimeout(openWaitlist, 300);              // dev / ?wl v adrese = vždy ukázat
   } else if (!wlSeen && !wlLogged) {
     setTimeout(openWaitlist, 900);
   }

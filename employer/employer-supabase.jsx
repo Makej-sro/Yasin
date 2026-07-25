@@ -83,6 +83,94 @@ function eVelikostPrilohy(b) {
                          : (b / 1024 / 1024).toFixed(1).replace('.', ',') + ' MB';
 }
 
+// ── Posílání přílohy z dashboardu (zrcadlí wPosliPrilohu z appky) ──
+const E_PRILOHA_MAX = 10 * 1024 * 1024;   // 10 MB
+function _eBezpecnyNazev(name) {
+  return (name || 'soubor').normalize('NFKD').replace(/[^\w.-]+/g, '_').replace(/_+/g, '_').slice(0, 60) || 'soubor';
+}
+function _eChybaUlozeni(e) {
+  const s = ((e && (e.message || e.error)) || '').toLowerCase();
+  if (s.includes('row-level security') || s.includes('unauthorized') || s.includes('policy') || s.includes('violates'))
+    return 'Úložiště nahrání odmítlo — chybí oprávnění zapisovat.';
+  if (s.includes('bucket not found')) return 'Úložiště na přílohy nebylo nalezeno.';
+  if (s.includes('exceeded') || s.includes('payload') || s.includes('too large')) return 'Soubor je moc velký.';
+  return 'Nahrání se nepovedlo. Zkus to prosím znovu.';
+}
+// Nahraje přílohu do úložiště a teprve pak založí zprávu. Vrací { ok, error, zprava }.
+async function ePosliPrilohu(matchId, userId, file) {
+  if (!matchId || !userId || !file) return { ok: false, error: 'Chybí konverzace nebo soubor.' };
+  if (file.size > E_PRILOHA_MAX) return { ok: false, error: 'Soubor je moc velký (max 10 MB).' };
+  const jeObrazek = /^image\//.test(file.type);
+  const pripona = ((file.name || '').split('.').pop() || 'dat').toLowerCase();
+  const zaklad = _eBezpecnyNazev((file.name || 'soubor').replace(/\.[^.]+$/, ''));
+  const cesta = `${matchId}/${userId}-${Date.now()}-${zaklad}.${pripona}`;
+
+  const { error: chybaUlozeni } = await sb.storage.from(E_BUCKET_PRILOHY).upload(cesta, file, {
+    contentType: file.type || 'application/octet-stream', upsert: false,
+  });
+  if (chybaUlozeni) { console.error('ePosliPrilohu (úložiště):', chybaUlozeni); return { ok: false, error: _eChybaUlozeni(chybaUlozeni) }; }
+
+  const { data, error } = await sb.from('messages').insert({
+    match_id: matchId, sender_id: userId, text: '',
+    file_url: cesta, file_type: jeObrazek ? 'image' : 'file',
+    file_name: file.name || 'příloha', file_size: file.size,
+  }).select().single();
+  if (error) {
+    console.error('ePosliPrilohu (messages):', error);
+    try { await sb.storage.from(E_BUCKET_PRILOHY).remove([cesta]); } catch (e) {}
+    return { ok: false, error: 'Zprávu s přílohou se nepodařilo uložit.' };
+  }
+  return { ok: true, zprava: data };
+}
+
+// ── Upozornění (tabulka notifications) — zrcadlí strukturu z appky ──
+// Sloupce: id, user_id, type, title, body, read, match_id, created_at
+function _eNotifZRadku(r) {
+  return {
+    id: r.id,
+    ts: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
+    read: !!r.read,
+    type: r.type || 'info',
+    title: r.title || '',
+    text: r.body || '',
+    matchId: r.match_id || null,
+  };
+}
+async function fetchNotifsE(userId) {
+  const { data, error } = await sb.from('notifications')
+    .select('*').eq('user_id', userId)
+    .order('created_at', { ascending: false }).limit(40);
+  if (error) { console.error('fetchNotifsE:', error); return []; }
+  return (data || []).map(_eNotifZRadku);
+}
+async function markNotifsReadE(userId) {
+  const { error } = await sb.from('notifications')
+    .update({ read: true }).eq('user_id', userId).eq('read', false);
+  if (error) console.error('markNotifsReadE:', error);
+  return !error;
+}
+async function clearNotifsE(userId) {
+  const { error } = await sb.from('notifications').delete().eq('user_id', userId);
+  if (error) console.error('clearNotifsE:', error);
+  return !error;
+}
+// Počty nepřečtených podle konverzace (match_id) — pro odznak u „Zprávy" a threadů.
+async function fetchUnreadByMatchE(userId) {
+  const { data, error } = await sb.from('notifications')
+    .select('match_id').eq('user_id', userId).eq('read', false);
+  if (error) { console.error('fetchUnreadByMatchE:', error); return {}; }
+  const map = {};
+  (data || []).forEach(r => { if (r.match_id) map[r.match_id] = (map[r.match_id] || 0) + 1; });
+  return map;
+}
+// Označí konverzaci jako přečtenou (na serveru) — po otevření threadu.
+async function markThreadReadE(userId, matchId) {
+  if (!userId || !matchId) return;
+  const { error } = await sb.from('notifications')
+    .update({ read: true }).eq('user_id', userId).eq('match_id', matchId).eq('read', false);
+  if (error) console.error('markThreadReadE:', error);
+}
+
 async function fetchEmployerData(employerId) {
   try {
     const [profileRes, jobsRes] = await Promise.all([
@@ -246,6 +334,9 @@ async function fetchEmployerData(employerId) {
       const lastMsg = threadMsgs[threadMsgs.length - 1];
       const w       = match.worker || {};
       const wName   = w.name || 'Kandidát';
+      // Nepřečtené = zprávy od druhé strany novější než poslední přečtení (localStorage)
+      const lastRead = Number((typeof localStorage !== 'undefined' && localStorage.getItem('emp-lastread-' + match.id)) || 0);
+      const unread = messages.filter(m => m.match_id === match.id && m.sender_id !== employerId && new Date(m.created_at).getTime() > lastRead).length;
       return {
         id: match.id, match_id: match.id, worker_id: match.worker_id,
         name: wName,
@@ -258,7 +349,7 @@ async function fetchEmployerData(employerId) {
         skills: Array.isArray(w.skills) ? w.skills : [],
         last: lastMsg ? (lastMsg.kind === 'shift' ? '📅 Nabídka směny' : lastMsg.kind === 'interview' ? '🗓️ Pozvánka na pohovor' : lastMsg.kind === 'file' ? (lastMsg.file.typ === 'image' ? '📷 Fotka' : '📎 ' + lastMsg.file.nazev) : lastMsg.text) || 'Nová shoda' : 'Nová shoda',
         time: _relTime(match.created_at),
-        unread: 0, online: false, msgs: threadMsgs,
+        unread, online: false, msgs: threadMsgs,
       };
     });
     E_THREADS.length = 0;

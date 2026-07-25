@@ -28,10 +28,25 @@ const E_THREADS = [
 
 // Fotka v bublině. Bucket je neveřejný, takže se adresa musí nejdřív podepsat —
 // než se podpis vrátí, drží místo šedý rámeček, ať zpráva neposkakuje.
+// PNG ikony přes CSS masku (tint) — stejné ikony jako v appce (icons/…)
+function EIkonaPng({ src, size, color }) {
+  const s = size || 19;
+  return (
+    <span style={{
+      width: s, height: s, display: 'block', background: color || '#fff',
+      WebkitMaskImage: `url(icons/${src})`, maskImage: `url(icons/${src})`,
+      WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+      WebkitMaskPosition: 'center', maskPosition: 'center',
+      WebkitMaskSize: 'contain', maskSize: 'contain',
+    }} />
+  );
+}
+
 function EPrilohaFotka({ priloha, onOtevri }) {
-  const [url, setUrl]     = useStateE(null);
+  const [url, setUrl]     = useStateE(priloha.nahled || null);
   const [chyba, setChyba] = useStateE(false);
   useEffectE(() => {
+    if (priloha.nahled) { setUrl(priloha.nahled); return; }   // lokální náhled (optimistické odeslání)
     if (!priloha.cesta) { setChyba(true); return; }
     let zivy = true;
     eOdkazPrilohy(priloha.cesta).then(u => {
@@ -39,7 +54,7 @@ function EPrilohaFotka({ priloha, onOtevri }) {
       if (u) setUrl(u); else setChyba(true);   // podpis selhal → ať kolečko netočí donekonečna
     });
     return () => { zivy = false; };
-  }, [priloha.cesta]);
+  }, [priloha.cesta, priloha.nahled]);
   return (
     <div
       onClick={() => url && onOtevri && onOtevri(url)}
@@ -111,15 +126,36 @@ function EMessages({ initialThreadId } = {}) {
   const [showInterviewModal, setShowInterviewModal] = useStateE(false);
   const [interviewForm, setInterviewForm] = useStateE({ date: '', time: '', location: '', note: '' });
   const [lupa,    setLupa]      = useStateE(null);   // fotka přes celou obrazovku
+  const [userReady, setUserReady] = useStateE(false);
   const userId                  = useRefE(null);
+  const souborRef               = useRefE(null);   // skrytý <input type=file> na přílohu
   const scrollRef               = useRefE(null);
 
   // Grab current user id once
   useEffectE(() => {
     sb.auth.getSession().then(({ data: { session } }) => {
       userId.current = session?.user?.id || null;
+      setUserReady(true);
     });
   }, []);
+
+  // Sdílej, který thread je právě otevřený — vždy-běžící odběr v employer-main
+  // ho pak nechá přečtený, i když přijde nová zpráva zrovna do něj.
+  useEffectE(() => {
+    window.__empOpenThread = active;
+    return () => { if (window.__empOpenThread === active) window.__empOpenThread = null; };
+  }, [active]);
+
+  // Otevřená konverzace → zapamatuj „přečteno" (localStorage), vynuluj odznaky, dej signál
+  useEffectE(() => {
+    if (!userReady || !active) return;
+    try { localStorage.setItem('emp-lastread-' + active, Date.now()); } catch (e) {}
+    setThreads(prev => prev.map(x => x.id === active && x.unread ? { ...x, unread: 0 } : x));
+    if (typeof E_THREADS !== 'undefined') { const g = E_THREADS.find(x => x.id === active); if (g) g.unread = 0; }
+    if (userId.current) markThreadReadE(userId.current, active);   // pro tabulku notifications (kdyby ji trigger plnil)
+    window.dispatchEvent(new Event('emp-refresh-unread'));                                  // překresli badge v menu
+    window.dispatchEvent(new CustomEvent('emp-thread-read', { detail: { matchId: active } }));  // ztlum zvoneček
+  }, [active, userReady]);
 
   // Global subscription: update thread sidebar previews for ALL incoming messages
   // (active thread messages are handled separately by the per-thread subscription)
@@ -207,6 +243,35 @@ function EMessages({ initialThreadId } = {}) {
         ...t,
         msgs: t.msgs.map(m => m.id === tempId ? { ...m, id: data.id, t: _fmtTime(data.created_at) } : m),
       }));
+    }
+    setSending(false);
+  }
+
+  async function handleAttach(e) {
+    const file = e.target.files && e.target.files[0];
+    if (e.target) e.target.value = '';   // reset, ať jde poslat stejný soubor znovu
+    if (!file || !active || !userId.current || sending) return;
+    setSending(true);
+
+    const tempId = 'tmp-' + Date.now();
+    const jeObrazek = /^image\//.test(file.type);
+    const nahled = jeObrazek ? URL.createObjectURL(file) : null;
+    // Optimistický přírůstek — bublina se ukáže hned
+    setThreads(prev => prev.map(t => t.id !== active ? t : {
+      ...t, last: jeObrazek ? '📷 Fotka' : '📎 ' + file.name,
+      msgs: [...t.msgs, { from: 'me', kind: 'file', file: { cesta: null, typ: jeObrazek ? 'image' : 'file', nazev: file.name, velikost: file.size, nahled }, t: _fmtTime(new Date().toISOString()), id: tempId }],
+    }));
+
+    const res = await ePosliPrilohu(active, userId.current, file);
+    if (res.ok && res.zprava) {
+      const shape = _ePrilohaZRadku(res.zprava);
+      setThreads(prev => prev.map(t => t.id !== active ? t : {
+        ...t, msgs: t.msgs.map(m => m.id === tempId ? { ...m, id: res.zprava.id, file: shape, t: _fmtTime(res.zprava.created_at) } : m),
+      }));
+    } else {
+      // Selhání → odeber optimistickou bublinu a řekni proč
+      setThreads(prev => prev.map(t => t.id !== active ? t : { ...t, msgs: t.msgs.filter(m => m.id !== tempId) }));
+      window.empToast && window.empToast('Přílohu se nepodařilo poslat', res.error || 'Zkus to prosím znovu.', '⚠️', 'error');
     }
     setSending(false);
   }
@@ -358,13 +423,13 @@ function EMessages({ initialThreadId } = {}) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 2 }}>
-                    <span style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <span style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 13, fontWeight: t.unread > 0 ? 800 : 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {t.pinned ? '📌 ' : ''}{t.name}
                     </span>
                     <span style={{ color: T.cardMutedSoft, fontFamily: T.fontMono, fontSize: 10, flexShrink: 0 }}>{t.time}</span>
                   </div>
                   <div style={{ color: T.cardMuted, fontSize: 10.5, fontFamily: T.fontUI, marginBottom: 3 }}>{t.role}</div>
-                  <div style={{ color: t.unread > 0 ? T.cardText : T.cardMutedSoft, fontSize: 11.5, fontFamily: T.fontUI, fontWeight: t.unread > 0 ? 600 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.last}</div>
+                  <div style={{ color: t.unread > 0 ? T.cardText : T.cardMutedSoft, fontSize: 11.5, fontFamily: T.fontUI, fontWeight: t.unread > 0 ? 700 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.last}</div>
                 </div>
                 {t.unread > 0 ? <span style={{ minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999, background: T.primary, color: '#fff', fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, display: 'grid', placeItems: 'center', flexShrink: 0 }}>{t.unread}</span> : null}
               </button>
@@ -450,6 +515,14 @@ function EMessages({ initialThreadId } = {}) {
         </div>
 
         <div style={{ padding: 16, borderTop: '1px solid ' + T.cardBorder, display: 'flex', gap: 8, alignItems: 'center', background: '#ffffff' }}>
+          <input ref={souborRef} type="file" accept="image/*,application/pdf,.doc,.docx,.txt" onChange={handleAttach} style={{ display: 'none' }} />
+          <button
+            onClick={() => souborRef.current && souborRef.current.click()}
+            disabled={sending}
+            title="Přiložit fotku nebo soubor"
+            style={{ width: 40, height: 38, borderRadius: 9, background: 'rgba(0,32,246,0.05)', border: '1px solid ' + T.cardBorder, cursor: sending ? 'default' : 'pointer', display: 'grid', placeItems: 'center', opacity: sending ? 0.5 : 1, flexShrink: 0 }}>
+            <EIkonaPng src="attachment.png" size={19} color={T.cardMuted} />
+          </button>
           <input
             placeholder="Napište zprávu…"
             value={msgInput}
@@ -460,8 +533,10 @@ function EMessages({ initialThreadId } = {}) {
           <button
             onClick={handleSend}
             disabled={sending || !msgInput.trim()}
-            style={{ width: 40, height: 38, borderRadius: 9, background: 'linear-gradient(135deg, #0020F6, #2D2CA7)', border: 'none', color: '#fff', cursor: 'pointer', display: 'grid', placeItems: 'center', opacity: (sending || !msgInput.trim()) ? 0.5 : 1 }}>
-            <Icon name="plain-bold" size={16} color="#fff"/>
+            style={{ width: 40, height: 38, borderRadius: 9, background: 'linear-gradient(135deg, #0020F6, #2D2CA7)', border: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', opacity: (sending || !msgInput.trim()) ? 0.5 : 1 }}>
+            <span style={{ display: 'block', transform: 'translate(-0.8px, 0.9px)' }}>
+              <EIkonaPng src="send.png" size={18} color="#fff" />
+            </span>
           </button>
         </div>
 

@@ -179,6 +179,130 @@ function ESidebar({ tab, onTab }) {
 // ─────────────────────────────────────────────────────────────
 // TOPBAR
 // ─────────────────────────────────────────────────────────────
+// Ikona podle typu oznámení + relativní čas (jako v appce)
+const _E_NOTIF_ICON = {
+  message: 'chat-round-line-bold', match: 'users-group-rounded-bold',
+  shift: 'calendar-bold', review: 'star-bold', success: 'check-circle-bold', info: 'bell-bold',
+};
+function _eAgo(ts) {
+  const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  if (s < 60) return 'teď';
+  const m = Math.floor(s / 60); if (m < 60) return 'před ' + m + ' min';
+  const h = Math.floor(m / 60); if (h < 24) return 'před ' + h + ' h';
+  const d = Math.floor(h / 24); return 'před ' + d + (d === 1 ? ' dnem' : ' dny');
+}
+
+// Zvoneček s panelem oznámení — čte tabulku notifications, realtime, označí přečteno.
+function ENotifBell() {
+  const [notifs, setNotifs] = useStateE([]);
+  const [open, setOpen]     = useStateE(false);
+  const [ring, setRing]     = useStateE(false);
+  const [confirmClear, setConfirmClear] = useStateE(false);
+  const uid = useRefE(null);
+  const wrapRef = useRefE(null);
+
+  useEffectE(() => {
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) return;
+      uid.current = session.user.id;
+      fetchNotifsE(uid.current).then(setNotifs);   // persistovaná (pokud je trigger plní)
+    });
+    // Živá oznámení jedou z příchozích zpráv (realtime messages k firmě funguje).
+    const onNewMsg = (e) => {
+      const d = e.detail || {};
+      setNotifs(prev => (prev.some(x => x.id === 'm-' + d.id) ? prev
+        : [{ id: 'm-' + d.id, ts: d.ts || Date.now(), read: !!d.read, type: 'message', title: d.title || 'Nová zpráva', text: d.text || '', matchId: d.matchId || null }, ...prev].slice(0, 40)));
+      if (!d.read) { setRing(true); setTimeout(() => setRing(false), 750); }
+    };
+    const onThreadRead = (e) => {
+      const mid = e.detail && e.detail.matchId;
+      if (mid) setNotifs(prev => prev.map(n => n.matchId === mid ? { ...n, read: true } : n));
+    };
+    window.addEventListener('emp-new-message', onNewMsg);
+    window.addEventListener('emp-thread-read', onThreadRead);
+    return () => { window.removeEventListener('emp-new-message', onNewMsg); window.removeEventListener('emp-thread-read', onThreadRead); };
+  }, []);
+
+  // Klik kamkoli mimo panel ho zavře (fixní překryv nefunguje kvůli backdrop-filter v topbaru)
+  useEffectE(() => {
+    if (!open) return;
+    const onDoc = e => { if (wrapRef.current && !wrapRef.current.contains(e.target)) { setOpen(false); setConfirmClear(false); } };
+    document.addEventListener('click', onDoc, true);
+    return () => document.removeEventListener('click', onDoc, true);
+  }, [open]);
+
+  const unread = notifs.filter(n => !n.read).length;
+
+  function toggle() {
+    const wasOpen = open;
+    setOpen(o => !o);
+    if (wasOpen) setConfirmClear(false);
+    if (!wasOpen && unread > 0) {
+      setNotifs(prev => prev.map(n => ({ ...n, read: true })));
+      if (uid.current) markNotifsReadE(uid.current);
+    }
+  }
+  function clearAll() {
+    setNotifs([]);
+    if (uid.current) clearNotifsE(uid.current);
+  }
+
+  return (
+    <div ref={wrapRef} style={{ position: 'relative' }}>
+      <button onClick={toggle} title="Upozornění" style={{
+        width: 38, height: 38, borderRadius: 10,
+        background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border,
+        color: T.muted, cursor: 'pointer', display: 'grid', placeItems: 'center', position: 'relative',
+      }}>
+        <span style={{ display: 'grid', placeItems: 'center', animation: ring ? 'wBellRing .75s cubic-bezier(.36,.07,.19,.97)' : 'none', transformOrigin: 'top center' }}>
+          <Icon name="bell-bold" size={18} color={T.light} />
+        </span>
+        {unread > 0 && (
+          <span style={{ position: 'absolute', top: -4, right: -4, minWidth: 17, height: 17, padding: '0 4px', borderRadius: 999, background: T.destructive, color: '#fff', fontSize: 10, fontWeight: 800, fontFamily: T.fontUI, display: 'grid', placeItems: 'center', border: '2px solid #07071a' }}>{unread}</span>
+        )}
+      </button>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 48, right: 0, zIndex: 201,
+          width: 'min(360px, calc(100vw - 32px))', maxHeight: '70vh', overflowY: 'auto',
+          background: T.card, border: '1px solid ' + T.border, borderRadius: 16,
+          boxShadow: '0 24px 50px rgba(4,4,20,0.4)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid ' + T.border, position: 'sticky', top: 0, background: T.card, zIndex: 1 }}>
+            <span style={{ color: T.cardText, fontFamily: T.fontHead, fontSize: 15, fontWeight: 800 }}>Upozornění</span>
+            {notifs.length > 0 && !confirmClear && <button onClick={() => setConfirmClear(true)} style={{ background: 'rgba(244,63,94,0.12)', border: '1px solid rgba(244,63,94,0.4)', color: T.destructive, borderRadius: 999, padding: '5px 12px', fontFamily: T.fontUI, fontSize: 12, fontWeight: 800, cursor: 'pointer' }}>Vymazat</button>}
+          </div>
+          {confirmClear && (
+            <div style={{ padding: '13px 16px', borderBottom: '1px solid ' + T.border, background: 'rgba(244,63,94,0.06)' }}>
+              <div style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Opravdu smazat všechna oznámení?</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setConfirmClear(false)} style={{ flex: 1, padding: '8px 0', borderRadius: 10, background: 'transparent', border: '1px solid ' + T.border, color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>Zrušit</button>
+                <button onClick={() => { clearAll(); setConfirmClear(false); }} style={{ flex: 1, padding: '8px 0', borderRadius: 10, background: T.destructive, border: 'none', color: '#fff', fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}>Smazat</button>
+              </div>
+            </div>
+          )}
+          {notifs.length === 0 ? (
+            <div style={{ padding: '34px 20px', textAlign: 'center', color: T.cardMuted, fontFamily: T.fontUI, fontSize: 13 }}>Zatím žádná upozornění.</div>
+          ) : notifs.map(n => (
+            <div key={n.id} style={{ display: 'flex', gap: 11, alignItems: 'flex-start', padding: '12px 16px', borderBottom: '1px solid ' + T.border, background: n.read ? 'transparent' : 'rgba(0,32,246,0.06)' }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(0,32,246,0.10)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                <Icon name={_E_NOTIF_ICON[n.type] || 'bell-bold'} size={17} color={T.primary} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {n.title ? <div style={{ color: T.cardText, fontFamily: T.fontHead, fontSize: 13.5, fontWeight: n.read ? 700 : 800 }}>{n.title}</div> : null}
+                <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5, marginTop: 1, lineHeight: 1.4, fontWeight: n.read ? 400 : 600 }}>{n.text}</div>
+                <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 11, marginTop: 3 }}>{_eAgo(n.ts)}</div>
+              </div>
+              {!n.read ? <span style={{ width: 8, height: 8, borderRadius: 999, background: T.primary, flexShrink: 0, marginTop: 6 }} /> : null}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ETopbar({ title, subtitle, onNew, onSignOut, period = '30d', onPeriod }) {
   return (
     <header style={{
@@ -214,19 +338,7 @@ function ETopbar({ title, subtitle, onNew, onSignOut, period = '30d', onPeriod }
         ))}
       </div>
 
-      <button style={{
-        width: 38, height: 38, borderRadius: 10,
-        background: 'rgba(255,255,255,0.04)', border: '1px solid ' + T.border,
-        color: T.muted, cursor: 'pointer',
-        display: 'grid', placeItems: 'center', position: 'relative',
-      }}>
-        <Icon name="bell-bold" size={18} color={T.light} />
-        <span style={{
-          position: 'absolute', top: 8, right: 8,
-          width: 7, height: 7, borderRadius: 999, background: T.destructive,
-          border: '2px solid #07071a',
-        }} />
-      </button>
+      <ENotifBell />
 
       <button
         onClick={onSignOut}
