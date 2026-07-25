@@ -308,11 +308,8 @@ function MakejPricing() {
             fontFamily: T.fontUI, fontSize: 14.5, fontWeight: 700, cursor: 'pointer',
             transition: 'all .15s',
           }}>
-          <img src="/employer/bulb.png" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0, display: 'block' }} />
+          <img src="/employer/vahy.png" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0, display: 'block' }} />
           Porovnání tarifů přímo pro tebe
-          <span style={{ display: 'inline-flex', transition: 'transform .25s', transform: showCompare ? 'rotate(180deg)' : 'none' }}>
-            <Icon name="alt-arrow-down-bold" size={15} color={showCompare ? '#0020F6' : '#6B7280'} />
-          </span>
         </button>
 
         {showCompare && (
