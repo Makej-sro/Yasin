@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flow field dot background</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #fff; }
+  /* the background canvas — sits behind all page content */
+  #dot-bg { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; pointer-events: none; }
+  /* your page content goes above it */
+  .page { position: relative; z-index: 1; min-height: 100vh; padding: 64px;
+          font: 400 14px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; color: #252525; }
+</style>
+</head>
+<body>
+<canvas id="dot-bg"></canvas>
+
+<div class="page">
+  <h1 style="font: 700 48px/1.05 Helvetica, Arial, sans-serif; letter-spacing: -0.03em; margin: 0;">Your content here</h1>
+  <p style="max-width: 46ch; color: #6b6b6b;">Move the cursor: dots inside the circle turn blue.</p>
+</div>
+
+<script>
+/* ============================================================
+   Flow-field dot background
+   White page, #252525 dots, #0020F6 accent.
+   An invisible current bends the grid; dots go blue where it
+   runs fastest. Dots under the cursor circle turn blue too.
+   ============================================================ */
+(function () {
+  var CONFIG = {
+    dotColor:     '#252525',
+    accentColor:  '#0020F6',
+    spacing:      14,    // px between dots
+    dotSize:      1.1,   // base dot radius in px
+    cursorRadius: 40,    // px radius of the blue cursor circle
+    showRing:     false, // draw a faint outline around the cursor circle
+    speed:        1      // 1 = normal, 0.5 = half speed
+  };
+
+  var canvas = document.getElementById('dot-bg');
+  var ctx = canvas.getContext('2d');
+  var W = 0, H = 0, dots = [], mx = -9999, my = -9999, t0 = performance.now();
+
+  function hexToRgb(h) {
+    var v = parseInt(String(h).replace('#', ''), 16);
+    return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+  }
+  var DOT = hexToRgb(CONFIG.dotColor), ACC = hexToRgb(CONFIG.accentColor);
+
+  // 10 pre-mixed colours between the dot colour and the accent
+  var LEV = 10, COLORS = [];
+  for (var l = 0; l < LEV; l++) {
+    var k = l / (LEV - 1);
+    COLORS.push('rgb(' + Math.round(DOT[0] + (ACC[0] - DOT[0]) * k) + ',' +
+                         Math.round(DOT[1] + (ACC[1] - DOT[1]) * k) + ',' +
+                         Math.round(DOT[2] + (ACC[2] - DOT[2]) * k) + ')');
+  }
+
+  function buildGrid() {
+    var s = CONFIG.spacing;
+    var cols = Math.ceil(W / s) + 1, rows = Math.ceil(H / s) + 1;
+    var ox = (W - (cols - 1) * s) / 2, oy = (H - (rows - 1) * s) / 2;
+    dots = [];
+    for (var j = 0; j < rows; j++)
+      for (var i = 0; i < cols; i++) dots.push(ox + i * s, oy + j * s);
+  }
+
+  function resize() {
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buildGrid();
+  }
+
+  function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+  function draw() {
+    var t = ((performance.now() - t0) / 1000) * CONFIG.speed;
+    ctx.clearRect(0, 0, W, H);
+
+    var buckets = [];
+    for (var l = 0; l < LEV; l++) buckets.push([]);
+
+    for (var i = 0; i < dots.length; i += 2) {
+      var x = dots[i], y = dots[i + 1];
+
+      // --- the flow field ---
+      var ang = Math.sin(x * 0.0048 + t * 0.28) * 1.7 + Math.cos(y * 0.0056 - t * 0.22) * 1.7;
+      var mag = 7 + 6 * Math.sin(x * 0.003 + y * 0.0038 + t * 0.55);
+      var dx = Math.cos(ang) * mag;
+      var dy = Math.sin(ang) * mag;
+      var e = clamp(0.5 + 0.5 * Math.sin(ang * 1.6 + t * 0.4) - 0.12);
+      e = e * e;
+
+      // --- cursor circle ---
+      if (mx > -9000) {
+        var d = Math.hypot(x - mx, y - my);
+        var ce = clamp((CONFIG.cursorRadius - d) / 14);
+        if (ce > e) e = ce;
+      }
+
+      buckets[Math.round(clamp(e) * (LEV - 1))].push(x + dx, y + dy);
+    }
+
+    for (var lv = 0; lv < LEV; lv++) {
+      var b = buckets[lv];
+      if (!b.length) continue;
+      var kk = lv / (LEV - 1);
+      var r = CONFIG.dotSize * (1 + kk * 0.7);
+      ctx.fillStyle = COLORS[lv];
+      ctx.globalAlpha = 0.55 + kk * 0.45;
+      ctx.beginPath();
+      for (var n = 0; n < b.length; n += 2) {
+        ctx.moveTo(b[n] + r, b[n + 1]);
+        ctx.arc(b[n], b[n + 1], r, 0, Math.PI * 2);
+      }
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    if (CONFIG.showRing && mx > -9000) {
+      ctx.strokeStyle = 'rgb(' + ACC.join(',') + ')';
+      ctx.globalAlpha = 0.22;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(mx, my, CONFIG.cursorRadius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; }, { passive: true });
+  window.addEventListener('mouseleave', function () { mx = -9999; my = -9999; });
+
+  resize();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

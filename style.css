@@ -1641,11 +1641,17 @@ html { scroll-padding-top: 92px; }
 /* ═══════════ ČEKACÍ LIST (WAITLIST) — full-screen split ═══════════ */
 .wl-fs {
   position: fixed; inset: 0; z-index: 4000;
-  background: #fff; overflow-y: auto;
+  background: #fff;
+  overflow: hidden;
   display: flex; flex-direction: column;
   opacity: 0; pointer-events: none; transition: opacity .3s ease;
 }
 .wl-fs.active { opacity: 1; pointer-events: auto; }
+/* Tečkované pozadí (flow field) — canvas přenesený z Claude designu.
+   Kreslí tečky + modrý „reflektor" u kurzoru. Leží za obsahem (z-index 0).
+   width/height 100% je NUTNÉ — jinak se canvas nezmenší podle Retina (dpr)
+   a kreslí se ve 2× měřítku (tečky řídké, vidět jen výřez). */
+.wl-dotbg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; pointer-events: none; }
 .wl-fs-close {
   position: fixed; top: 16px; right: 18px; z-index: 6;
   width: 44px; height: 44px; border-radius: 50%; border: none;
@@ -1654,20 +1660,21 @@ html { scroll-padding-top: 92px; }
   transition: background .15s;
 }
 .wl-fs-close:hover { background: rgba(10,13,46,.14); }
-.wl-fs-inner { flex: 1; display: flex; flex-direction: column; }
-.wl-fs-head { text-align: center; padding: 2.6rem 1.5rem 1.4rem; }
+.wl-fs-inner { position: relative; z-index: 3; flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+
+.wl-fs-head { text-align: center; padding: 1.4rem 1.5rem .8rem; }
 .wl-badge {
   display: inline-block; background: rgba(0,32,246,.09); color: var(--primary);
   font-size: .74rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
   padding: .4rem .8rem; border-radius: 999px; margin-bottom: 1rem;
 }
 .wl-fs-title {
-  font-size: clamp(1.8rem, 4.4vw, 2.7rem); font-weight: 800;
-  color: #0a0d2e; letter-spacing: -.02em; line-height: 1.1; margin: 0;
+  font-size: clamp(1.3rem, 3vw, 1.7rem); font-weight: 700;
+  color: #0a0d2e; letter-spacing: -.01em; line-height: 1.15; margin: 0;
 }
 .wl-fs-sub {
-  color: #252525; max-width: 580px; margin: .7rem auto 0;
-  font-size: 1.02rem; line-height: 1.5; font-weight: 700;
+  color: #252525; max-width: 580px; margin: .6rem auto 0;
+  font-size: 1rem; line-height: 1.5; font-weight: 700;
 }
 .wl-ig {
   display: inline-flex; align-items: center; gap: .5rem;
@@ -1683,49 +1690,133 @@ html { scroll-padding-top: 92px; }
 }
 .wl-ig:hover, .wl-ig:focus { text-decoration: none; opacity: 1; }
 .wl-ig:hover { transform: scale(1.1); }
+/* Instagram na obrazovce „Jsi na seznamu" — jemný nástup */
+.wl-ig--done { margin: .4rem 0 1.5rem; animation: wlIgIn .5s ease; }
+@keyframes wlIgIn {
+  from { opacity: 0; transform: translateY(8px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
 
 /* Odpočet do spuštění */
-.wl-countdown { display: flex; gap: .5rem; justify-content: center; align-items: flex-start; margin: 1.4rem 0 .5rem; }
-.wl-cd-unit { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
-.wl-cd-num { font-size: clamp(2rem, 5.5vw, 3.1rem); font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; line-height: 1; }
-.wl-cd-lbl { font-size: .7rem; text-transform: uppercase; letter-spacing: .09em; color: #252525; margin-top: .45rem; font-weight: 700; }
-.wl-cd-sep { font-size: clamp(1.5rem, 4vw, 2.4rem); font-weight: 800; color: #252525; line-height: 1.05; }
+.wl-countdown { display: flex; gap: .45rem; justify-content: center; align-items: center; margin: 1rem 0 .3rem; }
+.wl-cd-unit {
+  display: flex; flex-direction: column; align-items: center; gap: .25rem;
+  background: #f6f3f2; border: 1px solid #eae7e7; border-radius: 14px;
+  padding: .6rem .35rem; min-width: 58px; box-shadow: 0 2px 6px rgba(0,0,0,.04);
+}
+.wl-cd-num { font-size: clamp(1.4rem, 4vw, 1.9rem); font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; line-height: 1; }
+.wl-cd-lbl { font-size: .62rem; text-transform: uppercase; letter-spacing: .07em; color: #6b7280; font-weight: 700; }
+.wl-cd-sep { font-size: 1.2rem; font-weight: 700; color: #cfcfd8; line-height: 1; }
 
-/* Karty — obě v primární modré na bílém pozadí */
-.wl-split {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem;
-  max-width: 1060px; width: 100%; margin: 0 auto;
-  padding: .4rem clamp(1rem, 4vw, 2rem) 2.8rem;
+/* Jedna karta + přepínač (segmented switch jako u ceníku) */
+.wl-switch-wrap {
+  width: 100%; max-width: 520px; margin: 0 auto;
+  padding: .4rem clamp(1rem, 4vw, 1.5rem) 1.4rem;
+  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+}
+.wl-toggle {
+  position: relative; display: grid; grid-template-columns: 1fr 1fr;
+  background: #eaeefb; border-radius: 999px; padding: 5px; width: 100%; max-width: 380px;
+}
+.wl-toggle-pill {
+  position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px);
+  border-radius: 999px; background: var(--primary);
+  box-shadow: 0 6px 16px -6px rgba(0,32,246,.6);
+  transition: transform .18s cubic-bezier(.2,.8,.2,1);
+}
+.wl-toggle.is-employer .wl-toggle-pill { transform: translateX(100%); }
+.wl-toggle-opt {
+  position: relative; z-index: 1; border: none; background: none; cursor: pointer;
+  padding: .7rem .6rem; font-family: inherit; font-weight: 800; font-size: .92rem;
+  color: var(--primary); border-radius: 999px; transition: color .2s;
+}
+.wl-toggle-opt.is-active { color: #fff; }
+/* Modrý box (.wl-cards) STOJÍ; obsah obou stran (.wl-side) leží přes sebe a
+   při přepnutí plynule „sjede/přijede" do strany (jako v návrhu). */
+.wl-cards {
+  display: grid; width: 100%; overflow: hidden;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.09) 1px, transparent 0) 0 0 / 22px 22px,
+    var(--primary);
+  color: #fff; border-radius: 20px;
+  padding: 2rem clamp(1.6rem, 2.8vw, 2.3rem) 2rem;
+  box-shadow: 0 20px 44px -24px rgba(0,32,246,.6);
 }
 .wl-side {
-  background: var(--primary); color: #fff;
-  border-radius: 22px; padding: 2rem clamp(1.4rem, 2.6vw, 2.1rem) 2rem;
-  display: flex; flex-direction: column;
-  box-shadow: 0 22px 44px -22px rgba(0,32,246,.55);
+  grid-area: 1 / 1; display: flex; flex-direction: column;
+  transition: opacity .28s ease, transform .28s ease;
 }
-.wl-side-tag { font-size: .76rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #bcc8ff; }
-.wl-side-title { font-size: clamp(1.4rem, 2.6vw, 1.95rem); font-weight: 800; margin: .35rem 0 1.3rem; line-height: 1.15; }
-.wl-benefits { list-style: none; padding: 0; margin: 0 0 1.6rem; display: flex; flex-direction: column; gap: .72rem; }
-.wl-benefits li { position: relative; padding-left: 2rem; font-size: .95rem; line-height: 1.4; color: rgba(255,255,255,.92); }
-.wl-benefits li::before {
-  content: '✓'; position: absolute; left: 0; top: -1px;
-  width: 1.35rem; height: 1.35rem; border-radius: 50%;
-  display: grid; place-items: center; font-size: .78rem; font-weight: 800;
-  background: rgba(255,255,255,.2); color: #fff;
+.wl-side.is-off { opacity: 0; transform: translateX(18px); pointer-events: none; }
+
+/* Jemný „live" sociální důkaz — ohraničená pilulka, mění se s přepínačem */
+.wl-social {
+  display: inline-flex; align-items: center; gap: .5rem;
+  margin: 0; padding: .5rem 1rem; border-radius: 999px;
+  background: #f6f3f2; border: 1px solid #eae7e7;
+  font-size: .9rem; font-weight: 600; color: #252525;
+}
+.wl-social b { color: #252525; font-weight: 800; font-variant-numeric: tabular-nums; }
+.wl-social-dot {
+  width: .55rem; height: .55rem; border-radius: 50%; flex-shrink: 0;
+  background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,.5);
+  animation: wlLiveDot 1.9s ease-out infinite;
+}
+@keyframes wlLiveDot {
+  0%   { box-shadow: 0 0 0 0 rgba(34,197,94,.5); }
+  70%  { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+/* ── Obsah karty: pouze primární modrá + bílá, tučné texty ── */
+.wl-side-title { font-size: clamp(1.55rem, 2.8vw, 2.1rem); font-weight: 800; margin: 0 0 .55rem; line-height: 1.1; }
+.wl-side-lead { margin: 0 0 1.6rem; font-size: 1rem; line-height: 1.45; font-weight: 700; color: #fff; }
+
+/* Placka odznaku „Byl jsem u toho" — bílá, minimalistická */
+.wl-badge-chip {
+  display: inline-flex; align-items: center;
+  padding: .42rem .95rem; border-radius: 999px;
+  background: #fff; color: var(--primary);
+  font-weight: 800; font-size: .86rem; white-space: nowrap;
+}
+/* Unikátní fialový odznak „Byl jsem u toho" — světlý fialový vnitřek, fialový text, menší */
+.wl-badge-chip--purple {
+  background: #ece7ff; color: #7c3aed;
+  border: 1px solid rgba(124,58,237,.28); box-shadow: none;
+  font-size: .74rem; padding: .24rem .66rem;
 }
 
-/* Odměnová karta (hlavní early-bird lákadlo) */
-.wl-reward {
-  border-radius: 16px; padding: 1.1rem 1.2rem; margin-bottom: 1.4rem;
-  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28);
+/* Výhody — bílé tečky, tučný bílý text */
+.wl-benefits { list-style: none; padding: 0; margin: 0 0 1.6rem; display: flex; flex-direction: column; gap: .75rem; }
+.wl-benefits li { position: relative; padding-left: 2rem; font-size: .96rem; line-height: 1.4; font-weight: 700; color: #fff; }
+.wl-benefits li::before {
+  content: ''; position: absolute; left: 0; top: .1rem;
+  width: 1.25rem; height: 1.25rem;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='white'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx='12'%20cy='12'%20r='9'/%3E%3Cpath%20d='M8.5%2012.5l2.5%202.5%204.5-5'/%3E%3C/svg%3E") no-repeat center / contain;
 }
-.wl-reward-badge {
-  display: inline-block; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em;
-  padding: .32rem .65rem; border-radius: 999px; margin-bottom: .6rem;
-  background: #fff; color: var(--primary);
+/* Odměna je normální odrážka (má tečku) — fialová placka je inline uvnitř */
+.wl-badge-chip { vertical-align: middle; margin: 0 .18rem 0 .5rem; }
+
+/* Scarcity — bílá lišta + bod (0 → TOTAL) */
+.wl-scarcity { margin: auto 0 1.5rem; }
+.wl-scarcity-lbl { display: block; margin-bottom: .65rem; font-size: .94rem; font-weight: 800; color: #fff; }
+.wl-scarcity-lbl strong { font-weight: 900; font-variant-numeric: tabular-nums; }
+.wl-bar { position: relative; height: 6px; border-radius: 999px; background: rgba(255,255,255,.22); }
+.wl-bar span {
+  display: block; height: 100%; width: 20%; border-radius: 999px;
+  background: rgba(255,255,255,.6);
+  transition: width .8s cubic-bezier(.2,.7,.2,1);
 }
-.wl-reward-text { margin: 0; font-size: 1rem; line-height: 1.45; color: #fff; }
-.wl-reward-text strong { font-weight: 800; }
+.wl-knob {
+  position: absolute; top: 50%; left: 20%;
+  width: 15px; height: 15px; border-radius: 50%;
+  background: #fff; transform: translate(-50%, -50%);
+  box-shadow: 0 1px 5px rgba(0,0,0,.3);
+  transition: left .8s cubic-bezier(.2,.7,.2,1);
+}
+.wl-ends {
+  display: flex; justify-content: space-between; margin-top: .5rem;
+  font-size: .74rem; font-weight: 800; color: rgba(255,255,255,.6);
+  font-variant-numeric: tabular-nums;
+}
 
 .wl-cta {
   margin-top: auto; width: 100%; height: 54px; border-radius: 14px;
@@ -1768,7 +1859,12 @@ html { scroll-padding-top: 92px; }
 }
 
 @media (max-width: 760px) {
-  .wl-split { grid-template-columns: 1fr; }
   .wl-fs-head { padding: 3.4rem 1.3rem 1rem; }
-  .wl-side { padding: 1.8rem 1.4rem 2.2rem; }
+  .wl-cards { padding: 1.7rem 1.5rem 1.8rem; }
+}
+/* Pojistka: na nízkých obrazovkách povol scroll, ať se nic neuřízne.
+   Na běžném desktopu je vše na jednu obrazovku bez scrollu. */
+@media (max-height: 700px) {
+  .wl-fs { overflow-y: auto; }
+  .wl-fs-inner { justify-content: flex-start; }
 }

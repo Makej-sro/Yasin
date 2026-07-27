@@ -567,12 +567,14 @@ function initAuth() {
   const wlCompanyGr = document.getElementById('wl-company-group');
   const wlPhoneGr   = document.getElementById('wl-phone-group');
   let   wlRole      = 'worker';
+  let   wlDotBg     = null;   // canvasové tečkované pozadí (nastaví se níž)
 
   function openWaitlist() {
     if (!wlOverlay) return;
     document.body.style.overflow = 'hidden';
     wlOverlay.classList.add('active');
     wlOverlay.setAttribute('aria-hidden', 'false');
+    if (wlDotBg) wlDotBg.start();
   }
   function closeWaitlist(dismissed) {
     if (!wlOverlay) return;
@@ -580,6 +582,7 @@ function initAuth() {
     wlPanel.classList.remove('active');
     wlOverlay.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    if (wlDotBg) wlDotBg.stop();
     if (dismissed) { try { sessionStorage.setItem('wl-dismissed', '1'); } catch (e) {} }
   }
   function openWlForm(role) {
@@ -613,6 +616,159 @@ function initAuth() {
     btn.addEventListener('click', () => openWlForm(btn.dataset.wlRole));
   });
 
+  // Tečkované pozadí (flow field) — PŘESNĚ podle staženého standalone exportu
+  // z Claude designu (flow-field-background.html). Neviditelný proud ohýbá mřížku,
+  // tečky modrají tam, kde běží nejrychleji; kurzor rozsvítí tečky ve svém kruhu.
+  // Spouští se jen když je waitlist otevřený (šetří výkon), jinak 1:1.
+  wlDotBg = (function () {
+    var canvas = document.getElementById('wl-dotbg');
+    if (!canvas || !wlOverlay) return null;
+    var CONFIG = {
+      dotColor:     '#252525',
+      accentColor:  '#0020F6',
+      spacing:      14,    // px mezi tečkami
+      dotSize:      1.1,   // základní poloměr tečky v px
+      cursorRadius: 40,    // px poloměr modrého kruhu u kurzoru
+      showRing:     false, // jemný obrys kolem kruhu kurzoru
+      speed:        1      // 1 = normál, 0.5 = poloviční rychlost
+    };
+
+    var ctx = canvas.getContext('2d');
+    var W = 0, H = 0, dots = [], mx = -9999, my = -9999, t0 = performance.now();
+    var raf = null, running = false;
+
+    function hexToRgb(h) {
+      var v = parseInt(String(h).replace('#', ''), 16);
+      return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+    }
+    var DOT = hexToRgb(CONFIG.dotColor), ACC = hexToRgb(CONFIG.accentColor);
+
+    var LEV = 10, COLORS = [];
+    for (var l = 0; l < LEV; l++) {
+      var k = l / (LEV - 1);
+      COLORS.push('rgb(' + Math.round(DOT[0] + (ACC[0] - DOT[0]) * k) + ',' +
+                           Math.round(DOT[1] + (ACC[1] - DOT[1]) * k) + ',' +
+                           Math.round(DOT[2] + (ACC[2] - DOT[2]) * k) + ')');
+    }
+
+    function buildGrid() {
+      var s = CONFIG.spacing;
+      var cols = Math.ceil(W / s) + 1, rows = Math.ceil(H / s) + 1;
+      var ox = (W - (cols - 1) * s) / 2, oy = (H - (rows - 1) * s) / 2;
+      dots = [];
+      for (var j = 0; j < rows; j++)
+        for (var i = 0; i < cols; i++) dots.push(ox + i * s, oy + j * s);
+    }
+
+    function resize() {
+      var dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildGrid();
+    }
+
+    function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+    function draw() {
+      var t = ((performance.now() - t0) / 1000) * CONFIG.speed;
+      ctx.clearRect(0, 0, W, H);
+
+      var buckets = [];
+      for (var l = 0; l < LEV; l++) buckets.push([]);
+
+      for (var i = 0; i < dots.length; i += 2) {
+        var x = dots[i], y = dots[i + 1];
+
+        // --- the flow field ---
+        var ang = Math.sin(x * 0.0048 + t * 0.28) * 1.7 + Math.cos(y * 0.0056 - t * 0.22) * 1.7;
+        var mag = 7 + 6 * Math.sin(x * 0.003 + y * 0.0038 + t * 0.55);
+        var dx = Math.cos(ang) * mag;
+        var dy = Math.sin(ang) * mag;
+        var e = clamp(0.5 + 0.5 * Math.sin(ang * 1.6 + t * 0.4) - 0.12);
+        e = e * e;
+
+        // --- cursor circle ---
+        if (mx > -9000) {
+          var d = Math.hypot(x - mx, y - my);
+          var ce = clamp((CONFIG.cursorRadius - d) / 14);
+          if (ce > e) e = ce;
+        }
+
+        buckets[Math.round(clamp(e) * (LEV - 1))].push(x + dx, y + dy);
+      }
+
+      for (var lv = 0; lv < LEV; lv++) {
+        var b = buckets[lv];
+        if (!b.length) continue;
+        var kk = lv / (LEV - 1);
+        var r = CONFIG.dotSize * (1 + kk * 0.7);
+        ctx.fillStyle = COLORS[lv];
+        ctx.globalAlpha = 0.55 + kk * 0.45;
+        ctx.beginPath();
+        for (var n = 0; n < b.length; n += 2) {
+          ctx.moveTo(b[n] + r, b[n + 1]);
+          ctx.arc(b[n], b[n + 1], r, 0, Math.PI * 2);
+        }
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      if (CONFIG.showRing && mx > -9000) {
+        ctx.strokeStyle = 'rgb(' + ACC.join(',') + ')';
+        ctx.globalAlpha = 0.22;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(mx, my, CONFIG.cursorRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      raf = requestAnimationFrame(draw);
+    }
+
+    function onMove(e) { mx = e.clientX; my = e.clientY; }
+    function onLeave() { mx = -9999; my = -9999; }
+
+    return {
+      start: function () {
+        if (running) return;
+        running = true;
+        t0 = performance.now();
+        resize();
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', onMove, { passive: true });
+        window.addEventListener('mouseleave', onLeave);
+        raf = requestAnimationFrame(draw);
+      },
+      stop: function () {
+        if (!running) return;
+        running = false;
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+        window.removeEventListener('resize', resize);
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseleave', onLeave);
+        mx = -9999; my = -9999;
+      }
+    };
+  })();
+
+  // Přepínač brigádník / zaměstnavatel (jedna karta, segmented switch)
+  (function () {
+    const toggle = document.querySelector('.wl-toggle');
+    if (!toggle) return;
+    const opts = toggle.querySelectorAll('.wl-toggle-opt');
+    const panels = document.querySelectorAll('[data-wl-panel]');
+    function setTab(tab) {
+      opts.forEach(o => o.classList.toggle('is-active', o.dataset.wlTab === tab));
+      panels.forEach(p => { p.classList.toggle('is-off', p.dataset.wlPanel !== tab); });
+      toggle.classList.toggle('is-employer', tab === 'employer');
+      if (window.wlSetSocialRole) window.wlSetSocialRole(tab);
+    }
+    opts.forEach(o => o.addEventListener('click', () => setTab(o.dataset.wlTab)));
+  })();
+
   // Odpočet do spuštění (1. 10. 2026)
   (function () {
     const cdD = document.getElementById('wl-cd-d');
@@ -632,6 +788,35 @@ function initAuth() {
     }
     tick();
     setInterval(tick, 1000);
+  })();
+
+  // Sociální důkaz „za 24 h se přihlásilo XX brigádníků / zaměstnavatelů".
+  // Mění se s přepínačem. Zatím věrohodný FEJK — deterministický podle dne
+  // (nepřeskakuje při refreshi), přes den mírně roste.
+  // TODO: napojit na reálný COUNT z tabulky waitlist podle role.
+  (function () {
+    const numEl  = document.getElementById('wl-social-num');
+    const nounEl = document.getElementById('wl-social-noun');
+    if (!numEl) return;
+    let current = 'worker';
+    function dailyCount(role) {
+      const now = new Date();
+      const dayKey = Math.floor(now.getTime() / 86400000);
+      const seed = role === 'employer' ? 411.7 : 127.13;
+      let x = Math.sin(dayKey * seed) * 43758.5453;
+      x = x - Math.floor(x);                        // 0..1, stabilní pro daný den
+      if (role === 'employer') {
+        return 5 + Math.floor(x * 12) + Math.floor(now.getHours() / 8);  // ~5..18
+      }
+      return 28 + Math.floor(x * 34) + Math.floor(now.getHours() / 5);   // ~28..66
+    }
+    function render() {
+      numEl.textContent = dailyCount(current);
+      if (nounEl) nounEl.textContent = current === 'employer' ? 'zaměstnavatelů' : 'brigádníků';
+    }
+    window.wlSetSocialRole = function (r) { current = r; render(); };
+    render();
+    setInterval(render, 60000);
   })();
 
   // Odeslání na čekací list
