@@ -637,6 +637,13 @@ function initAuth() {
     var W = 0, H = 0, dots = [], mx = -9999, my = -9999, t0 = performance.now();
     var raf = null, running = false;
 
+    // Kurzorové podsvícení: po zastavení plynule zajede do středu (0,5 s),
+    // při dalším pohybu se hned zase objeví (grow instantní).
+    var curR = 0;                 // aktuální (animovaný) poloměr modrého kruhu
+    var idleTimer = null;         // odpočet do „klidu"
+    var collapsing = false, collapseT0 = 0, collapseFrom = 0;
+    var IDLE_MS = 800, COLLAPSE_MS = 500;
+
     function hexToRgb(h) {
       var v = parseInt(String(h).replace('#', ''), 16);
       return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
@@ -649,6 +656,33 @@ function initAuth() {
       COLORS.push('rgb(' + Math.round(DOT[0] + (ACC[0] - DOT[0]) * k) + ',' +
                            Math.round(DOT[1] + (ACC[1] - DOT[1]) * k) + ',' +
                            Math.round(DOT[2] + (ACC[2] - DOT[2]) * k) + ')');
+    }
+
+    // druhá paleta jen pro podsvícení u kurzoru — neonově žlutá #FFD600
+    var ACC_Y = hexToRgb('#FFD600'), COLORS_Y = [];
+    for (var ly = 0; ly < LEV; ly++) {
+      var ky = ly / (LEV - 1);
+      COLORS_Y.push('rgb(' + Math.round(DOT[0] + (ACC_Y[0] - DOT[0]) * ky) + ',' +
+                             Math.round(DOT[1] + (ACC_Y[1] - DOT[1]) * ky) + ',' +
+                             Math.round(DOT[2] + (ACC_Y[2] - DOT[2]) * ky) + ')');
+    }
+
+    // vykreslí sadu „kbelíků" teček danou paletou (větší úroveň = jasnější + větší)
+    function drawBuckets(bk, cols) {
+      for (var lv = 0; lv < LEV; lv++) {
+        var b = bk[lv];
+        if (!b.length) continue;
+        var kk = lv / (LEV - 1);
+        var r = CONFIG.dotSize * (1 + kk * 0.7);
+        ctx.fillStyle = cols[lv];
+        ctx.globalAlpha = 0.55 + kk * 0.45;
+        ctx.beginPath();
+        for (var n = 0; n < b.length; n += 2) {
+          ctx.moveTo(b[n] + r, b[n + 1]);
+          ctx.arc(b[n], b[n + 1], r, 0, Math.PI * 2);
+        }
+        ctx.fill();
+      }
     }
 
     function buildGrid() {
@@ -675,9 +709,17 @@ function initAuth() {
       var t = ((performance.now() - t0) / 1000) * CONFIG.speed;
       ctx.clearRect(0, 0, W, H);
 
-      var buckets = [];
-      for (var l = 0; l < LEV; l++) buckets.push([]);
+      // plynulé „zajetí" kurzorového kruhu do středu při klidu (od krajů do středu)
+      if (collapsing) {
+        var cp = (performance.now() - collapseT0) / COLLAPSE_MS;
+        if (cp >= 1) { curR = 0; collapsing = false; }
+        else { curR = collapseFrom * (1 - cp * cp * (3 - 2 * cp)); }
+      }
 
+      var buckets = [], yBuckets = [];
+      for (var l = 0; l < LEV; l++) { buckets.push([]); yBuckets.push([]); }
+
+      var hasCursor = (mx > -9000 && curR > 0.5);
       for (var i = 0; i < dots.length; i += 2) {
         var x = dots[i], y = dots[i + 1];
 
@@ -688,39 +730,29 @@ function initAuth() {
         var dy = Math.sin(ang) * mag;
         var e = clamp(0.5 + 0.5 * Math.sin(ang * 1.6 + t * 0.4) - 0.12);
         e = e * e;
+        var px = x + dx, py = y + dy;
 
-        // --- cursor circle ---
-        if (mx > -9000) {
+        // flow field (modrá) — vždy
+        buckets[Math.round(clamp(e) * (LEV - 1))].push(px, py);
+
+        // kurzorové podsvícení (neonově žlutá) — navrch, jen v kruhu u kurzoru
+        if (hasCursor) {
           var d = Math.hypot(x - mx, y - my);
-          var ce = clamp((CONFIG.cursorRadius - d) / 14);
-          if (ce > e) e = ce;
+          var yl = Math.round(clamp((curR - d) / 14) * (LEV - 1));
+          if (yl >= 1) yBuckets[yl].push(px, py);
         }
-
-        buckets[Math.round(clamp(e) * (LEV - 1))].push(x + dx, y + dy);
       }
 
-      for (var lv = 0; lv < LEV; lv++) {
-        var b = buckets[lv];
-        if (!b.length) continue;
-        var kk = lv / (LEV - 1);
-        var r = CONFIG.dotSize * (1 + kk * 0.7);
-        ctx.fillStyle = COLORS[lv];
-        ctx.globalAlpha = 0.55 + kk * 0.45;
-        ctx.beginPath();
-        for (var n = 0; n < b.length; n += 2) {
-          ctx.moveTo(b[n] + r, b[n + 1]);
-          ctx.arc(b[n], b[n + 1], r, 0, Math.PI * 2);
-        }
-        ctx.fill();
-      }
+      drawBuckets(buckets, COLORS);                    // modré pozadí (flow field)
+      if (hasCursor) drawBuckets(yBuckets, COLORS_Y);  // žluté tečky u kurzoru navrch
       ctx.globalAlpha = 1;
 
-      if (CONFIG.showRing && mx > -9000) {
+      if (CONFIG.showRing && mx > -9000 && curR > 0.5) {
         ctx.strokeStyle = 'rgb(' + ACC.join(',') + ')';
         ctx.globalAlpha = 0.22;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(mx, my, CONFIG.cursorRadius, 0, Math.PI * 2);
+        ctx.arc(mx, my, curR, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
@@ -728,8 +760,20 @@ function initAuth() {
       raf = requestAnimationFrame(draw);
     }
 
-    function onMove(e) { mx = e.clientX; my = e.clientY; }
-    function onLeave() { mx = -9999; my = -9999; }
+    function onMove(e) {
+      mx = e.clientX; my = e.clientY;
+      curR = CONFIG.cursorRadius;   // hned se objeví (grow instantní)
+      collapsing = false;
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(function () {
+        collapsing = true; collapseT0 = performance.now(); collapseFrom = curR;
+      }, IDLE_MS);
+    }
+    function onLeave() {
+      mx = -9999; my = -9999;
+      clearTimeout(idleTimer);
+      collapsing = false; curR = 0;
+    }
 
     return {
       start: function () {
@@ -749,7 +793,8 @@ function initAuth() {
         window.removeEventListener('resize', resize);
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseleave', onLeave);
-        mx = -9999; my = -9999;
+        clearTimeout(idleTimer);
+        collapsing = false; curR = 0; mx = -9999; my = -9999;
       }
     };
   })();

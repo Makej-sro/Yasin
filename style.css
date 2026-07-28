@@ -1662,7 +1662,14 @@ html { scroll-padding-top: 92px; }
 .wl-fs-close:hover { background: rgba(10,13,46,.14); }
 .wl-fs-inner { position: relative; z-index: 3; flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
 
-.wl-fs-head { text-align: center; padding: 1.4rem 1.5rem .8rem; }
+.wl-fs-head {
+  text-align: center; padding: 1.4rem 1.5rem .8rem;
+  /* měkké bílé „halo" za hlavičkou — rozpustí tečky pod textem kvůli čitelnosti */
+  background: radial-gradient(ellipse 34rem 16rem at 50% 46%,
+              rgba(255,255,255,.96) 0%,
+              rgba(255,255,255,.9) 44%,
+              rgba(255,255,255,0) 72%) no-repeat center;
+}
 .wl-badge {
   display: inline-block; background: rgba(0,32,246,.09); color: var(--primary);
   font-size: .74rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
@@ -1671,10 +1678,12 @@ html { scroll-padding-top: 92px; }
 .wl-fs-title {
   font-size: clamp(1.3rem, 3vw, 1.7rem); font-weight: 700;
   color: #0a0d2e; letter-spacing: -.01em; line-height: 1.15; margin: 0;
+  text-shadow: 0 0 16px #fff, 0 0 6px #fff;
 }
 .wl-fs-sub {
   color: #252525; max-width: 580px; margin: .6rem auto 0;
   font-size: 1rem; line-height: 1.5; font-weight: 700;
+  text-shadow: 0 0 12px #fff, 0 0 5px #fff;
 }
 .wl-ig {
   display: inline-flex; align-items: center; gap: .5rem;
