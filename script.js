@@ -652,30 +652,35 @@ function initAuth() {
 
     var LEV = 10, COLORS = [];
     for (var l = 0; l < LEV; l++) {
-      var k = l / (LEV - 1);
+      // sytější modrá „na maximum": skoro všechny tečky dosáhnou plné #0020F6.
+      // Mění se jen odstín (modrá zůstává přesně #0020F6) — ne velikost ani počet teček.
+      var k = Math.min(1, (l / (LEV - 1)) * 4);
       COLORS.push('rgb(' + Math.round(DOT[0] + (ACC[0] - DOT[0]) * k) + ',' +
                            Math.round(DOT[1] + (ACC[1] - DOT[1]) * k) + ',' +
                            Math.round(DOT[2] + (ACC[2] - DOT[2]) * k) + ')');
     }
 
     // druhá paleta jen pro podsvícení u kurzoru — neonově žlutá #FFD600
-    var ACC_Y = hexToRgb('#FFD600'), COLORS_Y = [];
+    var ACC_Y = hexToRgb('#B6FF00'), COLORS_Y = [];   // limetková neon u kurzoru
     for (var ly = 0; ly < LEV; ly++) {
-      var ky = ly / (LEV - 1);
+      // stejně jako u modré na maximum → tečky u kurzoru rychle dosáhnou plné #B6FF00
+      var ky = Math.min(1, (ly / (LEV - 1)) * 4);
       COLORS_Y.push('rgb(' + Math.round(DOT[0] + (ACC_Y[0] - DOT[0]) * ky) + ',' +
                              Math.round(DOT[1] + (ACC_Y[1] - DOT[1]) * ky) + ',' +
                              Math.round(DOT[2] + (ACC_Y[2] - DOT[2]) * ky) + ')');
     }
 
     // vykreslí sadu „kbelíků" teček danou paletou (větší úroveň = jasnější + větší)
-    function drawBuckets(bk, cols) {
+    // aBoost > 1 = tečky víc kryjí (viditelnější), velikost i počet zůstávají stejné
+    function drawBuckets(bk, cols, aBoost) {
+      aBoost = aBoost || 1;
       for (var lv = 0; lv < LEV; lv++) {
         var b = bk[lv];
         if (!b.length) continue;
         var kk = lv / (LEV - 1);
         var r = CONFIG.dotSize * (1 + kk * 0.7);
         ctx.fillStyle = cols[lv];
-        ctx.globalAlpha = 0.55 + kk * 0.45;
+        ctx.globalAlpha = Math.min(1, (0.55 + kk * 0.45) * aBoost);
         ctx.beginPath();
         for (var n = 0; n < b.length; n += 2) {
           ctx.moveTo(b[n] + r, b[n + 1]);
@@ -735,7 +740,7 @@ function initAuth() {
         // flow field (modrá) — vždy
         buckets[Math.round(clamp(e) * (LEV - 1))].push(px, py);
 
-        // kurzorové podsvícení (neonově žlutá) — navrch, jen v kruhu u kurzoru
+        // kurzorové podsvícení (limetková) — navrch, jen v kruhu u kurzoru
         if (hasCursor) {
           var d = Math.hypot(x - mx, y - my);
           var yl = Math.round(clamp((curR - d) / 14) * (LEV - 1));
@@ -743,8 +748,8 @@ function initAuth() {
         }
       }
 
-      drawBuckets(buckets, COLORS);                    // modré pozadí (flow field)
-      if (hasCursor) drawBuckets(yBuckets, COLORS_Y);  // žluté tečky u kurzoru navrch
+      drawBuckets(buckets, COLORS, 1.6);               // modré pozadí (flow field) — víc kryje
+      if (hasCursor) drawBuckets(yBuckets, COLORS_Y, 1.8);  // limetkové tečky u kurzoru navrch — výrazné
       ctx.globalAlpha = 1;
 
       if (CONFIG.showRing && mx > -9000 && curR > 0.5) {
