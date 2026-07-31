@@ -620,29 +620,59 @@ function initAuth() {
   // z Claude designu (flow-field-background.html). Neviditelný proud ohýbá mřížku,
   // tečky modrají tam, kde běží nejrychleji; kurzor rozsvítí tečky ve svém kruhu.
   // Spouští se jen když je waitlist otevřený (šetří výkon), jinak 1:1.
+  // Repel efekt kurzoru (dodaný kód) — tečky u kurzoru se plynule odsunou pryč a vrátí.
+  var repel = (function () {
+    var CFG = { radius: 50, maxOffset: 14, ease: 0.16 };
+    var ox = new Float32Array(0), oy = new Float32Array(0);
+    var mx = -9999, my = -9999, out = { dx: 0, dy: 0, heat: 0 };
+
+    function resize(count) { ox = new Float32Array(count); oy = new Float32Array(count); }
+
+    function attach() {
+      window.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; }, { passive: true });
+      window.addEventListener('mouseleave', function () { mx = -9999; my = -9999; });
+    }
+
+    // idx = index tečky, x/y = její domácí pozice
+    function sample(idx, x, y) {
+      var R = CFG.radius * 1.35, tx = 0, ty = 0, push = 0;
+      if (mx > -9000) {
+        var ddx = x - mx, ddy = y - my;
+        var d = Math.sqrt(ddx * ddx + ddy * ddy);
+        if (d < R) {
+          var f = 1 - d / R;
+          f = f * f * (3 - 2 * f);            // smoothstep — plynulé, neodskočí
+          push = f;
+          var inv = d > 1 ? 1 / d : 1;
+          tx = ddx * inv * f * CFG.maxOffset;
+          ty = ddy * inv * f * CFG.maxOffset;
+        }
+      }
+      ox[idx] += (tx - ox[idx]) * CFG.ease;   // odjede
+      oy[idx] += (ty - oy[idx]) * CFG.ease;   // a stejně plynule zpět
+      var off = Math.sqrt(ox[idx] * ox[idx] + oy[idx] * oy[idx]);
+      out.dx = ox[idx]; out.dy = oy[idx];
+      out.heat = Math.max(push, Math.min(1, off / CFG.maxOffset));
+      return out;
+    }
+
+    return { config: CFG, resize: resize, attach: attach, sample: sample };
+  })();
+
   wlDotBg = (function () {
     var canvas = document.getElementById('wl-dotbg');
     if (!canvas || !wlOverlay) return null;
     var CONFIG = {
-      dotColor:     '#FFFFFF',
-      accentColor:  '#FFFFFF',
-      spacing:      14,    // px mezi tečkami
-      dotSize:      1.1,   // základní poloměr tečky v px
-      cursorRadius: 40,    // px poloměr modrého kruhu u kurzoru
-      showRing:     false, // jemný obrys kolem kruhu kurzoru
-      speed:        1      // 1 = normál, 0.5 = poloviční rychlost
+      dotColor:    '#FFFFFF',
+      accentColor: '#FFFFFF',
+      spacing:     14,   // px mezi tečkami
+      dotSize:     1.1,  // základní poloměr tečky v px
+      speed:       1     // ambient flow: 1 = normál
     };
 
     var ctx = canvas.getContext('2d');
-    var W = 0, H = 0, dots = [], mx = -9999, my = -9999, t0 = performance.now();
+    var W = 0, H = 0, dots = [], t0 = performance.now();
     var raf = null, running = false;
-
-    // Kurzorové podsvícení: po zastavení plynule zajede do středu (0,5 s),
-    // při dalším pohybu se hned zase objeví (grow instantní).
-    var curR = 0;                 // aktuální (animovaný) poloměr modrého kruhu
-    var idleTimer = null;         // odpočet do „klidu"
-    var collapsing = false, collapseT0 = 0, collapseFrom = 0;
-    var IDLE_MS = 800, COLLAPSE_MS = 500;
 
     function hexToRgb(h) {
       var v = parseInt(String(h).replace('#', ''), 16);
@@ -652,25 +682,12 @@ function initAuth() {
 
     var LEV = 10, COLORS = [];
     for (var l = 0; l < LEV; l++) {
-      // bílé tečky na modrém pozadí; flow mění jen jas/velikost (přes alfu a poloměr)
       var k = l / (LEV - 1);
       COLORS.push('rgb(' + Math.round(DOT[0] + (ACC[0] - DOT[0]) * k) + ',' +
                            Math.round(DOT[1] + (ACC[1] - DOT[1]) * k) + ',' +
                            Math.round(DOT[2] + (ACC[2] - DOT[2]) * k) + ')');
     }
 
-    // druhá paleta jen pro podsvícení u kurzoru — neonově žlutá #FFD600
-    var ACC_Y = hexToRgb('#B6FF00'), COLORS_Y = [];   // limetková neon u kurzoru
-    for (var ly = 0; ly < LEV; ly++) {
-      // stejně jako u modré na maximum → tečky u kurzoru rychle dosáhnou plné #B6FF00
-      var ky = Math.min(1, (ly / (LEV - 1)) * 4);
-      COLORS_Y.push('rgb(' + Math.round(DOT[0] + (ACC_Y[0] - DOT[0]) * ky) + ',' +
-                             Math.round(DOT[1] + (ACC_Y[1] - DOT[1]) * ky) + ',' +
-                             Math.round(DOT[2] + (ACC_Y[2] - DOT[2]) * ky) + ')');
-    }
-
-    // vykreslí sadu „kbelíků" teček danou paletou (větší úroveň = jasnější + větší)
-    // aBoost > 1 = tečky víc kryjí (viditelnější), velikost i počet zůstávají stejné
     function drawBuckets(bk, cols, aBoost) {
       aBoost = aBoost || 1;
       for (var lv = 0; lv < LEV; lv++) {
@@ -696,6 +713,7 @@ function initAuth() {
       dots = [];
       for (var j = 0; j < rows; j++)
         for (var i = 0; i < cols; i++) dots.push(ox + i * s, oy + j * s);
+      repel.resize(dots.length / 2);   // jeden offset na tečku
     }
 
     function resize() {
@@ -713,71 +731,33 @@ function initAuth() {
       var t = ((performance.now() - t0) / 1000) * CONFIG.speed;
       ctx.clearRect(0, 0, W, H);
 
-      // plynulé „zajetí" kurzorového kruhu do středu při klidu (od krajů do středu)
-      if (collapsing) {
-        var cp = (performance.now() - collapseT0) / COLLAPSE_MS;
-        if (cp >= 1) { curR = 0; collapsing = false; }
-        else { curR = collapseFrom * (1 - cp * cp * (3 - 2 * cp)); }
-      }
+      var buckets = [];
+      for (var l = 0; l < LEV; l++) buckets.push([]);
 
-      var buckets = [], yBuckets = [];
-      for (var l = 0; l < LEV; l++) { buckets.push([]); yBuckets.push([]); }
-
-      var hasCursor = (mx > -9000 && curR > 0.5);
       for (var i = 0; i < dots.length; i += 2) {
         var x = dots[i], y = dots[i + 1];
 
-        // --- the flow field ---
+        // jemný ambient flow field (šum pozadí)
         var ang = Math.sin(x * 0.0048 + t * 0.28) * 1.7 + Math.cos(y * 0.0056 - t * 0.22) * 1.7;
         var mag = 7 + 6 * Math.sin(x * 0.003 + y * 0.0038 + t * 0.55);
-        var dx = Math.cos(ang) * mag;
-        var dy = Math.sin(ang) * mag;
         var e = clamp(0.5 + 0.5 * Math.sin(ang * 1.6 + t * 0.4) - 0.12);
         e = e * e;
-        var px = x + dx, py = y + dy;
 
-        // flow field (modrá) — vždy
-        buckets[Math.round(clamp(e) * (LEV - 1))].push(px, py);
+        // repel u kurzoru — tečka uhne a heat ji zvýrazní
+        var rp = repel.sample(i >> 1, x, y);
 
-        // kurzorové podsvícení (limetková) — navrch, jen v kruhu u kurzoru
-        if (hasCursor) {
-          var d = Math.hypot(x - mx, y - my);
-          var yl = Math.round(clamp((curR - d) / 14) * (LEV - 1));
-          if (yl >= 1) yBuckets[yl].push(px, py);
-        }
+        var px = x + Math.cos(ang) * mag + rp.dx;
+        var py = y + Math.sin(ang) * mag + rp.dy;
+
+        buckets[Math.round(clamp(Math.max(e, rp.heat)) * (LEV - 1))].push(px, py);
       }
 
-      drawBuckets(buckets, COLORS, 1.2);               // modré tečky, flow je vybělí k bílé
-      if (hasCursor) drawBuckets(yBuckets, COLORS_Y, 1.8);  // limetkové tečky u kurzoru navrch — výrazné
+      drawBuckets(buckets, COLORS, 1.2);
       ctx.globalAlpha = 1;
-
-      if (CONFIG.showRing && mx > -9000 && curR > 0.5) {
-        ctx.strokeStyle = 'rgb(' + ACC.join(',') + ')';
-        ctx.globalAlpha = 0.22;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(mx, my, curR, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-      }
-
       raf = requestAnimationFrame(draw);
     }
 
-    function onMove(e) {
-      mx = e.clientX; my = e.clientY;
-      curR = CONFIG.cursorRadius;   // hned se objeví (grow instantní)
-      collapsing = false;
-      clearTimeout(idleTimer);
-      idleTimer = setTimeout(function () {
-        collapsing = true; collapseT0 = performance.now(); collapseFrom = curR;
-      }, IDLE_MS);
-    }
-    function onLeave() {
-      mx = -9999; my = -9999;
-      clearTimeout(idleTimer);
-      collapsing = false; curR = 0;
-    }
+    repel.attach();   // myš sleduje repel modul (jednou)
 
     return {
       start: function () {
@@ -786,8 +766,6 @@ function initAuth() {
         t0 = performance.now();
         resize();
         window.addEventListener('resize', resize);
-        window.addEventListener('mousemove', onMove, { passive: true });
-        window.addEventListener('mouseleave', onLeave);
         raf = requestAnimationFrame(draw);
       },
       stop: function () {
@@ -795,10 +773,6 @@ function initAuth() {
         running = false;
         if (raf) { cancelAnimationFrame(raf); raf = null; }
         window.removeEventListener('resize', resize);
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('mouseleave', onLeave);
-        clearTimeout(idleTimer);
-        collapsing = false; curR = 0; mx = -9999; my = -9999;
       }
     };
   })();

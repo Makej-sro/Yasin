@@ -1873,3 +1873,70 @@ html { scroll-padding-top: 92px; }
   .wl-fs { overflow-y: auto; }
   .wl-fs-inner { justify-content: flex-start; }
 }
+
+/* ═══════════ WAITLIST v1 — MINIMALISTICKÝ PANEL (override) ═══════════
+   Vše v jednom jemném panelu na modrém tečkovaném pozadí. Bez „AI" prvků:
+   žádné fajfky v kroužcích, žádná fialová, žádné těžké boxy odpočtu. */
+.wl-card {
+  width: 100%; max-width: 420px; margin: auto;
+  display: flex; flex-direction: column; text-align: center;
+  padding: clamp(1.7rem, 4vw, 2.5rem);
+  border-radius: 24px;
+  /* frosted „glossy" sklo — tmavší modrý tint + rozmazání teček za textem → čitelné */
+  background: rgba(1, 10, 66, .44);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(255,255,255,.3);
+  box-shadow: 0 30px 70px -28px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.28);
+  color: #fff;
+}
+.wl-card .wl-fs-title {
+  font-size: clamp(1.5rem, 4.2vw, 2rem); font-weight: 800;
+  letter-spacing: -.02em; line-height: 1.12; margin: 0; color: #fff; text-shadow: none;
+}
+.wl-card .wl-fs-sub {
+  margin: .55rem 0 0; font-size: .92rem; line-height: 1.5;
+  font-weight: 500; color: rgba(255,255,255,.72); text-shadow: none; max-width: none;
+}
+/* odpočet — čistá čísla, žádné boxy */
+.wl-card .wl-countdown { gap: clamp(.9rem, 4vw, 1.7rem); margin: 1.5rem 0 1.6rem; }
+.wl-card .wl-cd-unit {
+  background: none; border: none; box-shadow: none; border-radius: 0; padding: 0; min-width: 0; gap: .35rem;
+}
+.wl-card .wl-cd-num { font-size: clamp(1.8rem, 6vw, 2.4rem); font-weight: 800; color: #fff; letter-spacing: -.03em; }
+.wl-card .wl-cd-lbl { font-size: .58rem; letter-spacing: .16em; color: rgba(255,255,255,.55); }
+/* přepínač */
+.wl-card .wl-toggle { background: rgba(255,255,255,.1); max-width: none; padding: 4px; margin: 0 0 1.5rem; }
+.wl-card .wl-toggle-pill { top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background: #fff; box-shadow: none; }
+.wl-card .wl-toggle-opt { padding: .6rem .5rem; font-weight: 700; font-size: .9rem; color: rgba(255,255,255,.72); }
+.wl-card .wl-toggle-opt.is-active { color: var(--primary); }
+/* panely (swap) — bez vlastního boxu, obsah zarovnaný vlevo */
+.wl-card .wl-cards { background: none; border: none; box-shadow: none; border-radius: 0; padding: 0; text-align: left; overflow: visible; }
+.wl-card .wl-side-lead { margin: 0; font-size: .96rem; line-height: 1.5; font-weight: 600; color: rgba(255,255,255,.82); }
+/* výhody — čisté řádky s hairline oddělovačem, žádné ikony */
+.wl-card .wl-benefits { gap: 0; margin: 1.1rem 0 1.4rem; }
+.wl-card .wl-benefits li {
+  position: static; padding: .72rem 0; font-size: .93rem; font-weight: 500;
+  border-top: 1px solid rgba(255,255,255,.13);
+  display: flex; align-items: center; flex-wrap: wrap; gap: .1rem .5rem;
+}
+.wl-card .wl-benefits li:last-child { border-bottom: 1px solid rgba(255,255,255,.13); }
+.wl-card .wl-benefits li::before { content: none; display: none; }
+/* odznak — jemný bílý obrys, žádná fialová */
+.wl-card .wl-badge-chip {
+  margin: 0; padding: .16rem .58rem; border-radius: 999px;
+  background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.5);
+  font-weight: 700; font-size: .72rem; box-shadow: none;
+}
+/* CTA */
+.wl-card .wl-cta { margin-top: .4rem; height: 52px; border-radius: 12px; background: #fff; color: var(--primary); box-shadow: none; font-weight: 700; }
+.wl-card .wl-cta:hover { transform: translateY(-1px); }
+/* social — dole, jemné */
+.wl-card .wl-social {
+  margin: 1.4rem 0 0; padding: 1.1rem 0 0; border-top: 1px solid rgba(255,255,255,.13);
+  font-size: .76rem; font-weight: 500; color: rgba(255,255,255,.65);
+}
+.wl-card .wl-social b { color: #fff; font-weight: 700; }
+
+/* Chatovací bublina (chat-widget.js) — schovat, když je waitlist otevřený */
+.wl-fs.active ~ #makac-widget { display: none !important; }

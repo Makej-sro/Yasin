@@ -1,26 +1,26 @@
-# Waitlist — VERZE 1 (záloha)
+# Waitlist — VERZE 1 (aktuální, minimalistická)
 
 Snapshot celého webu (`index.html`, `style.css`, `script.js`) ve stavu waitlistu
 verze 1. Náhled: `nahled.png`.
 
 ## Jak verze 1 vypadá
-- **Pozadí:** plná modrá `#0020F6`.
-- **Tečky:** bílé, canvasový **flow field** (z Claude designu) — jemná bílá vlna
-  přes modrou, mění se jas/velikost teček.
-- **Kurzor:** limetkové `#B6FF00` podsvícení teček v kruhu u kurzoru; po zastavení
-  plynule zajede do středu (0,5 s), při pohybu se hned objeví.
-- **Hlavička:** bílý text (titulek + podnadpis), bez rámečku.
-- **Odpočet / přepínač / (nic dalšího):** světlé boxy, vystupují z modré.
-- **Karta** (Sháníš brigádu? / brigádníky?): modrá se světlým rámečkem + stínem,
-  bílý text, přepínač worker/employer (plynulý přechod).
-- **Social důkaz** („Za posledních 24 h se přihlásilo XX…"): **dole uvnitř karty**
-  pod CTA, menší, bílý text + zelený live puntík, oddělený linkou.
-- CTA: bílé tlačítko „Chci být u toho".
+- **Pozadí:** plná modrá `#0020F6` + bílé tečky (canvas).
+- **Kurzor = repel:** tečky u kurzoru se plynule odsunou pryč a stejně plynule se
+  vrátí (smoothstep + ease), `heat` je jemně zvýrazní. Modul `repel` v `script.js`,
+  ladí se přes `CFG` (radius 50, maxOffset 14, ease 0.16). Pod tím jemný ambient flow.
+- **Jeden panel = „frosted glass":** tmavší modrý tint `rgba(1,10,66,.44)` +
+  `backdrop-filter: blur(16px)` → rozmaže tečky za textem = čitelné a zároveň glossy;
+  světlý okraj + horní highlight + stín (`.wl-card`).
+- **Vše v jednom panelu** (minimalisticky): titulek → odpočet (čistá čísla, bez boxů)
+  → podnadpis → **switch brigádník/firma** → 4 výhody (čisté řádky s hairline linkami,
+  **žádné fajfky v kroužcích**) → CTA → social důkaz dole.
+- **Odznak** „Byl jsem u toho": jemný **bílý obrys** (žádná fialová).
+- **Chat bublina** (`#makac-widget` z `chat-widget.js`) je nad waitlistem **schovaná**
+  (`.wl-fs.active ~ #makac-widget { display:none }`), na zbytku webu zůstává.
 
 ## Jak obnovit verzi 1
-Zkopírovat tyhle tři soubory zpět do kořene webu:
 `cp _waitlist-navrh/verze-1/{index.html,style.css,script.js} .`
-(pozor: přepíše aktuální stav — tzn. verzi 2).
+(přepíše aktuální stav.)
 
-## Verze 2
-Bude úplně jiná — zadání dodá Yasin.
+## Verze 2 (jiný směr)
+Mapa krajů ČR + boxy — záloha v `_waitlist-navrh/verze-2/`, data `kraje-data.js`.
