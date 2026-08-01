@@ -213,26 +213,8 @@ function initAuth() {
   const registerModal = document.getElementById('register-modal');
   let selectedRole = 'worker';
 
-  // ── PŘÍSTUPOVÝ KLÍČ ────────────────────────────────────────────────────────
-  // Web je před spuštěním: registrace běží pro všechny, ale PŘIHLÁSIT se (a jít
-  // do dashboardu) může jen ten, kdo v přihlašovacím formuláři zadá platný klíč.
-  // Klíč rozdává Yasin oficiálním testovacím / vývojářským účtům.
-  //   ⇒ ZMĚNIT KLÍČ = uprav ACCESS_KEY.  ⇒ NAOSTRO = dej ACCESS_KEY na '' (pustí všechny).
-  const ACCESS_KEY = '8939';
-  const ACCESS_LOCKED_MSG =
-    'Spouštíme 1. 10. — zrovna na tom makáme. 💪 Jakmile bude hotovo, dáme ti vědět e-mailem.';
-  function accessKeyOk() {
-    if (!ACCESS_KEY) return true;
-    const el = document.getElementById('login-key');
-    return !!el && el.value.trim() === ACCESS_KEY;
-  }
-  // true = registrace byla otevřena z waitlistu → „Zpět" vede zpět na waitlist,
-  // ne na rozcestník s výběrem role. Resetuje se při každém otevření modálu.
-  let regFromWaitlist = false;
-
   // ─── Modal open/close ───
   function openModal(type, role) {
-    regFromWaitlist = false;
     overlay.classList.add('active');
     if (type === 'login') {
       loginModal.classList.add('active');
@@ -421,10 +403,7 @@ function initAuth() {
   document.getElementById('register-close').addEventListener('click', closeModals);
   document.getElementById('switch-to-register').addEventListener('click', e => { e.preventDefault(); openModal('register'); });
   document.getElementById('switch-to-login').addEventListener('click', e => { e.preventDefault(); openModal('login'); });
-  document.getElementById('reg-back').addEventListener('click', () => {
-    if (regFromWaitlist) { closeModals(); openWaitlist(); }   // přišel z waitlistu → zpět na waitlist
-    else showRegStep(1);                                      // jinak zpět na rozcestník
-  });
+  document.getElementById('reg-back').addEventListener('click', () => showRegStep(1));
 
   // pozor: role-card je i v login rozcestníku → bereme jen ty registrační
   document.querySelectorAll('.role-card[data-role]').forEach(card => {
@@ -441,12 +420,6 @@ function initAuth() {
     const btn = document.getElementById('login-submit');
     const email    = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
-
-    // Přístupový klíč — bez platného klíče se nikdo nepřihlásí (web makáme na tom).
-    if (!accessKeyOk()) {
-      showError('login-error', ACCESS_LOCKED_MSG);
-      return;
-    }
 
     btn.disabled = true;
     btn.textContent = 'Přihlašování...';
@@ -594,14 +567,12 @@ function initAuth() {
   const wlCompanyGr = document.getElementById('wl-company-group');
   const wlPhoneGr   = document.getElementById('wl-phone-group');
   let   wlRole      = 'worker';
-  let   wlDotBg     = null;   // canvasové tečkované pozadí (nastaví se níž)
 
   function openWaitlist() {
     if (!wlOverlay) return;
     document.body.style.overflow = 'hidden';
     wlOverlay.classList.add('active');
     wlOverlay.setAttribute('aria-hidden', 'false');
-    if (wlDotBg) wlDotBg.start();
   }
   function closeWaitlist(dismissed) {
     if (!wlOverlay) return;
@@ -609,7 +580,6 @@ function initAuth() {
     wlPanel.classList.remove('active');
     wlOverlay.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
-    if (wlDotBg) wlDotBg.stop();
     if (dismissed) { try { sessionStorage.setItem('wl-dismissed', '1'); } catch (e) {} }
   }
   function openWlForm(role) {
@@ -638,181 +608,10 @@ function initAuth() {
     else if (wlOverlay.classList.contains('active')) closeWaitlist(true);
   });
 
-  // CTA na každé straně → zavři čekací list a otevři NORMÁLNÍ registraci
-  // s danou rolí (brigádník / zaměstnavatel). Žádná separátní waitlist tabulka —
-  // rovnou se zakládá reálný účet přes sb.auth.signUp (viz register-form výš).
-  function wlGoRegister(role) {
-    closeWaitlist(false);                      // zavři čekací list (bez „dismissed")
-    openModal('register', role || 'worker');   // otevři registraci rovnou na kroku 2 s rolí
-    regFromWaitlist = true;                     // „Zpět" pak vede na waitlist, ne na rozcestník
-  }
-  document.querySelectorAll('.wl-cta, .wl-cta-flip').forEach(btn => {
-    btn.addEventListener('click', () => wlGoRegister(btn.dataset.wlRole));
-    btn.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); wlGoRegister(btn.dataset.wlRole); }
-    });
+  // CTA na každé straně → otevři formulář s danou rolí
+  document.querySelectorAll('.wl-cta').forEach(btn => {
+    btn.addEventListener('click', () => openWlForm(btn.dataset.wlRole));
   });
-
-  // Tečkované pozadí (flow field) — PŘESNĚ podle staženého standalone exportu
-  // z Claude designu (flow-field-background.html). Neviditelný proud ohýbá mřížku,
-  // tečky modrají tam, kde běží nejrychleji; kurzor rozsvítí tečky ve svém kruhu.
-  // Spouští se jen když je waitlist otevřený (šetří výkon), jinak 1:1.
-  // Repel efekt kurzoru (dodaný kód) — tečky u kurzoru se plynule odsunou pryč a vrátí.
-  var repel = (function () {
-    var CFG = { radius: 50, maxOffset: 14, ease: 0.16 };
-    var ox = new Float32Array(0), oy = new Float32Array(0);
-    var mx = -9999, my = -9999, out = { dx: 0, dy: 0, heat: 0 };
-
-    function resize(count) { ox = new Float32Array(count); oy = new Float32Array(count); }
-
-    function attach() {
-      window.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; }, { passive: true });
-      window.addEventListener('mouseleave', function () { mx = -9999; my = -9999; });
-    }
-
-    // idx = index tečky, x/y = její domácí pozice
-    function sample(idx, x, y) {
-      var R = CFG.radius * 1.35, tx = 0, ty = 0, push = 0;
-      if (mx > -9000) {
-        var ddx = x - mx, ddy = y - my;
-        var d = Math.sqrt(ddx * ddx + ddy * ddy);
-        if (d < R) {
-          var f = 1 - d / R;
-          f = f * f * (3 - 2 * f);            // smoothstep — plynulé, neodskočí
-          push = f;
-          var inv = d > 1 ? 1 / d : 1;
-          tx = ddx * inv * f * CFG.maxOffset;
-          ty = ddy * inv * f * CFG.maxOffset;
-        }
-      }
-      ox[idx] += (tx - ox[idx]) * CFG.ease;   // odjede
-      oy[idx] += (ty - oy[idx]) * CFG.ease;   // a stejně plynule zpět
-      var off = Math.sqrt(ox[idx] * ox[idx] + oy[idx] * oy[idx]);
-      out.dx = ox[idx]; out.dy = oy[idx];
-      out.heat = Math.max(push, Math.min(1, off / CFG.maxOffset));
-      return out;
-    }
-
-    return { config: CFG, resize: resize, attach: attach, sample: sample };
-  })();
-
-  wlDotBg = (function () {
-    var canvas = document.getElementById('wl-dotbg');
-    if (!canvas || !wlOverlay) return null;
-    var CONFIG = {
-      dotColor:    '#FFFFFF',
-      accentColor: '#FFFFFF',
-      spacing:     14,   // px mezi tečkami
-      dotSize:     1.1,  // základní poloměr tečky v px
-      speed:       1     // ambient flow: 1 = normál
-    };
-
-    var ctx = canvas.getContext('2d');
-    var W = 0, H = 0, dots = [], t0 = performance.now();
-    var raf = null, running = false;
-
-    function hexToRgb(h) {
-      var v = parseInt(String(h).replace('#', ''), 16);
-      return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
-    }
-    var DOT = hexToRgb(CONFIG.dotColor), ACC = hexToRgb(CONFIG.accentColor);
-
-    var LEV = 10, COLORS = [];
-    for (var l = 0; l < LEV; l++) {
-      var k = l / (LEV - 1);
-      COLORS.push('rgb(' + Math.round(DOT[0] + (ACC[0] - DOT[0]) * k) + ',' +
-                           Math.round(DOT[1] + (ACC[1] - DOT[1]) * k) + ',' +
-                           Math.round(DOT[2] + (ACC[2] - DOT[2]) * k) + ')');
-    }
-
-    function drawBuckets(bk, cols, aBoost) {
-      aBoost = aBoost || 1;
-      for (var lv = 0; lv < LEV; lv++) {
-        var b = bk[lv];
-        if (!b.length) continue;
-        var kk = lv / (LEV - 1);
-        var r = CONFIG.dotSize * (1 + kk * 0.7);
-        ctx.fillStyle = cols[lv];
-        ctx.globalAlpha = Math.min(1, (0.55 + kk * 0.45) * aBoost);
-        ctx.beginPath();
-        for (var n = 0; n < b.length; n += 2) {
-          ctx.moveTo(b[n] + r, b[n + 1]);
-          ctx.arc(b[n], b[n + 1], r, 0, Math.PI * 2);
-        }
-        ctx.fill();
-      }
-    }
-
-    function buildGrid() {
-      var s = CONFIG.spacing;
-      var cols = Math.ceil(W / s) + 1, rows = Math.ceil(H / s) + 1;
-      var ox = (W - (cols - 1) * s) / 2, oy = (H - (rows - 1) * s) / 2;
-      dots = [];
-      for (var j = 0; j < rows; j++)
-        for (var i = 0; i < cols; i++) dots.push(ox + i * s, oy + j * s);
-      repel.resize(dots.length / 2);   // jeden offset na tečku
-    }
-
-    function resize() {
-      var dpr = Math.min(2, window.devicePixelRatio || 1);
-      W = window.innerWidth; H = window.innerHeight;
-      canvas.width = Math.round(W * dpr);
-      canvas.height = Math.round(H * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      buildGrid();
-    }
-
-    function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
-
-    function draw() {
-      var t = ((performance.now() - t0) / 1000) * CONFIG.speed;
-      ctx.clearRect(0, 0, W, H);
-
-      var buckets = [];
-      for (var l = 0; l < LEV; l++) buckets.push([]);
-
-      for (var i = 0; i < dots.length; i += 2) {
-        var x = dots[i], y = dots[i + 1];
-
-        // jemný ambient flow field (šum pozadí)
-        var ang = Math.sin(x * 0.0048 + t * 0.28) * 1.7 + Math.cos(y * 0.0056 - t * 0.22) * 1.7;
-        var mag = 7 + 6 * Math.sin(x * 0.003 + y * 0.0038 + t * 0.55);
-        var e = clamp(0.5 + 0.5 * Math.sin(ang * 1.6 + t * 0.4) - 0.12);
-        e = e * e;
-
-        // repel u kurzoru — tečka uhne a heat ji zvýrazní
-        var rp = repel.sample(i >> 1, x, y);
-
-        var px = x + Math.cos(ang) * mag + rp.dx;
-        var py = y + Math.sin(ang) * mag + rp.dy;
-
-        buckets[Math.round(clamp(Math.max(e, rp.heat)) * (LEV - 1))].push(px, py);
-      }
-
-      drawBuckets(buckets, COLORS, 1.2);
-      ctx.globalAlpha = 1;
-      raf = requestAnimationFrame(draw);
-    }
-
-    repel.attach();   // myš sleduje repel modul (jednou)
-
-    return {
-      start: function () {
-        if (running) return;
-        running = true;
-        t0 = performance.now();
-        resize();
-        window.addEventListener('resize', resize);
-        raf = requestAnimationFrame(draw);
-      },
-      stop: function () {
-        if (!running) return;
-        running = false;
-        if (raf) { cancelAnimationFrame(raf); raf = null; }
-        window.removeEventListener('resize', resize);
-      }
-    };
-  })();
 
   // Přepínač brigádník / zaměstnavatel (jedna karta, segmented switch)
   (function () {
@@ -829,33 +628,25 @@ function initAuth() {
     opts.forEach(o => o.addEventListener('click', () => setTab(o.dataset.wlTab)));
   })();
 
-  // Odpočet do spuštění (1. 10. 2026) — modrý pás s ubývajícími linkami
+  // Odpočet do spuštění (1. 10. 2026)
   (function () {
     const cdD = document.getElementById('wl-cd-d');
     if (!cdD) return;
-    const TARGET = new Date('2026-10-01T09:00:00+02:00').getTime();
-    const TOTAL_DAYS = 61;   // délka odpočtu ve dnech (jak plná je první linka)
+    const target = new Date(2026, 9, 1, 0, 0, 0).getTime();
     const pad = n => String(n).padStart(2, '0');
-    const num = { h: document.getElementById('wl-cd-h'), m: document.getElementById('wl-cd-m'), s: document.getElementById('wl-cd-s') };
-    const bar = { d: document.getElementById('wl-cd-bar-d'), h: document.getElementById('wl-cd-bar-h'), m: document.getElementById('wl-cd-bar-m'), s: document.getElementById('wl-cd-bar-s') };
     function tick() {
-      const t = Math.max(0, Math.floor((TARGET - Date.now()) / 1000));
-      const d = Math.floor(t / 86400);
-      const h = Math.floor(t / 3600) % 24;
-      const m = Math.floor(t / 60) % 60;
-      const s = t % 60;
+      let diff = Math.max(0, target - Date.now());
+      const d = Math.floor(diff / 86400000); diff -= d * 86400000;
+      const h = Math.floor(diff / 3600000);  diff -= h * 3600000;
+      const m = Math.floor(diff / 60000);     diff -= m * 60000;
+      const s = Math.floor(diff / 1000);
       cdD.textContent = d;
-      num.h.textContent = pad(h);
-      num.m.textContent = pad(m);
-      num.s.textContent = pad(s);
-      // linky: žádná transition — plynulost dělá častý přepočet (250 ms)
-      if (bar.d) bar.d.style.width = (100 * d) / Math.max(1, TOTAL_DAYS) + '%';
-      if (bar.h) bar.h.style.width = (100 * h) / 24 + '%';
-      if (bar.m) bar.m.style.width = (100 * m) / 60 + '%';
-      if (bar.s) bar.s.style.width = (100 * s) / 60 + '%';
+      document.getElementById('wl-cd-h').textContent = pad(h);
+      document.getElementById('wl-cd-m').textContent = pad(m);
+      document.getElementById('wl-cd-s').textContent = pad(s);
     }
     tick();
-    setInterval(tick, 250);
+    setInterval(tick, 1000);
   })();
 
   // Sociální důkaz „za 24 h se přihlásilo XX brigádníků / zaměstnavatelů".
@@ -887,18 +678,50 @@ function initAuth() {
     setInterval(render, 60000);
   })();
 
-  // POZN.: Starý „čekací list" formulář (jméno + e-mail → tabulka `waitlist`) je
-  // zrušený. CTA „Chci být u toho" teď vede rovnou na normální registraci
-  // (viz wlGoRegister výš) → zakládá se reálný účet, žádná separátní waitlist
-  // tabulka. Pojistka: kdyby se ten formulář v markupu přece jen odeslal,
-  // přesměruj na registraci místo zápisu do DB.
-  const _wlFormEl = document.getElementById('wl-form');
-  if (_wlFormEl) {
-    _wlFormEl.addEventListener('submit', e => {
-      e.preventDefault();
-      wlGoRegister(wlRole);
+  // Odeslání na čekací list
+  document.getElementById('wl-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    document.getElementById('wl-error').style.display = 'none';
+    const btn     = document.getElementById('wl-submit');
+    const name    = document.getElementById('wl-name').value.trim();
+    const email   = document.getElementById('wl-email').value.trim();
+    const company = document.getElementById('wl-company').value.trim();
+    const phone   = document.getElementById('wl-phone').value.trim();
+
+    if (!name) { showError('wl-error', 'Zadej své jméno.'); return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('wl-error', 'Zadej platný email.'); return; }
+    if (wlRole === 'employer' && !company) { showError('wl-error', 'Zadej název firmy.'); return; }
+    if (wlRole === 'employer' && !phone) { showError('wl-error', 'Zadej telefon, ať se ti můžeme ozvat.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Ukládám…';
+
+    const { error } = await sb.from('waitlist').insert({
+      role: wlRole,
+      name,
+      email,
+      company_name: wlRole === 'employer' ? company : null,
+      phone: wlRole === 'employer' ? phone : null,
     });
-  }
+
+    if (error) {
+      if (error.code === '23505') {
+        // už na seznamu je → ber to jako úspěch
+        try { localStorage.setItem('wl-joined', '1'); } catch (er) {}
+        document.getElementById('wl-form-wrap').style.display = 'none';
+        document.getElementById('wl-done').style.display = 'block';
+        return;
+      }
+      showError('wl-error', 'Nepodařilo se uložit. Zkus to prosím za chvíli.');
+      btn.disabled = false;
+      btn.textContent = 'Chci být u toho';
+      return;
+    }
+
+    try { localStorage.setItem('wl-joined', '1'); } catch (er) {}
+    document.getElementById('wl-form-wrap').style.display = 'none';
+    document.getElementById('wl-done').style.display = 'block';
+  });
 
   // ⚠️⚠️ DOČASNÉ – JEN PRO VÝVOJ: popup vyskočí VŽDY po každém refreshi.
   //   PŘED SPUŠTĚNÍM PRO REÁLNÉ UŽIVATELE DÁT NA false (nebo smazat)!
@@ -917,11 +740,6 @@ function initAuth() {
 
   // ─── Google OAuth — stejný provider jako v makej ───
   document.getElementById('login-google').addEventListener('click', async () => {
-    // Přístupový klíč platí i pro Google login — ať není zadní vrátka.
-    if (!accessKeyOk()) {
-      showError('login-error', ACCESS_LOCKED_MSG);
-      return;
-    }
     await sb.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.href }

@@ -62,7 +62,7 @@ img { max-width: 100%; display: block; }
   background: linear-gradient(135deg, var(--primary), var(--accent));
   color: #fff; font-weight: 700; font-size: .95rem;
   border: 1px solid rgba(208,208,255,.2);
-  transition: transform 200ms cubic-bezier(0.23,1,0.32,1), box-shadow 200ms ease-out; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  transition: transform 200ms cubic-bezier(0.23,1,0.32,1), box-shadow 200ms ease-out; cursor: pointer;
 }
 @media (hover: hover) and (pointer: fine) {
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,32,246,.3); }
@@ -73,7 +73,7 @@ img { max-width: 100%; display: block; }
   padding: 14px 28px; border-radius: 100px;
   background: transparent; color: var(--secondary);
   border: 1px solid rgba(208,208,255,.25); font-weight: 600; font-size: .95rem;
-  transition: transform 200ms cubic-bezier(0.23,1,0.32,1), background 200ms ease, border-color 200ms ease; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  transition: transform 200ms cubic-bezier(0.23,1,0.32,1), background 200ms ease, border-color 200ms ease; cursor: pointer;
 }
 @media (hover: hover) and (pointer: fine) {
   .btn-ghost:hover { background: rgba(208,208,255,.08); border-color: rgba(208,208,255,.4); }
@@ -126,7 +126,7 @@ img { max-width: 100%; display: block; }
 .nav-actions { display: flex; gap: 12px; align-items: center; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .nav-actions.nav-actions-visible { opacity: 1; pointer-events: all; }
 .nav-actions .btn-ghost, .nav-actions .btn-primary { padding: 10px 20px; font-size: .85rem; }
-.mobile-menu-btn { display: none; background: none; border: none; color: #fff; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; }
+.mobile-menu-btn { display: none; background: none; border: none; color: #fff; cursor: pointer; }
 .mobile-menu {
   display: none; flex-direction: column; gap: 16px;
   padding: 24px; background: rgba(15,15,45,.95); backdrop-filter: blur(20px);
@@ -310,7 +310,7 @@ img { max-width: 100%; display: block; }
 .sct-btn {
   position: relative; z-index: 1;
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 10px 22px; border: none; background: transparent; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  padding: 10px 22px; border: none; background: transparent; cursor: pointer;
   border-radius: 100px;
   font-family: var(--font-body); font-size: .92rem; font-weight: 700;
   color: rgba(208,208,255,.6);
@@ -495,7 +495,7 @@ img { max-width: 100%; display: block; }
 /* Cyklický balíček bílých karet — přední odjede nahoru a zařadí se dozadu */
 .rs-card {
   position: absolute; top: 0; left: 0; width: 100%;
-  background: #fff; border-radius: 20px; padding: 40px 42px; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  background: #fff; border-radius: 20px; padding: 40px 42px; cursor: pointer;
   transition: transform .7s cubic-bezier(.33,0,.2,1), opacity .7s cubic-bezier(.33,0,.2,1);
   will-change: transform, opacity;
 }
@@ -568,7 +568,7 @@ img { max-width: 100%; display: block; }
 .cookie-actions { display: flex; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
 .cookie-btn {
   padding: 9px 20px; border-radius: 10px; font-size: .875rem; font-weight: 600;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; border: none; font-family: var(--font-sans);
+  cursor: pointer; border: none; font-family: var(--font-sans);
   transition: opacity .15s, transform .15s;
 }
 .cookie-btn:hover { opacity: .85; }
@@ -659,7 +659,7 @@ img { max-width: 100%; display: block; }
   position: absolute; top: 1.25rem; right: 1.25rem; z-index: 10;
   width: 32px; height: 32px;
   background: rgba(208,208,255,.08); border: none; border-radius: .5rem;
-  color: var(--muted-fg); cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  color: var(--muted-fg); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 16px; font-weight: 700; line-height: 1;
   transition: background .2s, color .2s;
@@ -699,7 +699,7 @@ img { max-width: 100%; display: block; }
 .password-wrap .form-input { padding-right: 44px; }
 .pw-toggle {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; padding: 4px;
+  background: none; border: none; cursor: pointer; padding: 4px;
   color: var(--muted-fg); display: flex; align-items: center; transition: color .2s;
 }
 .pw-toggle:hover { color: var(--secondary); }
@@ -717,7 +717,7 @@ img { max-width: 100%; display: block; }
   padding: 11px 20px; background: rgba(255,255,255,.05);
   border: 1px solid rgba(208,208,255,.14); border-radius: .75rem;
   color: var(--fg); font-family: var(--font-sans); font-size: .9rem; font-weight: 600;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; transition: background .2s, border-color .2s;
+  cursor: pointer; transition: background .2s, border-color .2s;
 }
 .btn-google:hover { background: rgba(255,255,255,.1); border-color: rgba(208,208,255,.3); }
 
@@ -729,7 +729,7 @@ img { max-width: 100%; display: block; }
 .role-card {
   background: rgba(255,255,255,.03); border: 1px solid rgba(208,208,255,.1);
   border-radius: 1rem; padding: 1.5rem 1rem;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display: flex; flex-direction: column; align-items: center; gap: .5rem;
+  cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: .5rem;
   color: var(--fg); font-family: var(--font-sans);
   transition: transform 200ms cubic-bezier(0.23,1,0.32,1), background 200ms ease, border-color 200ms ease;
 }
@@ -744,7 +744,7 @@ img { max-width: 100%; display: block; }
 .modal-back {
   background: none; border: none; color: var(--muted-fg);
   font-family: var(--font-sans); font-size: .85rem; font-weight: 600;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display: flex; align-items: center; gap: .4rem;
+  cursor: pointer; display: flex; align-items: center; gap: .4rem;
   margin-bottom: 1.25rem; padding: 0; transition: color .2s;
 }
 .modal-back:hover { color: var(--secondary); }
@@ -797,10 +797,13 @@ img { max-width: 100%; display: block; }
 /* Ikony rolí (PNG glyfy obarvené maskou na firemní modrou) */
 .role-ic {
   width: 34px; height: 34px; display: block;
-  background-repeat: no-repeat; background-position: center; background-size: contain;
+  background-color: var(--primary);
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+  -webkit-mask-size: contain; mask-size: contain;
 }
-.role-ic--user { background-image: url('employer/user-blue.png'); }
-.role-ic--company { background-image: url('employer/company-blue.png'); }
+.role-ic--user { -webkit-mask-image: url('/employer/user.png'); mask-image: url('/employer/user.png'); }
+.role-ic--company { -webkit-mask-image: url('/employer/company.png'); mask-image: url('/employer/company.png'); }
 
 /* Odkaz „Zapomněl jsem heslo?" v přihlašovacím modálu */
 .modal .login-forgot-row { display: flex; justify-content: flex-end; margin: -6px 0 14px; }
@@ -824,11 +827,13 @@ img { max-width: 100%; display: block; }
 /* Chevron „Zpět" v přihlašovacím modálu — šedý, na hover zmodrá spolu s textem */
 .modal .modal-back .back-ic {
   width: 13px; height: 13px; flex-shrink: 0;
-  background: url('employer/chevron-gray.png') center/contain no-repeat;
-  transition: transform .2s ease;
+  background-color: rgba(10,13,46,.55);
+  -webkit-mask: url('/employer/chevron.png') center/contain no-repeat;
+  mask: url('/employer/chevron.png') center/contain no-repeat;
+  transition: background-color .2s ease, transform .2s ease;
 }
 .modal .modal-back:hover .back-ic {
-  background-image: url('employer/chevron-blue.png');
+  background-color: var(--primary);
   transform: translateX(-2px);
 }
 
@@ -1195,7 +1200,7 @@ img { max-width: 100%; display: block; }
 /* App header */
 .dp-header { display:flex; align-items:center; justify-content:space-between; padding:10px 15px 8px; flex-shrink:0; }
 .dp-logo { font-family:var(--font-heading); font-size:1.1rem; font-weight:800; color:#fff; }
-.dp-notif { width:30px; height:30px; border-radius:9px; background:rgba(255,255,255,.07); border:none; color:rgba(208,208,255,.55); font-size:.85rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display:flex; align-items:center; justify-content:center; }
+.dp-notif { width:30px; height:30px; border-radius:9px; background:rgba(255,255,255,.07); border:none; color:rgba(208,208,255,.55); font-size:.85rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 
 /* ── Cards ── */
 .dp-cards-area { flex:1; padding:0 10px 6px; overflow:hidden; display:flex; align-items:stretch; }
@@ -1259,11 +1264,11 @@ img { max-width: 100%; display: block; }
 
 /* Action buttons — inside card at very bottom */
 .dp-card-btns { position:absolute; bottom:0; left:0; right:0; z-index:3; display:flex; align-items:center; justify-content:center; gap:20px; padding:10px 0 12px; }
-.dp-reject-btn { width:52px; height:52px; border-radius:50%; background:rgba(22,22,59,.8); border:1px solid rgba(255,255,255,.1); color:#f43f5e; font-size:1.3rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(20px); transition:transform .15s, background .15s; }
+.dp-reject-btn { width:52px; height:52px; border-radius:50%; background:rgba(22,22,59,.8); border:1px solid rgba(255,255,255,.1); color:#f43f5e; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(20px); transition:transform .15s, background .15s; }
 .dp-reject-btn:hover { background:rgba(244,63,94,.15); border-color:rgba(244,63,94,.4); transform:scale(1.05); }
-.dp-heart-btn  { width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,#292978,#3a3a99); border:2px solid rgba(255,255,255,.2); color:#fff; font-size:1.55rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 0 36px rgba(41,41,120,.55); transition:transform .15s, box-shadow .15s; }
+.dp-heart-btn  { width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,#292978,#3a3a99); border:2px solid rgba(255,255,255,.2); color:#fff; font-size:1.55rem; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 0 36px rgba(41,41,120,.55); transition:transform .15s, box-shadow .15s; }
 .dp-heart-btn:hover  { transform:scale(1.1); box-shadow:0 0 48px rgba(41,41,120,.75); }
-.dp-reject-btn:disabled, .dp-heart-btn:disabled { opacity:.3; cursor: url('kurzor.png?v=2') 6 4, auto; transform:none; }
+.dp-reject-btn:disabled, .dp-heart-btn:disabled { opacity:.3; cursor:default; transform:none; }
 
 /* Empty state */
 .dp-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; height:100%; color:rgba(208,208,255,.35); font-size:.8rem; text-align:center; padding:20px; }
@@ -1271,7 +1276,7 @@ img { max-width: 100%; display: block; }
 
 /* ── Messages ── */
 .dp-threads-list { flex:1; overflow-y:auto; }
-.dp-thread-item { display:flex; align-items:center; gap:11px; padding:11px 14px; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; transition:background .12s; border-bottom:1px solid rgba(255,255,255,.04); }
+.dp-thread-item { display:flex; align-items:center; gap:11px; padding:11px 14px; cursor:pointer; transition:background .12s; border-bottom:1px solid rgba(255,255,255,.04); }
 .dp-thread-item:hover { background:rgba(255,255,255,.05); }
 .dp-thread-avatar { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:700; color:#fff; flex-shrink:0; background:linear-gradient(135deg,rgba(41,41,120,.3),rgba(208,208,255,.15)); border:1.5px solid rgba(208,208,255,.15); }
 .dp-thread-body { flex:1; min-width:0; }
@@ -1284,7 +1289,7 @@ img { max-width: 100%; display: block; }
 
 /* ── Chat ── */
 .dp-chat-header { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid rgba(255,255,255,.06); flex-shrink:0; }
-.dp-chat-back { width:30px; height:30px; border-radius:9px; background:rgba(255,255,255,.07); border:none; color:#d0d0ff; font-size:.95rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.dp-chat-back { width:30px; height:30px; border-radius:9px; background:rgba(255,255,255,.07); border:none; color:#d0d0ff; font-size:.95rem; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .dp-chat-name   { font-size:.85rem; font-weight:700; color:#fff; }
 .dp-chat-subjob { font-size:.67rem; color:rgba(208,208,255,.38); }
 .dp-chat-msgs { flex:1; overflow-y:auto; padding:12px 13px; display:flex; flex-direction:column; gap:7px; }
@@ -1294,7 +1299,7 @@ img { max-width: 100%; display: block; }
 .dp-chat-input-row { display:flex; align-items:center; gap:7px; padding:9px 11px; border-top:1px solid rgba(255,255,255,.06); flex-shrink:0; }
 .dp-chat-input { flex:1; background:rgba(255,255,255,.06); border:1px solid rgba(34,34,77,.5); border-radius:14px; padding:7px 12px; color:#fff; font-size:.77rem; outline:none; font-family:var(--font-body); }
 .dp-chat-input::placeholder { color:rgba(208,208,255,.28); }
-.dp-chat-send { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#292978,#3a3a99); border:none; color:#fff; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; font-size:.85rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.dp-chat-send { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#292978,#3a3a99); border:none; color:#fff; cursor:pointer; font-size:.85rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 
 /* ── Profile ── */
 .dp-profile-scroll { flex:1; overflow-y:auto; padding:14px 15px; }
@@ -1313,7 +1318,7 @@ img { max-width: 100%; display: block; }
 
 /* ── Bottom nav ── */
 .demo-bottom-nav { display:flex; background:rgba(5,5,16,.9); border-top:1px solid rgba(255,255,255,.06); flex-shrink:0; backdrop-filter:blur(20px); }
-.demo-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:9px 0 11px; background:transparent; border:none; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; color:rgba(153,153,204,.45); font-size:.58rem; font-family:var(--font-body); transition:color .15s; position:relative; }
+.demo-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:9px 0 11px; background:transparent; border:none; cursor:pointer; color:rgba(153,153,204,.45); font-size:.58rem; font-family:var(--font-body); transition:color .15s; position:relative; }
 .demo-nav-btn.nav-active { color:#d0d0ff; }
 .demo-nav-icon { font-size:1.05rem; line-height:1; }
 
@@ -1427,7 +1432,7 @@ img { max-width: 100%; display: block; }
   width:100%; padding:10px; border-radius:11px;
   background:linear-gradient(135deg,#292978,#3a3a99);
   color:#fff; font-weight:800; font-size:.8rem;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; border:none; font-family:var(--font-body);
+  cursor:pointer; border:none; font-family:var(--font-body);
   box-shadow:0 4px 16px rgba(41,41,120,.45);
   pointer-events:auto; transition:transform .15s, box-shadow .15s;
 }
@@ -1453,7 +1458,7 @@ img { max-width: 100%; display: block; }
 .tut-success-restart {
   padding:9px 22px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.17);
   border-radius:100px; color:rgba(255,255,255,.82); font-size:.74rem; font-weight:700;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; pointer-events:auto; font-family:var(--font-body); transition:background .15s;
+  cursor:pointer; pointer-events:auto; font-family:var(--font-body); transition:background .15s;
 }
 .tut-success-restart:hover { background:rgba(255,255,255,.18); }
 
@@ -1470,7 +1475,7 @@ img { max-width: 100%; display: block; }
 .cn-billing-toggle {
   position: relative; width: 48px; height: 26px;
   background: rgba(208,208,255,.15); border-radius: 999px;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; transition: background .25s; border: none; flex-shrink: 0;
+  cursor: pointer; transition: background .25s; border: none; flex-shrink: 0;
 }
 .cn-billing-toggle.on { background: linear-gradient(135deg, var(--primary), var(--accent)); }
 .cn-billing-toggle::after {
@@ -1564,7 +1569,7 @@ img { max-width: 100%; display: block; }
   width: 100%; margin-top: 4px; padding: 8px; border-radius: 10px;
   border: 1px solid rgba(208,208,255,.1); background: transparent;
   color: rgba(208,208,255,.45); font-family: var(--font-sans);
-  font-size: .78rem; font-weight: 600; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  font-size: .78rem; font-weight: 600; cursor: pointer;
   display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .15s;
 }
 .cn-expand-btn:hover { border-color: rgba(208,208,255,.3); color: #d0d0ff; }
@@ -1636,27 +1641,20 @@ html { scroll-padding-top: 92px; }
 /* ═══════════ ČEKACÍ LIST (WAITLIST) — full-screen split ═══════════ */
 .wl-fs {
   position: fixed; inset: 0; z-index: 4000;
-  background: #0020F6;
-  overflow: hidden;
+  background: #fff; overflow: hidden;
   display: flex; flex-direction: column;
   opacity: 0; pointer-events: none; transition: opacity .3s ease;
 }
 .wl-fs.active { opacity: 1; pointer-events: auto; }
-/* Tečkované pozadí (flow field) — canvas přenesený z Claude designu.
-   Kreslí tečky + modrý „reflektor" u kurzoru. Leží za obsahem (z-index 0).
-   width/height 100% je NUTNÉ — jinak se canvas nezmenší podle Retina (dpr)
-   a kreslí se ve 2× měřítku (tečky řídké, vidět jen výřez). */
-.wl-dotbg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; pointer-events: none; }
 .wl-fs-close {
   position: fixed; top: 16px; right: 18px; z-index: 6;
   width: 44px; height: 44px; border-radius: 50%; border: none;
-  background: rgba(255,255,255,.16); color: #fff;
-  font-size: 1.15rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; line-height: 1;
+  background: rgba(10,13,46,.07); color: #0a0d2e;
+  font-size: 1.15rem; cursor: pointer; line-height: 1;
   transition: background .15s;
 }
-.wl-fs-close:hover { background: rgba(255,255,255,.3); }
-.wl-fs-inner { position: relative; z-index: 3; flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
-
+.wl-fs-close:hover { background: rgba(10,13,46,.14); }
+.wl-fs-inner { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
 .wl-fs-head { text-align: center; padding: 1.4rem 1.5rem .8rem; }
 .wl-badge {
   display: inline-block; background: rgba(0,32,246,.09); color: var(--primary);
@@ -1664,14 +1662,12 @@ html { scroll-padding-top: 92px; }
   padding: .4rem .8rem; border-radius: 999px; margin-bottom: 1rem;
 }
 .wl-fs-title {
-  font-size: clamp(1.3rem, 3vw, 1.7rem); font-weight: 700;
-  color: #fff; letter-spacing: -.01em; line-height: 1.15; margin: 0;
-  text-shadow: 0 1px 12px rgba(0,0,0,.28);
+  font-size: clamp(1.8rem, 4.4vw, 2.7rem); font-weight: 800;
+  color: #0a0d2e; letter-spacing: -.02em; line-height: 1.1; margin: 0;
 }
 .wl-fs-sub {
-  color: rgba(255,255,255,.92); max-width: 580px; margin: .6rem auto 0;
-  font-size: 1rem; line-height: 1.5; font-weight: 700;
-  text-shadow: 0 1px 10px rgba(0,0,0,.28);
+  color: #252525; max-width: 580px; margin: .7rem auto 0;
+  font-size: 1.02rem; line-height: 1.5; font-weight: 700;
 }
 .wl-ig {
   display: inline-flex; align-items: center; gap: .5rem;
@@ -1695,15 +1691,11 @@ html { scroll-padding-top: 92px; }
 }
 
 /* Odpočet do spuštění */
-.wl-countdown { display: flex; gap: .45rem; justify-content: center; align-items: center; margin: 1rem 0 .3rem; }
-.wl-cd-unit {
-  display: flex; flex-direction: column; align-items: center; gap: .25rem;
-  background: #f6f3f2; border: 1px solid #eae7e7; border-radius: 14px;
-  padding: .6rem .35rem; min-width: 58px; box-shadow: 0 2px 6px rgba(0,0,0,.04);
-}
-.wl-cd-num { font-size: clamp(1.4rem, 4vw, 1.9rem); font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; line-height: 1; }
-.wl-cd-lbl { font-size: .62rem; text-transform: uppercase; letter-spacing: .07em; color: #6b7280; font-weight: 700; }
-.wl-cd-sep { font-size: 1.2rem; font-weight: 700; color: #cfcfd8; line-height: 1; }
+.wl-countdown { display: flex; gap: .5rem; justify-content: center; align-items: flex-start; margin: .9rem 0 .4rem; }
+.wl-cd-unit { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
+.wl-cd-num { font-size: clamp(2rem, 5.5vw, 3.1rem); font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; line-height: 1; }
+.wl-cd-lbl { font-size: .7rem; text-transform: uppercase; letter-spacing: .09em; color: #252525; margin-top: .45rem; font-weight: 700; }
+.wl-cd-sep { font-size: clamp(1.5rem, 4vw, 2.4rem); font-weight: 800; color: #252525; line-height: 1.05; }
 
 /* Jedna karta + přepínač (segmented switch jako u ceníku) */
 .wl-switch-wrap {
@@ -1723,39 +1715,28 @@ html { scroll-padding-top: 92px; }
 }
 .wl-toggle.is-employer .wl-toggle-pill { transform: translateX(100%); }
 .wl-toggle-opt {
-  position: relative; z-index: 1; border: none; background: none; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  position: relative; z-index: 1; border: none; background: none; cursor: pointer;
   padding: .7rem .6rem; font-family: inherit; font-weight: 800; font-size: .92rem;
   color: var(--primary); border-radius: 999px; transition: color .2s;
 }
 .wl-toggle-opt.is-active { color: #fff; }
-/* Modrý box (.wl-cards) STOJÍ; obsah obou stran (.wl-side) leží přes sebe a
-   při přepnutí plynule „sjede/přijede" do strany (jako v návrhu). */
-.wl-cards {
-  display: grid; width: 100%; overflow: hidden;
-  background:
-    radial-gradient(circle at 1px 1px, rgba(255,255,255,.09) 1px, transparent 0) 0 0 / 22px 22px,
-    var(--primary);
-  color: #fff; border-radius: 20px;
-  padding: 2rem clamp(1.6rem, 2.8vw, 2.3rem) 2rem;
-  /* na modrém pozadí kartu odliší světlý rámeček + hlubší stín */
-  border: 1px solid rgba(255,255,255,.22);
-  box-shadow: 0 26px 60px -22px rgba(0,0,0,.55);
+/* Obě strany přes sebe ve stejné buňce → karta drží velikost, přepíná se jen text.
+   Odcházející se skryje hned (žádné prolínání dvou textů), nová se jemně objeví. */
+.wl-cards { display: grid; width: 100%; }
+.wl-side { grid-area: 1 / 1; }
+.wl-side.is-off { opacity: 0; visibility: hidden; pointer-events: none; }
+.wl-side:not(.is-off) { animation: wlPanelIn .13s cubic-bezier(.2,.8,.2,1); }
+@keyframes wlPanelIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.wl-side {
-  grid-area: 1 / 1; display: flex; flex-direction: column;
-  transition: opacity .28s ease, transform .28s ease;
-}
-.wl-side.is-off { opacity: 0; transform: translateX(18px); pointer-events: none; }
 
-/* „live" sociální důkaz — dole uvnitř karty pod CTA, jako součást karty, menší */
+/* Jemný „live" sociální důkaz — mezi switchem a kartou, mění se s přepínačem */
 .wl-social {
-  display: flex; align-items: center; justify-content: center; gap: .4rem;
-  margin: 1.1rem 0 0; padding: .9rem 0 0;
-  border-top: 1px solid rgba(255,255,255,.16);
-  font-size: .78rem; font-weight: 600; color: rgba(255,255,255,.82);
-  text-align: center;
+  display: inline-flex; align-items: center; gap: .5rem;
+  margin: 0; font-size: .92rem; font-weight: 600; color: #252525;
 }
-.wl-social b { color: #fff; font-weight: 800; font-variant-numeric: tabular-nums; }
+.wl-social b { color: #252525; font-weight: 800; font-variant-numeric: tabular-nums; }
 .wl-social-dot {
   width: .55rem; height: .55rem; border-radius: 50%; flex-shrink: 0;
   background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,.5);
@@ -1766,7 +1747,14 @@ html { scroll-padding-top: 92px; }
   70%  { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
   100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
 }
-/* ── Obsah karty: pouze primární modrá + bílá, tučné texty ── */
+/* ── Minimalistické karty: pouze primární modrá + bílá, tučné texty ── */
+.wl-side {
+  background: var(--primary); color: #fff;
+  border-radius: 20px;
+  padding: 2rem clamp(1.6rem, 2.8vw, 2.3rem) 2rem;
+  display: flex; flex-direction: column;
+  box-shadow: 0 20px 44px -24px rgba(0,32,246,.6);
+}
 .wl-side-title { font-size: clamp(1.55rem, 2.8vw, 2.1rem); font-weight: 800; margin: 0 0 .55rem; line-height: 1.1; }
 .wl-side-lead { margin: 0 0 1.6rem; font-size: 1rem; line-height: 1.45; font-weight: 700; color: #fff; }
 
@@ -1786,11 +1774,10 @@ html { scroll-padding-top: 92px; }
 
 /* Výhody — bílé tečky, tučný bílý text */
 .wl-benefits { list-style: none; padding: 0; margin: 0 0 1.6rem; display: flex; flex-direction: column; gap: .75rem; }
-.wl-benefits li { position: relative; padding-left: 2rem; font-size: .96rem; line-height: 1.4; font-weight: 700; color: #fff; }
+.wl-benefits li { position: relative; padding-left: 1.5rem; font-size: .96rem; line-height: 1.4; font-weight: 700; color: #fff; }
 .wl-benefits li::before {
-  content: ''; position: absolute; left: 0; top: .1rem;
-  width: 1.25rem; height: 1.25rem;
-  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='white'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx='12'%20cy='12'%20r='9'/%3E%3Cpath%20d='M8.5%2012.5l2.5%202.5%204.5-5'/%3E%3C/svg%3E") no-repeat center / contain;
+  content: ''; position: absolute; left: .2rem; top: .52rem;
+  width: .5rem; height: .5rem; border-radius: 50%; background: #fff;
 }
 /* Odměna je normální odrážka (má tečku) — fialová placka je inline uvnitř */
 .wl-badge-chip { vertical-align: middle; margin: 0 .18rem 0 .5rem; }
@@ -1820,7 +1807,7 @@ html { scroll-padding-top: 92px; }
 
 .wl-cta {
   margin-top: auto; width: 100%; height: 54px; border-radius: 14px;
-  font-family: inherit; font-size: 1rem; font-weight: 700; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; border: none;
+  font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; border: none;
   transition: transform .12s, box-shadow .2s;
   background: #fff; color: var(--primary); box-shadow: 0 14px 28px -14px rgba(0,0,0,.45);
 }
@@ -1839,7 +1826,7 @@ html { scroll-padding-top: 92px; }
   width: min(430px, 100%); max-height: calc(100vh - 40px); overflow-y: auto;
   position: relative;
 }
-.wl-panel-back { background: none; border: none; color: var(--primary); font-weight: 600; font-size: .9rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; margin-bottom: .9rem; padding: 0; }
+.wl-panel-back { background: none; border: none; color: var(--primary); font-weight: 600; font-size: .9rem; cursor: pointer; margin-bottom: .9rem; padding: 0; }
 .wl-panel-card .modal-logo { margin-bottom: .8rem; }
 .wl-form-title { font-size: 1.5rem; font-weight: 800; color: #0a0d2e; margin: 0 0 .3rem; }
 .wl-form-sub { color: rgba(10,13,46,.6); margin: 0 0 1.2rem; font-size: .95rem; line-height: 1.5; }
@@ -1860,174 +1847,11 @@ html { scroll-padding-top: 92px; }
 
 @media (max-width: 760px) {
   .wl-fs-head { padding: 3.4rem 1.3rem 1rem; }
-  .wl-cards { padding: 1.7rem 1.5rem 1.8rem; }
+  .wl-side { padding: 1.7rem 1.5rem 1.8rem; }
 }
 /* Pojistka: na nízkých obrazovkách povol scroll, ať se nic neuřízne.
    Na běžném desktopu je vše na jednu obrazovku bez scrollu. */
 @media (max-height: 700px) {
   .wl-fs { overflow-y: auto; }
   .wl-fs-inner { justify-content: flex-start; }
-}
-
-/* ═══════════ WAITLIST v1 — MINIMALISTICKÝ PANEL (override) ═══════════
-   Vše v jednom jemném panelu na modrém tečkovaném pozadí. Bez „AI" prvků:
-   žádné fajfky v kroužcích, žádná fialová, žádné těžké boxy odpočtu. */
-.wl-card {
-  width: 100%; max-width: 420px; margin: auto;
-  display: flex; flex-direction: column; text-align: center;
-  padding: clamp(1.7rem, 4vw, 2.5rem);
-  border-radius: 24px;
-  /* VERZE 2 — plně BÍLÝ panel (max kontrast pro firemní modrou), jemný frosted okraj */
-  background: #fff;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,.8);
-  box-shadow: 0 30px 70px -28px rgba(0,20,120,.45), inset 0 1px 0 rgba(255,255,255,.9);
-  color: var(--primary);
-}
-.wl-card .wl-fs-title {
-  font-size: clamp(1.5rem, 4.2vw, 2rem); font-weight: 800;
-  letter-spacing: -.02em; line-height: 1.12; margin: 0; color: var(--primary); text-shadow: none;
-}
-.wl-card .wl-fs-sub {
-  margin: .55rem 0 0; font-size: .92rem; line-height: 1.5;
-  font-weight: 600; color: rgba(0,32,246,.82); text-shadow: none; max-width: none;
-}
-/* odpočet — modrý pás, bílé číslice + plynule ubývající linky (dodaný design) */
-.wl-card .wl-countdown {
-  align-self: center; display: inline-flex; align-items: center; gap: 13px;
-  background: #1B2BFF; border-radius: 999px; padding: 13px 26px 11px;
-  margin: 1.4rem 0 1.6rem; font-family: Figtree, system-ui, sans-serif;
-}
-.wl-card .wl-cd-unit {
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  background: none; border: none; box-shadow: none; border-radius: 0; padding: 0; min-width: 0;
-}
-.wl-card .wl-cd-num {
-  font-size: 29px; line-height: .9; font-weight: 800; color: #fff;
-  letter-spacing: -.03em; font-variant-numeric: tabular-nums;
-}
-.wl-card .wl-cd-track { display: block; width: 100%; height: 2.5px; border-radius: 3px; background: rgba(255,255,255,.28); overflow: hidden; }
-.wl-card .wl-cd-track b { display: block; height: 100%; border-radius: 3px; background: #fff; width: 0; }
-.wl-card .wl-cd-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.5); margin-bottom: 7px; flex: none; }
-/* přepínač */
-.wl-card .wl-toggle { background: rgba(0,32,246,.1); max-width: none; padding: 4px; margin: 0 0 1.5rem; }
-.wl-card .wl-toggle-pill { top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background: var(--primary); box-shadow: none; }
-.wl-card .wl-toggle-opt { padding: .6rem .5rem; font-weight: 700; font-size: .9rem; color: rgba(0,32,246,.7); }
-.wl-card .wl-toggle-opt.is-active { color: #fff; font-weight: 800; }
-/* panely (swap) — bez vlastního boxu, obsah zarovnaný vlevo */
-.wl-card .wl-cards { background: none; border: none; box-shadow: none; border-radius: 0; padding: 0; text-align: left; overflow: visible; }
-.wl-card .wl-side-lead { margin: 0; font-size: .96rem; line-height: 1.5; font-weight: 600; color: var(--primary); }
-/* výhody — odrážky s plnou modrou tečkou, bez čar mezi body */
-.wl-card .wl-benefits { gap: .95rem; margin: 1.1rem 0 1.4rem; }
-.wl-card .wl-benefits li {
-  position: static; padding: 0; font-size: .93rem; font-weight: 600; color: var(--primary);
-  border: none;
-  display: flex; align-items: center; flex-wrap: wrap; gap: .1rem .5rem;
-}
-.wl-card .wl-benefits li::before {
-  content: ''; position: static; display: block; flex-shrink: 0;
-  width: 7px; height: 7px; border-radius: 50%; background: var(--primary);
-}
-/* odznak — modrý obrys + modrý text */
-.wl-card .wl-badge-chip {
-  margin: 0; padding: .16rem .58rem; border-radius: 999px;
-  background: transparent; color: var(--primary); border: 1px solid rgba(0,32,246,.45);
-  font-weight: 700; font-size: .72rem; box-shadow: none;
-}
-/* CTA — modrý oválek, bílý tučný text + běžící světlá „kometa" po obrysu */
-.wl-card .wl-cta {
-  position: relative; overflow: hidden;
-  margin-top: .4rem; height: 52px; border-radius: 999px;
-  background: var(--primary); color: #fff; box-shadow: none; font-weight: 800;
-}
-.wl-card .wl-cta:hover { transform: translateY(-1px); }
-@property --wlBeam { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
-.wl-card .wl-cta::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 2.5px;
-  background: conic-gradient(from var(--wlBeam),
-    transparent 0deg, transparent 235deg,
-    rgba(255,255,255,.15) 275deg, #fff 320deg, rgba(255,255,255,.5) 348deg, transparent 360deg);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          mask-composite: exclude;
-  animation: wlBeamSpin 2.4s linear infinite;
-  pointer-events: none;
-}
-@keyframes wlBeamSpin { to { --wlBeam: 360deg; } }
-@media (prefers-reduced-motion: reduce) { .wl-card .wl-cta::before { animation: none; } }
-
-/* CTA — 3D flip pilulka (dodaný design): Chci být u toho ⇄ Registrovat se */
-.wl-card .wl-cta-flip {
-  perspective: 1100px; width: 100%; height: 56px; margin-top: .5rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
-  transition: transform .2s cubic-bezier(.2,.8,.2,1); transform-origin: center;
-}
-.wl-card .wl-cta-flip:hover { transform: scale(1.05); }   /* pop na najetí kurzorem */
-.wl-card .wl-cta-flip:active { transform: scale(1.02); }
-.wl-card .wl-cta-flip:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 999px; }
-.wl-card .wl-cta-flip__inner {
-  position: relative; width: 100%; height: 100%; transform-style: preserve-3d;
-  animation: wlFlipFace 4.2s cubic-bezier(.6,.02,.2,1) infinite;
-}
-.wl-card .wl-cta-flip__face {
-  position: absolute; inset: 0; backface-visibility: hidden;
-  border: 2px solid transparent; border-radius: 999px; box-sizing: border-box;
-  display: flex; align-items: center; justify-content: center;
-  font-family: inherit; font-size: 1rem; font-weight: 800; color: #fff; pointer-events: none;
-  /* stejná modrá #0020F6 + stejný stříbrný okraj na OBOU stranách */
-  background-image: linear-gradient(var(--primary), var(--primary)), linear-gradient(135deg, #EDF0F7, #A9B2C9);
-  background-origin: border-box; background-clip: padding-box, border-box;
-  box-shadow: 0 14px 26px -16px rgba(0,32,246,.7);
-}
-.wl-card .wl-cta-flip__face--back { transform: rotateX(180deg); }
-@keyframes wlFlipFace {
-  0%, 20%  { transform: rotateX(0deg); }
-  45%, 78% { transform: rotateX(-180deg); }
-  100%     { transform: rotateX(-360deg); }
-}
-@media (prefers-reduced-motion: reduce) { .wl-card .wl-cta-flip__inner { animation: none; } }
-/* social — dole, jemné (modrý odstín) */
-.wl-card .wl-social {
-  margin: 1.4rem 0 0; padding: 1.1rem 0 0; border-top: 1px solid rgba(0,32,246,.16);
-  font-size: .76rem; font-weight: 500; color: rgba(0,32,246,.6);
-}
-.wl-card .wl-social b { color: var(--primary); font-weight: 700; }
-
-/* Chatovací bublina (chat-widget.js) — schovat, když je waitlist otevřený */
-.wl-fs.active ~ #makac-widget { display: none !important; }
-
-/* Vlastní firemní kurzor — nahrazuje klasickou šipku na celém webu.
-   Čísla za url = "hrot" (kam se reálně klikne).
-   Trik: klikatelné prvky NEpřepnou na systémovou ručičku, jen se šipka přebarví —
-   MODRÁ na světlém pozadí, BÍLÁ na tmavém. Tvar zůstává pořád stejný. */
-html, body { cursor: url('kurzor.png?v=2') 6 4, auto; }
-
-/* Klikatelné na SVĚTLÉM pozadí => modrý vnitřek (černý obrys) */
-a, button, [role="button"], input[type="submit"], input[type="button"],
-input[type="reset"], label[for], select, summary,
-.wl-card .wl-toggle-opt, .wl-card .wl-cta-flip {
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
-}
-
-/* Klikatelné na TMAVÉM pozadí => bílý vnitřek.
-   Modrý overlay waitlistu + tmavé UI náhledu dashboardu / demo navigace. */
-.wl-fs-close,
-[class^="dp-"], [class*=" dp-"],
-.demo-nav-btn {
-  cursor: url('kurzor-bila.png?v=2') 6 4, pointer;
-}
-
-/* Textová pole => klasický "psací" kurzor, ať se dobře píše */
-input:not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-textarea, [contenteditable="true"] {
-  cursor: text;
-}
-
-/* Vysvětlivka pod polem (např. přístupový klíč v přihlášení) */
-.form-hint {
-  margin: .4rem 0 0;
-  font-size: .78rem;
-  line-height: 1.35;
-  color: rgba(10,13,46,.5);
 }
