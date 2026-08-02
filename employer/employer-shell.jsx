@@ -11,7 +11,7 @@ function ELogo() {
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
       <div>
         <div style={{ fontFamily: T.fontHead, fontWeight: 800, fontSize: 22, color: '#0020F6', letterSpacing: -0.5, lineHeight: 1 }}>
-          Makej!
+          Makej
         </div>
         <div style={{ fontFamily: T.fontUI, fontSize: 9, color: '#6B7280', letterSpacing: 1.5, textTransform: 'uppercase', marginTop: 3, fontWeight: 700 }}>
           pro firmy

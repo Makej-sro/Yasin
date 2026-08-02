@@ -570,6 +570,10 @@ function initAuth() {
       email,
       password,
       options: {
+        // Potvrzovací e-mail vrátí člověka tam, odkud se registroval
+        // (localhost při testu, makej.eu na živu). V Supabase → Authentication →
+        // URL Configuration musí být tahle adresa v „Redirect URLs" (allowlist).
+        emailRedirectTo: window.location.origin,
         data: {
           name,
           role: selectedRole,
@@ -642,6 +646,8 @@ function initAuth() {
   // s danou rolí (brigádník / zaměstnavatel). Žádná separátní waitlist tabulka —
   // rovnou se zakládá reálný účet přes sb.auth.signUp (viz register-form výš).
   function wlGoRegister(role) {
+    // Klikl na CTA → bereme to jako „viděl waitlist", ať ho popup příště neotravuje.
+    try { localStorage.setItem('wl-joined', '1'); } catch (e) {}
     closeWaitlist(false);                      // zavři čekací list (bez „dismissed")
     openModal('register', role || 'worker');   // otevři registraci rovnou na kroku 2 s rolí
     regFromWaitlist = true;                     // „Zpět" pak vede na waitlist, ne na rozcestník
@@ -858,33 +864,45 @@ function initAuth() {
     setInterval(tick, 250);
   })();
 
-  // Sociální důkaz „za 24 h se přihlásilo XX brigádníků / zaměstnavatelů".
-  // Mění se s přepínačem. Zatím věrohodný FEJK — deterministický podle dne
-  // (nepřeskakuje při refreshi), přes den mírně roste.
-  // TODO: napojit na reálný COUNT z tabulky waitlist podle role.
+  // Sociální důkaz „Už se přihlásilo XX brigádníků / zaměstnavatelů".
+  // POCTIVĚ: reálný počet účtů z DB podle role (žádný fejk). Řádka se ukáže,
+  // až je registrací aspoň WL_SOCIAL_PRAH — do té doby se nechlubíme (schová se).
   (function () {
+    const WL_SOCIAL_PRAH = 20;   // od kolika registrací řádku ukázat
+    const wrapEl = document.querySelector('.wl-social');
     const numEl  = document.getElementById('wl-social-num');
     const nounEl = document.getElementById('wl-social-noun');
-    if (!numEl) return;
+    if (!numEl || !wrapEl) return;
+
+    const cache = {};            // role → počet (dotaz jen jednou za návštěvu)
     let current = 'worker';
-    function dailyCount(role) {
-      const now = new Date();
-      const dayKey = Math.floor(now.getTime() / 86400000);
-      const seed = role === 'employer' ? 411.7 : 127.13;
-      let x = Math.sin(dayKey * seed) * 43758.5453;
-      x = x - Math.floor(x);                        // 0..1, stabilní pro daný den
-      if (role === 'employer') {
-        return 5 + Math.floor(x * 12) + Math.floor(now.getHours() / 8);  // ~5..18
+
+    async function pocet(role) {
+      if (cache[role] != null) return cache[role];
+      try {
+        const { count, error } = await sb
+          .from('profiles').select('id', { count: 'exact', head: true }).eq('role', role);
+        cache[role] = error ? 0 : (count || 0);
+      } catch (e) { cache[role] = 0; }
+      return cache[role];
+    }
+
+    async function render() {
+      const role = current;
+      const n = await pocet(role);
+      if (role !== current) return;          // mezitím přepnul roli
+      if (n >= WL_SOCIAL_PRAH) {
+        numEl.textContent = n;
+        if (nounEl) nounEl.textContent = role === 'employer' ? 'zaměstnavatelů' : 'brigádníků';
+        wrapEl.style.display = '';
+      } else {
+        wrapEl.style.display = 'none';        // málo → radši nic než chabé číslo
       }
-      return 28 + Math.floor(x * 34) + Math.floor(now.getHours() / 5);   // ~28..66
     }
-    function render() {
-      numEl.textContent = dailyCount(current);
-      if (nounEl) nounEl.textContent = current === 'employer' ? 'zaměstnavatelů' : 'brigádníků';
-    }
+
     window.wlSetSocialRole = function (r) { current = r; render(); };
+    wrapEl.style.display = 'none';            // schovej, než dojede dotaz (žádné bliknutí)
     render();
-    setInterval(render, 60000);
   })();
 
   // POZN.: Starý „čekací list" formulář (jméno + e-mail → tabulka `waitlist`) je
@@ -900,10 +918,10 @@ function initAuth() {
     });
   }
 
-  // ⚠️⚠️ DOČASNÉ – JEN PRO VÝVOJ: popup vyskočí VŽDY po každém refreshi.
-  //   PŘED SPUŠTĚNÍM PRO REÁLNÉ UŽIVATELE DÁT NA false (nebo smazat)!
-  //   Reální uživatelé mají vidět popup jen jednou (viz větev níž).
-  const WL_DEV_ALWAYS = true;
+  // PRODUKCE: popup vyskočí reálným uživatelům jen jednou (viz větev níž).
+  //   Na testování se dá vynutit vždy přes ?wl v adrese (…/index.html?wl).
+  //   Na vývoj se dá dočasně přepnout na true (popup po každém refreshi).
+  const WL_DEV_ALWAYS = false;
 
   // Auto-otevření po načtení — ne když už je zapsán/zavřel to, nebo je přihlášený
   const wlForce  = (() => { try { return new URLSearchParams(location.search).has('wl'); } catch (e) { return false; } })();

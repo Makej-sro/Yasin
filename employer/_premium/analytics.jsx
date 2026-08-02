@@ -617,7 +617,7 @@ function WageBenchmark() {
 
       {percentile != null && (
         <div style={{ color: cmp.color, fontFamily: T.fontUI, fontSize: 15.5, fontWeight: 800, lineHeight: 1.3, marginTop: 4 }}>
-          Platíte {percentile >= 50 ? 'více' : 'méně'} než {percentile}&nbsp;% firem na Makej!
+          Platíte {percentile >= 50 ? 'více' : 'méně'} než {percentile}&nbsp;% firem na Makej
         </div>
       )}
 
