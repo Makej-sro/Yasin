@@ -24,10 +24,10 @@
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=Figtree:wght@800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=Figtree:wght@800&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
   <script src="/iconify-solar.js"></script>
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" async></script>
-  <link rel="stylesheet" href="style.css?v=91" />
+  <link rel="stylesheet" href="style.css?v=100" />
 </head>
 <body>
 
@@ -374,12 +374,12 @@
         <div class="wl-cards">
           <!-- BRIGÁDNÍCI -->
           <section class="wl-side" data-wl-panel="worker">
-            <p class="wl-side-lead">Buď v první stovce uživatelů.</p>
+            <p class="wl-side-lead">Registrace před startem nese spoustu výhod.</p>
             <ul class="wl-benefits">
-              <li class="wl-bene-reward"><span class="wl-bene-reward-txt">Unikátní odznak na profilu</span><span class="wl-badge-chip">Byl jsem u toho</span></li>
-              <li>Přednostní přístup — jsi uvnitř dřív</li>
+              <li class="wl-bene-reward"><span class="wl-bene-reward-txt">Unikátní odznak na profilu</span><span class="gold-badge">Byl jsem u toho<span class="gold-badge__sheen" aria-hidden="true"></span></span></li>
               <li>Náskok na nejlepší brigády při startu</li>
               <li>O spuštění víš mezi prvními</li>
+              <li>Po startu od nás obdržíš 500 Makaček na tvůj účet</li>
             </ul>
             <div class="wl-cta-flip" data-wl-role="worker" role="button" tabindex="0" aria-label="Chci být u toho">
               <div class="wl-cta-flip__inner">
@@ -473,7 +473,17 @@
     </div>
   </div>
 
+  <!-- Plovoucí tlačítko „Startujeme" — otevře čekací list (i po zavření křížkem) -->
+  <button class="wl-fab" type="button" aria-label="Startujeme – přidat se na waitlist">
+    <span class="wl-fab__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+        <path d="M13.6 2 5.4 13.1c-.4.5 0 1.3.7 1.3h4.2l-1.4 7.4c-.1.8.9 1.2 1.4.6l8.3-11.1c.4-.5 0-1.3-.7-1.3h-4.2l1.4-7.4c.1-.8-.9-1.2-1.5-.6Z" fill="currentColor"/>
+      </svg>
+    </span>
+    <span class="wl-fab__label">Startujeme</span>
+  </button>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="script.js?v=54"></script>
+  <script src="script.js?v=57"></script>
 </body>
 </html>

@@ -566,13 +566,16 @@ function initAuth() {
     btn.disabled = true;
     btn.textContent = 'Registrace...';
 
-    const { error } = await sb.auth.signUp({
+    // Registrace nesmí po signUp přesměrovat: když je v Supabase VYPNUTÉ potvrzování
+    // e-mailu, signUp uživatele rovnou přihlásí — to bychom nechtěli, hodilo by ho to
+    // do (nedodělaného) dashboardu. Proto redirect potlačíme a hned se odhlásíme.
+    skipAutoRedirect = true;
+
+    const { data, error } = await sb.auth.signUp({
       email,
       password,
       options: {
-        // Potvrzovací e-mail vrátí člověka tam, odkud se registroval
-        // (localhost při testu, makej.eu na živu). V Supabase → Authentication →
-        // URL Configuration musí být tahle adresa v „Redirect URLs" (allowlist).
+        // Použije se jen když je potvrzování e-mailu zapnuté (vrátí na správnou adresu).
         emailRedirectTo: window.location.origin,
         data: {
           name,
@@ -583,13 +586,29 @@ function initAuth() {
     });
 
     if (error) {
+      skipAutoRedirect = false;
       showError('register-error', translateAuthError(error.message));
       btn.disabled = false;
       btn.textContent = 'Vytvořit účet';
-    } else {
-      closeModals();
-      showToast('Registrace proběhla! Zkontroluj svůj email pro potvrzení.');
+      return;
     }
+
+    // Účet je založený v DB. Když potvrzování e-mailu vypnuté → signUp nás rovnou
+    // přihlásil; hned se odhlásíme, ať nikdo nespadne do nedodělaného dashboardu.
+    // Přihlásit se pak jde jen přes přístupový klíč (viz login form).
+    let msg;
+    if (data && data.session) {
+      try { await sb.auth.signOut(); } catch (e) {}
+      msg = 'Účet byl úspěšně založen! 🎉 Spouštíme 1. 10. — dáme ti vědět, jakmile bude hotovo.';
+    } else {
+      msg = 'Účet byl úspěšně založen! Zkontroluj e-mail pro potvrzení.';
+    }
+    skipAutoRedirect = false;
+
+    closeModals();
+    showToast(msg);
+    btn.disabled = false;
+    btn.textContent = 'Vytvořit účet';
   });
 
   // ═══════════ ČEKACÍ LIST (WAITLIST) — full-screen split ═══════════
@@ -634,6 +653,16 @@ function initAuth() {
 
   document.getElementById('wl-close').addEventListener('click', () => closeWaitlist(true));
   document.getElementById('wl-done-close').addEventListener('click', () => closeWaitlist(false));
+  // Plovoucí tlačítko „Startujeme" (.wl-fab) — otevře čekací list (i po zavření křížkem)
+  const wlFab = document.querySelector('.wl-fab');
+  if (wlFab) {
+    wlFab.addEventListener('click', () => openWaitlist());
+    // mobil: pilulka se sama ukáže ~2 s po načtení a po 4 s se složí
+    if (window.matchMedia('(max-width: 640px)').matches) {
+      setTimeout(() => wlFab.classList.add('is-open'), 2000);
+      setTimeout(() => wlFab.classList.remove('is-open'), 6000);
+    }
+  }
   document.getElementById('wl-back').addEventListener('click', () => wlPanel.classList.remove('active'));
   wlPanel.addEventListener('click', e => { if (e.target === wlPanel) wlPanel.classList.remove('active'); });
   document.addEventListener('keydown', e => {
