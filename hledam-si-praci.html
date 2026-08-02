@@ -23,10 +23,10 @@
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=Instrument+Sans:wght@400;500;600&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" />
   <script src="/iconify-solar.js"></script>
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" async></script>
-  <link rel="stylesheet" href="style.css?v=86" />
+  <link rel="stylesheet" href="style.css?v=91" />
   <style>
     /* Bolt-style střídavé kroky (foto + text) */
     .bolt-head { text-align: center; max-width: 1080px; margin: 0 auto 56px; padding: 0 24px; }
@@ -69,6 +69,8 @@
       .bolt-row { grid-template-columns: 1fr; gap: 24px; }
       .bolt-row:nth-child(even) .bolt-media { order: 0; }
       .bolt-path { display: none; }
+      /* Scroll-kreslená čára (Makej Scroll Line) — na mobilu skrytá (kroky jdou pod sebe) */
+      #boltSvg { display: none; }
     }
 
     /* Kroky na bílé (jako employer) */
@@ -83,6 +85,55 @@
     #features { background: #fff; }
     #features .section-header h2 { color: #0a0d2e; }
     #features .section-header p { color: rgba(10,13,46,.55); }
+
+    /* „Makej" / „Makat?" v nadpisech na bílém → firemní modrá (ne fialový gradient) */
+    #features .section-header h2 .gradient-text,
+    #how-it-works .bolt-head h2 .gradient-text {
+      background: none;
+      -webkit-background-clip: initial; background-clip: initial;
+      -webkit-text-fill-color: #0020f6; color: #0020f6;
+    }
+
+    /* ── Typografický pás funkcí (marquee) — z Yasin/recenze (Sam) ── */
+    .mk-band {
+      --mk-ink:#0F1D2B; --mk-body:#3C4E60; --mk-muted:#8A97A5;
+      --mk-word:#C4D2DF; --mk-word-2:#E1E8F0; --mk-line:#EDF1F5;
+      --mk-dot:#DCE6F0; --mk-accent:#0020f6;
+      --mk-font:'Instrument Sans','Plus Jakarta Sans',-apple-system,system-ui,sans-serif;
+      position:relative; width:100vw; left:50%; transform:translateX(-50%);
+      margin-top:40px; overflow:hidden; font-family:var(--mk-font); color:var(--mk-ink);
+    }
+    .mk-band .mk__hintline { text-align:center; font-size:13px; line-height:1.5; color:var(--mk-muted); margin:0 0 44px; }
+    .mk-band .mk__track { display:flex; gap:80px; width:max-content; will-change:transform; }
+    .mk-band .mk__track--1 { padding-bottom:18px; animation:mk-marq-l 32s linear infinite; }
+    .mk-band .mk__track--2 { animation:mk-marq-r 38s linear infinite; }
+    .mk-band .mk__track:hover { animation-play-state:paused; }
+    .mk-band .mk__item { display:flex; align-items:center; gap:44px; cursor:default; }
+    .mk-band .mk__word { font-family:'Caveat',cursive; font-weight:700; font-size:72px; line-height:1; letter-spacing:0; white-space:nowrap; color:var(--mk-word); transition:color .3s ease; }
+    .mk-band .mk__track--2 .mk__word { color:var(--mk-word-2); }
+    .mk-band .mk__item:hover .mk__word { color:var(--mk-ink); }
+    .mk-band .mk__track--2 .mk__item:hover .mk__word { color:var(--mk-accent); }
+    @keyframes mk-marq-l { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    @keyframes mk-marq-r { from{transform:translateX(-50%)} to{transform:translateX(0)} }
+    @media (prefers-reduced-motion:reduce) { .mk-band .mk__track { animation:none; } }
+    .mk-band .mk__foot {
+      max-width:1160px; margin:56px auto 0; padding:56px 24px 0; border-top:1px solid var(--mk-line);
+      display:flex; align-items:flex-end; justify-content:space-between; gap:64px;
+    }
+    .mk-band .mk__copy { display:flex; flex-direction:column; gap:10px; max-width:560px; min-height:96px; }
+    .mk-band .mk__tag { font-family:var(--font-heading); font-weight:900; font-size:11px; line-height:1; letter-spacing:.16em; text-transform:uppercase; color:var(--mk-accent); }
+    .mk-band .mk__desc { font-family:var(--font-sans); margin:0; font-size:21px; line-height:1.5; color:var(--mk-body); text-wrap:pretty; }
+    .mk-band .mk__cta {
+      padding:16px 32px; border-radius:999px; background:var(--mk-accent); color:#fff; text-decoration:none;
+      font-family:var(--mk-font); font-weight:600; font-size:15px; line-height:1; white-space:nowrap;
+      border:none; cursor:pointer; transition:transform .2s ease;
+    }
+    .mk-band .mk__cta:hover { transform:translateY(-2px); }
+    @media (max-width:760px) {
+      .mk-band .mk__word { font-size:50px; }
+      .mk-band .mk__foot { flex-direction:column; align-items:flex-start; gap:28px; padding-top:40px; margin-top:40px; }
+      .mk-band .mk__desc { font-size:18px; }
+    }
 
     /* Přepínač na bílé */
     #features .showcase-toggle { background: rgba(10,13,46,.06); border-color: rgba(10,13,46,.12); }
@@ -109,7 +160,7 @@
     .emp-hero-blue { background: #0b21f6; position: relative; overflow: hidden; padding: 134px 24px 0; text-align: center; }
     .eh-head { max-width: 950px; margin: 0 auto; position: relative; z-index: 2; }
     .eh-head h1 { font-family: var(--font-heading); font-size: clamp(2.7rem, 7vw, 5.4rem); font-weight: 800; color: #fff; line-height: 1.0; letter-spacing: -.025em; margin: 0 0 26px; }
-    .eh-head h1 .eh-accent { color: #c3c8ff; }
+    .eh-head h1 .eh-accent { color: #fff; }
     .eh-sub { color: rgba(255,255,255,.85); font-size: clamp(1.02rem, 1.6vw, 1.3rem); line-height: 1.5; max-width: 640px; margin: 0 auto 34px; }
     .eh-btn { display: inline-block; background: #eef6f0; color: #0a0d2e; font-family: var(--font-sans); font-weight: 700; font-size: 1.02rem; padding: 16px 32px; border-radius: 16px; text-decoration: none; cursor: pointer; transition: background .2s, transform .2s; }
     .eh-btn:hover { background: #fff; transform: translateY(-2px); }
@@ -259,19 +310,24 @@
     <!-- ═══════════ HOW IT WORKS ═══════════ -->
     <section id="how-it-works" class="nav-light" style="padding-top:90px;">
       <div class="container">
-        <div class="bolt-head">
-          <h2>Pojď si vydělat s <span class="gradient-text">Makej</span></h2>
-        </div>
-        <div class="bolt-journey">
-          <svg class="bolt-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M 26,12 C 26,28 74,29 74,44 C 74,60 26,61 26,76 C 26,88 50,90 50,98"
-                  fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2.5"
-                  stroke-linecap="round" vector-effect="non-scaling-stroke" />
+        <div class="bolt-journey" id="boltWrap">
+          <svg id="boltSvg" preserveAspectRatio="none" aria-hidden="true"
+               style="position:absolute; inset:0; width:100%; height:100%; z-index:0; overflow:visible; pointer-events:none">
+            <path id="boltHeadSrc" fill="none" stroke="none"></path>
+            <path id="boltLineSrc" fill="none" stroke="none"></path>
+            <path id="boltHead" stroke="none" fill="#0020f6"></path>
+            <path id="boltLine" stroke="none" fill="#0020f6"></path>
+            <path id="boltLoop" fill="none" stroke="#0020f6" stroke-linecap="round" stroke-linejoin="round"
+                  style="transition: opacity .6s cubic-bezier(.33,0,.2,1), stroke-width .6s cubic-bezier(.33,0,.2,1)"></path>
           </svg>
+          <div class="bolt-head" style="position:relative; z-index:1;">
+            <h2>Pojď si vydělat s <span class="gradient-text" id="boltMakej" aria-label="Makej">Make<span id="boltJ" aria-hidden="true" style="position:relative;">&#567;<span id="boltDot" style="position:absolute; left:45%; top:0.24em; width:0.175em; height:0.175em; border-radius:50%; background:#0020f6; transform:translate(-50%,-50%); pointer-events:none;"></span></span></span></h2>
+          </div>
+
           <div class="bolt-steps">
           <div class="bolt-row">
             <div class="bolt-media">
-              <img src="/krok-1.png" alt="Swajpování nabídek brigád v appce Makej" loading="lazy" />
+              <img src="/krok-1.png" alt="Swajpování nabídek brigád v appce Makej" />
             </div>
             <div class="bolt-text">
 
@@ -282,7 +338,7 @@
 
           <div class="bolt-row">
             <div class="bolt-media">
-              <img src="/krok-2.png" alt="Match s firmou — podání rukou" loading="lazy" />
+              <img src="/krok-2.png" alt="Match s firmou — podání rukou" />
             </div>
             <div class="bolt-text">
 
@@ -293,7 +349,7 @@
 
           <div class="bolt-row">
             <div class="bolt-media">
-              <img src="/krok-3.png" alt="Výplata za odpracovanou brigádu" loading="lazy" />
+              <img src="/krok-3.png" alt="Výplata za odpracovanou brigádu" />
             </div>
             <div class="bolt-text">
 
@@ -302,9 +358,10 @@
             </div>
           </div>
           </div>
-          <div class="bolt-cta">
-            <a href="#" class="btn-primary btn-lg worker-cta-register">
-              Vytvořit účet <iconify-icon icon="solar:arrow-right-linear" width="18"></iconify-icon>
+          <div class="bolt-cta" style="position:relative; z-index:1;">
+            <a href="#" id="boltCta" class="worker-cta-register"
+               style="display:inline-flex; align-items:center; gap:12px; text-decoration:none; font-family:var(--font-heading); font-size:18px; font-weight:800; padding:20px 40px; border-radius:999px; border:3px solid #0020f6; background:#ffffff; color:#0020f6; box-shadow:0 0 0 rgba(0,0,0,0); transition:background .6s cubic-bezier(.33,0,.2,1), color .45s ease, box-shadow .6s ease;">
+              Vytvořit účet <span style="font-size:20px; line-height:1;">→</span>
             </a>
           </div>
         </div>
@@ -318,113 +375,18 @@
           <h2>Proč si zvolíš <span class="gradient-text">Makej</span></h2>
           <p>Všechno, co potřebuješ, na jednom místě.</p>
         </div>
-        <!-- ── Přepínač: interaktivní mobil ⇄ funkce ── -->
-        <div class="showcase-toggle" id="showcase-toggle" role="tablist" aria-label="Přepnout zobrazení">
-          <span class="sct-thumb" aria-hidden="true"></span>
-          <button class="sct-btn is-active" data-view="demo" role="tab" aria-selected="true">
-            <iconify-icon icon="solar:smartphone-2-bold" width="18"></iconify-icon><span>Vyzkoušej</span>
-          </button>
-          <button class="sct-btn" data-view="features" role="tab" aria-selected="false">
-            <iconify-icon icon="solar:widget-4-bold" width="18"></iconify-icon><span>Funkce</span>
-          </button>
-        </div>
-
-        <div class="showcase-stage">
-
-          <!-- MOBIL -->
-          <div class="showcase-view sv-demo is-active" data-view="demo">
-          <div class="demo-outer-wrap">
-          <div class="demo-phone">
-            <div class="demo-island"></div>
-            <div class="demo-screen">
-
-              <!-- JOBS -->
-              <div class="demo-panel dp-active" id="dp-jobs">
-                <div class="dp-header">
-                  <span class="dp-logo">Makej</span>
-                  <button class="dp-notif">🔔</button>
-                </div>
-                <div class="dp-cards-area" id="dp-cards-area"></div>
-              </div>
-
-              <!-- MESSAGES list -->
-              <div class="demo-panel" id="dp-messages">
-                <div class="dp-header"><span class="dp-logo">Zprávy</span></div>
-                <div class="dp-threads-list" id="dp-threads-list"></div>
-              </div>
-
-              <!-- CHAT detail -->
-              <div class="demo-panel" id="dp-chat">
-                <div class="dp-chat-header">
-                  <button class="dp-chat-back" id="dp-chat-back">←</button>
-                  <div>
-                    <div class="dp-chat-name" id="dp-chat-name"></div>
-                    <div class="dp-chat-subjob" id="dp-chat-subjob"></div>
-                  </div>
-                </div>
-                <div class="dp-chat-msgs" id="dp-chat-msgs"></div>
-                <div class="dp-chat-input-row">
-                  <input class="dp-chat-input" id="dp-chat-input" placeholder="Napsat zprávu…" autocomplete="off" />
-                  <button class="dp-chat-send" id="dp-chat-send">↑</button>
-                </div>
-              </div>
-
-              <!-- PROFILE -->
-              <div class="demo-panel" id="dp-profile">
-                <div class="dp-header"><span class="dp-logo">Profil</span></div>
-                <div class="dp-profile-scroll" id="dp-profile-scroll"></div>
-              </div>
-
-              <!-- BOTTOM NAV -->
-              <div class="demo-bottom-nav">
-                <button class="demo-nav-btn nav-active" data-panel="jobs"><span class="demo-nav-icon"><iconify-icon icon="solar:case-round-bold" width="22"></iconify-icon></span><span>Nabídky</span></button>
-                <button class="demo-nav-btn" data-panel="messages"><span class="demo-nav-icon"><iconify-icon icon="solar:chat-round-bold" width="22"></iconify-icon></span><span>Zprávy</span></button>
-                <button class="demo-nav-btn" data-panel="profile"><span class="demo-nav-icon"><iconify-icon icon="solar:user-bold" width="22"></iconify-icon></span><span>Profil</span></button>
-              </div>
-
-            </div><!-- .demo-screen -->
-          </div><!-- .demo-phone -->
-          <p class="demo-hint-text">☝️ Sleduj průvodce a zkus si celý průběh — od swajpu až po domluvenou brigádu</p>
-          </div><!-- .demo-outer-wrap -->
-          </div><!-- .sv-demo -->
-
-          <!-- FUNKCE -->
-          <div class="showcase-view sv-features" data-view="features">
-            <div class="features-grid">
-              <div class="feature-card">
-                <div class="feature-icon"><iconify-icon icon="solar:card-recive-bold" width="32"></iconify-icon></div>
-                <h3>Swajp rozhraní</h3>
-                <p>Prohlížej nabídky jako na Tinderu. Rychlý, intuitivní a zábavný způsob hledání práce.</p>
-              </div>
-              <div class="feature-card">
-                <div class="feature-icon"><iconify-icon icon="solar:chat-round-bold" width="32"></iconify-icon></div>
-                <h3>Real-time chat</h3>
-                <p>Okamžitě komunikuj se zaměstnavatelem. Žádné emaily, žádné čekání.</p>
-              </div>
-              <div class="feature-card">
-                <div class="feature-icon"><iconify-icon icon="solar:shield-check-bold" width="32"></iconify-icon></div>
-                <h3>Ověření firmy</h3>
-                <p>Každý zaměstnavatel prochází verifikací. Pracuj s klidem.</p>
-              </div>
-              <div class="feature-card">
-                <div class="feature-icon"><iconify-icon icon="solar:medal-star-bold" width="32"></iconify-icon></div>
-                <h3>Gamifikace</h3>
-                <p>Získávej XP, leveluj se a odemykej odměny za každou dokončenou brigádu.</p>
-              </div>
-              <div class="feature-card">
-                <div class="feature-icon"><iconify-icon icon="solar:star-bold" width="32"></iconify-icon></div>
-                <h3>Recenze</h3>
-                <p>Buduj si reputaci přes hodnocení. Lepší recenze = lepší nabídky.</p>
-              </div>
-              <div class="feature-card">
-                <div class="feature-icon"><iconify-icon icon="solar:map-point-bold" width="32"></iconify-icon></div>
-                <h3>Blízko tebe</h3>
-                <p>Filtruj podle lokace a najdi práci přímo ve svém okolí.</p>
-              </div>
+        <!-- FUNKCE — typografický pás -->
+        <div class="mk-band">
+          <div class="mk__track mk__track--1" data-mk-track></div>
+          <div class="mk__track mk__track--2" data-mk-track data-mk-reverse></div>
+          <div class="mk__foot">
+            <div class="mk__copy">
+              <span class="mk__tag" data-mk-tag>Makej</span>
+              <p class="mk__desc" data-mk-desc>Najeď na kterékoli slovo a napíšeme ti, co znamená.</p>
             </div>
-          </div><!-- .sv-features -->
-
-        </div><!-- .showcase-stage -->
+            <a class="mk__cta worker-cta-register" href="javascript:void(0)">Vytvořit účet</a>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -432,28 +394,21 @@
   <!-- ═══════════ DOWNLOAD CTA ═══════════ -->
   <section id="download">
     <div class="container">
-      <div class="download-card">
-        <div class="download-glow"></div>
-        <div class="download-content">
-          <h2>Připraven<span class="gradient-text"> Makat?</span></h2>
-          <p>Stáhni si aplikaci zdarma a prozkoumej pracovní příležitosti ve tvém okolí ještě dnes.</p>
-          <div class="download-buttons">
-            <a href="#" class="store-btn store-btn--soon" aria-disabled="true">
-              <iconify-icon icon="logos:apple" width="28"></iconify-icon>
-              <div>
-                <small>Brzy dostupné na</small>
-                <strong>App Store</strong>
-              </div>
+      <div class="dl-stage">
+        <div class="dl-card">
+          <h2 class="dl-title">Připraven <span>Makat?</span></h2>
+          <p class="dl-sub">Stáhni si aplikaci zdarma a prozkoumej pracovní příležitosti ve tvém okolí ještě dnes.</p>
+          <div class="dl-btns">
+            <a href="#" class="dl-btn" aria-disabled="true">
+              <iconify-icon icon="logos:apple"></iconify-icon>
+              <span><small>Brzy dostupné na</small><strong>App Store</strong></span>
             </a>
-            <a href="#" class="store-btn store-btn--soon" aria-disabled="true">
-              <iconify-icon icon="logos:google-play-icon" width="24"></iconify-icon>
-              <div>
-                <small>Brzy dostupné na</small>
-                <strong>Google Play</strong>
-              </div>
+            <a href="#" class="dl-btn" aria-disabled="true">
+              <iconify-icon icon="logos:google-play-icon"></iconify-icon>
+              <span><small>Brzy dostupné na</small><strong>Google Play</strong></span>
             </a>
           </div>
-          <p class="download-note">Zdarma · Bez reklam · iOS &amp; Android · Spuštění brzy</p>
+          <p class="dl-note">Zdarma &middot; Bez reklam &middot; iOS &amp; Android &middot; Spuštění brzy</p>
         </div>
       </div>
     </div>
@@ -672,527 +627,282 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="script.js?v=24"></script>
+  <script src="script.js?v=54"></script>
 
   <!-- ── App Demo ── -->
+  <!-- Typografický pás funkcí (marquee) -->
   <script>
-  (function() {
-    var JOBS = [
-      { title:'Barista', company:'Kavárna Zlatý Jelen', location:'Praha 1', distance:'0.8 km', pay:'180', payUnit:'Kč/h', date:'So 8. 6.', time:'8:00 – 16:00', type:'Brigáda', tags:['Gastro','Víkendy'], grad:'linear-gradient(145deg,#0e1060,#1a3aff)' },
-      { title:'Číšník', company:'Restaurant Maxim', location:'Praha 2', distance:'1.4 km', pay:'170', payUnit:'Kč/h', date:'Ne 9. 6.', time:'16:00 – 24:00', type:'Brigáda', tags:['Gastro','Večery'], grad:'linear-gradient(145deg,#1a0a6e,#3d1fa3)' },
-      { title:'Skladník', company:'LogiPro s.r.o.', location:'Praha – Letňany', distance:'8.2 km', pay:'160', payUnit:'Kč/h', date:'Po 10. 6.', time:'6:00 – 14:00', type:'Jednorázová', tags:['Sklad','Fyzická práce'], grad:'linear-gradient(145deg,#0c2a4a,#1a5276)' },
-      { title:'Promotér', company:'Event Agency CZ', location:'Praha 3', distance:'2.1 km', pay:'165', payUnit:'Kč/h', date:'So 8. 6.', time:'10:00 – 18:00', type:'Brigáda', tags:['Marketing','Venkovní'], grad:'linear-gradient(145deg,#2d0a6e,#6b21a8)' },
-      { title:'Recepční', company:'Hotel Central', location:'Praha 1', distance:'1.0 km', pay:'190', payUnit:'Kč/h', date:'Po – Pá', time:'8:00 – 16:00', type:'Part-time', tags:['Hotely','Angličtina'], grad:'linear-gradient(145deg,#0c3a3a,#0f766e)' },
-      { title:'Pomocný kuchař', company:"McDonald's", location:'Praha 6', distance:'3.5 km', pay:'155', payUnit:'Kč/h', date:'So 8. 6.', time:'12:00 – 20:00', type:'Brigáda', tags:['Gastro','Flexibilní'], grad:'linear-gradient(145deg,#3a1a00,#7c3a00)' },
+  (function () {
+    var FEATURES = [
+      { t: 'Swajp rozhraní', cat: 'Hledání',    d: 'Prohlížej nabídky jako karty. Vlevo přeskočíš, vpravo se přihlásíš.' },
+      { t: 'Real-time chat', cat: 'Komunikace', d: 'Po matchi si píšeš přímo se zaměstnavatelem. Žádné e-maily, žádné čekání.' },
+      { t: 'Ověření firmy',  cat: 'Důvěra',     d: 'Každý zaměstnavatel projde verifikací IČO i provozovny. Pracuj s klidem.' },
+      { t: 'Gamifikace',     cat: 'Odměny',     d: 'Získávej XP, leveluj se a odemykej odměny za každou dokončenou brigádu.' },
+      { t: 'Recenze',        cat: 'Důvěra',     d: 'Buduj si reputaci přes hodnocení od firem. Lepší recenze, lepší nabídky.' },
+      { t: 'Blízko tebe',    cat: 'Hledání',    d: 'Filtruj podle lokace a najdi práci pár minut od domova nebo od školy.' }
     ];
-
-    var THREADS = [
-      { id:1, company:'Kavárna Zlatý Jelen', job:'Barista', initials:'KZ', color:'#0020f6', unread:true,
-        msgs:[
-          { from:'them', text:'Dobrý den! Zaujal nás váš profil, máte zájem o pozici baristu?' },
-          { from:'me',   text:'Dobrý den, moc děkuji za zájem! Ano, mám zájem.' },
-          { from:'them', text:'Super! Kdy byste mohl nastoupit?' },
-        ]},
-      { id:2, company:'Hotel Central', job:'Recepční', initials:'HC', color:'#292978', unread:false,
-        msgs:[
-          { from:'them', text:'Gratulujeme! Váš profil nás zaujal na pozici recepčního.' },
-          { from:'me',   text:'Výborně, mám zájem!' },
-          { from:'them', text:'Nastoupit byste mohl od pondělí. Hodí se to?' },
-        ]},
-    ];
-
-    // Deep-copy threads so messages persist only in session
-    var threads = THREADS.map(function(t) {
-      return { id:t.id, company:t.company, job:t.job, initials:t.initials, color:t.color, unread:t.unread,
-        msgs: t.msgs.map(function(m) { return { from:m.from, text:m.text }; }) };
-    });
-
-    var jobIdx = 0;
-    var activePanel = 'jobs';
-    var openThreadId = null;
-    var drag = { on:false, startX:0, dx:0, el:null };
-
-    // ── Tutorial state ──
-    var tutStep    = 0;          // 0=swipe hint | 1=match notify | 2=go to messages | 3=accept offer | 4=done
-    var tutEnabled = true;       // false = user skipped; re-enabled by swipe right
-    var tutPopupEl = null;
-    var tutRingEl  = null;
-    var tutHandEl  = null;
-    var tutBadgeEl = null;
-    var tutThreadAdded = false;
-    var TUT_THREAD = {
-      id:99, company:'Kavárna Zlatý Jelen', job:'Barista', initials:'KZ',
-      color:'#0020f6', unread:true,
-      msgs:[
-        { from:'them', text:'Gratulujeme! Váš profil se nám moc líbil. 🎉' },
-        { from:'them', text:'Nabízíme vám směnu v So 8. 6. od 8:00 do 16:00. Odměna 180 Kč/h. Přijmete nabídku?' },
-      ]
-    };
-
-    function $(id) { return document.getElementById(id); }
-
-    function showPanel(name) {
-      activePanel = name;
-      ['dp-jobs','dp-messages','dp-chat','dp-profile'].forEach(function(id) {
-        var el = $(id);
-        if (el) el.classList.remove('dp-active');
-      });
-      var target = name === 'chat' ? 'dp-chat' : 'dp-' + name;
-      var el = $(target);
-      if (el) el.classList.add('dp-active');
-      document.querySelectorAll('.demo-nav-btn').forEach(function(btn) {
-        var p = btn.getAttribute('data-panel');
-        btn.classList.toggle('nav-active', p === name || (name === 'chat' && p === 'messages'));
-      });
-      // Tutorial: navigating away from jobs at step 0 = user skipped → disable
-      if (tutStep === 0 && tutEnabled && name !== 'jobs') {
-        tutEnabled = false;
-        tutHide();
-      }
-      // Tutorial: going to messages at step 1 → show step 2
-      if (tutEnabled && tutStep === 1 && name === 'messages') {
-        if (tutBadgeEl) tutBadgeEl.classList.remove('show');
-        renderThreads(); // re-render so tutorial thread appears
-        setTimeout(function() { tutShow(2); }, 250);
-      }
-    }
-
-    // ── Tutorial functions ──────────────────────────────────
-    function tutInit() {
-      var screen = document.querySelector('.demo-screen');
-      if (!screen) return;
-
-      // Spotlight ring (transparent div; huge box-shadow creates dim overlay around it)
-      tutRingEl = document.createElement('div');
-      tutRingEl.className = 'tut-ring';
-      screen.appendChild(tutRingEl);
-
-      // Swipe-hand (step 0 only) — swipe gesture image
-      tutHandEl = document.createElement('div');
-      tutHandEl.className = 'tut-swipe-hand';
-      tutHandEl.innerHTML = '<img src="swipe-hand.png?v=1" alt="" draggable="false" />';
-      screen.appendChild(tutHandEl);
-
-      // Popup tooltip (steps 1-3)
-      tutPopupEl = document.createElement('div');
-      tutPopupEl.className = 'tut-popup tut-hide';
-      screen.appendChild(tutPopupEl);
-
-      // Unread badge on Messages nav button
-      document.querySelectorAll('.demo-nav-btn').forEach(function(btn) {
-        if (btn.getAttribute('data-panel') === 'messages') {
-          var badge = document.createElement('span');
-          badge.className = 'tut-nav-badge';
-          btn.appendChild(badge);
-          tutBadgeEl = badge;
-        }
-      });
-
-      tutShow(0);
-    }
-
-    // Position ring over a target element (coords relative to .demo-screen)
-    function tutRing(targetEl) {
-      if (!tutRingEl || !targetEl) return;
-      var screen = document.querySelector('.demo-screen');
-      if (!screen) return;
-      var sr = screen.getBoundingClientRect();
-      var tr = targetEl.getBoundingClientRect();
-      var P = 6;
-      tutRingEl.style.top    = (tr.top  - sr.top  - P) + 'px';
-      tutRingEl.style.left   = (tr.left - sr.left - P) + 'px';
-      tutRingEl.style.width  = (tr.width  + P * 2) + 'px';
-      tutRingEl.style.height = (tr.height + P * 2) + 'px';
-      tutRingEl.classList.remove('show');
-      void tutRingEl.offsetWidth; // re-trigger animation
-      tutRingEl.classList.add('show');
-    }
-
-    // Position popup near a target element, arrow pointing toward it
-    function tutPopupNear(targetEl, html) {
-      if (!tutPopupEl || !targetEl) return;
-      var screen = document.querySelector('.demo-screen');
-      if (!screen) return;
-      var sr = screen.getBoundingClientRect();
-      var tr = targetEl.getBoundingClientRect();
-
-      var W  = sr.width - 20;   // popup width
-      var H  = 54;               // estimated popup height
-      var G  = 10;               // gap between popup and target
-      var AH = 8;                // arrow height
-
-      var tTop = tr.top  - sr.top;
-      var tBot = tr.bottom - sr.top;
-      var tCX  = tr.left - sr.left + tr.width / 2;
-
-      // Prefer above; fall back to below
-      var popTop, arrowDir;
-      if (tTop - H - G - AH >= 46) {
-        popTop   = tTop - H - G - AH;
-        arrowDir = 'down';
-      } else {
-        popTop   = tBot + G;
-        arrowDir = 'up';
-      }
-      popTop = Math.max(8, Math.min(sr.height - H - 8, popTop));
-
-      tutPopupEl.innerHTML = html;
-      tutPopupEl.className = 'tut-popup arrow-' + arrowDir;
-      tutPopupEl.style.top   = popTop + 'px';
-      tutPopupEl.style.left  = '10px';
-      tutPopupEl.style.right = 'auto';
-      tutPopupEl.style.width = W + 'px';
-
-      // Arrow X: centered on target, clamped within popup
-      var arrowX = Math.max(16, Math.min(W - 16, tCX - 10));
-      tutPopupEl.style.setProperty('--arrow-x', arrowX + 'px');
-
-      // Re-trigger entrance animation
-      tutPopupEl.style.animation = 'none';
-      void tutPopupEl.offsetWidth;
-      tutPopupEl.style.animation = 'tut-in .32s cubic-bezier(.23,1,.32,1)';
-    }
-
-    var TUT_CONTENTS = [
-      '<span class="tut-popup-emoji">👆</span><div class="tut-popup-body"><div class="tut-popup-title">Swajpni doprava nebo klikni ♥</div><div class="tut-popup-sub">Dej like brigádě, která tě zaujala</div></div>',
-      '<span class="tut-popup-emoji">🎉</span><div class="tut-popup-body"><div class="tut-popup-title">Match! Kavárna tě přijala</div><div class="tut-popup-sub">Klikni na Zprávy a přečti si zprávu</div></div>',
-      '<span class="tut-popup-emoji">💬</span><div class="tut-popup-body"><div class="tut-popup-title">Nová zpráva!</div><div class="tut-popup-sub">Klikni na chat od Kavárny</div></div>',
-      '<span class="tut-popup-emoji">✅</span><div class="tut-popup-body"><div class="tut-popup-title">Nabídka směny!</div><div class="tut-popup-sub">Přijmi nabídku a brigádu máš</div></div>',
-    ];
-
-    function tutShow(step) {
-      tutStep = step;
-      if (!tutPopupEl) return;
-      if (step === 4) { tutHide(); tutShowSuccess(); return; }
-
-      var html = TUT_CONTENTS[step] || '';
-
-      if (step === 0) {
-        // Step 0: swipe-hand shows the gesture + card demonstrates the right-swipe
-        if (tutRingEl) tutRingEl.classList.remove('show');
-        tutPopupEl.className = 'tut-popup tut-hide';
-        if (tutHandEl) tutHandEl.classList.add('show');
-        var card0 = $('dp-card');
-        if (card0) card0.classList.add('dp-card-demo-swipe');
-        return;
-      }
-
-      // Steps 1-3: stop card demo + hide hand, show ring + popup
-      var cardX = $('dp-card');
-      if (cardX) cardX.classList.remove('dp-card-demo-swipe');
-      if (tutHandEl) tutHandEl.classList.remove('show');
-
-      // Steps 1-3: spotlight ring + popup positioned next to target
-      var targetEl = null;
-      if (step === 1) targetEl = document.querySelector('.demo-nav-btn[data-panel="messages"]');
-      if (step === 2) targetEl = document.querySelector('[data-tid="99"]');
-      if (step === 3) targetEl = document.querySelector('.dp-accept-offer');
-
-      if (targetEl) {
-        tutRing(targetEl);
-        tutPopupNear(targetEl, html);
-      }
-    }
-
-    function tutHide() {
-      if (tutPopupEl) tutPopupEl.className = 'tut-popup tut-hide';
-      if (tutRingEl)  tutRingEl.classList.remove('show');
-      if (tutHandEl)  tutHandEl.classList.remove('show');
-    }
-
-    function tutShowSuccess() {
-      var screen = document.querySelector('.demo-screen');
-      if (!screen) return;
-      var el = document.createElement('div');
-      el.className = 'tut-success';
-      el.innerHTML =
-        '<div class="tut-success-emoji">🎉</div>' +
-        '<div class="tut-success-title">Brigáda domluvena!</div>' +
-        '<div class="tut-success-sub">Makej propojil tě se zaměstnavatelem za méně než minutu.</div>' +
-        '<div class="tut-success-divider"></div>' +
-        '<button class="tut-success-restart" id="tut-restart">Zkusit znovu →</button>';
-      screen.appendChild(el);
-      var rb = el.querySelector('#tut-restart');
-      if (rb) rb.addEventListener('click', function() { location.reload(); });
-    }
-    // ────────────────────────────────────────────────────────
-
-    function renderCard() {
-      var area = $('dp-cards-area');
-      if (!area) return;
-      if (jobIdx >= JOBS.length) {
-        area.innerHTML = '<div class="dp-empty"><div class="dp-empty-icon">✅</div><strong>Všechny nabídky prohlédnuty!</strong><div>Obnov stránku pro reset.</div></div>';
-        return;
-      }
-      var j = JOBS[jobIdx];
-      var card = document.createElement('div');
-      card.className = 'dp-job-card';
-      card.id = 'dp-card';
-      card.style.background = j.grad;
-      card.innerHTML =
-        '<div class="dp-card-overlay"></div>' +
-        '<div class="dp-stamp dp-stamp-like">SUPER ✓</div>' +
-        '<div class="dp-stamp dp-stamp-nope">NOPE ✕</div>' +
-        '<div class="dp-card-content">' +
-          '<div class="dp-card-tags">' +
-            '<span class="dp-card-tag dp-tag-type">' + j.type + '</span>' +
-            j.tags.map(function(t){ return '<span class="dp-card-tag">'+t+'</span>'; }).join('') +
-          '</div>' +
-          '<div class="dp-card-title-row">' +
-            '<div>' +
-              '<div class="dp-card-title">' + j.title + '</div>' +
-              '<div class="dp-card-company">@ ' + j.company + '</div>' +
-            '</div>' +
-            '<div class="dp-card-pay-col">' +
-              '<span class="dp-card-pay-num">' + j.pay + '</span>' +
-              '<span class="dp-card-pay-unit">' + j.payUnit + '</span>' +
-            '</div>' +
-          '</div>' +
-          '<div class="dp-card-infos">' +
-            '<div class="dp-info-pill">' +
-              '<span class="dp-info-icon">📍</span>' +
-              '<div><div class="dp-info-main">' + j.location + '</div><div class="dp-info-sub">' + j.distance + '</div></div>' +
-            '</div>' +
-            '<div class="dp-info-pill">' +
-              '<span class="dp-info-icon">📅</span>' +
-              '<div><div class="dp-info-main">' + j.date + '</div><div class="dp-info-sub">' + j.time + '</div></div>' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="dp-card-btns">' +
-          '<button class="dp-reject-btn" id="dp-reject-btn">✕</button>' +
-          '<button class="dp-heart-btn" id="dp-heart-btn">♥</button>' +
-        '</div>';
-
-      card.addEventListener('mousedown', dragStart);
-      card.addEventListener('touchstart', dragStart, { passive: true });
-      area.innerHTML = '';
-      area.appendChild(card);
-
-      var rb = card.querySelector('#dp-reject-btn'), hb = card.querySelector('#dp-heart-btn');
-      if (rb) rb.addEventListener('click', function(e){ e.stopPropagation(); doSwipe('left'); });
-      if (hb) hb.addEventListener('click', function(e){ e.stopPropagation(); doSwipe('right'); });
-
-      // Tutorial step 0: pulse the heart button + auto-demo the swipe on the card
-      if (tutStep === 0 && hb) hb.classList.add('tut-pulse');
-      if (tutStep === 0 && tutEnabled) card.classList.add('dp-card-demo-swipe');
-    }
-
-    function dragStart(e) {
-      if (e.target && (e.target.id === 'dp-reject-btn' || e.target.id === 'dp-heart-btn')) return;
-      var card = $('dp-card');
-      if (!card) return;
-      // Remove pulse + stop auto-demo when user starts dragging
-      var hb = card.querySelector('.dp-heart-btn');
-      if (hb) hb.classList.remove('tut-pulse');
-      card.classList.remove('dp-card-demo-swipe');
-      drag.on = true; drag.el = card;
-      drag.startX = (e.touches ? e.touches[0].clientX : e.clientX);
-      drag.dx = 0;
-      card.style.transition = 'none';
-      document.addEventListener('mousemove', dragMove);
-      document.addEventListener('mouseup', dragEnd);
-      document.addEventListener('touchmove', dragMove, { passive: false });
-      document.addEventListener('touchend', dragEnd);
-    }
-
-    function dragMove(e) {
-      if (!drag.on || !drag.el) return;
-      if (e.cancelable) e.preventDefault();
-      var cx = e.touches ? e.touches[0].clientX : e.clientX;
-      drag.dx = cx - drag.startX;
-      var rot = drag.dx * 0.07;
-      drag.el.style.transform = 'translateX(' + drag.dx + 'px) rotate(' + rot + 'deg)';
-      var like = drag.el.querySelector('.dp-stamp-like');
-      var nope = drag.el.querySelector('.dp-stamp-nope');
-      if (drag.dx > 20)       { like.style.opacity = Math.min((drag.dx-20)/60,1); nope.style.opacity = 0; }
-      else if (drag.dx < -20) { nope.style.opacity = Math.min((-drag.dx-20)/60,1); like.style.opacity = 0; }
-      else                    { like.style.opacity = 0; nope.style.opacity = 0; }
-    }
-
-    function dragEnd() {
-      document.removeEventListener('mousemove', dragMove);
-      document.removeEventListener('mouseup', dragEnd);
-      document.removeEventListener('touchmove', dragMove);
-      document.removeEventListener('touchend', dragEnd);
-      if (!drag.on) return;
-      drag.on = false;
-      if (!drag.el) return;
-      if (drag.dx > 70)       doSwipe('right');
-      else if (drag.dx < -70) doSwipe('left');
-      else {
-        drag.el.style.transition = 'transform .3s cubic-bezier(.23,1,.32,1)';
-        drag.el.style.transform = 'none';
-        var like = drag.el.querySelector('.dp-stamp-like'), nope = drag.el.querySelector('.dp-stamp-nope');
-        if (like) like.style.opacity = 0;
-        if (nope) nope.style.opacity = 0;
-      }
-    }
-
-    function doSwipe(dir) {
-      var card = $('dp-card');
-      if (!card) return;
-      // Remove pulse + stop auto-demo before animating
-      var hb = card.querySelector('.dp-heart-btn');
-      if (hb) hb.classList.remove('tut-pulse');
-      card.classList.remove('dp-card-demo-swipe');
-      var tx = dir === 'right' ? 380 : -380;
-      card.style.transition = 'transform .32s ease';
-      card.style.transform = 'translateX(' + tx + 'px) rotate(' + (dir==='right'?22:-22) + 'deg)';
-      var stamp = card.querySelector(dir==='right' ? '.dp-stamp-like' : '.dp-stamp-nope');
-      if (stamp) stamp.style.opacity = '1';
-      setTimeout(function() {
-        jobIdx++;
-        renderCard();
-        // Tutorial: swipe right at step 0 → (re-)enable and advance to match notification
-        if (tutStep === 0 && dir === 'right') {
-          tutEnabled = true; // re-enable if user had previously skipped
-          if (!tutThreadAdded) {
-            tutThreadAdded = true;
-            threads.unshift({
-              id:99, company:'Kavárna Zlatý Jelen', job:'Barista', initials:'KZ',
-              color:'#0020f6', unread:true,
-              msgs: TUT_THREAD.msgs.map(function(m){ return { from:m.from, text:m.text }; })
-            });
-          }
-          setTimeout(function() {
-            if (!tutEnabled) return; // user navigated away during the 900ms window
-            tutShow(1);
-            if (tutBadgeEl) tutBadgeEl.classList.add('show');
-          }, 900);
-        }
-      }, 320);
-    }
-
-    function renderThreads() {
-      var list = $('dp-threads-list');
-      if (!list) return;
-      list.innerHTML = threads.map(function(t) {
-        var last = t.msgs[t.msgs.length-1];
-        return '<div class="dp-thread-item" data-tid="'+t.id+'">' +
-          '<div class="dp-thread-avatar" style="background:'+t.color+'">'+t.initials+'</div>' +
-          '<div class="dp-thread-body">' +
-            '<div class="dp-thread-name">'+t.company+'</div>' +
-            '<div class="dp-thread-job">'+t.job+'</div>' +
-            '<div class="dp-thread-preview">'+(last?last.text:'')+'</div>' +
-          '</div>' +
-          '<div class="dp-thread-meta">' +
-            '<div class="dp-thread-time">Dnes</div>' +
-            (t.unread ? '<div class="dp-thread-dot"></div>' : '') +
-          '</div>' +
-        '</div>';
-      }).join('');
-      list.querySelectorAll('.dp-thread-item').forEach(function(item) {
-        item.addEventListener('click', function() { openThread(parseInt(item.getAttribute('data-tid'))); });
-        // Highlight tutorial thread when at step 2
-        // (ring in tutShow handles highlight for step 2)
-      });
-    }
-
-    function openThread(id) {
-      openThreadId = id;
-      var t = threads.find(function(t){ return t.id===id; });
-      if (!t) return;
-      t.unread = false;
-      var cn = $('dp-chat-name'), cj = $('dp-chat-subjob');
-      if (cn) cn.textContent = t.company;
-      if (cj) cj.textContent = t.job;
-      renderMsgs(t);
-      showPanel('chat');
-      renderThreads();
-      // Tutorial: opening any thread at step 2 → show step 3
-      if (tutEnabled && tutStep === 2) {
-        setTimeout(function() { tutShow(3); }, 250);
-      }
-    }
-
-    function renderMsgs(t) {
-      var box = $('dp-chat-msgs');
-      if (!box) return;
-      box.innerHTML = t.msgs.map(function(m) {
-        return '<div class="dp-msg '+(m.from==='me'?'from-me':'from-them')+'">'+m.text+'</div>';
-      }).join('');
-      // Tutorial thread: inject accept offer card
-      if (t.id === 99 && tutStep >= 2 && tutEnabled) {
-        var offer = document.createElement('div');
-        offer.className = 'dp-accept-offer';
-        offer.innerHTML =
-          '<div class="dp-accept-offer-label">Nabídka směny</div>' +
-          '<button class="dp-accept-btn tut-glow" id="tut-accept-btn">✓ Přijmout nabídku</button>';
-        box.appendChild(offer);
-        var abtn = offer.querySelector('#tut-accept-btn');
-        if (abtn) abtn.addEventListener('click', function() {
-          if (tutEnabled && tutStep < 4) {
-            // Add acceptance message from me
-            t.msgs.push({ from:'me', text:'Super, přijímám! Těším se na spolupráci. 🙌' });
-            abtn.disabled = true;
-            abtn.textContent = '✓ Přijato!';
-            abtn.classList.remove('tut-glow');
-            abtn.style.background = 'rgba(41,41,120,.3)';
-            setTimeout(function() {
-              tutShow(4);
-            }, 800);
-          }
+    var tagEl = document.querySelector('[data-mk-tag]');
+    var descEl = document.querySelector('[data-mk-desc]');
+    document.querySelectorAll('[data-mk-track]').forEach(function (track) {
+      var list = track.hasAttribute('data-mk-reverse') ? FEATURES.slice().reverse() : FEATURES;
+      list.concat(list).forEach(function (f) {
+        var item = document.createElement('span');
+        item.className = 'mk__item';
+        item.innerHTML = '<span class="mk__word"></span>';
+        item.querySelector('.mk__word').textContent = f.t;
+        item.addEventListener('mouseenter', function () {
+          if (tagEl) tagEl.textContent = f.cat;
+          if (descEl) descEl.textContent = f.d;
         });
-      }
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function sendMsg() {
-      var inp = $('dp-chat-input');
-      if (!inp || !inp.value.trim()) return;
-      var t = threads.find(function(t){ return t.id===openThreadId; });
-      if (!t) return;
-      t.msgs.push({ from:'me', text: inp.value.trim() });
-      inp.value = '';
-      renderMsgs(t);
-      renderThreads();
-    }
-
-    function renderProfile() {
-      var el = $('dp-profile-scroll');
-      if (!el) return;
-      el.innerHTML =
-        '<div class="dp-prof-avatar-wrap">' +
-          '<div class="dp-prof-avatar">TN</div>' +
-          '<div class="dp-prof-name">Tomáš Novák</div>' +
-          '<div class="dp-prof-sub">Praha · Student · 22 let</div>' +
-          '<div class="dp-prof-stars">★★★★★ <span style="color:rgba(208,208,255,.45);font-size:.73rem">4.8</span></div>' +
-        '</div>' +
-        '<div class="dp-prof-stats">' +
-          '<div class="dp-prof-stat"><div class="dp-prof-stat-val">12</div><div class="dp-prof-stat-lbl">Brigád</div></div>' +
-          '<div class="dp-prof-stat"><div class="dp-prof-stat-val">4.8</div><div class="dp-prof-stat-lbl">Hodnocení</div></div>' +
-          '<div class="dp-prof-stat"><div class="dp-prof-stat-val">3</div><div class="dp-prof-stat-lbl">Matche</div></div>' +
-        '</div>' +
-        '<div class="dp-prof-sec-title">Dovednosti</div>' +
-        '<div class="dp-skills">' +
-          ['Gastro','Čeština','Angličtina','Fyzická práce','Flexibilní','Praha'].map(function(s){ return '<span class="dp-skill">'+s+'</span>'; }).join('') +
-        '</div>';
-    }
-
-    function init() {
-      renderCard();
-      renderThreads();
-      renderProfile();
-
-      var back = $('dp-chat-back');
-      if (back) back.addEventListener('click', function(){ showPanel('messages'); });
-
-      var send = $('dp-chat-send'), inp = $('dp-chat-input');
-      if (send) send.addEventListener('click', sendMsg);
-      if (inp) inp.addEventListener('keydown', function(e){ if (e.key==='Enter') sendMsg(); });
-
-      document.querySelectorAll('.demo-nav-btn').forEach(function(btn) {
-        btn.addEventListener('click', function(){ showPanel(btn.getAttribute('data-panel')); });
+        track.appendChild(item);
       });
-
-      tutInit();
-    }
-
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-    else init();
+    });
   })();
   </script>
-  <script src="/chat-widget.js"></script>
+
+  <!-- ═══════════ Makej Scroll Line — kreslená spojnice od „j" v Makej přes kroky k CTA ═══════════ -->
+  <!-- Vanilla port z DesignCode (Makej Scroll Line.dc.html). Čára se s posunem odkrývá,
+       má rostoucí „hlavu" (tapered brush stroke), na konci obkrouží tlačítko a to se vyplní. -->
+  <script>
+  (function () {
+    var wrap = document.getElementById('boltWrap');
+    var svg  = document.getElementById('boltSvg');
+    if (!wrap || !svg) return;
+    var line = document.getElementById('boltLine');
+    var loop = document.getElementById('boltLoop');
+    var head = document.getElementById('boltHead');
+    var headSrc = document.getElementById('boltHeadSrc');
+    var lineSrc = document.getElementById('boltLineSrc');
+    var makej = document.getElementById('boltMakej');
+    var jdot = document.getElementById('boltJ');
+    var dot  = document.getElementById('boltDot');
+    var cta  = document.getElementById('boltCta');
+    var media = wrap.querySelectorAll('.bolt-steps .bolt-media');
+    var s1 = media[0], s2 = media[1], s3 = media[2];
+    if (!line || !loop || !head || !headSrc || !lineSrc || !cta || !s1 || !s2 || !s3) return;
+
+    // LINE_W = plná tloušťka čáry, END_W = tloušťka obrysu tlačítka (border 3px) —
+    // čára se u tlačítka ztenčí z LINE_W na END_W a smyčka je taky END_W.
+    var ACCENT = '#0020f6', LINE_W = 36, W0 = 6, END_W = 6;
+    loop.style.strokeWidth = END_W + 'px';
+    loop.style.strokeLinecap = 'round';
+
+    var headD, headLen, mainD, loopStr, len, loopLen, startY, ctaY, btn;
+    var builtD, lastTop, lastH, lastLocked, locked = false;
+
+    function center(el, base) {
+      if (!el) return null;
+      var r = el.getBoundingClientRect();
+      return { x: r.left - base.left + r.width / 2, y: r.top - base.top + r.height / 2, r: r };
+    }
+    function perimeter(m) { var H = btn.hh + m, S = Math.max(btn.hw + m - H, 0); return 4 * S + 2 * Math.PI * H; }
+    function pillPoint(u, m) {
+      var H = btn.hh + m, S = Math.max(btn.hw + m - H, 0), cap = Math.PI * H, P = 4 * S + 2 * cap, a;
+      u = ((u % P) + P) % P;
+      if (u <= S) return { x: btn.x + u, y: btn.y - H };
+      u -= S;
+      if (u <= cap) { a = -Math.PI / 2 + u / H; return { x: btn.x + S + H * Math.cos(a), y: btn.y + H * Math.sin(a) }; }
+      u -= cap;
+      if (u <= 2 * S) return { x: btn.x + S - u, y: btn.y + H };
+      u -= 2 * S;
+      if (u <= cap) { a = Math.PI / 2 + u / H; return { x: btn.x - S + H * Math.cos(a), y: btn.y + H * Math.sin(a) }; }
+      u -= cap;
+      return { x: btn.x - S + u, y: btn.y - H };
+    }
+    function loopDPath() {
+      if (!btn) return '';
+      var m = 0, P = perimeter(m), steps = 160, d = '', pt;
+      for (var i = 1; i <= steps; i++) { pt = pillPoint(P * (i / steps) - (i === steps ? 0.01 : 0), m); d += ' L ' + pt.x.toFixed(1) + ' ' + pt.y.toFixed(1); }
+      return d;
+    }
+    function buildHead(drawnLen) {
+      var src = headSrc;
+      if (!src || !headLen) return '';
+      var L = headLen, end = Math.min(L, drawnLen);
+      if (end <= 0.5) return '';
+      var n = 130, left = [], right = [], i, u, p1, ua, p2, pa, dx, dy, mag, t, w;
+      for (i = 0; i <= n; i++) {
+        u = (end * i) / n;
+        p1 = src.getPointAtLength(u);
+        ua = Math.min(u, L - 1.4);
+        p2 = src.getPointAtLength(Math.min(L, ua + 1.4));
+        pa = src.getPointAtLength(ua);
+        dx = p2.x - pa.x; dy = p2.y - pa.y; mag = Math.sqrt(dx * dx + dy * dy) || 1; dx /= mag; dy /= mag;
+        t = Math.min(1, u / L);
+        w = (W0 + (LINE_W - W0) * (t * t * (3 - 2 * t))) / 2;
+        left.push([p1.x - dy * w, p1.y + dx * w]);
+        right.push([p1.x + dy * w, p1.y - dx * w]);
+      }
+      var cap = function (idx, sign) {
+        var at = idx === 0 ? 0 : Math.min(end, L);
+        var q1 = src.getPointAtLength(at);
+        var back = Math.max(0, Math.min(at, L - 1.4) - (idx === 0 ? -1.4 : 1.4));
+        var q2 = src.getPointAtLength(Math.max(0, Math.min(L, back)));
+        var ddx = (q1.x - q2.x) * (idx === 0 ? -1 : 1), ddy = (q1.y - q2.y) * (idx === 0 ? -1 : 1);
+        var dm = Math.sqrt(ddx * ddx + ddy * ddy) || 1; ddx /= dm; ddy /= dm;
+        var tt = Math.min(1, (idx === 0 ? 0 : end) / L);
+        var ww = (W0 + (LINE_W - W0) * (tt * tt * (3 - 2 * tt))) / 2, s = '', k, th, x, y;
+        for (k = 1; k < 8; k++) {
+          th = (Math.PI * k) / 8;
+          x = q1.x + (-ddy * ww) * Math.cos(th) + ddx * ww * Math.sin(th) * sign;
+          y = q1.y + (ddx * ww) * Math.cos(th) + ddy * ww * Math.sin(th) * sign;
+          s += ' L ' + x.toFixed(1) + ' ' + y.toFixed(1);
+        }
+        return s;
+      };
+      var d = 'M ' + left[0][0].toFixed(1) + ' ' + left[0][1].toFixed(1);
+      for (i = 1; i < left.length; i++) d += ' L ' + left[i][0].toFixed(1) + ' ' + left[i][1].toFixed(1);
+      if (end < L - 0.5) d += cap(1, 1);
+      for (i = right.length - 1; i >= 0; i--) d += ' L ' + right[i][0].toFixed(1) + ' ' + right[i][1].toFixed(1);
+      d += cap(0, -1);
+      return d + ' Z';
+    }
+    // Poloviční šířka hlavní čáry v místě u (plná, u tlačítka klesá na END_W).
+    function lineHW(u, L) {
+      var t = L > 0 ? u / L : 0;
+      var ts = 0.76;                         // odkud se čára začne ztenčovat
+      if (t <= ts) return LINE_W / 2;
+      var s = (t - ts) / (1 - ts); s = s * s * (3 - 2 * s);
+      return (LINE_W + (END_W - LINE_W) * s) / 2;
+    }
+    // Hlavní čára jako proměnná stužka (plná → END_W u tlačítka), odkrývaná do end.
+    function buildLine(end) {
+      var src = lineSrc;
+      if (!src || !len) return '';
+      var L = len;
+      end = Math.min(L, end);
+      if (end <= 0.5) return '';
+      var n = 200, left = [], right = [], i, u, p1, ua, p2, pa, dx, dy, mag, w;
+      for (i = 0; i <= n; i++) {
+        u = (end * i) / n;
+        p1 = src.getPointAtLength(u);
+        ua = Math.min(u, L - 1.4);
+        p2 = src.getPointAtLength(Math.min(L, ua + 1.4));
+        pa = src.getPointAtLength(ua);
+        dx = p2.x - pa.x; dy = p2.y - pa.y; mag = Math.sqrt(dx * dx + dy * dy) || 1; dx /= mag; dy /= mag;
+        w = lineHW(u, L);
+        left.push([p1.x - dy * w, p1.y + dx * w]);
+        right.push([p1.x + dy * w, p1.y - dx * w]);
+      }
+      var cap = function (idx, sign) {
+        var at = idx === 0 ? 0 : Math.min(end, L);
+        var q1 = src.getPointAtLength(at);
+        var back = Math.max(0, Math.min(at, L - 1.4) - (idx === 0 ? -1.4 : 1.4));
+        var q2 = src.getPointAtLength(Math.max(0, Math.min(L, back)));
+        var ddx = (q1.x - q2.x) * (idx === 0 ? -1 : 1), ddy = (q1.y - q2.y) * (idx === 0 ? -1 : 1);
+        var dm = Math.sqrt(ddx * ddx + ddy * ddy) || 1; ddx /= dm; ddy /= dm;
+        var ww = lineHW(idx === 0 ? 0 : end, L), s = '', k, th, x, y;
+        for (k = 1; k < 8; k++) {
+          th = (Math.PI * k) / 8;
+          x = q1.x + (-ddy * ww) * Math.cos(th) + ddx * ww * Math.sin(th) * sign;
+          y = q1.y + (ddx * ww) * Math.cos(th) + ddy * ww * Math.sin(th) * sign;
+          s += ' L ' + x.toFixed(1) + ' ' + y.toFixed(1);
+        }
+        return s;
+      };
+      var d = 'M ' + left[0][0].toFixed(1) + ' ' + left[0][1].toFixed(1);
+      for (i = 1; i < left.length; i++) d += ' L ' + left[i][0].toFixed(1) + ' ' + left[i][1].toFixed(1);
+      if (end < L - 0.5) d += cap(1, 1);
+      for (i = right.length - 1; i >= 0; i--) d += ' L ' + right[i][0].toFixed(1) + ' ' + right[i][1].toFixed(1);
+      d += cap(0, -1);
+      return d + ' Z';
+    }
+    function measure() {
+      var base = wrap.getBoundingClientRect();
+      var a = center(s1, base), b = center(s2, base), c = center(s3, base), ctaC = center(cta, base);
+      if (!a || !b || !c || !ctaC) return;
+      ctaY = ctaC.y;
+      btn = { x: ctaC.x, y: ctaC.y, hw: ctaC.r.width / 2, hh: ctaC.r.height / 2 };
+      // Origin = přesná pozice modré tečky (CSS potomek „ȷ") → čára z ní vždy sedí.
+      var dc = center(dot, base);
+      var jd = dc || center(jdot, base) || center(makej, base);
+      var tip = dc ? { x: dc.x, y: dc.y }
+                   : (jd ? { x: jd.x, y: jd.r.top - base.top + jd.r.height * 0.135 }
+                         : { x: a.x, y: a.y - a.r.height / 2 - 160 });
+      var endHead = { x: a.x - 20, y: a.y + a.r.height * 0.12 };
+      var rx = base.width - 34;
+      var f = function (x, y) { return x.toFixed(1) + ' ' + y.toFixed(1); };
+      // Z tečky nad „j" doprava, pod slovem „Makej", pak kulatá otočka vpravo
+      // a zpět doleva dolů nad první obrázek — bez sevřené špičky.
+      headD = 'M ' + f(tip.x, tip.y) +
+        ' C ' + f(tip.x + (rx - tip.x) * 0.5, tip.y - 8) + ', ' + f(rx - 8, tip.y + 6) + ', ' + f(rx, tip.y + 58) +
+        ' C ' + f(rx, tip.y + 138) + ', ' + f(endHead.x + 230, endHead.y - 34) + ', ' + f(endHead.x, endHead.y);
+      headSrc.setAttribute('d', headD);
+      headLen = headSrc.getTotalLength() || 1;
+      startY = tip.y;
+      var pts = [endHead, b, c, { x: ctaC.x, y: ctaC.y - ctaC.r.height / 2 }];
+      var d = 'M ' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1), i2, p, q, dx, dy, horizontal, bowDir, c1, c2, bow;
+      for (i2 = 0; i2 < pts.length - 1; i2++) {
+        p = pts[i2]; q = pts[i2 + 1]; dx = q.x - p.x; dy = q.y - p.y;
+        horizontal = Math.abs(dx) > Math.abs(dy); bowDir = i2 % 2 === 0 ? 1 : -1;
+        if (i2 === 0) {
+          c1 = { x: p.x + 175, y: p.y };
+          c2 = { x: q.x - Math.min(Math.abs(dx) * 0.3, 120), y: q.y - dy * 0.4 };
+        } else if (horizontal) {
+          bow = Math.min(Math.abs(dx) * 0.18, 90) * bowDir;
+          c1 = { x: p.x + dx * 0.42, y: p.y + bow }; c2 = { x: q.x - dx * 0.42, y: q.y - bow };
+        } else {
+          bow = Math.min(Math.abs(dy) * 0.18, 90) * bowDir;
+          c1 = { x: p.x + bow, y: p.y + dy * 0.42 }; c2 = { x: q.x - bow, y: q.y - dy * 0.42 };
+        }
+        d += ' C ' + c1.x.toFixed(1) + ' ' + c1.y.toFixed(1) + ', ' + c2.x.toFixed(1) + ' ' + c2.y.toFixed(1) + ', ' + q.x.toFixed(1) + ' ' + q.y.toFixed(1);
+      }
+      loopStr = 'M ' + btn.x.toFixed(1) + ' ' + (btn.y - btn.hh).toFixed(1) + loopDPath();
+      mainD = d;
+      lastTop = null; builtD = null;
+      svg.setAttribute('viewBox', '0 0 ' + base.width + ' ' + base.height);
+      update();
+    }
+    function setLocked(v) {
+      if (v === locked) return;
+      locked = v;
+      cta.style.background = v ? ACCENT : '#ffffff';
+      cta.style.color = v ? '#ffffff' : ACCENT;
+      cta.style.boxShadow = v ? '0 16px 38px rgba(0,32,246,0.30)' : '0 0 0 rgba(0,0,0,0)';
+    }
+    function update() {
+      var r = wrap.getBoundingClientRect();
+      if (lastTop === r.top && lastH === r.height) return;
+      lastTop = r.top; lastH = r.height;
+      if (!mainD) return;
+      var vh = window.innerHeight || 800;
+      var cY = ctaY != null ? ctaY : r.height;
+      var sY = startY != null ? startY : 0;
+      var span = Math.max(cY - sY - vh * 0.06, 1);
+      var p = (vh * 0.72 - r.top - sY) / span;
+      p = Math.max(0, Math.min(1, p));
+      if (builtD !== mainD) {
+        builtD = mainD;
+        lineSrc.setAttribute('d', mainD);
+        len = lineSrc.getTotalLength() || 1;
+        loop.setAttribute('d', loopStr);
+        loopLen = loop.getTotalLength() || 1;
+        loop.style.strokeDasharray = loopLen;
+      }
+      var hl = headLen || 0;
+      var total = hl + len + (loopLen || 0);
+      var drawn = total * p;
+      head.setAttribute('d', buildHead(drawn));
+      var drawn2 = drawn - hl;
+      line.setAttribute('d', buildLine(Math.max(0, Math.min(drawn2, len))));
+      var ld = Math.max(0, Math.min(loopLen, drawn2 - len));
+      loop.style.strokeDashoffset = loopLen - ld;
+      // Až čára obkreslí tlačítko, čára kolem obrysu zůstane (smyčka nemizí)
+      // a tlačítko se zároveň vyplní / změní barvu.
+      var lk = p > 0.995;
+      if (lk !== lastLocked) { lastLocked = lk; setLocked(lk); }
+    }
+    function tick() { update(); requestAnimationFrame(tick); }
+
+    measure();
+    requestAnimationFrame(tick);
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
+    if (window.ResizeObserver) { new ResizeObserver(measure).observe(wrap); }
+    wrap.querySelectorAll('img').forEach(function (im) { if (!im.complete) im.addEventListener('load', measure); });
+    setTimeout(measure, 600);
+    setTimeout(measure, 1600);
+  })();
+  </script>
 </body>
 </html>

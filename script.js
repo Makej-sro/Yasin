@@ -53,7 +53,7 @@ function setupNavDropdowns() {
     ],
     'hledam-si-praci.html': [
       ['Jak to funguje', '/hledam-si-praci.html#how-it-works'],
-      ['Vyzkoušej appku','/hledam-si-praci.html#features'],
+      ['Proč Makej',     '/hledam-si-praci.html#features'],
       ['Stáhnout',       '/hledam-si-praci.html#download'],
     ],
   };
@@ -1135,16 +1135,14 @@ function showToast(msg) {
 })();
 
 
-/* ═══════════ REFERENCE — kroužkový sešit s listováním ═══════════ */
+/* ═══════════ REFERENCE — kroužkový sešit s listováním (z Yasin/recenze) ═══════════ */
 (function () {
-  // Placeholdery — nahradit skutečnými ohlasy a fotkami. Bez firem a „ověřeno".
-  // photo: cesta k fotce uživatele (až budou reálné); zatím fallback = avatar s iniciálou.
   var reviews = [
-    { text: 'Za tři dny jsem měl první brigádu. Večer jsem swipnul pár nabídek a ráno mi napsala kavárna.', name: 'Tomáš H.', role: 'Barista', date: '14. 6. 2025', photo: '' },
-    { text: 'Konečně appka, kde ke každé nabídce nemusím psát životopis. Pár tapů a je to.', name: 'Klára M.', role: 'Servírka', date: '2. 7. 2025', photo: '' },
-    { text: 'Bral jsem to jako přivýdělek při škole, teď tam chodím pravidelně. Firmy odpovídají fakt rychle.', name: 'Petr V.', role: 'Skladník', date: '21. 6. 2025', photo: '' },
-    { text: 'Líbí se mi, že vidím hodinovku hned — žádné „mzda dle dohody".', name: 'Aneta L.', role: 'Výpomoc na eventech', date: '9. 7. 2025', photo: '' },
-    { text: 'Jsem tu skoro od začátku a je vidět, že se to pořád zlepšuje. Super práce!', name: 'Pavel K.', role: 'Rozvoz', date: '18. 7. 2025', photo: '' },
+    { text: 'Těším se, až to vyjde!', name: 'Šimon V.', role: '', date: '29. 7. 2026', photo: '' },
+    { text: 'Moc se těším, až si na Makej najdu brigádu.', name: 'David V.', role: '', date: '27. 7. 2026', photo: '' },
+    { text: 'Vypadá to suprově!', name: 'Samuel P.', role: '', date: '24. 7. 2026', photo: '' },
+    { text: 'Posílám nezaměstnaným kamarádům.', name: 'Jan W.', role: '', date: '21. 7. 2026', photo: '' },
+    { text: 'Budu konečně makat ve stylu!', name: 'Yasin B.', role: '', date: '18. 7. 2026', photo: '' },
   ];
 
   var stack = document.getElementById('ref-stack');
@@ -1152,11 +1150,10 @@ function showToast(msg) {
 
   function fill(cardEl, r) {
     cardEl.querySelector('.ref-name').textContent = r.name;
-    cardEl.querySelector('.ref-meta').textContent = r.role + ' · ' + r.date;
+    cardEl.querySelector('.ref-meta').textContent = r.role ? r.role + ' · ' + r.date : r.date;
     cardEl.querySelector('.ref-text').textContent = r.text;
   }
 
-  // Postav viditelné karty balíčku (max 3)
   var VISIBLE = Math.min(3, reviews.length);
   var nodes = [];
   for (var k = 0; k < VISIBLE; k++) {
@@ -1170,7 +1167,7 @@ function showToast(msg) {
   }
 
   var nextRev = VISIBLE % reviews.length;
-  var busy = false, timer;
+  var busy = false, timer, paused = false;
 
   function nodeAtSlot(s) {
     for (var n = 0; n < nodes.length; n++) if (+nodes[n].dataset.slot === s) return nodes[n];
@@ -1183,16 +1180,13 @@ function showToast(msg) {
     clearInterval(timer);
 
     var leaving = nodeAtSlot(0);
-    // ostatní popojedou o slot dopředu
     for (var s = 1; s < VISIBLE; s++) {
       var nd = nodeAtSlot(s);
       if (nd) nd.dataset.slot = s - 1;
     }
-    // 1. fáze — přední karta odjede nahoru a zmizí
     leaving.classList.add('leaving');
 
     setTimeout(function () {
-      // 2. fáze — vymění obsah a sjede dozadu za ostatní (nafejduje se)
       fill(leaving, reviews[nextRev]);
       nextRev = (nextRev + 1) % reviews.length;
       leaving.dataset.slot = VISIBLE - 1;
@@ -1201,10 +1195,13 @@ function showToast(msg) {
     }, 540);
   }
 
-  function startTimer() { clearInterval(timer); timer = setInterval(advance, 6000); }
+  function startTimer() { clearInterval(timer); if (!paused) timer = setInterval(advance, 3500); }
 
-  // Klik na balíček = další reference
-  stack.addEventListener('click', function () { if (!busy) { advance(); startTimer(); } });
+  // Najetí myší (bez kliku) pozastaví listování, odjetí ho zase spustí.
+  stack.addEventListener('mouseenter', function () { paused = true; clearInterval(timer); });
+  stack.addEventListener('mouseleave', function () { paused = false; startTimer(); });
+  // Klik = posun na další + pokračuj dál (i když na kartě zůstane kurzor).
+  stack.addEventListener('click', function () { if (!busy) { paused = false; advance(); } });
 
   startTimer();
 })();

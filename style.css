@@ -516,36 +516,41 @@ img { max-width: 100%; display: block; }
   .rs-card[data-slot="2"] { display: none; }
 }
 
-/* ═══════════ DOWNLOAD ═══════════ */
-/* Stahovací sekce = modrý konec stránky (jako zápatí u Podpory), v něm bílá karta */
-#download { padding: 120px 0; background: #0020f6; }
-.download-card {
-  position: relative; padding: 80px 48px; border-radius: 28px;
-  background: #ffffff;
-  border: 1px solid rgba(0,32,246,.10);
-  box-shadow: 0 30px 80px rgba(0,0,40,.32);
-  text-align: center; overflow: hidden;
+/* ═══════════ DOWNLOAD — „Připraven Makat?" (jednotná nalepená karta, všude stejně) ═══════════ */
+#download { padding: 64px 0; background: #eef1fb; }
+.dl-stage { position: relative; max-width: 860px; margin: 0 auto; padding: 24px 14px; }
+.dl-card {
+  position: relative;
+  background: #fff; border-radius: 30px;
+  padding: 54px 64px 46px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+  transform: rotate(-1.15deg);
+  border: 1px solid rgba(16,24,64,.05);
+  box-shadow: 0 42px 72px -30px rgba(16,24,64,.42), 0 6px 16px rgba(16,24,64,.06);
 }
-.download-glow { display: none; }
-.download-content { position: relative; z-index: 2; }
-.download-content h2 { font-family: var(--font-heading); font-size: clamp(2rem,5vw,3rem); font-weight: 800; margin-bottom: 16px; color: #0d0d28; }
-/* Zvýrazněná část („Makat?") v bílé kartě — primární modrá místo bledě fialové */
-.download-content h2 .gradient-text { color: #0020f6; -webkit-text-fill-color: #0020f6; }
-.download-content > p { color: #565c7a; font-size: 1.1rem; margin-bottom: 32px; }
-.download-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
-.store-btn {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 28px; border-radius: 14px;
-  background: #f3f5fc; border: 1px solid rgba(0,32,246,.12);
-  transition: transform 200ms cubic-bezier(0.23,1,0.32,1), background 200ms ease;
+/* lepící pásky v horních rozích */
+.dl-card::before, .dl-card::after {
+  content: ''; position: absolute; top: -13px;
+  width: 50px; height: 28px; background: #fff;
+  border-radius: 0 0 16px 16px;
+  box-shadow: inset 0 6px 10px -6px rgba(16,24,64,.2);
 }
-@media (hover: hover) and (pointer: fine) {
-  .store-btn:hover { background: #e9edfb; transform: translateY(-2px); }
+.dl-card::before { left: 76px; transform: rotate(-3.5deg); }
+.dl-card::after  { right: 76px; transform: rotate(3.5deg); }
+.dl-title { font-family: var(--font-heading); font-weight: 800; font-size: clamp(2rem, 4.6vw, 3rem); line-height: 1.05; letter-spacing: -.5px; color: #0f1222; margin: 0; }
+.dl-title span { color: #0020f6; }
+.dl-sub { font-size: clamp(1rem, 1.7vw, 1.14rem); color: #5b6478; margin: -2px auto 6px; line-height: 1.55; max-width: 440px; }
+.dl-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.dl-btn { display: inline-flex; align-items: center; gap: 11px; padding: 12px 22px 12px 16px; border-radius: 15px; background: #f4f6fb; border: 1px solid rgba(15,18,40,.06); text-decoration: none; transition: background .2s; }
+.dl-btn:hover { background: #e9ecf5; }
+.dl-btn iconify-icon { font-size: 26px; flex-shrink: 0; }
+.dl-btn small { display: block; font-size: .7rem; color: #8a93a8; text-align: left; line-height: 1.2; }
+.dl-btn strong { display: block; font-size: 1.05rem; color: #0f1222; text-align: left; line-height: 1.2; font-family: var(--font-heading); }
+.dl-note { font-size: .9rem; font-weight: 700; color: #4a5578; margin: 4px 0 0; }
+@media (max-width: 720px) {
+  .dl-card { transform: none; padding: 40px 24px; border-radius: 24px; gap: 16px; }
+  .dl-card::before, .dl-card::after { display: none; }
 }
-.store-btn:active { transform: scale(0.97); transition-duration: 120ms; }
-.store-btn small { display: block; font-size: .7rem; color: #6a7090; text-align: left; }
-.store-btn strong { display: block; font-size: 1rem; text-align: left; color: #0d0d28; }
-.store-btn--soon { opacity: .55; cursor: not-allowed; pointer-events: none; }
 
 /* ═══════════ COOKIE BANNER ═══════════ */
 #cookie-banner {
@@ -1592,28 +1597,41 @@ html { scroll-padding-top: 92px; }
 .nav-dropdown-menu {
   position: absolute; top: 100%; left: 50%;
   transform: translateX(-50%) translateY(14px);
-  min-width: 200px; margin-top: 8px; padding: 10px;
+  min-width: 224px; margin-top: 12px; padding: 7px;
   background: #fff;
-  border: 1px solid rgba(0,32,246,.15); border-radius: 18px;
-  box-shadow: 0 12px 40px rgba(0,32,246,.12);
-  display: flex; flex-direction: column; gap: 6px;
+  border: 1px solid rgba(10,20,90,.06); border-radius: 16px;
+  box-shadow: 0 20px 48px -16px rgba(0,20,120,.35), 0 3px 10px rgba(0,20,120,.08);
+  display: flex; flex-direction: column; gap: 2px;
   opacity: 0; visibility: hidden; pointer-events: none;
-  transition: opacity .2s ease, transform .2s ease, visibility .2s;
+  transition: opacity .18s ease, transform .22s cubic-bezier(.2,.8,.2,1), visibility .18s;
   z-index: 200;
+}
+/* malá špička nahoře — míří na položku v navigaci */
+.nav-dropdown-menu::before {
+  content: ''; position: absolute; top: -6px; left: 50%;
+  width: 12px; height: 12px; transform: translateX(-50%) rotate(45deg);
+  background: #fff;
+  border-left: 1px solid rgba(10,20,90,.06); border-top: 1px solid rgba(10,20,90,.06);
 }
 .nav-dropdown:hover .nav-dropdown-menu {
   opacity: 1; visibility: visible; pointer-events: all;
-  transform: translateX(-50%) translateY(8px);
+  transform: translateX(-50%) translateY(9px);
 }
 .nav-dropdown-menu a {
-  display: block; padding: 9px 18px; border-radius: 100px;
-  border: 1.5px solid rgba(0,32,246,.22);
-  font-size: .87rem; font-weight: 600; color: #0020f6;
-  white-space: nowrap; border-bottom: none; pointer-events: all;
-  text-align: center; background: transparent;
-  transition: all .18s;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 11px 14px; border-radius: 11px;
+  border: none; border-bottom: none; background: transparent;
+  font-size: .9rem; font-weight: 600; color: #1a1f3d;
+  white-space: nowrap; text-align: left; pointer-events: all;
+  transition: background .15s ease, color .15s ease;
 }
-.nav-dropdown-menu a:hover { background: #0020f6; border-color: #0020f6; color: #fff; }
+/* jemná šipka vpravo, objeví se na najetí */
+.nav-dropdown-menu a::after {
+  content: '›'; font-size: 1.15rem; line-height: 1; color: #0020f6;
+  opacity: 0; transform: translateX(-4px); transition: opacity .15s ease, transform .15s ease;
+}
+.nav-dropdown-menu a:hover { background: rgba(0,32,246,.08); color: #0020f6; }
+.nav-dropdown-menu a:hover::after { opacity: 1; transform: translateX(0); }
 
 /* ═══════════ NAVBAR nad světlou sekcí ═══════════ */
 #navbar.nav-over-light {
