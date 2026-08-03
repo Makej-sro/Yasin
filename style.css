@@ -62,7 +62,7 @@ img { max-width: 100%; display: block; }
   background: linear-gradient(135deg, var(--primary), var(--accent));
   color: #fff; font-weight: 700; font-size: .95rem;
   border: 1px solid rgba(208,208,255,.2);
-  transition: transform 200ms cubic-bezier(0.23,1,0.32,1), box-shadow 200ms ease-out; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  transition: transform 200ms cubic-bezier(0.23,1,0.32,1), box-shadow 200ms ease-out; cursor: pointer;
 }
 @media (hover: hover) and (pointer: fine) {
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,32,246,.3); }
@@ -73,7 +73,7 @@ img { max-width: 100%; display: block; }
   padding: 14px 28px; border-radius: 100px;
   background: transparent; color: var(--secondary);
   border: 1px solid rgba(208,208,255,.25); font-weight: 600; font-size: .95rem;
-  transition: transform 200ms cubic-bezier(0.23,1,0.32,1), background 200ms ease, border-color 200ms ease; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  transition: transform 200ms cubic-bezier(0.23,1,0.32,1), background 200ms ease, border-color 200ms ease; cursor: pointer;
 }
 @media (hover: hover) and (pointer: fine) {
   .btn-ghost:hover { background: rgba(208,208,255,.08); border-color: rgba(208,208,255,.4); }
@@ -126,7 +126,7 @@ img { max-width: 100%; display: block; }
 .nav-actions { display: flex; gap: 12px; align-items: center; opacity: 0; pointer-events: none; transition: opacity .3s; }
 .nav-actions.nav-actions-visible { opacity: 1; pointer-events: all; }
 .nav-actions .btn-ghost, .nav-actions .btn-primary { padding: 10px 20px; font-size: .85rem; }
-.mobile-menu-btn { display: none; background: none; border: none; color: #fff; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; }
+.mobile-menu-btn { display: none; background: none; border: none; color: #fff; cursor: pointer; }
 .mobile-menu {
   display: none; flex-direction: column; gap: 16px;
   padding: 24px; background: rgba(15,15,45,.95); backdrop-filter: blur(20px);
@@ -310,7 +310,7 @@ img { max-width: 100%; display: block; }
 .sct-btn {
   position: relative; z-index: 1;
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 10px 22px; border: none; background: transparent; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  padding: 10px 22px; border: none; background: transparent; cursor: pointer;
   border-radius: 100px;
   font-family: var(--font-body); font-size: .92rem; font-weight: 700;
   color: rgba(208,208,255,.6);
@@ -495,7 +495,7 @@ img { max-width: 100%; display: block; }
 /* Cyklický balíček bílých karet — přední odjede nahoru a zařadí se dozadu */
 .rs-card {
   position: absolute; top: 0; left: 0; width: 100%;
-  background: #fff; border-radius: 20px; padding: 40px 42px; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  background: #fff; border-radius: 20px; padding: 40px 42px; cursor: pointer;
   transition: transform .7s cubic-bezier(.33,0,.2,1), opacity .7s cubic-bezier(.33,0,.2,1);
   will-change: transform, opacity;
 }
@@ -573,7 +573,7 @@ img { max-width: 100%; display: block; }
 .cookie-actions { display: flex; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
 .cookie-btn {
   padding: 9px 20px; border-radius: 10px; font-size: .875rem; font-weight: 600;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; border: none; font-family: var(--font-sans);
+  cursor: pointer; border: none; font-family: var(--font-sans);
   transition: opacity .15s, transform .15s;
 }
 .cookie-btn:hover { opacity: .85; }
@@ -664,7 +664,7 @@ img { max-width: 100%; display: block; }
   position: absolute; top: 1.25rem; right: 1.25rem; z-index: 10;
   width: 32px; height: 32px;
   background: rgba(208,208,255,.08); border: none; border-radius: .5rem;
-  color: var(--muted-fg); cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  color: var(--muted-fg); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 16px; font-weight: 700; line-height: 1;
   transition: background .2s, color .2s;
@@ -704,7 +704,7 @@ img { max-width: 100%; display: block; }
 .password-wrap .form-input { padding-right: 44px; }
 .pw-toggle {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; padding: 4px;
+  background: none; border: none; cursor: pointer; padding: 4px;
   color: var(--muted-fg); display: flex; align-items: center; transition: color .2s;
 }
 .pw-toggle:hover { color: var(--secondary); }
@@ -722,7 +722,7 @@ img { max-width: 100%; display: block; }
   padding: 11px 20px; background: rgba(255,255,255,.05);
   border: 1px solid rgba(208,208,255,.14); border-radius: .75rem;
   color: var(--fg); font-family: var(--font-sans); font-size: .9rem; font-weight: 600;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; transition: background .2s, border-color .2s;
+  cursor: pointer; transition: background .2s, border-color .2s;
 }
 .btn-google:hover { background: rgba(255,255,255,.1); border-color: rgba(208,208,255,.3); }
 
@@ -734,7 +734,7 @@ img { max-width: 100%; display: block; }
 .role-card {
   background: rgba(255,255,255,.03); border: 1px solid rgba(208,208,255,.1);
   border-radius: 1rem; padding: 1.5rem 1rem;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display: flex; flex-direction: column; align-items: center; gap: .5rem;
+  cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: .5rem;
   color: var(--fg); font-family: var(--font-sans);
   transition: transform 200ms cubic-bezier(0.23,1,0.32,1), background 200ms ease, border-color 200ms ease;
 }
@@ -749,7 +749,7 @@ img { max-width: 100%; display: block; }
 .modal-back {
   background: none; border: none; color: var(--muted-fg);
   font-family: var(--font-sans); font-size: .85rem; font-weight: 600;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display: flex; align-items: center; gap: .4rem;
+  cursor: pointer; display: flex; align-items: center; gap: .4rem;
   margin-bottom: 1.25rem; padding: 0; transition: color .2s;
 }
 .modal-back:hover { color: var(--secondary); }
@@ -1200,7 +1200,7 @@ img { max-width: 100%; display: block; }
 /* App header */
 .dp-header { display:flex; align-items:center; justify-content:space-between; padding:10px 15px 8px; flex-shrink:0; }
 .dp-logo { font-family:var(--font-heading); font-size:1.1rem; font-weight:800; color:#fff; }
-.dp-notif { width:30px; height:30px; border-radius:9px; background:rgba(255,255,255,.07); border:none; color:rgba(208,208,255,.55); font-size:.85rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display:flex; align-items:center; justify-content:center; }
+.dp-notif { width:30px; height:30px; border-radius:9px; background:rgba(255,255,255,.07); border:none; color:rgba(208,208,255,.55); font-size:.85rem; cursor: pointer; display:flex; align-items:center; justify-content:center; }
 
 /* ── Cards ── */
 .dp-cards-area { flex:1; padding:0 10px 6px; overflow:hidden; display:flex; align-items:stretch; }
@@ -1264,11 +1264,11 @@ img { max-width: 100%; display: block; }
 
 /* Action buttons — inside card at very bottom */
 .dp-card-btns { position:absolute; bottom:0; left:0; right:0; z-index:3; display:flex; align-items:center; justify-content:center; gap:20px; padding:10px 0 12px; }
-.dp-reject-btn { width:52px; height:52px; border-radius:50%; background:rgba(22,22,59,.8); border:1px solid rgba(255,255,255,.1); color:#f43f5e; font-size:1.3rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(20px); transition:transform .15s, background .15s; }
+.dp-reject-btn { width:52px; height:52px; border-radius:50%; background:rgba(22,22,59,.8); border:1px solid rgba(255,255,255,.1); color:#f43f5e; font-size:1.3rem; cursor: pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(20px); transition:transform .15s, background .15s; }
 .dp-reject-btn:hover { background:rgba(244,63,94,.15); border-color:rgba(244,63,94,.4); transform:scale(1.05); }
-.dp-heart-btn  { width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,#292978,#3a3a99); border:2px solid rgba(255,255,255,.2); color:#fff; font-size:1.55rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 0 36px rgba(41,41,120,.55); transition:transform .15s, box-shadow .15s; }
+.dp-heart-btn  { width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,#292978,#3a3a99); border:2px solid rgba(255,255,255,.2); color:#fff; font-size:1.55rem; cursor: pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 0 36px rgba(41,41,120,.55); transition:transform .15s, box-shadow .15s; }
 .dp-heart-btn:hover  { transform:scale(1.1); box-shadow:0 0 48px rgba(41,41,120,.75); }
-.dp-reject-btn:disabled, .dp-heart-btn:disabled { opacity:.3; cursor: url('kurzor.png?v=2') 6 4, auto; transform:none; }
+.dp-reject-btn:disabled, .dp-heart-btn:disabled { opacity:.3; cursor: auto; transform:none; }
 
 /* Empty state */
 .dp-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; height:100%; color:rgba(208,208,255,.35); font-size:.8rem; text-align:center; padding:20px; }
@@ -1276,7 +1276,7 @@ img { max-width: 100%; display: block; }
 
 /* ── Messages ── */
 .dp-threads-list { flex:1; overflow-y:auto; }
-.dp-thread-item { display:flex; align-items:center; gap:11px; padding:11px 14px; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; transition:background .12s; border-bottom:1px solid rgba(255,255,255,.04); }
+.dp-thread-item { display:flex; align-items:center; gap:11px; padding:11px 14px; cursor: pointer; transition:background .12s; border-bottom:1px solid rgba(255,255,255,.04); }
 .dp-thread-item:hover { background:rgba(255,255,255,.05); }
 .dp-thread-avatar { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:700; color:#fff; flex-shrink:0; background:linear-gradient(135deg,rgba(41,41,120,.3),rgba(208,208,255,.15)); border:1.5px solid rgba(208,208,255,.15); }
 .dp-thread-body { flex:1; min-width:0; }
@@ -1289,7 +1289,7 @@ img { max-width: 100%; display: block; }
 
 /* ── Chat ── */
 .dp-chat-header { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid rgba(255,255,255,.06); flex-shrink:0; }
-.dp-chat-back { width:30px; height:30px; border-radius:9px; background:rgba(255,255,255,.07); border:none; color:#d0d0ff; font-size:.95rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.dp-chat-back { width:30px; height:30px; border-radius:9px; background:rgba(255,255,255,.07); border:none; color:#d0d0ff; font-size:.95rem; cursor: pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .dp-chat-name   { font-size:.85rem; font-weight:700; color:#fff; }
 .dp-chat-subjob { font-size:.67rem; color:rgba(208,208,255,.38); }
 .dp-chat-msgs { flex:1; overflow-y:auto; padding:12px 13px; display:flex; flex-direction:column; gap:7px; }
@@ -1299,7 +1299,7 @@ img { max-width: 100%; display: block; }
 .dp-chat-input-row { display:flex; align-items:center; gap:7px; padding:9px 11px; border-top:1px solid rgba(255,255,255,.06); flex-shrink:0; }
 .dp-chat-input { flex:1; background:rgba(255,255,255,.06); border:1px solid rgba(34,34,77,.5); border-radius:14px; padding:7px 12px; color:#fff; font-size:.77rem; outline:none; font-family:var(--font-body); }
 .dp-chat-input::placeholder { color:rgba(208,208,255,.28); }
-.dp-chat-send { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#292978,#3a3a99); border:none; color:#fff; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; font-size:.85rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.dp-chat-send { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#292978,#3a3a99); border:none; color:#fff; cursor: pointer; font-size:.85rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 
 /* ── Profile ── */
 .dp-profile-scroll { flex:1; overflow-y:auto; padding:14px 15px; }
@@ -1318,7 +1318,7 @@ img { max-width: 100%; display: block; }
 
 /* ── Bottom nav ── */
 .demo-bottom-nav { display:flex; background:rgba(5,5,16,.9); border-top:1px solid rgba(255,255,255,.06); flex-shrink:0; backdrop-filter:blur(20px); }
-.demo-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:9px 0 11px; background:transparent; border:none; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; color:rgba(153,153,204,.45); font-size:.58rem; font-family:var(--font-body); transition:color .15s; position:relative; }
+.demo-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:9px 0 11px; background:transparent; border:none; cursor: pointer; color:rgba(153,153,204,.45); font-size:.58rem; font-family:var(--font-body); transition:color .15s; position:relative; }
 .demo-nav-btn.nav-active { color:#d0d0ff; }
 .demo-nav-icon { font-size:1.05rem; line-height:1; }
 
@@ -1432,7 +1432,7 @@ img { max-width: 100%; display: block; }
   width:100%; padding:10px; border-radius:11px;
   background:linear-gradient(135deg,#292978,#3a3a99);
   color:#fff; font-weight:800; font-size:.8rem;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; border:none; font-family:var(--font-body);
+  cursor: pointer; border:none; font-family:var(--font-body);
   box-shadow:0 4px 16px rgba(41,41,120,.45);
   pointer-events:auto; transition:transform .15s, box-shadow .15s;
 }
@@ -1458,7 +1458,7 @@ img { max-width: 100%; display: block; }
 .tut-success-restart {
   padding:9px 22px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.17);
   border-radius:100px; color:rgba(255,255,255,.82); font-size:.74rem; font-weight:700;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; pointer-events:auto; font-family:var(--font-body); transition:background .15s;
+  cursor: pointer; pointer-events:auto; font-family:var(--font-body); transition:background .15s;
 }
 .tut-success-restart:hover { background:rgba(255,255,255,.18); }
 
@@ -1475,7 +1475,7 @@ img { max-width: 100%; display: block; }
 .cn-billing-toggle {
   position: relative; width: 48px; height: 26px;
   background: rgba(208,208,255,.15); border-radius: 999px;
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer; transition: background .25s; border: none; flex-shrink: 0;
+  cursor: pointer; transition: background .25s; border: none; flex-shrink: 0;
 }
 .cn-billing-toggle.on { background: linear-gradient(135deg, var(--primary), var(--accent)); }
 .cn-billing-toggle::after {
@@ -1569,7 +1569,7 @@ img { max-width: 100%; display: block; }
   width: 100%; margin-top: 4px; padding: 8px; border-radius: 10px;
   border: 1px solid rgba(208,208,255,.1); background: transparent;
   color: rgba(208,208,255,.45); font-family: var(--font-sans);
-  font-size: .78rem; font-weight: 600; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  font-size: .78rem; font-weight: 600; cursor: pointer;
   display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .15s;
 }
 .cn-expand-btn:hover { border-color: rgba(208,208,255,.3); color: #d0d0ff; }
@@ -1655,7 +1655,9 @@ html { scroll-padding-top: 92px; }
 .wl-fs {
   position: fixed; inset: 0; z-index: 4000;
   background: #0020F6;
-  overflow: hidden;
+  overflow-y: auto;                  /* scroll, když se obsah nevejde (malé mobily) */
+  overscroll-behavior: contain;      /* ať se scroll nepřelije na pozadí (fix bugu) */
+  -webkit-overflow-scrolling: touch;
   display: flex; flex-direction: column;
   opacity: 0; pointer-events: none; transition: opacity .3s ease;
 }
@@ -1669,11 +1671,13 @@ html { scroll-padding-top: 92px; }
   position: fixed; top: 16px; right: 18px; z-index: 6;
   width: 44px; height: 44px; border-radius: 50%; border: none;
   background: rgba(255,255,255,.16); color: #fff;
-  font-size: 1.15rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; line-height: 1;
+  font-size: 1.15rem; cursor: pointer; line-height: 1;
   transition: background .15s;
 }
 .wl-fs-close:hover { background: rgba(255,255,255,.3); }
-.wl-fs-inner { position: relative; z-index: 3; flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+/* flex:1 0 auto = smí přerůst přes viewport (pak se to dá odscrollovat), a přitom
+   se vycentruje, když se vejde. min-height:0 tu být NESMÍ (klipovalo by to horní část). */
+.wl-fs-inner { position: relative; z-index: 3; flex: 1 0 auto; display: flex; flex-direction: column; justify-content: center; padding: 22px 16px 30px; }
 
 .wl-fs-head { text-align: center; padding: 1.4rem 1.5rem .8rem; }
 .wl-badge {
@@ -1741,7 +1745,7 @@ html { scroll-padding-top: 92px; }
 }
 .wl-toggle.is-employer .wl-toggle-pill { transform: translateX(100%); }
 .wl-toggle-opt {
-  position: relative; z-index: 1; border: none; background: none; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  position: relative; z-index: 1; border: none; background: none; cursor: pointer;
   padding: .7rem .6rem; font-family: inherit; font-weight: 800; font-size: .92rem;
   color: var(--primary); border-radius: 999px; transition: color .2s;
 }
@@ -1838,7 +1842,7 @@ html { scroll-padding-top: 92px; }
 
 .wl-cta {
   margin-top: auto; width: 100%; height: 54px; border-radius: 14px;
-  font-family: inherit; font-size: 1rem; font-weight: 700; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; border: none;
+  font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; border: none;
   transition: transform .12s, box-shadow .2s;
   background: #fff; color: var(--primary); box-shadow: 0 14px 28px -14px rgba(0,0,0,.45);
 }
@@ -1857,7 +1861,7 @@ html { scroll-padding-top: 92px; }
   width: min(430px, 100%); max-height: calc(100vh - 40px); overflow-y: auto;
   position: relative;
 }
-.wl-panel-back { background: none; border: none; color: var(--primary); font-weight: 600; font-size: .9rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer; margin-bottom: .9rem; padding: 0; }
+.wl-panel-back { background: none; border: none; color: var(--primary); font-weight: 600; font-size: .9rem; cursor: pointer; margin-bottom: .9rem; padding: 0; }
 .wl-panel-card .modal-logo { margin-bottom: .8rem; }
 .wl-form-title { font-size: 1.5rem; font-weight: 800; color: #0a0d2e; margin: 0 0 .3rem; }
 .wl-form-sub { color: rgba(10,13,46,.6); margin: 0 0 1.2rem; font-size: .95rem; line-height: 1.5; }
@@ -1982,7 +1986,7 @@ html { scroll-padding-top: 92px; }
 
 /* CTA — 3D flip pilulka (dodaný design): Chci být u toho ⇄ Registrovat se */
 .wl-card .wl-cta-flip {
-  perspective: 1100px; width: 100%; height: 56px; margin-top: .5rem; cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  perspective: 1100px; width: 100%; height: 56px; margin-top: .5rem; cursor: pointer;
   transition: transform .2s cubic-bezier(.2,.8,.2,1); transform-origin: center;
 }
 .wl-card .wl-cta-flip:hover { transform: scale(1.05); }   /* pop na najetí kurzorem */
@@ -2038,8 +2042,9 @@ html { scroll-padding-top: 92px; }
   border-radius: 999px;
   background: var(--wl-blue);
   color: #fff;
+  text-decoration: none;              /* i jako <a> na stránkách bez JS */
   box-shadow: 0 14px 34px rgba(4, 10, 60, .5);
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  cursor: pointer;
   font: 700 15px/1 Poppins, system-ui, sans-serif;
   letter-spacing: -.01em;
   transition: padding-right .34s cubic-bezier(.22, 1, .36, 1);
@@ -2174,17 +2179,15 @@ html { scroll-padding-top: 92px; }
   .gold-badge, .gold-badge__sheen { animation: none; }
 }
 
-/* Vlastní firemní kurzor — nahrazuje klasickou šipku na celém webu.
-   Čísla za url = "hrot" (kam se reálně klikne).
-   Trik: klikatelné prvky NEpřepnou na systémovou ručičku, jen se šipka přebarví —
-   MODRÁ na světlém pozadí, BÍLÁ na tmavém. Tvar zůstává pořád stejný. */
-html, body { cursor: url('kurzor.png?v=2') 6 4, auto; }
+/* Kurzory — standardní systémové. (Vlastní obrázkový kurzor odstraněn 3. 8. 2026,
+   dělal problémy.) Klikatelné = ručička, textová pole = psací, zbytek = šipka. */
+html, body { cursor: auto; }
 
 /* Klikatelné na SVĚTLÉM pozadí => modrý vnitřek (černý obrys) */
 a, button, [role="button"], input[type="submit"], input[type="button"],
 input[type="reset"], label[for], select, summary,
 .wl-card .wl-toggle-opt, .wl-card .wl-cta-flip {
-  cursor: url('kurzor-modra.png?v=2') 6 4, pointer;
+  cursor: pointer;
 }
 
 /* Klikatelné na TMAVÉM pozadí => bílý vnitřek.
@@ -2192,7 +2195,7 @@ input[type="reset"], label[for], select, summary,
 .wl-fs-close,
 [class^="dp-"], [class*=" dp-"],
 .demo-nav-btn {
-  cursor: url('kurzor-bila.png?v=2') 6 4, pointer;
+  cursor: pointer;
 }
 
 /* Textová pole => klasický "psací" kurzor, ať se dobře píše */

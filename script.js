@@ -447,6 +447,8 @@ function initAuth() {
       showError('login-error', ACCESS_LOCKED_MSG);
       return;
     }
+    // Klíč prošel → poznač do session, ať /worker/ po přesměrování ví, že brána byla ověřena.
+    try { sessionStorage.setItem('makej-gate-ok', ACCESS_KEY); } catch (e) {}
 
     btn.disabled = true;
     btn.textContent = 'Přihlašování...';
@@ -545,6 +547,8 @@ function initAuth() {
     const password = document.getElementById('reg-password').value;
     const password2 = document.getElementById('reg-password2').value;
     const company  = document.getElementById('reg-company').value.trim();
+    // Nepovinný marketingový souhlas (opt-in) — uloží se k účtu.
+    const marketing = !!document.getElementById('reg-marketing')?.checked;
 
     if (!name) {
       showError('register-error', 'Zadejte své jméno.');
@@ -581,6 +585,7 @@ function initAuth() {
           name,
           role: selectedRole,
           company_name: selectedRole === 'employer' ? company : null,
+          marketing_consent: marketing,
         }
       }
     });
@@ -651,24 +656,30 @@ function initAuth() {
     setTimeout(() => { const n = document.getElementById('wl-name'); if (n) n.focus(); }, 60);
   }
 
-  document.getElementById('wl-close').addEventListener('click', () => closeWaitlist(true));
-  document.getElementById('wl-done-close').addEventListener('click', () => closeWaitlist(false));
-  // Plovoucí tlačítko „Startujeme" (.wl-fab) — otevře čekací list (i po zavření křížkem)
+  // Pojistky (?. / if): waitlist markup je jen na landing page — na ostatních
+  // stránkách tyhle prvky chybí, ať to nespadne (jinak by se nenapojil zbytek initAuth).
+  document.getElementById('wl-close')?.addEventListener('click', () => closeWaitlist(true));
+  document.getElementById('wl-done-close')?.addEventListener('click', () => closeWaitlist(false));
+  // Plovoucí tlačítko „Startujeme" (.wl-fab) — je na VŠECH stránkách.
+  // Na landing page otevře čekací list; na ostatních přejde na homepage s waitlistem.
   const wlFab = document.querySelector('.wl-fab');
   if (wlFab) {
-    wlFab.addEventListener('click', () => openWaitlist());
+    wlFab.addEventListener('click', () => {
+      if (wlOverlay) openWaitlist();
+      else window.location.href = '/?wl';
+    });
     // mobil: pilulka se sama ukáže ~2 s po načtení a po 4 s se složí
     if (window.matchMedia('(max-width: 640px)').matches) {
       setTimeout(() => wlFab.classList.add('is-open'), 2000);
       setTimeout(() => wlFab.classList.remove('is-open'), 6000);
     }
   }
-  document.getElementById('wl-back').addEventListener('click', () => wlPanel.classList.remove('active'));
-  wlPanel.addEventListener('click', e => { if (e.target === wlPanel) wlPanel.classList.remove('active'); });
+  document.getElementById('wl-back')?.addEventListener('click', () => wlPanel && wlPanel.classList.remove('active'));
+  if (wlPanel) wlPanel.addEventListener('click', e => { if (e.target === wlPanel) wlPanel.classList.remove('active'); });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (wlPanel.classList.contains('active')) wlPanel.classList.remove('active');
-    else if (wlOverlay.classList.contains('active')) closeWaitlist(true);
+    if (wlPanel && wlPanel.classList.contains('active')) wlPanel.classList.remove('active');
+    else if (wlOverlay && wlOverlay.classList.contains('active')) closeWaitlist(true);
   });
 
   // CTA na každé straně → zavři čekací list a otevři NORMÁLNÍ registraci
@@ -969,6 +980,8 @@ function initAuth() {
       showError('login-error', ACCESS_LOCKED_MSG);
       return;
     }
+    // Klíč prošel → poznač do session i pro Google (redirect na /worker/ ho pak nechce znovu).
+    try { sessionStorage.setItem('makej-gate-ok', ACCESS_KEY); } catch (e) {}
     await sb.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.href }
