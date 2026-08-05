@@ -114,6 +114,31 @@ function _employerPlanTier() {
   return 'zakladni';
 }
 
+// Akční tlačítko inzerátu — v klidu černobílé, po najetí myší se zbarví do modra.
+function EActionButton({ icon, label, onClick }) {
+  const [hover, setHover] = useStateE(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        padding: '9px 14px', borderRadius: 9, cursor: 'pointer',
+        fontFamily: T.fontUI, fontSize: 12, fontWeight: 700,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        transition: 'background .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease',
+        background: hover ? 'rgba(0,32,246,0.08)' : '#F3F4F6',
+        border: '1px solid ' + (hover ? 'rgba(0,32,246,0.30)' : '#E5E7EB'),
+        color: hover ? '#0020F6' : '#4B5563',
+        boxShadow: hover ? '0 2px 10px rgba(0,32,246,0.14)' : 'none',
+      }}
+    >
+      <Icon name={icon} size={13} color={hover ? '#0020F6' : '#6B7280'} />
+      {label}
+    </button>
+  );
+}
+
 function EJobs({ onTab }) {
   const [filter, setFilter] = useStateE('active');
   const [search, setSearch] = useStateE('');
@@ -464,16 +489,9 @@ function EJobs({ onTab }) {
 
               {/* Akce */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '13px 22px', borderTop: '1px solid ' + T.cardBorder, background: 'rgba(0,32,246,0.015)' }}>
-                <button onClick={() => onTab?.('candidates')} style={{
-                  ...btnBase, background: 'linear-gradient(135deg, #0020F6, #2D2CA7)', border: 'none', color: '#fff',
-                  boxShadow: '0 2px 10px rgba(0,32,246,0.22)',
-                }}><Icon name="users-group-rounded-bold" size={14} color="#fff"/>Kandidáti ({j.matches})</button>
-                <button onClick={() => setStatsJob(j)} style={{
-                  ...btnBase, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder, color: T.cardLight,
-                }}><Icon name="chart-2-bold" size={12} color="#0020F6"/>Zobrazit statistiky</button>
-                <button style={{
-                  ...btnBase, background: 'rgba(0,32,246,0.06)', border: '1px solid ' + T.cardBorder, color: T.cardLight,
-                }}><Icon name="rocket-2-bold" size={12} color="#FFD166"/>Boostnout</button>
+                <EActionButton icon="users-group-rounded-bold" label={`Kandidáti (${j.matches})`} onClick={() => onTab?.('candidates')} />
+                <EActionButton icon="graph-up-bold" label="Zobrazit statistiky" onClick={() => setStatsJob(j)} />
+                <EActionButton icon="rocket-2-bold" label="Boostnout" />
                 <div style={{ flex: 1 }} />
                 <button style={{
                   ...btnBase, background: 'transparent', border: '1px solid ' + T.cardBorder, color: T.cardMuted,
