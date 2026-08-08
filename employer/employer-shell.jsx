@@ -59,7 +59,7 @@ function ELogo() {
 // ─────────────────────────────────────────────────────────────
 // SIDEBAR
 // ─────────────────────────────────────────────────────────────
-function ESidebar({ tab, onTab }) {
+function ESidebar({ tab, onTab, onSignOut }) {
   // Reálné počty z živých globálů (0 → badge se skryje)
   const jobsBadge = (typeof E_JOBS !== 'undefined' ? E_JOBS.filter(j => j.status === 'active' || j.status === 'urgent').length : 0) || null;
   const candBadge = (typeof E_CANDIDATES !== 'undefined' ? (E_CANDIDATES.new || []).length : 0) || null;
@@ -206,7 +206,9 @@ function ESidebar({ tab, onTab }) {
           <div style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ECOMPANY.name}</div>
           <div style={{ color: '#6B7280', fontSize: 10.5, fontFamily: T.fontUI }}>{ECOMPANY.city}</div>
         </div>
-        <Icon name="alt-arrow-down-line-duotone" size={14} color="#9CA3AF" />
+        <button onClick={onSignOut} title="Odhlásit se" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+          <Icon name="logout-2-bold" size={16} color="#f87171" />
+        </button>
       </div>
     </aside>
   );

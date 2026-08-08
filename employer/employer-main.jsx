@@ -801,14 +801,14 @@ function EmployerApp() {
     body = <ELoadingSpinner />;
   } else if (noData && tab === 'dash') {
     body = <EEmptyState />;
-  } else if (tab === 'dash')        body = <EDashboard key={tick + period} period={period} onTab={setTab} />;
+  } else if (tab === 'dash')        body = <EDashboard key={tick + period} period={period} onTab={setTab} onNew={() => setShowNewJob(true)} onPeriod={setPeriod} />;
   else if (tab === 'analytics')     body = <EAnalytics key={tick + period} period={period} />;
-  else if (tab === 'jobs')          body = <EJobs key={tick} onTab={setTab} />;
-  else if (tab === 'candidates')    body = <ECandidates key={tick} onOpenChat={openChat} />;
-  else if (tab === 'chat')          body = <EMessages key={tick + '-' + openThreadId} initialThreadId={openThreadId} />;
-  else if (tab === 'calendar')      body = <ECalendar key={tick} />;
-  else if (tab === 'reviews')       body = <EReviews key={tick} />;
-  else if (tab === 'settings')      body = <ESettings key={tick} />;
+  else if (tab === 'jobs')          body = <EJobs key={tick} onTab={setTab} onNew={() => setShowNewJob(true)} period={period} onPeriod={setPeriod} />;
+  else if (tab === 'candidates')    body = <ECandidates key={tick} onOpenChat={openChat} onNew={() => setShowNewJob(true)} period={period} onPeriod={setPeriod} />;
+  else if (tab === 'chat')          body = <EMessages key={tick + '-' + openThreadId} initialThreadId={openThreadId} period={period} onPeriod={setPeriod} onNew={() => setShowNewJob(true)} />;
+  else if (tab === 'calendar')      body = <EShifts key={tick} period={period} onPeriod={setPeriod} onTab={setTab} onNew={() => setShowNewJob(true)} />;
+  else if (tab === 'reviews')       body = <EReviews key={tick} period={period} onPeriod={setPeriod} onNew={() => setShowNewJob(true)} />;
+  else if (tab === 'settings')      body = <ESettings key={tick} onTab={setTab} onNew={() => setShowNewJob(true)} onSignOut={handleSignOut} />;
   else if (tab === 'pricing')       body = <EPricing onTab={setTab} onPlanChange={() => setTick(t => t + 1)} />;
   else body = (
     <div style={{ flex: 1, display: 'grid', placeItems: 'center', color: T.muted, fontFamily: T.fontUI }}>
@@ -834,10 +834,10 @@ function EmployerApp() {
         filter: 'blur(80px)', pointerEvents: 'none',
       }} />
 
-      {loaded && <ESidebar tab={tab} onTab={setTab} />}
+      {loaded && <ESidebar tab={tab} onTab={setTab} onSignOut={handleSignOut} />}
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', overflowY: 'auto', background: (tab === 'analytics' || tab === 'jobs') ? '#ffffff' : 'transparent' }}>
-        {loaded && <ETopbar title={meta.title} subtitle={meta.subtitle} onNew={() => setShowNewJob(true)} onSignOut={handleSignOut} period={period} onPeriod={setPeriod} />}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', overflowY: tab === 'dash' ? 'hidden' : 'auto', background: (tab === 'dash' || tab === 'reviews' || tab === 'calendar' || tab === 'chat' || tab === 'candidates' || tab === 'jobs' || tab === 'settings') ? '#F1F3FB' : (tab === 'analytics') ? '#ffffff' : 'transparent' }}>
+        {loaded && tab !== 'dash' && tab !== 'reviews' && tab !== 'calendar' && tab !== 'chat' && tab !== 'candidates' && tab !== 'jobs' && tab !== 'settings' && <ETopbar title={meta.title} subtitle={meta.subtitle} onNew={() => setShowNewJob(true)} onSignOut={handleSignOut} period={period} onPeriod={setPeriod} />}
         {body}
       </main>
 

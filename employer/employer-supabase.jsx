@@ -383,8 +383,13 @@ async function fetchEmployerData(employerId) {
       { stage: 'Kandidáti celkem', count: totalM, pct: activeJobs ? Math.round(totalM / activeJobs * 10) : 0, color: '#0020F6' },
       { stage: 'Najato',           count: totalH, pct: totalM ? Math.round(totalH / totalM * 100) : 0, color: '#5BD68A' },
     ];
-    E_FUNNEL.length = 0;
-    newFunnel.forEach(f => E_FUNNEL.push(f));
+    // E_FUNNEL definuje jen _premium/dashboard-advanced.jsx, který se běžně nenačítá →
+    // bez téhle pojistky tu fetchEmployerData spadl na „E_FUNNEL is not defined"
+    // a přeskočil E_REVIEWS + vrátil false.
+    if (typeof E_FUNNEL !== 'undefined') {
+      E_FUNNEL.length = 0;
+      newFunnel.forEach(f => E_FUNNEL.push(f));
+    }
 
     // ── E_REVIEWS ──────────────────────────────────────────────────────────────
     const newReviews = reviews.map(r => {

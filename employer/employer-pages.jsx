@@ -139,7 +139,7 @@ function EActionButton({ icon, label, onClick }) {
   );
 }
 
-function EJobs({ onTab }) {
+function EJobsOld({ onTab }) {
   const [filter, setFilter] = useStateE('active');
   const [search, setSearch] = useStateE('');
   const [sort, setSort] = useStateE('newest');
@@ -748,7 +748,7 @@ function buildCandsFlat() {
   }));
 }
 
-function ECandidates({ onOpenChat } = {}) {
+function ECandidatesOld({ onOpenChat } = {}) {
   const [tab, setTab] = useStateE('all');
   const [search, setSearch] = useStateE('');
   const [selected, setSelected] = useStateE(null);
@@ -1392,4 +1392,4 @@ function CandidateDrawer({ c, onClose, onAccepted, onOpenChat }) {
   );
 }
 
-Object.assign(window, { EJobs, ECandidates });
+// EJobs i ECandidates exportuje redesign v employer-pages3.jsx; zde zůstávají jen staré verze (EJobsOld, ECandidatesOld) mimo window.
