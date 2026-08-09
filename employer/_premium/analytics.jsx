@@ -114,7 +114,7 @@ function ProGate({ feature, children }) {
 // ─────────────────────────────────────────────────────────────
 // ANALYTIKA — jedna sekce: mapa nahoře, statistiky pod ní
 // ─────────────────────────────────────────────────────────────
-function EAnalytics({ period = '30d' }) {
+function EAnalyticsOld({ period = '30d' }) {
   return (
     <ProGate feature="Analytika">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
@@ -1098,6 +1098,410 @@ function ECalendar() {
       )}
 
     </div>
+  );
+}
+
+/* ============================================================
+   ANALYTIKA (EAnalytics) — redesign 1d: modrá hlavička + pás metrik
+   reagující na výběr kraje, interaktivní choropleth mapa ČR
+   (hover náhled + vícenásobný výběr + count-up), panel kraje,
+   a karty: cohort, kanály, insighty, doba odpovědi, hodinovka,
+   doba do zájmu, retence, demografie. Aktivní: Nový inzerát/Inzerovat
+   zde → onNew, Export dat / Přepočítat → toast, období → EPeriodPicker.
+   Mapová geometrie se přebírá z _premium/kraje-map.jsx (KRAJE_PATHS).
+   ============================================================ */
+const _AN_CR = { users: 12950, jobs: 1641, rate: 170, firms: 1284, fill: 2.4, fields: [['Pohostinství a gastro', 34], ['Sklad a logistika', 26], ['Obchod a marketing', 18]] };
+const _AN_NAMES = { praha: 'Praha', stredocesky: 'Středočeský', jihomoravsky: 'Jihomoravský', moravskoslezsky: 'Moravskoslezský', ustecky: 'Ústecký', olomoucky: 'Olomoucký', jihocesky: 'Jihočeský', plzensky: 'Plzeňský', zlinsky: 'Zlínský', kralovehradecky: 'Královéhradecký', pardubicky: 'Pardubický', liberecky: 'Liberecký', vysocina: 'Vysočina', karlovarsky: 'Karlovarský' };
+const _AN_REG = {
+  praha:           { users: 2480, jobs: 388, rate: 195, firms: 318, fill: 1.8, fields: [['Pohostinství a gastro', 41], ['Obchod a marketing', 23], ['Provozní služby', 14]] },
+  stredocesky:     { users: 1870, jobs: 236, rate: 178, firms: 214, fill: 2.1, fields: [['Sklad a logistika', 38], ['Pohostinství a gastro', 24], ['Výroba', 16]] },
+  jihomoravsky:    { users: 1540, jobs: 198, rate: 172, firms: 176, fill: 2.2, fields: [['Pohostinství a gastro', 33], ['Obchod a marketing', 21], ['Sklad a logistika', 19]] },
+  moravskoslezsky: { users: 1320, jobs: 154, rate: 162, firms: 132, fill: 2.6, fields: [['Výroba', 31], ['Sklad a logistika', 25], ['Pohostinství a gastro', 20]] },
+  ustecky:         { users: 810,  jobs: 92,  rate: 160, firms: 84,  fill: 2.9, fields: [['Výroba', 34], ['Sklad a logistika', 24], ['Provozní služby', 17]] },
+  olomoucky:       { users: 720,  jobs: 84,  rate: 158, firms: 78,  fill: 2.7, fields: [['Sklad a logistika', 29], ['Pohostinství a gastro', 23], ['Zemědělství', 15]] },
+  jihocesky:       { users: 690,  jobs: 78,  rate: 165, firms: 72,  fill: 2.5, fields: [['Pohostinství a gastro', 36], ['Zemědělství', 19], ['Obchod a marketing', 17]] },
+  plzensky:        { users: 640,  jobs: 88,  rate: 172, firms: 76,  fill: 2.3, fields: [['Sklad a logistika', 33], ['Výroba', 24], ['Pohostinství a gastro', 18]] },
+  zlinsky:         { users: 590,  jobs: 66,  rate: 158, firms: 61,  fill: 2.8, fields: [['Výroba', 28], ['Pohostinství a gastro', 24], ['Obchod a marketing', 16]] },
+  kralovehradecky: { users: 560,  jobs: 64,  rate: 163, firms: 58,  fill: 2.6, fields: [['Pohostinství a gastro', 27], ['Sklad a logistika', 24], ['Výroba', 18]] },
+  pardubicky:      { users: 520,  jobs: 58,  rate: 160, firms: 54,  fill: 2.7, fields: [['Sklad a logistika', 31], ['Výroba', 23], ['Obchod a marketing', 15]] },
+  liberecky:       { users: 480,  jobs: 55,  rate: 164, firms: 52,  fill: 2.6, fields: [['Pohostinství a gastro', 30], ['Výroba', 22], ['Provozní služby', 16]] },
+  vysocina:        { users: 470,  jobs: 52,  rate: 156, firms: 47,  fill: 3.1, fields: [['Výroba', 30], ['Zemědělství', 21], ['Sklad a logistika', 18]] },
+  karlovarsky:     { users: 260,  jobs: 28,  rate: 152, firms: 26,  fill: 3.3, fields: [['Pohostinství a gastro', 38], ['Provozní služby', 20], ['Obchod a marketing', 14]] },
+};
+const _AN_MAXU = Math.max.apply(null, Object.values(_AN_REG).map(r => r.users));
+const _anNf = n => Math.round(n).toLocaleString('cs-CZ');
+const _anDec = n => n.toLocaleString('cs-CZ', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const _anShade = t => { const a = [238, 241, 255], b = [27, 52, 240], k = Math.pow(t, 0.62); return 'rgb(' + a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(',') + ')'; };
+function _anAgg(slugs) {
+  if (!slugs.length) return _AN_CR;
+  const rs = slugs.map(s => _AN_REG[s]);
+  const users = rs.reduce((s, r) => s + r.users, 0);
+  const jobs = rs.reduce((s, r) => s + r.jobs, 0);
+  const firms = rs.reduce((s, r) => s + r.firms, 0);
+  const rate = Math.round(rs.reduce((s, r) => s + r.rate * r.users, 0) / users);
+  const fill = rs.reduce((s, r) => s + r.fill * r.jobs, 0) / jobs;
+  const mix = {};
+  rs.forEach(r => r.fields.forEach(([l, p]) => { mix[l] = (mix[l] || 0) + p * r.users; }));
+  const fields = Object.entries(mix).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([l, w]) => [l, Math.round(w / users)]);
+  return { users, jobs, rate, firms, fill, fields };
+}
+const _AN_CHANNELS = [
+  ['Swipe feed', '#1B34F0', 8420, 28, 0.33], ['Vyhledávání', '#5C71FF', 2140, 9, 0.42],
+  ['Doporučení', '#0FA968', 1280, 11, 0.86], ['Boost (placený)', '#F5920B', 1007, 14, 1.39],
+];
+const _AN_INSIGHTS = [
+  ['Příležitost', '#0B7B4B', '#E6F7EF', 'Inzeráty s hodinovkou nad 180 Kč mají o 41 % vyšší swipe-right rate. Vaše konkurence platí v průměru 162 Kč.'],
+  ['Pozor', '#B96F06', '#FFF3E0', 'Inzerát „Brand ambassador" má CTR jen 13 %. Doporučujeme přepsat headline a přidat fotky týmu.'],
+  ['Trend', '#1B34F0', '#EEF1FF', 'Pondělí 17–21 h je vaše nejsilnější okno — 32 % všech matchů. Zvažte plánovaný boost na tento čas.'],
+  ['Doporučení', '#1B34F0', '#EEF1FF', 'Kandidáti, kteří mají v profilu „latte art", u vás vydrží průměrně 3,2× déle. Filtrujte primárně podle této dovednosti.'],
+  ['Anomálie', '#5A32BC', '#F3EDFF', 'Time-to-hire klesl o 28 % po zapnutí Premium tarifu — odhad ROI je +14 200 Kč/měsíc.'],
+  ['Výkon', '#0B7B4B', '#E6F7EF', 'Vaše firma je v top 8 % gastro segmentu v Brně podle hodnocení i rychlosti odpovědí.'],
+];
+const _AN_REPLY = [['<5 min', 142, '#0FA968'], ['5–30 m', 98, '#0FA968'], ['30 m–1 h', 64, '#5C71FF'], ['1–3 h', 41, '#5C71FF'], ['3–12 h', 22, '#F5920B'], ['>12 h', 8, '#F5920B'], ['Bez odezvy', 19, '#C7CCE3']];
+const _AN_WAGE = [['120', 34, '#C7D0FF'], ['140', 58, '#C7D0FF'], ['160', 82, '#C7D0FF'], ['180', 66, '#C7D0FF'], ['200', 54, '#0FA968'], ['220', 28, '#C7D0FF'], ['240+', 14, '#C7D0FF']];
+const _AN_INTEREST = [['<5 min', 2, '#5C71FF'], ['5–30 m', 5, '#5C71FF'], ['30 m–1 h', 7, '#5C71FF'], ['1–3 h', 9, '#1B34F0'], ['3–12 h', 6, '#5C71FF'], ['>12 h', 3, '#5C71FF'], ['Bez odezvy', 2, '#C7CCE3']];
+const _AN_AGE = [['15–17', 22, '#5C71FF'], ['18–21', 87, '#1B34F0'], ['22–25', 68, '#1B34F0'], ['26–30', 31, '#5C71FF'], ['30+', 14, '#5C71FF']];
+const _AN_GENDER = [['Žena', 58, 130, '#1B34F0'], ['Muž', 41, 92, '#F5920B'], ['Jiné', 1, 2, '#C7A6F5']];
+const _AN_STATUS = [['Středoškolák', 38], ['Vysokoškolák', 42], ['Pracující na vedlejšák', 14], ['Bez práce', 6]];
+const _AN_LOYAL = [['Petr N.', 4], ['Klára V.', 3], ['Tomáš M.', 3], ['Eliška Š.', 2], ['Adam P.', 2]];
+
+function _AnBars({ data, height }) {
+  const max = Math.max.apply(null, data.map(d => d[1]).concat([1]));
+  return (
+    <>{data.map(([label, v, color], i) => (
+      <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, height: '100%', justifyContent: 'flex-end' }}>
+        <span style={{ fontSize: 12, fontWeight: 800, color: '#0B1233' }}>{v}</span>
+        <span style={{ width: '100%', height: Math.max(4, v / max * height), background: color, borderRadius: '8px 8px 4px 4px' }} />
+        <span style={{ fontSize: 11, color: '#7A82A6', whiteSpace: 'nowrap' }}>{label}</span>
+      </div>
+    ))}</>
+  );
+}
+const _AN_CARD = { background: '#fff', border: '1px solid #E6E9F5', borderRadius: 16, padding: '20px 22px 22px' };
+const _AN_H = { fontSize: 17, fontWeight: 800, color: '#0B1233', letterSpacing: '-.01em' };
+const _AN_SUB = { fontSize: 13, color: '#7A82A6' };
+const _AN_LBL = { fontSize: 11, fontWeight: 800, color: '#A6ADCB', letterSpacing: '.08em', textTransform: 'uppercase' };
+const _AN_NUM = { fontSize: 22, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', lineHeight: 1 };
+
+function EAnalytics({ period = '30d', onNew, onTab, onPeriod } = {}) {
+  const [hovered, setHovered] = React.useState(null);
+  const [selected, setSelected] = React.useState([]);
+  const [disp, setDisp] = React.useState({ ...(_AN_CR) });
+  const [inseed, setInseed] = React.useState(0);
+  const rafRef = React.useRef(null);
+
+  const names = hovered ? [hovered] : selected;
+  const label = names.length === 0 ? 'Celá ČR' : names.length === 1 ? _AN_NAMES[names[0]] : names.length + (names.length < 5 ? ' kraje' : ' krajů');
+  const state = hovered ? 'náhled' : selected.length ? 'vybráno' : 'přehled';
+
+  React.useEffect(() => {
+    const from = disp;
+    const to = _anAgg(hovered ? [hovered] : selected);
+    const start = performance.now();
+    const dur = 450, keys = ['users', 'jobs', 'rate', 'firms', 'fill'];
+    function tick(now) {
+      const t = Math.min(1, Math.max(0, (now - start) / dur));
+      const e = 1 - Math.pow(1 - t, 3);
+      const next = {}; keys.forEach(k => next[k] = from[k] + (to[k] - from[k]) * e);
+      setDisp(next);
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    }
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+    // eslint-disable-next-line
+  }, [hovered, selected.join(',')]);
+
+  const ratio = disp.users / disp.jobs;
+  const avg = _AN_CR.users / _AN_CR.jobs;
+  const none = !hovered && !selected.length;
+  const d = _anAgg(names);
+
+  // Hover se čte průběžně z prvku pod kurzorem: nad obrysem kraje = jeho slug, jinak (prázdné místo v rámci mapy) = null → náhled zmizí přesně na hranici kraje.
+  const onMap = e => { const s = (e.target && e.target.getAttribute && e.target.getAttribute('data-kraj')) || null; if (s !== hovered) setHovered(s); };
+  const clickMap = e => { const s = e.target && e.target.getAttribute && e.target.getAttribute('data-kraj'); if (s) setSelected(p => p.includes(s) ? p.filter(x => x !== s) : p.concat(s)); };
+  const inzerovat = () => { if (names.length === 1) { try { localStorage.setItem('makej-emp-jobdraft', JSON.stringify({ region: _AN_NAMES[names[0]] })); } catch (e) {} } onNew && onNew(); };
+  const exportData = () => { if (window.empToast) window.empToast('Export dat', 'Data se připravují, přijdou vám e-mailem.', '', 'ok'); };
+  const refresh = () => { setInseed(s => s + 1); if (window.empToast) window.empToast('Přepočítáno', 'Insighty jsou přepočítané z aktuálních dat.', '', 'ok'); };
+
+  const mapKeys = Object.keys(KRAJE_PATHS);
+  const rank = s => s === 'praha' ? 4 : s === hovered ? 3 : (selected.includes(s) || s === hovered) ? 2 : 1;
+  const ordered = mapKeys.slice().sort((a, b) => rank(a) - rank(b) || mapKeys.indexOf(a) - mapKeys.indexOf(b));
+
+  return (
+    <ProGate feature="Analytika">
+    <div style={{ width: '100%', maxWidth: 1180, margin: '0 auto', padding: '18px 20px 40px' }}>
+      <style>{`
+        @keyframes anKrajPulse { 0%,100% { stroke-opacity:1; } 50% { stroke-opacity:.5; } }
+        @keyframes anTipIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+        @keyframes anFadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+        .an-krj { transition: fill .2s ease, stroke .2s ease, stroke-width .2s ease, transform .25s ease, filter .25s ease; transform-box: fill-box; transform-origin: center; cursor: pointer; }
+        .an-krj.on { transform: scale(1.02); filter: drop-shadow(0 0 5px rgba(27,52,240,.45)); }
+        .an-krj.sel { animation: anKrajPulse 2s ease-in-out infinite; }
+        .an-tip { animation: anTipIn .15s ease-out both; }
+      `}</style>
+
+      <div style={{ background: '#F1F3FB', border: '1px solid #DDE1F0', borderRadius: 22, overflow: 'hidden' }}>
+
+        {/* Modrá hlavička */}
+        <div style={{ background: '#1B34F0', padding: '20px 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-.02em' }}>Analytika</span>
+            <span style={{ width: 1, height: 22, background: 'rgba(255,255,255,.28)' }} />
+            <span style={{ fontSize: 14, color: '#C7D0FF' }}>Trh práce podle krajů + výkon vašeho náboru</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <EPeriodPicker value={period} onChange={onPeriod} />
+            <button onClick={exportData} style={{ fontSize: 13, fontWeight: 700, color: '#fff', background: 'rgba(255,255,255,.14)', padding: '9px 14px', borderRadius: 9, border: 'none', cursor: 'pointer' }}>Export dat</button>
+            <button onClick={() => onNew && onNew()} style={{ fontSize: 14, fontWeight: 800, color: '#1B34F0', background: '#fff', padding: '11px 18px', borderRadius: 9, border: 'none', cursor: 'pointer' }}>+ Nový inzerát</button>
+          </div>
+        </div>
+
+        {/* Pás metrik — reaguje na výběr kraje */}
+        <div style={{ background: '#1B34F0', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', paddingBottom: 6 }}>
+          {[
+            ['Aktivních uživatelů', _anNf(disp.users), none ? 'celá ČR' : label.toLowerCase()],
+            ['Pracovních příležitostí', _anNf(disp.jobs), 'otevřených dnes'],
+            ['Medián hodinovky', Math.round(disp.rate) + ' Kč', 'vy platíte 200 Kč'],
+            ['Zájemců na příležitost', _anDec(ratio), 'čím víc, tím snazší nábor'],
+          ].map((m, i) => (
+            <div key={i} style={{ padding: '6px 24px 20px', borderLeft: i ? '1px solid rgba(255,255,255,.2)' : 'none' }}>
+              <div style={{ ...(_AN_LBL), color: '#A9B7FF' }}>{m[0]}</div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10, marginTop: 8 }}>
+                <span style={{ fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: '-.02em', lineHeight: 1 }}>{m[1]}</span>
+                <span style={{ fontSize: 12, color: '#C7D0FF' }}>{m[2]}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ padding: '22px 24px 26px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* Mapa + panel kraje */}
+          <div style={_AN_CARD}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, marginBottom: 16 }}>
+              <span style={_AN_H}>Vyberte kraj a uvidíte, jak vypadá trh práce</span>
+              {selected.length > 0 && <span onClick={() => setSelected([])} style={{ fontSize: 12, fontWeight: 800, color: '#3A4266', background: '#fff', border: '1px solid #E6E9F5', padding: '8px 13px', borderRadius: 999, cursor: 'pointer', whiteSpace: 'nowrap' }}>✕ Zpět na celou ČR</span>}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 372px', gap: 22, alignItems: 'stretch' }}>
+              <div style={{ background: '#FBFCFE', border: '1px solid #F0F2FA', borderRadius: 14, padding: '10px 12px 4px', position: 'relative' }}>
+                <svg viewBox={KRAJE_VIEWBOX} onMouseMove={onMap} onMouseLeave={() => setHovered(null)} onClick={clickMap} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+                  {ordered.map(s => {
+                    const on = selected.includes(s) || hovered === s;
+                    return <path key={s} data-kraj={s} d={KRAJE_PATHS[s]} className={'an-krj' + (on ? ' on' : '') + (selected.includes(s) ? ' sel' : '')} fill={on ? '#fff' : _anShade(_AN_REG[s].users / _AN_MAXU)} stroke={on ? '#8AB4FF' : '#fff'} strokeWidth={on ? 0.9 : 0.5} strokeLinejoin="round" />;
+                  })}
+                </svg>
+                <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', flexDirection: 'column', gap: 6, pointerEvents: 'none' }}>
+                  {names.map(s => <span key={s} className="an-tip" style={{ background: 'rgba(11,18,51,.88)', border: '1px solid rgba(255,255,255,.12)', color: '#fff', fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 8, whiteSpace: 'nowrap' }}>{_AN_NAMES[s]}</span>)}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
+                  <span style={{ fontSize: 20, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em' }}>{label}</span>
+                  <span style={{ fontSize: 11, fontWeight: 800, padding: '5px 10px', borderRadius: 999, color: state === 'vybráno' ? '#fff' : '#7A82A6', background: state === 'vybráno' ? '#0B1233' : '#F1F3FB' }}>{state}</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {[['Brigádníků', _anNf(disp.users)], ['Příležitostí', _anNf(disp.jobs)], ['Medián hodinovky', Math.round(disp.rate) + ' Kč'], ['Firem na Makej', _anNf(disp.firms)]].map((t, i) => (
+                    <div key={i} style={{ background: '#F6F7FC', borderRadius: 12, padding: '12px 13px' }}>
+                      <div style={{ ...(_AN_SUB), fontSize: 11, fontWeight: 700 }}>{t[0]}</div>
+                      <div style={{ ..._AN_NUM, marginTop: 5 }}>{t[1]}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
+                    <span style={_AN_LBL}>Poptávka po směnách</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: '#0B1233' }}>{_anDec(ratio)} zájemce na místo</span>
+                  </div>
+                  <span style={{ display: 'block', height: 8, borderRadius: 999, background: '#EEF1FF', overflow: 'hidden' }}><span style={{ display: 'block', height: '100%', width: Math.min(100, ratio / 12 * 100) + '%', borderRadius: 999, background: none ? '#1B34F0' : ratio >= avg ? '#0FA968' : '#F5920B' }} /></span>
+                  <span style={{ ...(_AN_SUB), fontSize: 11 }}>{none ? 'Průměr trhu je ' + _anDec(avg) + ' — nad průměrem obsadíte směnu rychleji.' : ratio >= avg ? 'Nad průměrem trhu (' + _anDec(avg) + ') — směnu obsadíte rychleji než jinde.' : 'Pod průměrem trhu (' + _anDec(avg) + ') — počítejte s delším náborem nebo vyšší sazbou.'}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                  <span style={_AN_LBL}>Nejžádanější obory</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    {d.fields.map(([l, p], i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#3A4266', width: 150, flex: 'none' }}>{l}</span>
+                        <span style={{ flex: 1, height: 6, borderRadius: 999, background: '#EEF1FF', overflow: 'hidden' }}><span style={{ display: 'block', height: '100%', width: Math.min(100, p * 2.2) + '%', background: '#5C71FF', borderRadius: 999 }} /></span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: '#0B1233', width: 32, textAlign: 'right', flex: 'none' }}>{p} %</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, background: '#F6F7FC', borderRadius: 12, padding: '12px 13px', marginTop: 'auto' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span style={{ ...(_AN_SUB), fontSize: 11, fontWeight: 700 }}>Průměrná doba obsazení směny</span>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: '#0B1233' }}>{_anDec(disp.fill)} dne</span>
+                  </div>
+                  <span onClick={inzerovat} style={{ fontSize: 12, fontWeight: 800, color: '#fff', background: '#1B34F0', padding: '9px 14px', borderRadius: 9, cursor: 'pointer', whiteSpace: 'nowrap' }}>Inzerovat zde</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Srovnání kanálů (na plnou šířku) */}
+          <div style={_AN_CARD}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 16 }}>
+              <span style={_AN_H}>Srovnání kanálů</span>
+              <span style={_AN_SUB}>Odkud chodí nejvíc lidí a co reálně obsazuje směny</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {_AN_CHANNELS.map(([n, color, views, hired, ctr], i) => {
+                const maxV = Math.max.apply(null, _AN_CHANNELS.map(c => c[2]));
+                return (
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: '#0B1233' }}><span style={{ width: 9, height: 9, borderRadius: 3, background: color }} />{n}</span>
+                      <span style={{ display: 'flex', alignItems: 'baseline', gap: 16 }}>
+                        <span style={{ ..._AN_SUB, fontSize: 12 }}>{_anNf(views)} zhlédnutí</span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: '#0B7B4B' }}>{hired} najato</span>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: '#0B1233', width: 54, textAlign: 'right', whiteSpace: 'nowrap' }}>{ctr.toLocaleString('cs-CZ', { minimumFractionDigits: 2 })} %</span>
+                      </span>
+                    </div>
+                    <span style={{ display: 'block', height: 7, borderRadius: 999, background: '#F1F3FB', overflow: 'hidden' }}><span style={{ display: 'block', height: '100%', width: views / maxV * 100 + '%', background: color, borderRadius: 999 }} /></span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Insighty */}
+          <div style={_AN_CARD}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, marginBottom: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <span style={_AN_H}>Co z vašich dat vyplývá</span>
+                <span style={_AN_SUB}>Generováno automaticky · obnoveno před 4 hodinami</span>
+              </div>
+              <span onClick={refresh} style={{ fontSize: 12, fontWeight: 700, color: '#3A4266', background: '#fff', border: '1px solid #E6E9F5', padding: '8px 13px', borderRadius: 9, cursor: 'pointer', flex: 'none' }}>Přepočítat</span>
+            </div>
+            <div key={inseed} style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+              {_AN_INSIGHTS.map(([tag, color, bg, text], i) => (
+                <div key={i} style={{ background: '#FBFCFE', border: '1px solid #F0F2FA', borderRadius: 14, padding: '15px 16px', display: 'flex', flexDirection: 'column', gap: 9, animation: 'anFadeUp .3s ease both', animationDelay: (i * 0.04).toFixed(2) + 's' }}>
+                  <span style={{ alignSelf: 'flex-start', fontSize: 10, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color, background: bg, padding: '5px 10px', borderRadius: 999 }}>{tag}</span>
+                  <span style={{ fontSize: 13, color: '#3A4266', lineHeight: 1.5 }}>{text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Doba odpovědi + Hodinovka */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'stretch' }}>
+            <div style={_AN_CARD}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 18 }}>
+                <span style={_AN_H}>Doba odpovědi firmy</span>
+                <span style={_AN_SUB}>Kandidáti s odpovědí do 1 h matchují 3,8× častěji</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10, alignItems: 'end', height: 190 }}><_AnBars data={_AN_REPLY} height={120} /></div>
+              <div style={{ borderTop: '1px solid #F0F2FA', marginTop: 16, paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ ..._AN_SUB, fontSize: 12 }}>Váš průměr: <b style={{ color: '#0B1233' }}>1 h 13 min</b> · 394 vyhodnocených kandidátů</span>
+                <span style={{ ..._AN_SUB, fontSize: 11 }}>„Bez odezvy" = firma na kandidáta nereagovala do 7 dní od jeho swipu.</span>
+              </div>
+            </div>
+            <div style={_AN_CARD}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 14 }}>
+                <span style={_AN_H}>Průměrná hodinovka brigádníků</span>
+                <span style={_AN_SUB}>Napříč trhem · aktualizováno 1. 4. 2026</span>
+              </div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#E6F7EF', borderRadius: 999, padding: '7px 12px', alignSelf: 'flex-start', marginBottom: 16 }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#0FA968' }} />
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#0B7B4B' }}>Platíte více než 78 % firem na Makej</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10, alignItems: 'end', height: 160 }}><_AnBars data={_AN_WAGE} height={100} /></div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, borderTop: '1px solid #F0F2FA', marginTop: 16, paddingTop: 14 }}>
+                <div><div style={_AN_LBL}>Medián trhu</div><div style={{ ..._AN_NUM, marginTop: 5 }}>170 <span style={{ fontSize: 13, color: '#7A82A6' }}>Kč</span></div></div>
+                <div><div style={{ ..._AN_LBL, color: '#0FA968' }}>Vy</div><div style={{ ..._AN_NUM, marginTop: 5, color: '#0B7B4B' }}>200 <span style={{ fontSize: 13, color: '#7A82A6' }}>Kč</span></div></div>
+                <div><div style={_AN_LBL}>Top 10 %</div><div style={{ ..._AN_NUM, marginTop: 5 }}>220+ <span style={{ fontSize: 13, color: '#7A82A6' }}>Kč</span></div></div>
+              </div>
+              <div style={{ ..._AN_SUB, fontSize: 11, marginTop: 12 }}>Orientační odhad na základě interní distribuce mezd na platformě. Nemusí odpovídat aktuální situaci na trhu.</div>
+            </div>
+          </div>
+
+          {/* Doba do zájmu + Retence */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'stretch' }}>
+            <div style={_AN_CARD}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 16 }}>
+                <span style={_AN_H}>Doba do prvního zájmu</span>
+                <span style={_AN_SUB}>Jak rychle si lidé všimnou vašeho inzerátu</span>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <div style={_AN_LBL}>Průměrně</div>
+                <div style={{ fontSize: 34, fontWeight: 800, color: '#0B1233', letterSpacing: '-.03em', lineHeight: 1, marginTop: 6 }}>4 h 9 min</div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10, alignItems: 'end', height: 150 }}><_AnBars data={_AN_INTEREST} height={95} /></div>
+              <div style={{ ..._AN_SUB, fontSize: 11, borderTop: '1px solid #F0F2FA', marginTop: 16, paddingTop: 12 }}>Napříč 34 inzeráty za dané období · medián 1 h 33 min</div>
+            </div>
+            <div style={{ ..._AN_CARD, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 16 }}>
+                <span style={_AN_H}>Retence kandidátů</span>
+                <span style={_AN_SUB}>Kolik lidí se k vám vrací</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, marginBottom: 6 }}>
+                <span style={{ fontSize: 40, fontWeight: 800, color: '#1B34F0', letterSpacing: '-.03em', lineHeight: 1 }}>45 %</span>
+                <span style={{ ..._AN_SUB, fontSize: 13, paddingBottom: 4 }}>5 z 11 najatých kandidátů<br />u vás pracovalo opakovaně</span>
+              </div>
+              <div style={{ ..._AN_LBL, margin: '14px 0 9px' }}>Nejvěrnější kandidáti</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                {_AN_LOYAL.map(([n, k], i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, background: '#F6F7FC', borderRadius: 10, padding: '11px 13px' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#0B1233' }}>{n}</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: '#1B34F0' }}>{k}× brigáda</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ ..._AN_SUB, fontSize: 11, borderTop: '1px solid #F0F2FA', marginTop: 'auto', paddingTop: 12 }}>Počítáno za celou historii firmy napříč všemi inzeráty, nezávisle na zvoleném období.</div>
+            </div>
+          </div>
+
+          {/* Demografie */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, alignItems: 'stretch' }}>
+            <div style={_AN_CARD}>
+              <span style={_AN_H}>Věk</span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, alignItems: 'end', height: 170, marginTop: 18 }}><_AnBars data={_AN_AGE} height={120} /></div>
+            </div>
+            <div style={_AN_CARD}>
+              <span style={_AN_H}>Pohlaví</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 18 }}>
+                <div style={{ width: 132, height: 132, borderRadius: '50%', flex: 'none', background: 'conic-gradient(#1B34F0 0 58%,#F5920B 58% 99%,#C7A6F5 99% 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ width: 78, height: 78, borderRadius: '50%', background: '#fff' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1, minWidth: 0 }}>
+                  {_AN_GENDER.map(([n, pct, cnt, color], i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                        <span style={{ width: 9, height: 9, borderRadius: 3, background: color, flex: 'none' }} />
+                        <span style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: '#0B1233' }}>{n}</span>
+                          <span style={{ ..._AN_SUB, fontSize: 11 }}>{cnt} kandidátů</span>
+                        </span>
+                      </span>
+                      <span style={{ fontSize: 15, fontWeight: 800, color: '#0B1233' }}>{pct} %</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div style={_AN_CARD}>
+              <span style={_AN_H}>Zaměstnanecký status</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 18 }}>
+                {_AN_STATUS.map(([n, pct], i) => (
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#3A4266' }}>{n}</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: '#0B1233' }}>{pct} %</span>
+                    </div>
+                    <span style={{ display: 'block', height: 7, borderRadius: 999, background: '#F1F3FB', overflow: 'hidden' }}><span style={{ display: 'block', height: '100%', width: pct + '%', background: '#5C71FF', borderRadius: 999 }} /></span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ ..._AN_SUB, fontSize: 11, padding: '0 2px' }}>Krajská data jsou ukázková — v produkci je dodá agregace z profilů a inzerátů. Ostatní metriky vychází z vašeho účtu za zvolené období.</div>
+        </div>
+      </div>
+    </div>
+    </ProGate>
   );
 }
 

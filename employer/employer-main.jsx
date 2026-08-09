@@ -115,7 +115,7 @@ const JOB_TYPES = [
 
 const CONTRACT_TYPES = ['HPP', 'DPP', 'DPČ', 'Živnostenský list'];
 
-function ENewJobModal({ onClose, onPublish }) {
+function ENewJobModalOld({ onClose, onPublish }) {
   const [form,   setForm]   = useStateE(EMPTY_JOB_FORM);
   const [err,    setErr]    = useStateE('');
 
@@ -802,7 +802,7 @@ function EmployerApp() {
   } else if (noData && tab === 'dash') {
     body = <EEmptyState />;
   } else if (tab === 'dash')        body = <EDashboard key={tick + period} period={period} onTab={setTab} onNew={() => setShowNewJob(true)} onPeriod={setPeriod} />;
-  else if (tab === 'analytics')     body = <EAnalytics key={tick + period} period={period} />;
+  else if (tab === 'analytics')     body = <EAnalytics key={tick + period} period={period} onNew={() => setShowNewJob(true)} onTab={setTab} onPeriod={setPeriod} />;
   else if (tab === 'jobs')          body = <EJobs key={tick} onTab={setTab} onNew={() => setShowNewJob(true)} period={period} onPeriod={setPeriod} />;
   else if (tab === 'candidates')    body = <ECandidates key={tick} onOpenChat={openChat} onNew={() => setShowNewJob(true)} period={period} onPeriod={setPeriod} />;
   else if (tab === 'chat')          body = <EMessages key={tick + '-' + openThreadId} initialThreadId={openThreadId} period={period} onPeriod={setPeriod} onNew={() => setShowNewJob(true)} />;
@@ -836,8 +836,8 @@ function EmployerApp() {
 
       {loaded && <ESidebar tab={tab} onTab={setTab} onSignOut={handleSignOut} />}
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', overflowY: tab === 'dash' ? 'hidden' : 'auto', background: (tab === 'dash' || tab === 'reviews' || tab === 'calendar' || tab === 'chat' || tab === 'candidates' || tab === 'jobs' || tab === 'settings') ? '#F1F3FB' : (tab === 'analytics') ? '#ffffff' : 'transparent' }}>
-        {loaded && tab !== 'dash' && tab !== 'reviews' && tab !== 'calendar' && tab !== 'chat' && tab !== 'candidates' && tab !== 'jobs' && tab !== 'settings' && <ETopbar title={meta.title} subtitle={meta.subtitle} onNew={() => setShowNewJob(true)} onSignOut={handleSignOut} period={period} onPeriod={setPeriod} />}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', overflowY: tab === 'dash' ? 'hidden' : 'auto', background: (tab === 'dash' || tab === 'reviews' || tab === 'calendar' || tab === 'chat' || tab === 'candidates' || tab === 'jobs' || tab === 'settings' || tab === 'analytics') ? '#F1F3FB' : 'transparent' }}>
+        {loaded && tab !== 'dash' && tab !== 'reviews' && tab !== 'calendar' && tab !== 'chat' && tab !== 'candidates' && tab !== 'jobs' && tab !== 'settings' && tab !== 'analytics' && <ETopbar title={meta.title} subtitle={meta.subtitle} onNew={() => setShowNewJob(true)} onSignOut={handleSignOut} period={period} onPeriod={setPeriod} />}
         {body}
       </main>
 

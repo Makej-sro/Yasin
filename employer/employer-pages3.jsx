@@ -3224,3 +3224,547 @@ function ESettings({ onTab, onNew, onSignOut } = {}) {
   );
 }
 Object.assign(window, { ESettings });
+
+
+/* ============================================================
+   NOVÝ INZERÁT (ENewJobModal) — redesign: 3-krokový průvodce
+   (Typ a pozice → Kdy a kde → Detaily) + live náhled swipe karty.
+   Reálné napojení: Zveřejnit → onPublish(fields) → createJobE (Supabase),
+   Uložit rozpracované → localStorage, Vyplnit podle → z E_JOBS, Zavřít → onClose.
+   ============================================================ */
+const _NJ_TYPES = [
+  { key: 'once', label: 'Výpomoc', note: 'jednorázová akce' },
+  { key: 'brigada', label: 'Brigáda', note: 'krátkodobá práce' },
+  { key: 'part', label: 'Part-time', note: 'částečný úvazek', soon: true },
+  { key: 'full', label: 'Full-time', note: 'plný úvazek', soon: true },
+];
+const _NJ_UNITS = ['Kč/h', 'Kč/den', 'Kč/měs'];
+const _NJ_TITLE_HINTS = ['Barista', 'Skladník', 'Hosteska', 'Kuchař', 'Uklízečka', 'Pomocná síla'];
+const _NJ_REGIONS = ['Praha', 'Středočeský', 'Jihomoravský', 'Moravskoslezský', 'Olomoucký', 'Zlínský', 'Jihočeský', 'Plzeňský', 'Ústecký', 'Královéhradecký', 'Pardubický', 'Vysočina', 'Liberecký', 'Karlovarský'];
+const _NJ_TAGS = ['Gastro', 'Ranní směna', 'Odpolední směna', 'Bez zkušeností', 'Víkendy', 'Fyzická práce', 'Práce s lidmi', 'Vhodné pro studenty'];
+const _NJ_LANGS = ['Čeština', 'Slovenština', 'Angličtina', 'Ukrajinština', 'Není potřeba'];
+const _NJ_LANG_LEVELS = ['Základy', 'Domluví se', 'Plynule', 'Rodilý mluvčí'];
+const _NJ_CONTRACTS = ['DPP', 'DPČ', 'HPP', 'IČO / faktura', 'Dohoda o výpomoci'];
+const _NJ_NSP_FIELDS = [
+  'Bankovnictví, finance a pojišťovnictví', 'Chemie a farmaceutický průmysl', 'Doprava a logistika',
+  'Dřevařská výroba a nábytkářství', 'Ekonomika, administrativa a personalistika',
+  'Elektrotechnika, energetika a telekomunikační technika', 'Hutnictví, slévárenství a zpracování kovů',
+  'Informační technologie (IT)', 'Kultura, umění a design', 'Management',
+  'Média, vydavatelství a žurnalistika', 'Nemovitosti, pronájem a správa majetku', 'Obchod a marketing',
+  'Obrana, bezpečnost a ochrana osob a majetku', 'Osobní služby', 'Ostatní zpracovatelský průmysl',
+  'Pohostinství, gastronomie a cestovní ruch', 'Polygrafie, zpracování papíru a filmu',
+  'Poradenství a konzultační služby', 'Potravinářství a krmivářství', 'Poštovní a doručovatelské služby',
+  'Právo, legislativa a justice', 'Provozní služby', 'Překladatelství, tlumočení a jazykové služby',
+  'Rybolov, chovatelství a myslivost', 'Sklo, keramika, minerály a zpracování kamene',
+  'Sociální péče a ochrana', 'Stavebnictví', 'Státní správa a územní samospráva', 'Strojírenství',
+  'Technické testování, analýzy a certifikace', 'Textilní, oděvní a kožedělná výroba',
+  'Těžba a zpracování surovin', 'Věda, výzkum a vývoj', 'Veterinární činnosti',
+  'Vodní hospodářství a vodárenství', 'Vzdělávání, výchova a sport',
+  'Výroba stavebních hmot a stavebních výrobků', 'Zdravotnictví a farmacie',
+  'Zemědělství, zahradnictví a lesnictví',
+];
+const _NJ_FIELDS = [
+  'Pohostinství, gastronomie a cestovní ruch', 'Obchod a marketing', 'Doprava a logistika',
+  'Provozní služby', 'Ekonomika, administrativa a personalistika', 'Ostatní zpracovatelský průmysl',
+  'Stavebnictví', 'Osobní služby', 'Vzdělávání, výchova a sport', 'Zemědělství, zahradnictví a lesnictví',
+];
+const _NJ_MODES = ['Na místě', 'Z domova', 'Kombinace'];
+const _NJ_VALIDITY = ['7 dní', '14 dní', '30 dní', 'Do obsazení'];
+const _NJ_SUITABLE = ['Studenti', 'Rodiče na MD/RD', 'Důchodci', 'OZP', 'Cizinci', 'Absolventi', 'Od 15 let'];
+const _NJ_MORE_LANGS = ['Němčina', 'Polština', 'Ruština', 'Vietnamština', 'Rumunština', 'Maďarština', 'Bulharština', 'Španělština', 'Italština', 'Francouzština', 'Mongolština'];
+const _NJ_PERKS = ['Káva zdarma', 'Nástup ihned', 'Jídlo na směně', 'Výplata do 3 dnů', 'Zaučíme', 'Doprava zdarma'];
+const _NJ_TIME_PRESETS = [
+  { label: '6:00–14:00', from: '06:00', to: '14:00' }, { label: '10:00–18:00', from: '10:00', to: '18:00' },
+  { label: '14:00–22:00', from: '14:00', to: '22:00' }, { label: '18:00–02:00', from: '18:00', to: '02:00' },
+];
+const _NJ_DAYS = ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So'];
+const _NJ_DESC_TEMPLATES = {
+  default: 'Postaráte se o hladký průběh směny — příprava, obsluha a úklid pracoviště. Zaučíme vás na místě, stačí chuť pracovat a přijít včas.',
+  Barista: 'Připravíte espresso a filtrovanou kávu, obsloužíte hosty u baru a udržíte pracoviště v čistotě. Zkušenost s pákovým strojem oceníme, ale zaučíme i začátečníka.',
+  'Skladník': 'Naskladníte a vychystáte zboží, zkontrolujete objednávky a udržíte pořádek ve skladu. Práce ve dvojici, součástí je i manipulace s paletovým vozíkem.',
+  'Kuchař': 'Připravíte pokrmy podle receptur, ohlídáte teploty a čistotu pracoviště. Vaříme z čerstvých surovin, na směně jsou vždy dva kuchaři.',
+};
+const _njMins = t => { const m = /^(\d{1,2}):(\d{2})$/.exec((t || '').trim()); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
+const _njCustomISO = s => { const m = /(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{2,4})/.exec(s || ''); if (!m) return ''; let y = m[3]; if (y.length === 2) y = '20' + y; return y + '-' + String(m[2]).padStart(2, '0') + '-' + String(m[1]).padStart(2, '0'); };
+const _njChip = on => on ? { color: '#fff', bg: '#1B34F0', border: '#1B34F0' } : { color: '#3A4266', bg: '#fff', border: '#E6E9F5' };
+
+function ENewJobModal({ onClose, onPublish } = {}) {
+  const DRAFT_KEY = 'makej-emp-jobdraft';
+  const [step, setStep] = React.useState(1);
+  const [preview, setPreview] = React.useState(false);
+  const [tried, setTried] = React.useState(false);
+  const [shake, setShake] = React.useState(0);
+  const [type, setType] = React.useState('brigada');
+  const [title, setTitle] = React.useState('');
+  const [pay, setPay] = React.useState('');
+  const [payTo, setPayTo] = React.useState('');
+  const [payRange, setPayRange] = React.useState(false);
+  const [unit, setUnit] = React.useState('Kč/h');
+  const [people, setPeople] = React.useState(1);
+  const [contract, setContract] = React.useState(null);
+  const [field, setField] = React.useState([]);
+  const [fieldOpen, setFieldOpen] = React.useState(false);
+  const [fieldSearch, setFieldSearch] = React.useState('');
+  const [mode, setMode] = React.useState('Na místě');
+  const [validity, setValidity] = React.useState('30 dní');
+  const [datePreset, setDatePreset] = React.useState(null);
+  const [dateISO, setDateISO] = React.useState('');
+  const [dateCustom, setDateCustom] = React.useState('');
+  const [from, setFrom] = React.useState('');
+  const [to, setTo] = React.useState('');
+  const [place, setPlace] = React.useState('');
+  const [region, setRegion] = React.useState(null);
+  const [desc, setDesc] = React.useState('');
+  const [duties, setDuties] = React.useState([]);
+  const [dutyInput, setDutyInput] = React.useState('');
+  const [tags, setTags] = React.useState([]);
+  const [suitable, setSuitable] = React.useState([]);
+  const [langs, setLangs] = React.useState(['Čeština']);
+  const [langLevels, setLangLevels] = React.useState({});
+  const [langMore, setLangMore] = React.useState(false);
+  const [langInput, setLangInput] = React.useState('');
+  const [perks, setPerks] = React.useState([]);
+  const [contactName, setContactName] = React.useState('');
+  const [contactPhone, setContactPhone] = React.useState('');
+  const [rules, setRules] = React.useState(true);
+  const [tw, setTw] = React.useState({ idx: 0, len: 0, back: false, hold: 0, caret: true });
+  const [busy, setBusy] = React.useState(false);
+
+  // Typewriter placeholder názvu pozice — běží jen dokud pole není vyplněné.
+  React.useEffect(() => {
+    if (title.trim()) return;
+    const tick = setInterval(() => setTw(s => {
+      const word = _NJ_TITLE_HINTS[s.idx];
+      if (!s.back) { if (s.len < word.length) return { ...s, len: s.len + 1 }; if (s.hold < 14) return { ...s, hold: s.hold + 1 }; return { ...s, back: true, hold: 0 }; }
+      if (s.len > 0) return { ...s, len: s.len - 1 };
+      return { ...s, back: false, idx: (s.idx + 1) % _NJ_TITLE_HINTS.length };
+    }), 55);
+    const blink = setInterval(() => setTw(s => ({ ...s, caret: !s.caret })), 530);
+    return () => { clearInterval(tick); clearInterval(blink); };
+  }, [title]);
+
+  // Načtení rozpracovaného konceptu při otevření.
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d && typeof d === 'object') {
+        if (d.type) setType(d.type); if (d.title) setTitle(d.title); if (d.pay) setPay(d.pay);
+        if (d.payTo) setPayTo(d.payTo); if (d.payRange) setPayRange(true); if (d.unit) setUnit(d.unit);
+        if (d.people) setPeople(d.people); if (d.contract) setContract(d.contract); if (Array.isArray(d.field)) setField(d.field);
+        if (d.mode) setMode(d.mode); if (d.validity) setValidity(d.validity); if (d.dateISO) setDateISO(d.dateISO);
+        if (d.datePreset) setDatePreset(d.datePreset); if (d.dateCustom) setDateCustom(d.dateCustom);
+        if (d.from) setFrom(d.from); if (d.to) setTo(d.to); if (d.place) setPlace(d.place); if (d.region) setRegion(d.region);
+        if (d.desc) setDesc(d.desc); if (Array.isArray(d.duties)) setDuties(d.duties); if (Array.isArray(d.tags)) setTags(d.tags);
+        if (Array.isArray(d.suitable)) setSuitable(d.suitable); if (Array.isArray(d.langs)) setLangs(d.langs);
+        if (d.langLevels) setLangLevels(d.langLevels); if (Array.isArray(d.perks)) setPerks(d.perks);
+        if (d.contactName) setContactName(d.contactName); if (d.contactPhone) setContactPhone(d.contactPhone);
+        if (typeof d.rules === 'boolean') setRules(d.rules);
+      }
+    } catch (e) {}
+  }, []);
+
+  const typeObj = _NJ_TYPES.find(t => t.key === type) || _NJ_TYPES[1];
+  const shiftLike = type === 'once' || type === 'brigada';
+  const fromM = _njMins(from), toM = _njMins(to);
+  const hours = (fromM !== null && toM !== null) ? ((toM - fromM + 1440) % 1440) / 60 : null;
+  const payNum = Number(String(pay).replace(/\s/g, '')) || 0;
+  const payToNum = Number(String(payTo).replace(/\s/g, '')) || 0;
+  const nf = n => n.toLocaleString('cs-CZ');
+  const payText = payNum ? ((payRange && payToNum > payNum ? nf(payNum) + '–' + nf(payToNum) : nf(payNum)) + ' ' + unit) : null;
+  const total = hours && unit === 'Kč/h' ? Math.round(payNum * hours) : null;
+  const dateLabel = datePreset || (dateCustom.trim() || null);
+
+  const presets = (() => {
+    const out = []; const base = new Date();
+    for (let i = 0; i < 4; i++) {
+      const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + i);
+      const iso = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+      out.push({ label: i === 0 ? 'Dnes' : i === 1 ? 'Zítra' : (_NJ_DAYS[d.getDay()] + ' ' + d.getDate() + '. ' + (d.getMonth() + 1) + '.'), iso });
+    }
+    return out;
+  })();
+
+  const checks = [
+    { key: 'title', done: !!title.trim(), step: 1 },
+    { key: 'pay', done: payNum > 0, step: 1 },
+    { key: 'field', done: field.length > 0, step: 1 },
+    { key: 'contract', done: !!contract, step: 1 },
+    { key: 'when', done: shiftLike ? !!(dateLabel && hours) : !!dateLabel, step: 2 },
+    { key: 'place', done: (mode === 'Z domova' ? true : !!place.trim()) && !!region, step: 2 },
+    { key: 'desc', done: desc.trim().length >= 40, step: 3 },
+    { key: 'tags', done: tags.length >= 2, step: 3 },
+  ];
+  const bad = k => tried && !(checks.find(c => c.key === k) || {}).done;
+  const anyErr = tried && checks.some(c => !c.done);
+  const doneCount = checks.filter(c => c.done).length;
+  const ERR = '#E5484D';
+
+  const stepMeta = [1, 2, 3].map(n => {
+    const own = checks.filter(c => c.step === n);
+    const ownDone = own.filter(c => c.done).length;
+    const sums = {
+      1: [title.trim(), payText, contract].filter(Boolean).join(' · ') || 'pozice a mzda',
+      2: [dateLabel, hours ? hours.toFixed(hours % 1 ? 1 : 0) + ' h' : null, place.trim()].filter(Boolean).join(' · ') || 'termín a místo',
+      3: [desc.trim() ? 'popis' : null, tags.length ? tags.length + ' tagů' : null, perks.length ? perks.length + ' výhod' : null].filter(Boolean).join(' · ') || 'popis, tagy, výhody',
+    };
+    return { n, label: ['Typ a pozice', 'Kdy a kde', 'Detaily'][n - 1], note: sums[n], done: ownDone === own.length };
+  });
+
+  const draftObj = () => ({ type, title, pay, payTo, payRange, unit, people, contract, field, mode, validity, datePreset, dateISO, dateCustom, from, to, place, region, desc, duties, tags, suitable, langs, langLevels, perks, contactName, contactPhone, rules });
+  const saveDraft = () => { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draftObj())); } catch (e) {} if (window.empToast) window.empToast('Uloženo', 'Rozpracovaný inzerát je uložený, můžete se k němu vrátit.', '', 'ok'); };
+
+  const pickField = lbl => setField(f => f.includes(lbl) ? f.filter(x => x !== lbl) : (f.length >= 3 ? f : f.concat(lbl)));
+  const pickLang = name => setLangs(ls => {
+    if (name === 'Není potřeba') return ls.includes(name) ? [] : [name];
+    const rest = ls.filter(x => x !== 'Není potřeba');
+    return rest.includes(name) ? rest.filter(x => x !== name) : rest.concat(name);
+  });
+  const addLang = () => { const raw = langInput.trim(); if (!raw) return; const name = raw[0].toUpperCase() + raw.slice(1); setLangs(ls => { const rest = ls.filter(x => x !== 'Není potřeba'); return rest.includes(name) ? ls : rest.concat(name); }); setLangInput(''); };
+  const addDuty = () => { const t = dutyInput.trim(); if (!t) return; setDuties(d => d.concat(t)); setDutyInput(''); };
+  const toggleIn = (setter, v) => setter(a => a.includes(v) ? a.filter(x => x !== v) : a.concat(v));
+
+  const useTemplate = () => setDesc(_NJ_DESC_TEMPLATES[title.trim()] || _NJ_DESC_TEMPLATES.default);
+
+  const duplicate = () => {
+    const j = (typeof E_JOBS !== 'undefined' ? E_JOBS : [])[0];
+    if (!j) return;
+    setTitle(j.title || ''); setPay(String(j.pay || '')); setUnit(j.payUnit || 'Kč/h');
+    setPlace(j.location || ''); if (j.kraj) setRegion(j.kraj);
+    if (Array.isArray(j.tags)) setTags(j.tags.slice(0, 6));
+    if (j.description) setDesc(j.description);
+    if (window.empToast) window.empToast('Předvyplněno', 'Formulář jsem vyplnil podle inzerátu „' + (j.title || '') + '".', '', 'ok');
+  };
+  const dupLabel = (() => { const j = (typeof E_JOBS !== 'undefined' ? E_JOBS : [])[0]; return j ? j.title : null; })();
+
+  const publish = () => {
+    if (busy) return;
+    if (step !== 3) { setStep(Math.min(3, step + 1)); return; }
+    if (!checks.every(c => c.done)) {
+      const first = checks.find(c => !c.done);
+      setTried(true); setShake(x => x + 1); setStep(first.step);
+      return;
+    }
+    setBusy(true);
+    const jt = type === 'once' ? 'jednrazova_vypomoc' : 'brigada';
+    let descFull = desc.trim();
+    if (duties.length) descFull += (descFull ? '\n\n' : '') + 'Náplň práce:\n' + duties.map(d => '• ' + d).join('\n');
+    if (perks.length) descFull += (descFull ? '\n\n' : '') + 'Co nabízíme: ' + perks.join(' · ');
+    const reqs = []
+      .concat(contract ? ['Smluvní vztah: ' + contract] : [])
+      .concat(langs.filter(l => l !== 'Není potřeba').map(n => 'Jazyk: ' + n + (langLevels[n] ? ' (' + langLevels[n] + ')' : '')))
+      .concat(suitable.map(x => 'Vhodné pro: ' + x))
+      .concat(people > 1 ? ['Hledáme ' + people + ' lidí na směnu'] : []);
+    const kraj = region || (typeof _krajZAdresy !== 'undefined' ? _krajZAdresy(place) : '') || '';
+    const pubDate = dateISO || _njCustomISO(dateCustom) || '';
+    const fields = {
+      title: title.trim(),
+      company: (typeof ECOMPANY !== 'undefined' ? ECOMPANY.name : '') || '',
+      description: descFull,
+      pay: payNum, pay_unit: unit,
+      location: place.trim() || (mode === 'Z domova' ? 'Z domova' : ''),
+      kraj,
+      date: pubDate,
+      time_start: from, time_end: to,
+      tags, requirements: reqs,
+      job_type: jt,
+    };
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    if (onPublish) onPublish(fields); else if (onClose) onClose();
+  };
+
+  // ── styly ──
+  const modalW = preview ? 1064 : 760;
+  const gridCols = preview ? '1fr 372px' : '1fr';
+  const inp = (border) => ({ fontSize: 15, color: '#0B1233', background: '#F6F7FC', border: '1px solid ' + border, borderRadius: 11, padding: '13px 15px', outline: 'none', width: '100%', boxSizing: 'border-box' });
+  const lab = t => <span style={{ fontSize: 12, fontWeight: 700, color: '#3A4266' }}>{t}</span>;
+  const hint = t => <span style={{ fontSize: 11, color: '#A6ADCB' }}>{t}</span>;
+  const groupBox = errColor => ({ display: 'flex', gap: 6, flexWrap: 'wrap', border: '1.5px solid ' + (errColor || 'transparent'), borderRadius: 12, padding: 6, margin: -6 });
+  const chipEl = (label, on, onClick, extra) => <span key={label} onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, padding: '8px 12px', borderRadius: 999, cursor: 'pointer', color: extra && extra.color || (on ? '#fff' : '#3A4266'), background: on ? '#1B34F0' : '#fff', border: '1px solid ' + (on ? '#1B34F0' : '#E6E9F5'), whiteSpace: 'nowrap' }}>{extra && extra.mark || ''}{label}</span>;
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(11,18,51,.62)', backdropFilter: 'blur(2px)', display: 'grid', placeItems: 'center', padding: 20 }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: modalW, maxWidth: '100%', maxHeight: '92vh', background: '#fff', borderRadius: 22, overflow: 'hidden', boxShadow: '0 32px 80px rgba(11,18,51,.35)', display: 'flex', flexDirection: 'column', animation: 'njModalIn .32s cubic-bezier(.4,0,.2,1) both' }}>
+
+        {/* Hlavička + kroky */}
+        <div style={{ padding: '22px 26px 0', display: 'flex', flexDirection: 'column', gap: 18, flex: 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20 }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em' }}>Nový inzerát</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {dupLabel && <span onClick={duplicate} style={{ fontSize: 12, fontWeight: 700, color: '#3A4266', background: '#F6F7FC', border: '1px solid #E6E9F5', padding: '8px 12px', borderRadius: 9, cursor: 'pointer', whiteSpace: 'nowrap' }}>Vyplnit podle: {dupLabel.length > 16 ? dupLabel.slice(0, 16) + '…' : dupLabel}</span>}
+              <span onClick={() => setPreview(p => !p)} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, color: preview ? '#fff' : '#3A4266', background: preview ? '#1B34F0' : '#F6F7FC', border: '1px solid ' + (preview ? '#1B34F0' : '#E6E9F5'), padding: '8px 12px', borderRadius: 9, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <span style={{ position: 'relative', width: 14, height: 14, flex: 'none', borderRadius: '50%', border: '1.5px solid ' + (preview ? '#fff' : '#3A4266'), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ position: 'absolute', inset: -1.5, borderRadius: '50%', border: '1.5px solid ' + (preview ? '#fff' : '#3A4266'), animation: 'njLiveRing 1.8s ease-out infinite' }} />
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: preview ? '#fff' : '#3A4266', animation: 'njLivePulse 1.8s ease-in-out infinite' }} />
+                </span>{preview ? 'Skrýt live náhled' : 'Live náhled'}
+              </span>
+              <span onClick={onClose} style={{ width: 34, height: 34, flex: 'none', borderRadius: 10, background: '#F6F7FC', color: '#3A4266', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>✕</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F6F7FC', border: '1px solid #E6E9F5', borderRadius: 12, padding: 5 }}>
+            {stepMeta.map((m, i) => {
+              const cur = m.n === step, done = m.done, isBad = anyErr && !done;
+              return (
+                <span key={m.n} onClick={() => setStep(m.n)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', padding: '9px 12px', borderRadius: 9, background: done ? '#0FA968' : isBad ? '#FDECEC' : cur ? '#fff' : 'transparent', border: '1.5px solid ' + (done ? '#0FA968' : isBad ? '#E5484D' : 'transparent'), boxShadow: (done || cur) ? '0 1px 2px rgba(11,18,51,.1)' : 'none', whiteSpace: 'nowrap', animation: isBad ? 'njShake .5s ease-in-out ' + (i * 0.06).toFixed(2) + 's 1 both' : 'none', transition: 'background .2s, border-color .2s, color .2s' }}>
+                  {done && <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>✓</span>}
+                  <span style={{ fontSize: 13, fontWeight: 800, color: done ? '#fff' : isBad ? '#C42B30' : cur ? '#0B1233' : '#7A82A6' }}>{m.label}</span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Tělo (formulář + náhled) — scrolluje uvnitř */}
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'grid', gridTemplateColumns: gridCols }}>
+          <div style={{ padding: '22px 26px 26px', display: 'flex', flexDirection: 'column', gap: 20, minHeight: 452, minWidth: 0 }}>
+
+            {step === 1 && (<>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.07em', color: '#A6ADCB', textTransform: 'uppercase' }}>Typ inzerátu</span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                  {_NJ_TYPES.map(t => {
+                    const on = t.key === type, soon = !!t.soon;
+                    return (
+                      <div key={t.key} onClick={() => { if (!soon) setType(t.key); }} style={{ border: '1.5px solid ' + (on ? '#1B34F0' : '#E6E9F5'), background: on ? '#EEF1FF' : soon ? '#FBFCFF' : '#fff', borderRadius: 13, padding: '13px 12px', display: 'flex', flexDirection: 'column', gap: 2, cursor: soon ? 'default' : 'pointer' }}>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: on ? '#1B34F0' : soon ? '#A6ADCB' : '#0B1233', whiteSpace: 'nowrap' }}>{t.label}</span>
+                        <span style={{ fontSize: 11, color: soon ? '#B9C0D9' : '#7A82A6', lineHeight: 1.35 }}>{t.note}</span>
+                        {soon && <span style={{ alignSelf: 'flex-start', marginTop: 5, fontSize: 10, fontWeight: 800, letterSpacing: '.04em', color: '#7A82A6', background: '#EEF1FF', borderRadius: 999, padding: '3px 8px' }}>Připravujeme</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Smluvní vztah')}{hint('kandidát podle toho filtruje')}</div>
+                <div style={groupBox(bad('contract') ? ERR : null)}>
+                  {_NJ_CONTRACTS.map(c => chipEl(c, contract === c, () => setContract(contract === c ? null : c)))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Název pozice')}{title.length >= 50 && <span style={{ fontSize: 11, fontWeight: 700, color: '#F5920B' }}>50 / 50 — delší název se nevejde</span>}</div>
+                <input value={title} onChange={e => setTitle(e.target.value.slice(0, 50))} placeholder={'např. ' + _NJ_TITLE_HINTS[tw.idx].slice(0, tw.len) + (title.trim() ? '' : (tw.caret ? '|' : ''))} style={{ ...inp(bad('title') ? ERR : title.trim() ? '#E6E9F5' : '#D5DAF0'), fontWeight: 600 }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Obor')}{hint(field.length ? field.length + ' ze 3 vybráno' : 'vyberte až 3 obory')}</div>
+                <div style={groupBox(bad('field') ? ERR : null)}>
+                  {_NJ_FIELDS.concat(field.filter(f => !_NJ_FIELDS.includes(f))).map(f => {
+                    const on = field.includes(f), full = !on && field.length >= 3;
+                    return <span key={f} onClick={() => pickField(f)} style={{ fontSize: 12, fontWeight: 700, padding: '8px 12px', borderRadius: 999, cursor: 'pointer', color: on ? '#fff' : full ? '#B9C0D9' : '#3A4266', background: on ? '#1B34F0' : '#fff', border: '1px solid ' + (on ? '#1B34F0' : '#E6E9F5'), whiteSpace: 'nowrap' }}>{f.split(',')[0].split(' a ')[0]}</span>;
+                  })}
+                  <span onClick={() => { setFieldOpen(o => !o); setFieldSearch(''); }} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 700, padding: '8px 12px', borderRadius: 999, cursor: 'pointer', color: fieldOpen ? '#1B34F0' : '#3A4266', background: fieldOpen ? '#EEF1FF' : '#fff', border: '1px solid ' + (fieldOpen ? '#1B34F0' : '#E6E9F5'), whiteSpace: 'nowrap' }}>Další obory<span style={{ fontSize: 9 }}>▾</span></span>
+                </div>
+                {fieldOpen && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, background: '#F6F7FC', border: '1px solid #E6E9F5', borderRadius: 12, padding: '10px 11px', animation: 'njFadeUp .2s ease both' }}>
+                    <input value={fieldSearch} onChange={e => setFieldSearch(e.target.value)} placeholder="Hledat obor podle NSP…" style={{ fontSize: 13, color: '#0B1233', background: '#fff', border: '1px solid #E6E9F5', borderRadius: 9, padding: '10px 12px', outline: 'none', width: '100%', boxSizing: 'border-box' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 186, overflowY: 'auto' }}>
+                      {_NJ_NSP_FIELDS.filter(f => { const q = fieldSearch.trim().toLowerCase(); return !q || f.toLowerCase().includes(q); }).map(f => {
+                        const on = field.includes(f), full = !on && field.length >= 3;
+                        return <span key={f} onClick={() => pickField(f)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, fontSize: 12, fontWeight: on ? 800 : 600, color: on ? '#1B34F0' : full ? '#B9C0D9' : '#3A4266', background: on ? '#EEF1FF' : '#fff', borderRadius: 8, padding: '9px 11px', cursor: 'pointer' }}>{f}<span style={{ fontSize: 11, fontWeight: 800, color: '#0FA968' }}>{on ? '✓' : ''}</span></span>;
+                      })}
+                    </div>
+                    <span style={{ fontSize: 11, color: '#A6ADCB' }}>{field.length >= 3 ? 'Vybrané 3 obory jsou maximum — nejdřív jeden odeberte' : 'Klasifikace podle Národní soustavy povolání — 40 oborů'}</span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Mzda')}<span onClick={() => { setPayRange(r => !r); setPayTo(''); }} style={{ fontSize: 11, fontWeight: 800, color: '#1B34F0', cursor: 'pointer', whiteSpace: 'nowrap' }}>{payRange ? '– zrušit rozpětí' : '+ rozpětí od–do'}</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', background: '#F6F7FC', border: '1px solid ' + (bad('pay') ? ERR : payNum > 0 ? '#E6E9F5' : '#D5DAF0'), borderRadius: 11, overflow: 'hidden' }}>
+                    <input value={pay} onChange={e => setPay(e.target.value.replace(/[^\d]/g, ''))} placeholder="180" style={{ flex: 1, minWidth: 0, fontSize: 16, fontWeight: 800, color: '#0B1233', background: 'transparent', border: 'none', padding: '13px 15px', outline: 'none' }} />
+                    {payRange && <>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: '#A6ADCB', flex: 'none' }}>–</span>
+                      <input value={payTo} onChange={e => setPayTo(e.target.value.replace(/[^\d]/g, ''))} placeholder="220" style={{ flex: 1, minWidth: 0, fontSize: 16, fontWeight: 800, color: '#0B1233', background: 'transparent', border: 'none', padding: '13px 15px', outline: 'none' }} />
+                    </>}
+                    <div style={{ display: 'flex', gap: 2, padding: 4, flex: 'none' }}>
+                      {_NJ_UNITS.map(u => <span key={u} onClick={() => setUnit(u)} style={{ fontSize: 12, fontWeight: 800, padding: '7px 10px', borderRadius: 8, cursor: 'pointer', color: u === unit ? '#fff' : '#7A82A6', background: u === unit ? '#1B34F0' : 'transparent', whiteSpace: 'nowrap' }}>{u}</span>)}
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 11, color: payNum && payNum < 150 ? '#B96F06' : payNum ? '#0B7B4B' : '#A6ADCB' }}>{payNum ? (payNum < 150 ? 'Nízká sazba — v okolí se platí od 160 Kč/h' : 'Sazba je nad průměrem v okolí') : 'Kandidáti filtrují podle mzdy, vyplňte ji vždy'}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {lab('Kolik lidí hledáte')}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span onClick={() => setPeople(p => Math.max(1, p - 1))} style={{ width: 44, height: 46, flex: 'none', borderRadius: 11, background: '#F6F7FC', border: '1px solid #E6E9F5', color: '#3A4266', fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>–</span>
+                    <span style={{ flex: 1, height: 46, borderRadius: 11, background: '#F6F7FC', border: '1px solid #E6E9F5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#0B1233' }}>{people}</span>
+                    <span onClick={() => setPeople(p => Math.min(20, p + 1))} style={{ width: 44, height: 46, flex: 'none', borderRadius: 11, background: '#F6F7FC', border: '1px solid #E6E9F5', color: '#3A4266', fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>+</span>
+                  </div>
+                  <span style={{ fontSize: 11, color: '#A6ADCB' }}>na jednu směnu</span>
+                </div>
+              </div>
+            </>)}
+
+            {step === 2 && (<>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                {lab('Kde se pracuje')}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{_NJ_MODES.map(m => chipEl(m, mode === m, () => setMode(m)))}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                {lab('Datum směny')}
+                <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+                  {presets.map(p => { const on = datePreset === p.label; const c = _njChip(on); return <span key={p.label} onClick={() => { setDatePreset(p.label); setDateISO(p.iso); setDateCustom(''); }} style={{ fontSize: 13, fontWeight: 700, padding: '9px 14px', borderRadius: 999, cursor: 'pointer', color: c.color, background: c.bg, border: '1px solid ' + c.border, whiteSpace: 'nowrap' }}>{p.label}</span>; })}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F6F7FC', border: '1px solid ' + (bad('when') ? ERR : '#E6E9F5'), borderRadius: 999, padding: '0 14px' }}>
+                    <span style={{ fontSize: 12, color: '#A6ADCB' }}>nebo</span>
+                    <input value={dateCustom} onChange={e => { setDateCustom(e.target.value); setDatePreset(null); setDateISO(''); }} placeholder="dd. mm. rrrr" style={{ width: 96, fontSize: 13, fontWeight: 700, color: '#0B1233', background: 'transparent', border: 'none', padding: '9px 0', outline: 'none' }} />
+                  </span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Čas směny')}<span style={{ fontSize: 11, fontWeight: 700, color: hours ? '#0B7B4B' : '#A6ADCB' }}>{hours ? (hours.toFixed(hours % 1 ? 1 : 0) + ' h směna' + (total ? ' · ' + total.toLocaleString('cs-CZ') + ' Kč' : '')) : 'délku dopočítáme'}</span></div>
+                <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>{_NJ_TIME_PRESETS.map(p => { const on = from === p.from && to === p.to; const c = _njChip(on); return <span key={p.label} onClick={() => { setFrom(p.from); setTo(p.to); }} style={{ fontSize: 13, fontWeight: 700, padding: '9px 14px', borderRadius: 999, cursor: 'pointer', color: c.color, background: c.bg, border: '1px solid ' + c.border, whiteSpace: 'nowrap' }}>{p.label}</span>; })}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, paddingTop: 2 }}>
+                  {[['Od', from, setFrom, '06:00'], ['Do', to, setTo, '14:00']].map(([l, v, setv, ph]) => (
+                    <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F6F7FC', border: '1px solid ' + (bad('when') ? ERR : '#E6E9F5'), borderRadius: 11, padding: '0 14px' }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: '#A6ADCB', letterSpacing: '.06em', textTransform: 'uppercase' }}>{l}</span>
+                      <input value={v} onChange={e => setv(e.target.value)} placeholder={ph} style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: '#0B1233', background: 'transparent', border: 'none', padding: '13px 0', outline: 'none' }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {lab(mode === 'Z domova' ? 'Místo (nepovinné)' : 'Adresa pracoviště')}
+                <input value={place} onChange={e => setPlace(e.target.value)} placeholder={mode === 'Z domova' ? 'např. celá ČR' : 'např. Dolnice 314/2, Brno – Řečkovice'} style={inp(bad('place') && !place.trim() ? ERR : place.trim() ? '#E6E9F5' : '#D5DAF0')} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                {lab('Kraj')}
+                <div style={groupBox(bad('place') && !region ? ERR : null)}>{_NJ_REGIONS.map(r => chipEl(r, region === r, () => setRegion(region === r ? null : r)))}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Inzerát běží')}{hint(validity === 'Do obsazení' ? 'skryje se po obsazení' : 'pak se automaticky skryje')}</div>
+                <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>{_NJ_VALIDITY.map(v => chipEl(v, validity === v, () => setValidity(v)))}</div>
+              </div>
+            </>)}
+
+            {step === 3 && (<>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Popis práce')}<span style={{ fontSize: 11, fontWeight: 700, color: desc.length >= 40 ? '#0B7B4B' : '#A6ADCB' }}>{desc.length} / 600</span></div>
+                <textarea value={desc} onChange={e => setDesc(e.target.value.slice(0, 600))} placeholder="Co bude náplní směny? Dvě tři věty stačí." style={{ ...inp(bad('desc') ? ERR : '#E6E9F5'), minHeight: 104, resize: 'vertical', fontSize: 14, lineHeight: 1.55 }} />
+                <span onClick={useTemplate} style={{ alignSelf: 'flex-start', fontSize: 12, fontWeight: 800, color: '#1B34F0', cursor: 'pointer' }}>Vložit vzorový popis pro tuto pozici</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Náplň práce v bodech')}{hint('nepovinné, ale čte se nejlépe')}</div>
+                {duties.map((d, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F6F7FC', border: '1px solid #E6E9F5', borderRadius: 10, padding: '9px 12px' }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#1B34F0', flex: 'none' }} />
+                    <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: '#0B1233' }}>{d}</span>
+                    <span onClick={() => setDuties(ds => ds.filter((_, j) => j !== i))} style={{ fontSize: 12, fontWeight: 800, color: '#A6ADCB', cursor: 'pointer', flex: 'none' }}>✕</span>
+                  </div>
+                ))}
+                <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
+                  <input value={dutyInput} onChange={e => setDutyInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDuty(); } }} placeholder="např. příprava nápojů a obsluha u baru" style={{ flex: 1, minWidth: 0, fontSize: 13, color: '#0B1233', background: '#F6F7FC', border: '1px solid #E6E9F5', borderRadius: 10, padding: '11px 13px', outline: 'none' }} />
+                  <span onClick={addDuty} style={{ fontSize: 12, fontWeight: 800, color: '#fff', background: dutyInput.trim() ? '#1B34F0' : '#A6ADCB', padding: '11px 16px', borderRadius: 10, cursor: 'pointer', whiteSpace: 'nowrap' }}>Přidat bod</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Tagy')}{hint('pomáhají kandidátům inzerát najít')}</div>
+                <div style={groupBox(bad('tags') ? ERR : null)}>{_NJ_TAGS.map(t => { const on = tags.includes(t); return chipEl(t, on, () => toggleIn(setTags, t), { mark: on ? '✓ ' : '+ ' }); })}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Vhodné i pro')}{hint('rozšíří dosah inzerátu')}</div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{_NJ_SUITABLE.map(o => { const on = suitable.includes(o); return chipEl(o, on, () => toggleIn(setSuitable, o), { mark: on ? '✓ ' : '+ ' }); })}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Jazyk')}{hint('co musí kandidát umět')}</div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {_NJ_LANGS.concat(langs.filter(l => !_NJ_LANGS.includes(l))).map(name => { const on = langs.includes(name); const lvl = langLevels[name]; return chipEl(on && lvl ? name + ' (' + lvl + ')' : name, on, () => pickLang(name), { mark: on ? '✓ ' : '+ ' }); })}
+                  <span onClick={() => setLangMore(m => !m)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, padding: '8px 12px', borderRadius: 999, cursor: 'pointer', color: langMore ? '#1B34F0' : '#3A4266', background: langMore ? '#EEF1FF' : '#fff', border: '1px solid ' + (langMore ? '#1B34F0' : '#E6E9F5'), whiteSpace: 'nowrap' }}>{langMore ? '– Méně' : '+ Více jazyků'}</span>
+                </div>
+                {langMore && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 9, background: '#F6F7FC', border: '1px solid #E6E9F5', borderRadius: 12, padding: '11px 12px', animation: 'njFadeUp .22s ease both' }}>
+                    <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>{_NJ_MORE_LANGS.map(name => { const on = langs.includes(name); return <span key={name} onClick={() => pickLang(name)} style={{ fontSize: 11, fontWeight: 700, padding: '6px 10px', borderRadius: 999, cursor: 'pointer', color: on ? '#fff' : '#3A4266', background: on ? '#1B34F0' : '#fff', border: '1px solid ' + (on ? '#1B34F0' : '#E6E9F5'), whiteSpace: 'nowrap' }}>{on ? '✓ ' : '+ '}{name}</span>; })}</div>
+                    <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
+                      <input value={langInput} onChange={e => setLangInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addLang(); } }} placeholder="Napište jiný jazyk" style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: '#0B1233', background: '#fff', border: '1px solid #E6E9F5', borderRadius: 9, padding: '9px 11px', outline: 'none' }} />
+                      <span onClick={addLang} style={{ fontSize: 12, fontWeight: 800, color: '#fff', background: langInput.trim() ? '#1B34F0' : '#A6ADCB', padding: '9px 14px', borderRadius: 9, cursor: 'pointer', whiteSpace: 'nowrap' }}>Přidat</span>
+                    </div>
+                  </div>
+                )}
+                {langs.filter(l => l !== 'Není potřeba').map(name => {
+                  const lvl = langLevels[name] || null;
+                  return (
+                    <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#F6F7FC', border: '1px solid ' + (!lvl && tried ? '#E5484D' : '#E6E9F5'), borderRadius: 12, padding: '9px 12px' }}>
+                      <span style={{ fontSize: 12, fontWeight: 800, color: '#0B1233', whiteSpace: 'nowrap' }}>{name}</span>
+                      <span style={{ fontSize: 11, color: !lvl && tried ? '#C42B30' : '#7A82A6', whiteSpace: 'nowrap' }}>{lvl ? 'úroveň nastavena' : 'vyberte úroveň'}</span>
+                      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginLeft: 'auto' }}>
+                        {_NJ_LANG_LEVELS.map(l => { const on = lvl === l; return <span key={l} onClick={() => setLangLevels(m => ({ ...m, [name]: m[name] === l ? null : l }))} style={{ fontSize: 11, fontWeight: 700, padding: '6px 10px', borderRadius: 999, cursor: 'pointer', color: on ? '#fff' : '#3A4266', background: on ? '#1B34F0' : '#fff', border: '1px solid ' + (on ? '#1B34F0' : '#E6E9F5'), whiteSpace: 'nowrap' }}>{l}</span>; })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                {lab('Co nabízíte')}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{_NJ_PERKS.map(p => { const on = perks.includes(p); return chipEl(p, on, () => toggleIn(setPerks, p), { mark: on ? '✓ ' : '+ ' }); })}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>{lab('Kontaktní osoba')}{hint('uvidí ji jen přijatý kandidát')}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="Jméno a příjmení" style={{ ...inp('#E6E9F5'), fontSize: 13 }} />
+                  <input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="Telefon nebo e-mail" style={{ ...inp('#E6E9F5'), fontSize: 13 }} />
+                </div>
+              </div>
+              <div onClick={() => setRules(r => !r)} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#F6F7FC', border: '1px solid #E6E9F5', borderRadius: 12, padding: '14px 15px', cursor: 'pointer' }}>
+                <span style={{ width: 22, height: 22, flex: 'none', borderRadius: 7, background: rules ? '#1B34F0' : '#fff', border: '1.5px solid ' + (rules ? '#1B34F0' : '#D5DAF0'), color: '#fff', fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{rules ? '✓' : ''}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#0B1233' }}>Poslat pravidla z profilu při shodě</span>
+                  <span style={{ fontSize: 11, color: '#7A82A6' }}>Kandidát je dostane do chatu automaticky.</span>
+                </div>
+              </div>
+            </>)}
+          </div>
+
+          {preview && (
+            <div style={{ background: '#F6F7FC', borderLeft: '1px solid #E6E9F5', padding: '22px 22px 26px', display: 'flex', flexDirection: 'column', gap: 14, animation: 'njFadeUp .28s ease both' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.07em', color: '#A6ADCB', textTransform: 'uppercase' }}>Náhled pro kandidáta</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#0FA968' }}>živě</span>
+              </div>
+              <div style={{ background: '#fff', border: '1px solid #E6E9F5', borderRadius: 18, overflow: 'hidden' }}>
+                <div style={{ height: 96, background: 'linear-gradient(120deg,#1B34F0 0%,#5C71FF 62%,#EEF1FF 100%)', position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: 14, top: 14, fontSize: 11, fontWeight: 800, color: '#0B1233', background: '#fff', padding: '4px 9px', borderRadius: 7 }}>{typeObj.label}</span>
+                  <span style={{ position: 'absolute', right: 14, top: 14, fontSize: 11, fontWeight: 800, color: '#fff', background: 'rgba(11,18,51,.35)', padding: '4px 9px', borderRadius: 7 }}>{region || 'Kraj'}</span>
+                </div>
+                <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 11, marginTop: -24 }}>
+                  <span style={{ width: 48, height: 48, borderRadius: 14, background: (typeof ECOMPANY !== 'undefined' && ECOMPANY.logoColor) || '#1B34F0', border: '3px solid #fff', color: '#fff', fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{((typeof ECOMPANY !== 'undefined' && ECOMPANY.name) || 'F').charAt(0)}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <span style={{ fontSize: 17, fontWeight: 800, color: '#0B1233', letterSpacing: '-.01em' }}>{title.trim() || 'Název pozice'}</span>
+                    <span style={{ fontSize: 12, color: '#7A82A6' }}>{((typeof ECOMPANY !== 'undefined' && ECOMPANY.name) || 'Firma') + ' · ' + (mode === 'Z domova' ? 'Z domova' : (place.trim() || 'místo neuvedeno'))}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10, background: '#F6F7FC', borderRadius: 12, padding: '12px 13px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#7A82A6' }}>Odměna</span>
+                      <span style={{ fontSize: 20, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', lineHeight: 1 }}>{payText || ('— ' + unit)}</span>
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: '#0B7B4B', background: '#E6F7EF', padding: '5px 9px', borderRadius: 7, whiteSpace: 'nowrap' }}>{total ? total.toLocaleString('cs-CZ') + ' Kč za směnu' : 'délka neuvedena'}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 5, height: 5, borderRadius: '50%', background: '#1B34F0', flex: 'none' }} /><span style={{ fontSize: 13, color: '#3A4266' }}>{dateLabel ? (dateLabel + (from && to ? ' · ' + from + '–' + to : '')) : 'termín neuvedený'}</span></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 5, height: 5, borderRadius: '50%', background: '#1B34F0', flex: 'none' }} /><span style={{ fontSize: 13, color: '#3A4266' }}>{people === 1 ? 'Hledáme 1 člověka' : 'Hledáme ' + people + ' lidi'}</span></div>
+                  </div>
+                  <span style={{ fontSize: 13, color: '#7A82A6', lineHeight: 1.5 }}>{desc.trim() || 'Popis se zobrazí tady — podle něj se kandidát rozhoduje, jestli swajpne vpravo.'}</span>
+                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>{tags.concat(perks).slice(0, 6).map((t, i) => <span key={i} style={{ fontSize: 11, fontWeight: 700, color: '#1B34F0', background: '#EEF1FF', padding: '5px 9px', borderRadius: 999 }}>{t}</span>)}</div>
+                  <div style={{ display: 'flex', gap: 8, paddingTop: 2 }}>
+                    <span style={{ flex: 1, fontSize: 12, fontWeight: 800, color: '#7A82A6', background: '#F1F3FB', padding: 9, borderRadius: 9, textAlign: 'center' }}>Přeskočit</span>
+                    <span style={{ flex: 1, fontSize: 12, fontWeight: 800, color: '#fff', background: '#1B34F0', padding: 9, borderRadius: 9, textAlign: 'center' }}>Mám zájem</span>
+                  </div>
+                </div>
+              </div>
+              <span style={{ fontSize: 11, color: '#A6ADCB', lineHeight: 1.5 }}>Takto se inzerát objeví kandidátům v aplikaci. Změny se propíšou hned.</span>
+            </div>
+          )}
+        </div>
+
+        {/* Patička */}
+        <div style={{ borderTop: '1px solid #E6E9F5', background: '#fff', padding: '16px 26px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 9, flex: 'none' }}>
+          {step > 1 && <span onClick={() => setStep(s => Math.max(1, s - 1))} style={{ fontSize: 13, fontWeight: 700, color: '#3A4266', border: '1px solid #E6E9F5', padding: '11px 16px', borderRadius: 10, cursor: 'pointer' }}>Zpět</span>}
+          <span onClick={saveDraft} style={{ fontSize: 13, fontWeight: 700, color: '#7A82A6', padding: '11px 14px', borderRadius: 10, cursor: 'pointer' }}>Uložit rozpracované</span>
+          <span onClick={publish} style={{ fontSize: 14, fontWeight: 800, color: '#fff', background: '#1B34F0', padding: '12px 22px', borderRadius: 10, cursor: busy ? 'wait' : 'pointer', whiteSpace: 'nowrap', opacity: busy ? 0.7 : 1 }}>{step === 3 ? (busy ? 'Zveřejňuji…' : 'Zveřejnit inzerát') : 'Pokračovat'}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+Object.assign(window, { ENewJobModal });
