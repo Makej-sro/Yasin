@@ -1,8 +1,6 @@
 // Makej Worker — Moje brigády (historie + hodnocení po brigádě)
 
-// `embedded` = vykresluje se uvnitř kalendáře → bez vlastního nadpisu,
-// scrollování a odsazení, ty už řeší obalující obrazovka.
-function WHistory({ tick, onReviewed, embedded }) {
+function WHistory({ tick, onReviewed }) {
   const [items,  setItems]  = useStateW(() => [...W_HISTORY]);
   const [review, setReview] = useStateW(null); // položka, kterou právě hodnotím
   const [detail, setDetail] = useStateW(null); // brigáda, jejíž detail zobrazuju
@@ -16,23 +14,23 @@ function WHistory({ tick, onReviewed, embedded }) {
   const completed   = items.filter(i => i.phase === 'completed' && !i.needsReview);
 
   if (items.length === 0) {
-    // Pod kalendářem — bez emoji a bez prázdné plochy, viz stejný stav ve Zprávách
     return (
-      <div style={{ background: '#fff', borderRadius: 22, padding: '20px', boxShadow: '0 4px 20px rgba(0,32,246,0.06)' }}>
-        <div style={{ color: T.ink, fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, marginBottom: 4 }}>
-          Zatím tu nemáš žádnou brigádu
-        </div>
-        <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 13.5, lineHeight: 1.55 }}>
-          Až tě firma přijme, objeví se brigáda v kalendáři i tady — s termínem, časem a místem.
+      <div style={{ flex: 1, display: 'grid', placeItems: 'center', padding: '20px 32px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 64, marginBottom: 12 }}>🗓️</div>
+          <div style={{ color: T.ink, fontFamily: T.fontHead, fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Zatím žádné brigády</div>
+          <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 13, lineHeight: 1.6 }}>
+            Jakmile tě zaměstnavatel přijme na brigádu,<br />uvidíš ji tady i s detaily a termínem.
+          </div>
         </div>
       </div>
     );
   }
 
   const PHASE = {
-    discuss:   { label: 'Domlouvá se', color: T.super, bg: 'rgba(245,178,60,0.14)', icon: 'chat-round-bold' },
-    upcoming:  { label: 'Potvrzeno',   color: T.green, bg: T.greenSoft, icon: 'check-circle-bold' },
-    completed: { label: 'Hotovo',      color: T.green, bg: T.greenSoft, icon: null },
+    discuss:   { label: 'Domlouvá se', color: '#F5A623', bg: 'rgba(245,166,35,0.14)', icon: 'chat-round-bold' },
+    upcoming:  { label: 'Potvrzeno',   color: '#16a34a', bg: 'rgba(22,163,74,0.12)', icon: 'check-circle-bold' },
+    completed: { label: 'Odpracováno', color: T.muted,   bg: 'rgba(18,18,26,0.06)', icon: null },
   };
 
   const Card = ({ it }) => {
@@ -45,7 +43,7 @@ function WHistory({ tick, onReviewed, embedded }) {
         boxShadow: '0 6px 16px rgba(20,22,40,0.06)',
         display: 'flex', alignItems: 'center', gap: 13,
       }}>
-        <div style={{ width: 48, height: 48, borderRadius: 15, background: T.tint, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+        <div style={{ width: 52, height: 52, borderRadius: 15, background: 'rgba(0,32,246,0.08)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
           <Icon name="case-round-bold" size={22} color={T.primary} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -73,15 +71,13 @@ function WHistory({ tick, onReviewed, embedded }) {
   );
 
   return (
-    <div style={embedded ? {} : { flex: 1, overflowY: 'auto', padding: '0 0 24px' }}>
-      <div style={embedded ? {} : { maxWidth: 720, margin: '0 auto', width: '100%' }}>
-      {!embedded && (
-        <div style={{ padding: '20px 20px 18px' }}>
-          <div style={{ color: T.ink, fontFamily: T.fontHead, fontSize: 28, fontWeight: 800, letterSpacing: -0.8 }}>Moje brigády</div>
-        </div>
-      )}
+    <div style={{ flex: 1, overflowY: 'auto', padding: '0 0 24px' }}>
+      <div style={{ maxWidth: 720, margin: '0 auto', width: '100%' }}>
+      <div style={{ padding: '20px 20px 18px' }}>
+        <div style={{ color: T.ink, fontFamily: T.fontHead, fontSize: 28, fontWeight: 800, letterSpacing: -0.8 }}>Moje brigády</div>
+      </div>
 
-      <div style={embedded ? {} : { padding: '0 20px' }}>
+      <div style={{ padding: '0 20px' }}>
         {/* Výzvy k hodnocení */}
         {needsReview.length > 0 && (
           <div style={{ marginBottom: 24 }}>
@@ -91,36 +87,33 @@ function WHistory({ tick, onReviewed, embedded }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {needsReview.map(it => (
                 <div key={it.id} style={{
-                  position: 'relative', padding: 22, borderRadius: 24, overflow: 'hidden',
-                  background: T.heroGrad,
-                  boxShadow: '0 22px 44px -22px rgba(0,32,246,0.55)',
+                  padding: '16px', borderRadius: 20,
+                  background: '#fff', border: '1px solid ' + T.border,
+                  boxShadow: '0 8px 20px rgba(20,22,40,0.07)',
                 }}>
-                  <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(255,255,255,0.14) 1.2px, transparent 1.2px)', backgroundSize: '18px 18px', opacity: 0.5, pointerEvents: 'none' }} />
-                  <div style={{ position: 'relative' }}>
-                    <button onClick={() => setDetail(it)} style={{
-                      width: '100%', textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer',
-                      background: 'none', border: 'none', padding: 0,
-                      display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12,
-                    }}>
-                      <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.3)', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{it.avatar}</div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ color: '#fff', fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, lineHeight: 1.2 }}>{it.jobTitle}</div>
-                        <div style={{ color: '#A3AEFF', fontFamily: T.fontUI, fontSize: 12, marginTop: 2 }}>{it.company} · {it.dateText}</div>
-                      </div>
-                    </button>
-                    <div style={{ color: '#A3AEFF', fontFamily: T.fontUI, fontSize: 13, marginBottom: 16, lineHeight: 1.5 }}>
-                      Jaká byla brigáda? Tvoje hodnocení pomůže ostatním brigádníkům.
+                  <button onClick={() => setDetail(it)} style={{
+                    width: '100%', textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer',
+                    background: 'none', border: 'none', padding: 0,
+                    display: 'flex', alignItems: 'center', gap: 13, marginBottom: 14,
+                  }}>
+                    <div style={{ width: 52, height: 52, borderRadius: 15, background: 'linear-gradient(135deg, #0020F6, #5B6BFF)', display: 'grid', placeItems: 'center', color: '#fff', fontFamily: T.fontHead, fontWeight: 800, fontSize: 16, flexShrink: 0 }}>{it.avatar}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ color: T.ink, fontFamily: T.fontHead, fontSize: 16, fontWeight: 800, lineHeight: 1.2 }}>{it.jobTitle}</div>
+                      <div style={{ color: T.muted, fontFamily: T.fontUI, fontSize: 13, marginTop: 3 }}>{it.company} · {it.dateText}</div>
                     </div>
-                    <button onClick={() => setReview(it)} style={{
-                      width: '100%', height: 48, borderRadius: 14,
-                      background: '#fff', border: 'none',
-                      color: T.primary, fontFamily: T.fontHead, fontSize: 14, fontWeight: 800, cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                      boxShadow: '0 14px 26px -14px rgba(0,0,0,0.35)',
-                    }}>
-                      <Icon name="star-bold" size={16} color={T.primary} /> Napsat hodnocení
-                    </button>
+                  </button>
+                  <div style={{ color: T.inkSoft, fontFamily: T.fontUI, fontSize: 14, marginBottom: 14, lineHeight: 1.5 }}>
+                    Jak jsi byl/a spokojený/á? Tvoje hodnocení pomůže ostatním brigádníkům.
                   </div>
+                  <button onClick={() => setReview(it)} style={{
+                    width: '100%', padding: '14px', borderRadius: 14,
+                    background: T.primary, border: 'none',
+                    color: '#fff', fontFamily: T.fontHead, fontSize: 15, fontWeight: 800, cursor: 'pointer',
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    boxShadow: '0 8px 18px rgba(0,32,246,0.28)',
+                  }}>
+                    <Icon name="star-bold" size={16} color="#fff" /> Napsat hodnocení
+                  </button>
                 </div>
               ))}
             </div>
@@ -242,7 +235,7 @@ function WReviewModal({ item, onClose, onDone }) {
               onMouseEnter={() => setHover(n)} onMouseLeave={() => setHover(0)}
               onClick={() => { setRating(n); setErr(''); }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, lineHeight: 0 }}>
-              <Icon name="star-bold" size={36} color={n <= shown ? T.super : 'rgba(18,18,26,0.14)'} />
+              <Icon name="star-bold" size={36} color={n <= shown ? '#F5A623' : 'rgba(18,18,26,0.14)'} />
             </button>
           ))}
         </div>
@@ -269,7 +262,7 @@ function WReviewModal({ item, onClose, onDone }) {
           }}>Zavřít</button>
           <button onClick={submit} disabled={saving} style={{
             flex: 1, padding: '12px', borderRadius: 12,
-            background: T.ink, border: 'none',
+            background: '#141414', border: 'none',
             color: '#fff', fontFamily: T.fontHead, fontSize: 15, fontWeight: 800,
             cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.6 : 1,
           }}>{saving ? 'Ukládám…' : 'Odeslat hodnocení'}</button>

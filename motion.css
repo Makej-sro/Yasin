@@ -1,0 +1,126 @@
+/* ═══════════════════════════════════════════════════════════════
+   MOTION — jednotný scroll systém
+   ───────────────────────────────────────────────────────────────
+   Načítá se jako POSLEDNÍ v <head>, aby přebil inline <style> bloky
+   jednotlivých stránek (stejná specificita → rozhoduje pořadí).
+
+   Princip: scroll vypráví příběh. Text přijde první, obrázek se
+   „usadí" o chvíli později a o něco pomaleji. Pohyb je krátký —
+   cílem je hloubka, ne efekt. Nic neposkakuje.
+
+   Vše je progresivní vylepšení: bez JS zůstane obsah viditelný.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Jediné místo, kde se ladí charakter pohybu na celém webu. */
+  --mkj-travel: 20px;         /* jak daleko prvek doputuje */
+  --mkj-dur-text: .75s;       /* text a bloky */
+  --mkj-dur-img: 1.15s;       /* obrázky — pomaleji, aby se „usadily" */
+  --mkj-ease: cubic-bezier(.16, 1, .3, 1);   /* expo-out, měkké dojezdy */
+}
+
+/* ─── 1. Sjednocení stávajících reveal systémů ───────────────────
+   Na webu byly TŘI nezávislé systémy, každý s jiným posunem:
+     .reveal          (style.css + o-nas.html)        34 px
+     .js-reveal-*     (inline na 3 vx stránkách)      60–80 px
+     .bs/.bn/.ba-card (inline na blogu)               18 px
+   Tady dostávají společný jazyk: ~20 px a jeden dojezd. 60–80 px
+   je na dnešní poměry hodně „skákavé"; 20 px působí usazeně.
+   Původní systémy dál fungují, mění se jen jejich charakter. */
+
+.reveal {
+  transform: translateY(var(--mkj-travel));
+  transition: opacity var(--mkj-dur-text) var(--mkj-ease),
+              transform var(--mkj-dur-text) var(--mkj-ease);
+}
+
+.js-reveal-up {
+  transform: translateY(calc(var(--mkj-travel) + 2px));
+  transition: opacity .9s var(--mkj-ease),
+              transform .9s var(--mkj-ease);
+}
+
+.js-reveal-pop {
+  transition: opacity .8s var(--mkj-ease),
+              transform .8s var(--mkj-ease);
+}
+
+/* Blog — vlastní systém přes .visible, sjednocen se zbytkem. */
+.bs-card, .bn-row, .ba-card {
+  transform: translateY(var(--mkj-travel));
+  transition: opacity var(--mkj-dur-text) var(--mkj-ease),
+              transform var(--mkj-dur-text) var(--mkj-ease);
+}
+
+/* ─── 2. Obrázky — signature pohyb ───────────────────────────────
+   Obrázek nenaskočí, ale „dosedne": z 1.045 na 1 a zároveň se
+   vynoří. Delší než text → vzniká pořadí čtení (text, pak obraz).
+   Stav řídí JS atributem, takže bez JS se nic neschová. */
+
+img[data-mkj-img="pending"] {
+  opacity: 0;
+  transform: scale(1.045);
+  transition: opacity var(--mkj-dur-img) var(--mkj-ease),
+              transform var(--mkj-dur-img) var(--mkj-ease);
+  will-change: opacity, transform;
+}
+
+img[data-mkj-img="in"] {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity var(--mkj-dur-img) var(--mkj-ease),
+              transform var(--mkj-dur-img) var(--mkj-ease);
+  will-change: opacity, transform;
+}
+
+/* Dojelo — uklidit will-change, ať prohlížeč nedrží vrstvu pro
+   každý obrázek na stránce zbytečně dlouho. */
+img[data-mkj-img="done"] {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+/* ─── 3. Parallax ────────────────────────────────────────────────
+   Drift v řádu jednotek pixelů — nemá být vidět jako efekt, jen má
+   dodat hloubku. JS ho zapíná až PO dojetí reveal animace, proto
+   tyhle rules stojí níž a přebijí transition z bodu 2 (jinak by se
+   posun o snímek táhl 1,15 s a rozmazal by se).
+
+   „frame" = obrázek v orámovaném kontejneru s overflow:hidden →
+   je lehce zvětšený, aby po stranách nevznikla mezera.
+   „free"  = samostatný obrázek → jen posun, bez zvětšení. */
+
+img[data-mkj-parallax] {
+  transform: translate3d(0, var(--mkj-shift, 0px), 0);
+  transition: none;
+  will-change: transform;
+}
+
+img[data-mkj-parallax="frame"] {
+  transform: translate3d(0, var(--mkj-shift, 0px), 0) scale(1.08);
+}
+
+/* ─── 4. Respekt k nastavení uživatele ───────────────────────────
+   Kdo má v systému zapnuté omezení pohybu, nedostane nic z výše
+   uvedeného. Sam to měl u .js-reveal-*, ale .reveal ze style.css
+   tuhle pojistku neměl vůbec — doplněno. */
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal.visible,
+  .js-reveal-up,
+  .js-reveal-pop,
+  .bs-card, .bn-row, .ba-card {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  img[data-mkj-img],
+  img[data-mkj-parallax] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

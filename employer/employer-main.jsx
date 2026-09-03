@@ -642,6 +642,10 @@ function EmployerApp() {
   const [publish,   setPublish]   = useStateE(null);   // null | 'loading' | 'done'
   const [toasts,    setToasts]    = useStateE([]);
   const [period,    setPeriod]    = useStateE('30d');
+  // Mobilní režim: sidebar se schová do drawer, otevírá ho plovoucí hamburger.
+  const isMobile = typeof useIsMobile === 'function' ? useIsMobile() : false;
+  const [navOpen, setNavOpen] = useStateE(false);
+  useEffectE(() => { if (!isMobile) setNavOpen(false); }, [isMobile]);
   const [openThreadId, setOpenThreadId] = useStateE(null);
   const [profileWorker, setProfileWorker] = useStateE(null);
   const empId                     = useRefE(null);
@@ -834,7 +838,29 @@ function EmployerApp() {
         filter: 'blur(80px)', pointerEvents: 'none',
       }} />
 
-      {loaded && <ESidebar tab={tab} onTab={setTab} onSignOut={handleSignOut} />}
+      {loaded && <ESidebar tab={tab} onTab={setTab} onSignOut={handleSignOut}
+        mobile={isMobile} open={navOpen} onClose={() => setNavOpen(false)} />}
+
+      {/* Ztmavení obsahu pod vysunutým drawerem */}
+      {loaded && isMobile && navOpen && (
+        <div onClick={() => setNavOpen(false)} style={{
+          position: 'fixed', inset: 0, zIndex: 55,
+          background: 'rgba(10,13,46,.45)', backdropFilter: 'blur(2px)',
+        }} />
+      )}
+
+      {/* Hamburger musí být plovoucí — ETopbar se u většiny záložek vůbec nerenderuje */}
+      {loaded && isMobile && !navOpen && (
+        <button onClick={() => setNavOpen(true)} aria-label="Menu" style={{
+          position: 'fixed', top: 12, left: 12, zIndex: 50,
+          width: 42, height: 42, borderRadius: 12,
+          background: '#fff', border: '1px solid ' + T.cardBorder,
+          boxShadow: '0 6px 20px -8px rgba(10,13,46,.4)',
+          display: 'grid', placeItems: 'center', cursor: 'pointer',
+        }}>
+          <Icon name="hamburger-menu-bold" size={20} color={T.cardText} />
+        </button>
+      )}
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', overflowY: tab === 'dash' ? 'hidden' : 'auto', background: (tab === 'dash' || tab === 'reviews' || tab === 'calendar' || tab === 'chat' || tab === 'candidates' || tab === 'jobs' || tab === 'settings' || tab === 'analytics') ? '#F1F3FB' : 'transparent' }}>
         {loaded && tab !== 'dash' && tab !== 'reviews' && tab !== 'calendar' && tab !== 'chat' && tab !== 'candidates' && tab !== 'jobs' && tab !== 'settings' && tab !== 'analytics' && <ETopbar title={meta.title} subtitle={meta.subtitle} onNew={() => setShowNewJob(true)} onSignOut={handleSignOut} period={period} onPeriod={setPeriod} />}

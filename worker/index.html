@@ -1,31 +1,28 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-25X9CMKGRD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-25X9CMKGRD');
+  </script>
   <meta charset="utf-8" />
-  <!-- Zákaz cache: aby telefon vždy načetl nejnovější verzi (jinak Safari drží starou) -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <!-- Nativní viewport: pokrývá celý displej (safe-area), zakazuje zoom pro app-like pocit -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <meta name="format-detection" content="telephone=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="theme-color" content="#f3f2ec" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>makej. — najdi brigádu</title>
-  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
 
-  <!-- Lokální fonty (offline, bez Google CDN) -->
-  <link href="fonts.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <!-- Lokální knihovny (offline, bez CDN) -->
-  <script src="vendor/icons-solar.js"></script>
-  <script src="vendor/iconify-icon.min.js"></script>
-  <script src="vendor/supabase.min.js"></script>
-  <script src="vendor/react.production.min.js"></script>
-  <script src="vendor/react-dom.production.min.js"></script>
-  <script src="vendor/babel.min.js"></script>
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
 
   <style>
     :root { color-scheme: light; }
@@ -34,276 +31,88 @@
     html, body {
       margin: 0; padding: 0;
       background: #f3f2ec;
-      font-family: "Inter", -apple-system, system-ui, sans-serif;
+      font-family: "Plus Jakarta Sans", -apple-system, system-ui, sans-serif;
       color: #14141b;
       -webkit-font-smoothing: antialiased;
       overflow: hidden;
-      /* Nativní pocit: žádný modrý tap-highlight, žádné dlouhé přidržení / lupa */
-      -webkit-tap-highlight-color: transparent;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-      /* Zabránit rubber-band scrollu (bounce) celé stránky */
-      overscroll-behavior: none;
-      position: fixed; inset: 0;
-    }
-    /* Bezpečná zóna kolem výřezu (notch) — obsah nezaleze pod stavový řádek */
-    #root {
-      padding-top: env(safe-area-inset-top);
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-    }
-    /* Vstupní pole a text zpráv musí jít označit / editovat */
-    input, textarea, [contenteditable="true"] {
-      -webkit-user-select: text;
-      user-select: text;
-      -webkit-touch-callout: default;
     }
     iconify-icon { display: inline-flex; line-height: 0; }
     @keyframes empSpin { to { transform: rotate(360deg); } }
     @keyframes wPop { 0% { transform: scale(0.85) translateY(20px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
-    @keyframes wSpin { to { transform: rotate(360deg); } }
-    @keyframes wRecPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.6); opacity: 0.45; } }
-    @keyframes wShake { 0%,100% { transform: translateX(0); } 15% { transform: translateX(-7px); } 30% { transform: translateX(6px); } 45% { transform: translateX(-5px); } 60% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
-    /* Banner sjede shora jako systémové upozornění v telefonu */
-    @keyframes wToastIn { 0% { transform: translateY(-120%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-    /* Rozkývání zvonečku při novém upozornění — doprovod ke zvuku */
-    @keyframes wBellRing {
-      0%, 100% { transform: rotate(0); }
-      12% { transform: rotate(15deg); }  28% { transform: rotate(-13deg); }
-      42% { transform: rotate(9deg); }   56% { transform: rotate(-7deg); }
-      70% { transform: rotate(4deg); }   85% { transform: rotate(-2deg); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      @keyframes wBellRing { 0%, 100% { transform: rotate(0); } }
-    }
 
-    /* ── Auth (registrace / přihlášení) — dle Registrace.html ── */
-    #auth-gate { position: fixed; inset: 0; z-index: 9999; background: #fff; overflow-y: auto; }
+    #auth-gate {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(180deg, #2a2ab5 0%, #050510 100%);
+      z-index: 9999;
+    }
     #auth-gate.hidden { display: none; }
-    .au-view { min-height: 100%; display: flex; flex-direction: column; }
-    .au-head {
-      position: relative; flex-shrink: 0; background: #fff; text-align: center;
-      padding: calc(env(safe-area-inset-top) + 28px) 30px 2px;
-    }
-    /* Logo v toku (ne absolutně), aby šlo vycentrovat spolu s textem pod ním */
-    .au-logo { font-family: "Inter", -apple-system, system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1px; color: #0020F6; margin-bottom: 16px; }
-    .au-logo span { color: #0020F6; }
-    .au-h1 { color: #0020F6; font-family: "Inter", -apple-system, system-ui, sans-serif; font-weight: 700; font-size: clamp(27px, 7.6vw, 32px); letter-spacing: -0.5px; line-height: 1.15; }
-    .au-sub { color: #252525; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 14px; font-weight: 500; margin-top: 5px; }
-    .au-body { flex: 1; display: flex; flex-direction: column; width: 100%; max-width: 440px; margin: 0 auto; padding: 12px 26px calc(20px + env(safe-area-inset-bottom)); }
-    .au-label { color: #252525; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; margin: 0 0 6px 2px; }
-    .au-field { position: relative; margin-bottom: 14px; }
-    .au-input { width: 100%; height: 48px; padding: 0 16px; border-radius: 14px; background: #f4f6fb; border: 1px solid #eaedf5; color: #14162b; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 15px; outline: none; transition: border-color .15s, background .15s; }
-    .au-input::placeholder { color: #696F90; }
-    /* Odkrytí hesla držením — stejný princip jako na webu (script.js: setupHoldToShow) */
-    .au-input--pw { padding-right: 84px; }
-    .au-pw-toggle {
-      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; padding: 6px 2px;
-      font-family: "Inter", -apple-system, system-ui, sans-serif;
-      font-size: 12.5px; font-weight: 700; color: #696F90; letter-spacing: 0.01em;
-      user-select: none; -webkit-user-select: none; touch-action: none;
-      transition: color .2s ease;
-    }
-    .au-pw-toggle:active { color: #0020F6; }
-    .au-input:focus { border-color: #0020F6; background: #fff; }
 
-    /* Chybné pole — hláška nahoře řekne co, tohle ukáže kde */
-    .au-input--bad { border-color: #e11d48; background: rgba(244,63,94,0.05); }
-    .au-consent { display: flex; gap: 10px; align-items: flex-start; margin: 4px 2px 20px; }
-    .au-check { width: 22px; height: 22px; border-radius: 7px; border: 2px solid #d0d3e0; background: #fff; flex-shrink: 0; cursor: pointer; display: grid; place-items: center; margin-top: 1px; transition: all .15s; }
-    .au-check.on { background: #0020F6; border-color: #0020F6; }
-    .au-check .ck { opacity: 0; }
-    .au-check.on .ck { opacity: 1; }
-    .au-consent-txt { color: #5b607a; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 12.5px; line-height: 1.5; }
-    .au-consent-txt a { color: #0020F6; font-weight: 700; text-decoration: none; }
-    .au-btn { width: 100%; height: 54px; border-radius: 16px; background: #0020F6; color: #fff; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 15.5px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 16px 30px -14px rgba(0,32,246,0.55); transition: opacity .2s, transform .1s; }
-    .au-btn:active { transform: scale(0.99); }
-    .au-btn:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
-    .au-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0 16px; color: #252525; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 12px; font-weight: 700; }
-    .au-divider::before, .au-divider::after { content: ''; flex: 1; height: 1px; background: #eef0f6; }
-    .au-social { display: flex; gap: 12px; }
-    .au-soc { flex: 1; height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 14px; background: #fff; border: 1px solid #eaedf5; color: #14162b; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .au-soc:active { background: #f7f7fb; }
-    .au-err { border-radius: 12px; padding: 11px 14px; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 13px; margin-bottom: 14px; display: none; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.28); color: #e11d48; }
-    .au-foot { text-align: center; margin-top: auto; padding-top: 22px; color: #6b7192; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 13px; }
-    .au-foot button { color: #0020F6; font-weight: 700; background: none; border: none; cursor: pointer; font-family: inherit; font-size: inherit; }
-
-    /* Ověření e-mailu kódem (OTP) */
-    .au-otp { display: flex; gap: 8px; justify-content: center; margin: 8px 0 16px; }
-    .au-otp input {
-      width: 100%; max-width: 52px; height: 58px; text-align: center;
-      border-radius: 14px; background: #f4f6fb; border: 1px solid #eaedf5; color: #14162b;
-      font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 24px; font-weight: 800;
-      outline: none; transition: border-color .15s, background .15s; -moz-appearance: textfield;
+    .gate-card {
+      background: rgba(22,22,59,0.9);
+      border: 1px solid rgba(208,208,255,0.12);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      width: min(420px, calc(100vw - 40px));
+      text-align: center;
+      animation: wPop .4s cubic-bezier(.2,.8,.2,1);
     }
-    .au-otp input::-webkit-outer-spin-button, .au-otp input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .au-otp input:focus { border-color: #0020F6; background: #fff; }
-    .au-otp.bad input { border-color: #e11d48; background: rgba(244,63,94,0.05); animation: auShake .4s ease; }
-    @keyframes auShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
-    .au-countdown { text-align: center; color: #6b7192; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 13px; margin-bottom: 16px; }
-    .au-countdown b { color: #0020F6; font-variant-numeric: tabular-nums; }
-    .au-resend { text-align: center; margin-top: 16px; color: #6b7192; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 13px; }
-    .au-resend button { color: #0020F6; font-weight: 700; background: none; border: none; cursor: pointer; font-family: inherit; font-size: inherit; }
-    .au-resend button:disabled { color: #a6abc4; cursor: default; }
+    .gate-logo { font-family: Inter, sans-serif; font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, #7c7cff, #d0d0ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.25rem; }
+    .gate-sub { color: #FFD166; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1.75rem; }
+    .gate-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; color: #fff; }
+    .gate-desc { color: #9999cc; font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.5; }
+    .gate-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; }
+    .gate-tab { flex: 1; padding: 8px; border-radius: 7px; border: none; background: transparent; color: #9999cc; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
+    .gate-tab.active { background: rgba(91,107,255,0.25); color: #fff; }
+    .gate-error { background: rgba(244,63,94,0.12); border: 1px solid rgba(244,63,94,0.3); border-radius: 0.75rem; padding: 10px 14px; color: #f87171; font-size: 0.875rem; margin-bottom: 1rem; display: none; }
+    .gate-input { width: 100%; padding: 11px 15px; background: rgba(255,255,255,0.04); border: 1px solid rgba(208,208,255,0.14); border-radius: 0.75rem; color: #fff; font-family: inherit; font-size: 0.95rem; outline: none; margin-bottom: 0.75rem; transition: border-color .2s; }
+    .gate-input:focus { border-color: rgba(208,208,255,0.4); }
+    .gate-input::placeholder { color: #6e6ea8; }
+    .gate-btn { width: 100%; padding: 13px; background: linear-gradient(135deg, #292978, #3a3a99); border: none; border-radius: 0.75rem; color: #fff; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; margin-bottom: 1rem; transition: opacity .2s; }
+    .gate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .gate-link { color: #9999cc; font-size: 0.85rem; cursor: pointer; background: none; border: none; font-family: inherit; }
+    .gate-link:hover { color: #d0d0ff; }
+    .gate-divider { display: flex; align-items: center; gap: 10px; margin: 0 0 1rem; color: #6e6ea8; font-size: 12px; }
+    .gate-divider::before, .gate-divider::after { content: ''; flex: 1; height: 1px; background: rgba(208,208,255,0.1); }
 
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(208,208,255,0.12); border-radius: 6px; }
-    /* Vodorovný výběr měsíce/roku v kalendáři — bez viditelného posuvníku */
-    .w-wheel { scrollbar-width: none; -ms-overflow-style: none; }
-    .w-wheel::-webkit-scrollbar { display: none; }
     button, input, textarea, select { font-family: inherit; }
-
-    /* ── Onboarding (jen při prvním spuštění) — dle Splash Page.html ── */
-    #onboarding {
-      position: fixed; inset: 0; z-index: 10000;
-      display: flex; flex-direction: column; overflow: hidden;
-      background: radial-gradient(ellipse 135% 620px at 30% 8%, #0020F6 0%, #000B4D 75%);
-      color: #fff;
-      padding-top: calc(env(safe-area-inset-top) + 26px);
-    }
-    #onboarding.hidden { display: none; }
-    .ob-glow { position: absolute; top: -100px; right: -90px; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.10), transparent 70%); pointer-events: none; }
-    .ob-logo { padding: 8px 30px 0; font-family: "Inter", -apple-system, system-ui, sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -0.5px; position: relative; }
-    .ob-logo span { color: #A3AEFF; }
-    .ob-title { padding: 30px 30px 0; font-family: "Inter", -apple-system, system-ui, sans-serif; font-weight: 700; font-size: clamp(34px, 10.5vw, 42px); line-height: 1.14; letter-spacing: -1px; position: relative; }
-    .ob-art { position: relative; flex: 1; margin-top: 10px; min-height: 0; }
-    .ob-art svg { position: absolute; bottom: -10px; left: 0; width: 100%; height: 100%; }
-    .ob-btnwrap { padding: 0 22px calc(env(safe-area-inset-bottom) + 40px); position: relative; }
-    .ob-btn { width: 100%; height: 58px; border-radius: 30px; background: #fff; color: #14162b; font-family: "Inter", -apple-system, system-ui, sans-serif; font-size: 16px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 20px 40px -18px rgba(0,0,0,0.5); transition: transform .12s; }
-    .ob-btn:active { transform: scale(0.98); }
   </style>
 </head>
 <body>
 
-<!-- Uvítací obrazovka — jen při úplně prvním otevření aplikace -->
-<div id="onboarding">
-  <div class="ob-glow"></div>
-  <div class="ob-logo">Makej</div>
-  <div class="ob-title">Chytrý způsob,<br>jak najít<br>brigádu</div>
-  <div class="ob-art">
-    <svg viewBox="0 0 380 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kufřík">
-      <defs>
-        <linearGradient id="caseBody" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#A3AEFF"/><stop offset=".5" stop-color="#0020F6"/><stop offset="1" stop-color="#0014A3"/>
-        </linearGradient>
-        <linearGradient id="caseLid" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#A3AEFF"/><stop offset="1" stop-color="#0020F6"/>
-        </linearGradient>
-        <linearGradient id="handleBody" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="#0014A3"/><stop offset="1" stop-color="#6F80FF"/>
-        </linearGradient>
-      </defs>
-      <rect x="60" y="190" width="260" height="190" rx="26" fill="url(#caseBody)"/>
-      <rect x="60" y="190" width="260" height="60" rx="26" fill="url(#caseLid)"/>
-      <rect x="60" y="238" width="260" height="14" fill="#0014A3" opacity=".35"/>
-      <rect x="150" y="140" width="80" height="64" rx="16" fill="none" stroke="url(#handleBody)" stroke-width="14"/>
-      <rect x="176" y="270" width="28" height="40" rx="8" fill="#0014A3" opacity=".4"/>
-      <rect x="60" y="190" width="260" height="190" rx="26" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="3"/>
-    </svg>
-  </div>
-  <div class="ob-btnwrap"><button class="ob-btn" id="ob-start">Začít</button></div>
-</div>
-
-<script>
-  (function () {
-    var ob = document.getElementById('onboarding');
-    try { if (localStorage.getItem('makej-onboarded') === '1') ob.classList.add('hidden'); } catch (e) {}
-    document.getElementById('ob-start').addEventListener('click', function () {
-      try { localStorage.setItem('makej-onboarded', '1'); } catch (e) {}
-      ob.classList.add('hidden');
-    });
-  })();
-</script>
-
 <div id="auth-gate">
-  <!-- REGISTRACE -->
-  <div class="au-view" id="au-register">
-    <div class="au-head">
-      <div class="au-logo">Makej</div>
-      <div class="au-h1">Vytvoř si účet</div>
-      <div class="au-sub">Začni makat hned po založení</div>
+  <div class="gate-card">
+    <div class="gate-logo">makej!</div>
+    <div class="gate-sub">pro brigádníky</div>
+    <div class="gate-tabs">
+      <button class="gate-tab active" id="tab-login" onclick="switchGateTab('login')">Přihlásit se</button>
+      <button class="gate-tab" id="tab-register" onclick="switchGateTab('register')">Registrovat</button>
     </div>
-    <div class="au-body">
-      <div class="au-err" id="reg-err"></div>
-      <div class="au-label">Jméno a příjmení</div>
-      <div class="au-field"><input class="au-input" type="text" id="reg-name" placeholder="Jan Novák" autocomplete="name" autocapitalize="words" /></div>
-      <div class="au-label">E-mail</div>
-      <div class="au-field"><input class="au-input" type="email" id="reg-email" placeholder="jan.novak@email.cz" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" /></div>
-      <div class="au-label">Heslo</div>
-      <div class="au-field">
-        <input class="au-input au-input--pw" type="password" id="reg-password" placeholder="Alespoň 6 znaků" autocomplete="new-password" />
-        <button type="button" class="au-pw-toggle" data-pw="reg-password" tabindex="-1">Zobrazit</button>
-      </div>
-      <div class="au-consent">
-        <div class="au-check on" id="reg-consent" role="checkbox" aria-checked="true">
-          <svg class="ck" width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12.5 9.5 17 19 7" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="au-consent-txt">Souhlasím s <a href="https://makej.eu/terms.html" target="_blank" rel="noopener">podmínkami</a> a <a href="https://makej.eu/privacy.html" target="_blank" rel="noopener">zpracováním údajů</a></div>
-      </div>
-      <button class="au-btn" id="reg-submit">Vytvořit účet</button>
-      <div class="au-divider">nebo pokračuj přes</div>
-      <div class="au-social">
-        <button class="au-soc" type="button" data-oauth="google"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5Z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7Z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.2 34.9 26.7 36 24 36c-5.3 0-9.7-2.6-11.3-6.9l-6.5 5C9.6 39.6 16.2 44 24 44Z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.5l6.3 5.3C41.1 36 44 30.5 44 24c0-1.3-.1-2.3-.4-3.5Z"/></svg> Google</button>
-        <button class="au-soc" type="button" data-oauth="apple"><svg width="16" height="18" viewBox="0 0 24 24" fill="#111"><path d="M17.05 12.6c-.03-2.6 2.13-3.85 2.22-3.9-1.21-1.77-3.09-2.02-3.76-2.05-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.9-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.79 1.3 10.34.86 1.25 1.88 2.65 3.22 2.6 1.29-.05 1.78-.83 3.34-.83 1.55 0 2 .83 3.37.81 1.39-.03 2.27-1.27 3.12-2.53.98-1.45 1.39-2.86 1.41-2.93-.03-.01-2.7-1.04-2.72-4.13ZM14.53 4.9c.71-.86 1.19-2.06 1.06-3.25-1.02.04-2.26.68-2.99 1.54-.66.76-1.23 1.98-1.08 3.15 1.14.09 2.3-.58 3.01-1.44Z"/></svg> Apple</button>
-      </div>
-      <div class="au-foot">Už máš účet? <button type="button" id="go-login">Přihlas se</button></div>
-    </div>
-  </div>
+    <div class="gate-error" id="gate-error"></div>
 
-  <!-- PŘIHLÁŠENÍ -->
-  <div class="au-view" id="au-login" style="display:none">
-    <div class="au-head">
-      <div class="au-logo">Makej</div>
-      <div class="au-h1">Vítej zpět</div>
-      <div class="au-sub">Přihlas se a makej dál</div>
+    <!-- Login form -->
+    <div id="gate-login-form">
+      <input class="gate-input" type="email" id="gate-email" placeholder="tvuj@email.cz" autocomplete="email" />
+      <input class="gate-input" type="password" id="gate-password" placeholder="Heslo" autocomplete="current-password" />
+      <input class="gate-input" type="text" id="login-key" inputmode="numeric" autocomplete="off" autocapitalize="none" autocorrect="off" placeholder="Přístupový klíč" />
+      <div style="font-size:11px;color:rgba(153,153,204,0.7);margin:-4px 2px 4px;line-height:1.4;">Pouze pro oficiální testovací a vývojářské účty.</div>
+      <button class="gate-btn" id="gate-submit">Přihlásit se</button>
     </div>
-    <div class="au-body">
-      <div class="au-err" id="login-err"></div>
-      <div class="au-label">E-mail</div>
-      <div class="au-field"><input class="au-input" type="email" id="login-email" placeholder="jan.novak@email.cz" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" /></div>
-      <div class="au-label">Heslo</div>
-      <div class="au-field">
-        <input class="au-input au-input--pw" type="password" id="login-password" placeholder="Heslo" autocomplete="current-password" />
-        <button type="button" class="au-pw-toggle" data-pw="login-password" tabindex="-1">Zobrazit</button>
-      </div>
-      <div class="au-label">Přístupový klíč</div>
-      <div class="au-field"><input class="au-input" type="text" id="login-key" inputmode="numeric" autocomplete="off" autocapitalize="none" autocorrect="off" placeholder="Přístupový klíč" /></div>
-      <div style="font-size:12px;color:#8a8f98;margin:-2px 2px 10px;line-height:1.4">Pouze pro oficiální testovací a vývojářské účty.</div>
-      <button class="au-btn" id="login-submit" style="margin-top:6px">Přihlásit se</button>
-      <div class="au-divider">nebo pokračuj přes</div>
-      <div class="au-social">
-        <button class="au-soc" type="button" data-oauth="google"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5Z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7Z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.2 34.9 26.7 36 24 36c-5.3 0-9.7-2.6-11.3-6.9l-6.5 5C9.6 39.6 16.2 44 24 44Z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.5l6.3 5.3C41.1 36 44 30.5 44 24c0-1.3-.1-2.3-.4-3.5Z"/></svg> Google</button>
-        <button class="au-soc" type="button" data-oauth="apple"><svg width="16" height="18" viewBox="0 0 24 24" fill="#111"><path d="M17.05 12.6c-.03-2.6 2.13-3.85 2.22-3.9-1.21-1.77-3.09-2.02-3.76-2.05-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.9-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.79 1.3 10.34.86 1.25 1.88 2.65 3.22 2.6 1.29-.05 1.78-.83 3.34-.83 1.55 0 2 .83 3.37.81 1.39-.03 2.27-1.27 3.12-2.53.98-1.45 1.39-2.86 1.41-2.93-.03-.01-2.7-1.04-2.72-4.13ZM14.53 4.9c.71-.86 1.19-2.06 1.06-3.25-1.02.04-2.26.68-2.99 1.54-.66.76-1.23 1.98-1.08 3.15 1.14.09 2.3-.58 3.01-1.44Z"/></svg> Apple</button>
-      </div>
-      <div class="au-foot">Nemáš účet? <button type="button" id="go-register">Zaregistruj se</button></div>
-    </div>
-  </div>
 
-  <!-- OVĚŘENÍ E-MAILU KÓDEM -->
-  <div class="au-view" id="au-verify" style="display:none">
-    <div class="au-head">
-      <div class="au-logo">Makej</div>
-      <div class="au-h1">Ověř svůj e-mail</div>
-      <div class="au-sub">Poslali jsme 6místný kód na<br><b id="verify-email">tvůj e-mail</b></div>
+    <!-- Register form -->
+    <div id="gate-register-form" style="display:none">
+      <input class="gate-input" type="text" id="reg-name" placeholder="Jméno a příjmení" autocomplete="name" />
+      <input class="gate-input" type="email" id="reg-email" placeholder="tvuj@email.cz" autocomplete="email" />
+      <input class="gate-input" type="password" id="reg-password" placeholder="Heslo (min. 6 znaků)" autocomplete="new-password" />
+      <input class="gate-input" type="url" id="reg-cv" placeholder="Odkaz na životopis (nepovinné)" autocomplete="off" />
+      <div style="font-size:11px;color:rgba(153,153,204,0.7);margin:-4px 2px 4px;line-height:1.4;">Životopis je dobrovolný — můžeš ho přidat teď nebo kdykoliv později v profilu.</div>
+      <button class="gate-btn" id="reg-submit">Vytvořit účet brigádníka</button>
     </div>
-    <div class="au-body">
-      <div class="au-err" id="verify-err"></div>
-      <div class="au-otp" id="verify-otp">
-        <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="1" aria-label="Číslice 1" />
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="Číslice 2" />
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="Číslice 3" />
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="Číslice 4" />
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="Číslice 5" />
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="Číslice 6" />
-      </div>
-      <div class="au-countdown" id="verify-countdown"></div>
-      <button class="au-btn" id="verify-submit" disabled>Ověřit</button>
-      <div class="au-resend">Nepřišel kód? <button type="button" id="verify-resend">Poslat znovu</button></div>
-      <div class="au-foot"><button type="button" id="verify-back">Zpět na registraci</button></div>
-    </div>
+
+    <button class="gate-link" onclick="window.location.href='../'">← Zpět na makej.cz</button>
   </div>
 </div>
 
@@ -316,7 +125,13 @@
     auth: { persistSession: true, storageKey: 'makej-auth' }
   });
 
-  // ─── Přístupový klíč (pre-launch) ────────────────────────────────────────────
+  const gate = document.getElementById('auth-gate');
+  const gateError = document.getElementById('gate-error');
+
+  function showGate() { gate.classList.remove('hidden'); }
+  function hideGate() { gate.classList.add('hidden'); }
+
+  // ─── Přístupový klíč (pre-launch) ───────────────────────────────────────────
   // Dashboard ještě není hotový → do rozhraní se nikdo nedostane bez klíče.
   // Klíč se sdílí s marketingovým webem přes sessionStorage 'makej-gate-ok', takže
   // kdo se přihlásí s klíčem na makej.eu a je přesměrován sem, nemusí ho psát znovu.
@@ -329,354 +144,92 @@
     return !!el && el.value.trim() === ACCESS_KEY;
   }
   function markGateOk() { try { sessionStorage.setItem('makej-gate-ok', ACCESS_KEY); } catch (e) {} }
+  function showErr(msg) { gateError.textContent = msg; gateError.style.display = 'block'; }
+  function clearErr() { gateError.style.display = 'none'; }
 
-  const gate = document.getElementById('auth-gate');
-  function showGate() { gate.classList.remove('hidden'); }
-  function hideGate() { gate.classList.add('hidden'); }
-
-  const regView = document.getElementById('au-register');
-  const loginView = document.getElementById('au-login');
-  const verifyView = document.getElementById('au-verify');
-  function showView(v) {
-    regView.style.display = v === 'register' ? '' : 'none';
-    loginView.style.display = v === 'login' ? '' : 'none';
-    verifyView.style.display = v === 'verify' ? '' : 'none';
-    gate.scrollTop = 0;
-  }
-  document.getElementById('go-login').addEventListener('click', () => showView('login'));
-  document.getElementById('go-register').addEventListener('click', () => showView('register'));
-
-  // Zobrazení hesla
-  // Heslo se odkryje jen po dobu držení — převzato z webu (script.js: setupHoldToShow)
-  document.querySelectorAll('.au-pw-toggle').forEach(btn => {
-    const input  = () => document.getElementById(btn.getAttribute('data-pw'));
-    const reveal = e => { e.preventDefault(); const i = input(); if (i) i.type = 'text'; };
-    const hide   = () => { const i = input(); if (i) i.type = 'password'; };
-    btn.addEventListener('pointerdown', reveal);
-    btn.addEventListener('pointerup', hide);
-    btn.addEventListener('pointerleave', hide);
-    btn.addEventListener('pointercancel', hide);
-    window.addEventListener('pointerup', hide);   // pojistka: puštění mimo tlačítko
-  });
-
-  // Souhlas (checkbox)
-  const consent = document.getElementById('reg-consent');
-  consent.addEventListener('click', () => {
-    consent.classList.toggle('on');
-    consent.setAttribute('aria-checked', consent.classList.contains('on') ? 'true' : 'false');
-  });
-
-  const regErr = document.getElementById('reg-err');
-  const loginErr = document.getElementById('login-err');
-  function setErr(el, msg, ok) {
-    el.textContent = msg || '';
-    el.style.display = msg ? 'block' : 'none';
-    el.style.background = ok ? 'rgba(22,163,74,0.1)' : 'rgba(244,63,94,0.1)';
-    el.style.borderColor = ok ? 'rgba(22,163,74,0.3)' : 'rgba(244,63,94,0.28)';
-    el.style.color = ok ? '#16a34a' : '#e11d48';
-  }
-
-  // Označení konkrétních polí, kde je chyba — hláška nahoře říká co, tohle kde.
-  // Značka zmizí, jakmile uživatel do pole začne psát.
-  function oznacPole(ids) {
-    document.querySelectorAll('.au-input--bad').forEach(i => i.classList.remove('au-input--bad'));
-    (ids || []).forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.classList.add('au-input--bad');
-      el.addEventListener('input', () => el.classList.remove('au-input--bad'), { once: true });
-    });
-    const prvni = document.getElementById((ids || [])[0]);
-    if (prvni) prvni.focus();   // rovnou kurzor do prvního chybného pole
+  function switchGateTab(tab) {
+    document.getElementById('gate-login-form').style.display = tab === 'login' ? '' : 'none';
+    document.getElementById('gate-register-form').style.display = tab === 'register' ? '' : 'none';
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+    clearErr();
   }
 
   function translateErr(msg) {
-    msg = msg || '';
-    if (msg.includes('Invalid login credentials')) return 'Nesprávný e-mail nebo heslo.';
-    if (msg.includes('Email not confirmed')) return 'Nejdřív potvrď svůj e-mail.';
-    if (msg.includes('User already registered') || msg.includes('already been registered')) return 'Tento e-mail je již zaregistrovaný.';
+    if (msg.includes('Invalid login credentials')) return 'Nesprávný email nebo heslo.';
+    if (msg.includes('Email not confirmed')) return 'Nejdřív potvrď svůj email.';
+    if (msg.includes('User already registered') || msg.includes('already been registered')) return 'Tento email je již zaregistrovaný.';
     if (msg.includes('Password should be at least')) return 'Heslo musí mít alespoň 6 znaků.';
-    if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return 'Nemáš připojení k internetu. Zkontroluj síť a zkus to znovu.';
-    // Rate limit / bezpečnostní prodleva — Supabase to hlásí anglicky.
-    // Vždy stejný začátek; když server pošle počet sekund, přilepíme odpočet.
-    if (/for security purposes/i.test(msg) || /rate limit/i.test(msg) || /too many requests/i.test(msg)) {
-      const sek = msg.match(/after (\d+) seconds?/i);
-      return sek
-        ? 'Moc pokusů po sobě. Zkus to znovu za ' + sek[1] + ' s.'
-        : 'Moc pokusů po sobě. Počkej prosím chvíli a zkus to znovu.';
-    }
     return msg;
   }
 
-  // Registrace
+  // Login
+  document.getElementById('gate-submit').addEventListener('click', async () => {
+    clearErr();
+    const email = document.getElementById('gate-email').value.trim();
+    const password = document.getElementById('gate-password').value;
+    if (!email || !password) { showErr('Vyplň email a heslo.'); return; }
+    if (!accessKeyOk()) { showErr('Spouštíme 1. 10. — přihlášení jen s přístupovým klíčem. 🔧'); return; }
+    markGateOk();
+    const btn = document.getElementById('gate-submit');
+    btn.disabled = true; btn.textContent = 'Přihlašuji...';
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { showErr(translateErr(error.message)); btn.disabled = false; btn.textContent = 'Přihlásit se'; return; }
+    const role = data.user?.user_metadata?.role;
+    if (role === 'employer') {
+      showErr('Tento účet je zaměstnavatelský. Pokračuj na dashboard.');
+      btn.disabled = false; btn.textContent = 'Přihlásit se';
+      setTimeout(() => { window.location.href = '../employer/'; }, 1500);
+      return;
+    }
+    hideGate();
+  });
+
+  document.getElementById('gate-password').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('gate-submit').click(); });
+
+  // Register
   document.getElementById('reg-submit').addEventListener('click', async () => {
-    setErr(regErr, '');
-    oznacPole([]);
+    clearErr();
     const name = document.getElementById('reg-name').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     const password = document.getElementById('reg-password').value;
-    if (!name || !email || !password) {
-      const chybi = [];
-      if (!name) chybi.push('reg-name');
-      if (!email) chybi.push('reg-email');
-      if (!password) chybi.push('reg-password');
-      setErr(regErr, chybi.length === 1 ? 'Vyplň chybějící údaj.' : 'Vyplň jméno, e-mail a heslo.');
-      oznacPole(chybi);
-      return;
-    }
-    if (password.length < 6) { setErr(regErr, 'Heslo musí mít alespoň 6 znaků.'); oznacPole(['reg-password']); return; }
-    if (!consent.classList.contains('on')) { setErr(regErr, 'Musíš souhlasit s podmínkami a zpracováním údajů.'); oznacPole([]); return; }
+    const cvUrl = document.getElementById('reg-cv').value.trim();
+    if (!name || !email || !password) { showErr('Vyplň jméno, email a heslo.'); return; }
+    if (password.length < 6) { showErr('Heslo musí mít alespoň 6 znaků.'); return; }
     const btn = document.getElementById('reg-submit');
-    btn.disabled = true; btn.textContent = 'Vytvářím účet…';
-    const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name, role: 'worker' } } });
-    btn.disabled = false; btn.textContent = 'Vytvořit účet';
-    if (error) { setErr(regErr, translateErr(error.message)); return; }
-    if (data.session) {
-      // Účet vznikl (potvrzení e-mailu je vypnuté → session by pustila rovnou dovnitř).
-      // Pre-launch to NECHCEME — účet se založí, ale do rozhraní až s přístupovým klíčem.
-      await sb.auth.signOut();
-      showView('login');
-      setErr(loginErr, 'Účet byl založen! 🎉 Spouštíme 1. 10. — přihlaš se přístupovým klíčem.', true);
-      return;
-    }
-    openVerify(email);                            // jinak: zadej kód z e-mailu
-  });
-  document.getElementById('reg-password').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('reg-submit').click(); });
-
-  // Přihlášení
-  async function doLogin() {
-    setErr(loginErr, '');
-    oznacPole([]);
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
-    if (!email || !password) {
-      const chybi = [];
-      if (!email) chybi.push('login-email');
-      if (!password) chybi.push('login-password');
-      setErr(loginErr, chybi.length === 1 ? 'Vyplň chybějící údaj.' : 'Vyplň e-mail a heslo.');
-      oznacPole(chybi);
-      return;
-    }
-    if (!accessKeyOk()) {
-      setErr(loginErr, 'Spouštíme 1. 10. — makáme na tom. 🔧');
-      oznacPole(['login-key']);
-      return;
-    }
-    const btn = document.getElementById('login-submit');
-    btn.disabled = true; btn.textContent = 'Přihlašuji…';
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) {
-      btn.disabled = false; btn.textContent = 'Přihlásit se';
-      // Nepotvrzený e-mail → rovnou na zadání kódu (a pošli čerstvý)
-      if (error.message.includes('Email not confirmed')) {
-        openVerify(email);
-        sb.auth.resend({ type: 'signup', email });
-        setErr(verifyErr, 'Nejdřív potvrď e-mail — poslali jsme ti nový kód.', true);
-        return;
-      }
-      setErr(loginErr, translateErr(error.message));
-      if (error.message.includes('Invalid login credentials')) oznacPole(['login-email','login-password']);
-      return;
-    }
-    const role = data.user?.user_metadata?.role;
-    if (role === 'employer') {
-      setErr(loginErr, 'Tento účet je zaměstnavatelský. Přihlaš se jako brigádník.');
-      await sb.auth.signOut();
-      btn.disabled = false; btn.textContent = 'Přihlásit se';
-      return;
-    }
-    markGateOk();
-    hideGate();
-  }
-  document.getElementById('login-submit').addEventListener('click', doLogin);
-  document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
-  // Google / Apple
-  document.querySelectorAll('[data-oauth]').forEach(b => b.addEventListener('click', async () => {
-    const provider = b.getAttribute('data-oauth');
-    if (!accessKeyOk()) {
-      const el = loginView.style.display === 'none' ? regErr : loginErr;
-      setErr(el, 'Spouštíme 1. 10. — přihlášení jen s přístupovým klíčem. 🔧');
-      if (loginView.style.display !== 'none') oznacPole(['login-key']);
-      return;
-    }
-    markGateOk();   // klíč platí přes redirect (OAuth odejde a vrátí se) → poznač předem
-    const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.href } });
-    if (error) {
-      const el = loginView.style.display === 'none' ? regErr : loginErr;
-      setErr(el, 'Přihlášení přes ' + (provider === 'google' ? 'Google' : 'Apple') + ' zatím není dostupné.');
-    }
-  }));
-
-  // ── Ověření e-mailu kódem (OTP) ──
-  let pendingEmail = '';
-  let otpTimer = null, otpResendTimer = null, otpBusy = false;
-  const otpBoxes = Array.prototype.slice.call(document.querySelectorAll('#verify-otp input'));
-  const verifyErr = document.getElementById('verify-err');
-  const verifySubmit = document.getElementById('verify-submit');
-  const verifyCountdown = document.getElementById('verify-countdown');
-  const verifyResend = document.getElementById('verify-resend');
-  const verifyOtpBox = document.getElementById('verify-otp');
-
-  function otpValue() { return otpBoxes.map(b => b.value).join(''); }
-  function otpUpdateBtn() { verifySubmit.disabled = otpValue().length !== 6 || otpBusy; }
-  function otpClear() { otpBoxes.forEach(b => b.value = ''); otpUpdateBtn(); }
-
-  otpBoxes.forEach((box, i) => {
-    box.addEventListener('input', () => {
-      box.value = box.value.replace(/\D/g, '').slice(0, 1);
-      if (box.value && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
-      otpUpdateBtn();
-      if (otpValue().length === 6) doVerify();       // hotovo → ověř rovnou
-    });
-    box.addEventListener('keydown', e => {
-      if (e.key === 'Backspace' && !box.value && i > 0) { otpBoxes[i - 1].focus(); }
-    });
-    box.addEventListener('paste', e => {
-      e.preventDefault();
-      const digits = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/\D/g, '').slice(0, 6).split('');
-      digits.forEach((d, j) => { if (otpBoxes[j]) otpBoxes[j].value = d; });
-      otpUpdateBtn();
-      otpBoxes[Math.min(digits.length, otpBoxes.length - 1)].focus();
-      if (otpValue().length === 6) doVerify();
-    });
+    btn.disabled = true; btn.textContent = 'Registruji...';
+    const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name, role: 'worker', cv_url: cvUrl } } });
+    if (error) { showErr(translateErr(error.message)); btn.disabled = false; btn.textContent = 'Vytvořit účet brigádníka'; return; }
+    // Když je potvrzování e-mailu vypnuté, signUp rovnou přihlásí → pre-launch to NECHCEME.
+    // Účet se založí, ale do rozhraní až s přístupovým klíčem → odhlásíme.
+    if (data && data.session) { try { await sb.auth.signOut(); } catch (e) {} }
+    showErr('');
+    gateError.style.display = 'block';
+    gateError.style.background = 'rgba(91,214,138,0.12)';
+    gateError.style.borderColor = 'rgba(91,214,138,0.3)';
+    gateError.style.color = '#5BD68A';
+    gateError.textContent = 'Účet založen! 🎉 Spouštíme 1. 10. — přihlaš se přístupovým klíčem.';
+    btn.disabled = false; btn.textContent = 'Vytvořit účet brigádníka';
+    switchGateTab('login');
   });
 
-  function startOtpCountdown() {
-    clearInterval(otpTimer);
-    let left = 600;   // 10 minut
-    const tick = () => {
-      if (left > 0) {
-        const m = Math.floor(left / 60), s = left % 60;
-        verifyCountdown.innerHTML = 'Kód platí ještě <b>' + m + ':' + (s < 10 ? '0' + s : s) + '</b>';
-      } else {
-        verifyCountdown.innerHTML = '<span style="color:#e11d48">Kód vypršel — nech si poslat nový.</span>';
-        clearInterval(otpTimer);
-      }
-      left--;
-    };
-    tick();
-    otpTimer = setInterval(tick, 1000);
-  }
-
-  function startResendCooldown(sec) {
-    clearInterval(otpResendTimer);
-    let left = sec;
-    verifyResend.disabled = true;
-    const tick = () => {
-      verifyResend.textContent = left > 0 ? 'Poslat znovu (' + left + 's)' : 'Poslat znovu';
-      if (left <= 0) { verifyResend.disabled = false; clearInterval(otpResendTimer); }
-      left--;
-    };
-    tick();
-    otpResendTimer = setInterval(tick, 1000);
-  }
-
-  function openVerify(email) {
-    pendingEmail = email;
-    otpBusy = false;
-    document.getElementById('verify-email').textContent = email;
-    setErr(verifyErr, '');
-    otpClear();
-    showView('verify');
-    startOtpCountdown();
-    startResendCooldown(45);
-    setTimeout(() => otpBoxes[0].focus(), 120);
-  }
-
-  async function doVerify() {
-    const code = otpValue();
-    if (code.length !== 6 || otpBusy || !pendingEmail) return;
-    otpBusy = true;
-    setErr(verifyErr, '');
-    verifySubmit.disabled = true; verifySubmit.textContent = 'Ověřuji…';
-    const { error } = await sb.auth.verifyOtp({ email: pendingEmail, token: code, type: 'signup' });
-    verifySubmit.textContent = 'Ověřit';
-    otpBusy = false;
-    if (error) {
-      const m = error.message || '';
-      setErr(verifyErr, /expired/i.test(m) ? 'Kód vypršel — nech si poslat nový.'
-        : /invalid/i.test(m) ? 'Nesprávný kód. Zkontroluj ho a zkus to znovu.'
-        : 'Ověření se nepovedlo. Zkus to prosím znovu.');
-      verifyOtpBox.classList.add('bad');
-      setTimeout(() => verifyOtpBox.classList.remove('bad'), 500);
-      otpClear();
-      otpBoxes[0].focus();
-      return;
-    }
-    // Ověřeno → session vznikla. Do rozhraní ale až s platným přístupovým klíčem.
-    clearInterval(otpTimer); clearInterval(otpResendTimer);
-    if (accessKeyOk()) { markGateOk(); hideGate(); }
-    else { showGate(); showView('login'); setErr(loginErr, 'E-mail ověřen! 🎉 Spouštíme 1. 10. — přihlaš se přístupovým klíčem.', true); }
-  }
-  verifySubmit.addEventListener('click', doVerify);
-
-  verifyResend.addEventListener('click', async () => {
-    if (verifyResend.disabled || !pendingEmail) return;
-    setErr(verifyErr, '');
-    startResendCooldown(45);
-    const { error } = await sb.auth.resend({ type: 'signup', email: pendingEmail });
-    if (error) {
-      const t = translateErr(error.message);
-      setErr(verifyErr, t === (error.message || '') ? 'Nový kód se nepodařilo poslat. Zkus to za chvíli.' : t);
-      return;
-    }
-    setErr(verifyErr, 'Poslali jsme ti nový kód.', true);
-    otpClear();
-    startOtpCountdown();
-    otpBoxes[0].focus();
-  });
-
-  document.getElementById('verify-back').addEventListener('click', () => {
-    clearInterval(otpTimer); clearInterval(otpResendTimer);
-    showView('register');
-  });
-
-  // Existující session — dovnitř jen když je brána ověřená klíčem (sdíleno s webem).
+  // Check existing session — dovnitř jen když je brána ověřená klíčem (sdíleno s webem).
   // Session bez ověřené brány (nebo firemní) → odhlásit, ať appka za bránou nikdy neběží bez klíče.
   sb.auth.getSession().then(async ({ data: { session } }) => {
     const role = session?.user?.user_metadata?.role;
     if (session && role !== 'employer' && accessKeyOk()) { hideGate(); return; }
-    const hadSession = !!session;
     if (session) await sb.auth.signOut();
     showGate();
-    showView(hadSession ? 'login' : 'register');
   });
 </script>
 
-<!-- App kód (JSX transformovaný Babelem v prohlížeči). Pořadí musí zůstat zachováno. -->
-<script type="text/babel" src="app.jsx"></script>
-<script type="text/babel" src="worker-theme.jsx"></script>
-<script type="text/babel" src="worker-supabase.jsx"></script>
-<script type="text/babel" src="worker-swipe.jsx"></script>
-<script type="text/babel" src="worker-messages.jsx"></script>
-<script type="text/babel" src="worker-profile.jsx"></script>
-<script type="text/babel" src="worker-history.jsx"></script>
-<script type="text/babel" src="worker-calendar.jsx"></script>
-<script type="text/babel" src="worker-main.jsx"></script>
-
-<!-- DEV ONLY: automatické obnovení při změně souborů. Před buildem smazat. -->
-<script>
-(function () {
-  if (!/^(localhost|127\.0\.0\.1|192\.168\.|10\.)/.test(location.hostname)) return;
-  const files = ['index.html', 'app.jsx', 'worker-theme.jsx', 'worker-supabase.jsx',
-    'worker-swipe.jsx', 'worker-messages.jsx', 'worker-profile.jsx',
-    'worker-history.jsx', 'worker-main.jsx'];
-  const stamps = {};
-  async function check() {
-    for (const f of files) {
-      try {
-        const res = await fetch(f + '?t=' + Date.now(), { method: 'HEAD' });
-        const mod = res.headers.get('last-modified');
-        if (!mod) continue;
-        if (stamps[f] && stamps[f] !== mod) return location.reload();
-        stamps[f] = mod;
-      } catch (e) { /* server restartuje, zkusíme příště */ }
-    }
-  }
-  check();
-  setInterval(check, 1500);
-})();
-</script>
+<script type="text/babel" src="../employer/app.jsx?v=2"></script>
+<script type="text/babel" src="worker-theme.jsx?v=1"></script>
+<script type="text/babel" src="worker-supabase.jsx?v=17"></script>
+<script type="text/babel" src="worker-swipe.jsx?v=17"></script>
+<script type="text/babel" src="worker-messages.jsx?v=12"></script>
+<script type="text/babel" src="worker-profile.jsx?v=11"></script>
+<script type="text/babel" src="worker-history.jsx?v=8"></script>
+<script type="text/babel" src="worker-main.jsx?v=10"></script>
 </body>
 </html>

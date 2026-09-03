@@ -1,32 +1,45 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-25X9CMKGRD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    // GDPR: výchozí souhlas odepřen (žádné analytické cookies), dokud uživatel nepřijme cookie lištu.
+    gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', wait_for_update: 500 });
+    try { if (localStorage.getItem('makej-cookie-consent') === 'accepted') gtag('consent', 'update', { analytics_storage: 'granted' }); } catch (e) {}
+    gtag('js', new Date());
+    gtag('config', 'G-25X9CMKGRD');
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pro zaměstnavatele — Makej</title>
-  <meta name="description" content="Najděte brigádníky během hodin, ne týdnů. Vytvořte inzerát za 60 sekund, kandidáti swajpují a vy přijímáte jedním tapem. Web dashboard s kompletní analytikou." />
+  <title>Inzerce brigád — najděte brigádníka za hodiny | Makej</title>
+  <meta name="description" content="Hledáte brigádníka? Zadejte inzerát na brigádu za 60 sekund a vybírejte z lidí, kteří sami projevili zájem. Bez zdlouhavého náboru a životopisů." />
   <meta name="theme-color" content="#0020f6" />
-  <link rel="canonical" href="https://makej.eu/pro-zamestnavatele.html" />
+  <link rel="canonical" href="https://makej.eu/pro-zamestnavatele" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://makej.eu/pro-zamestnavatele.html" />
-  <meta property="og:title" content="Pro zaměstnavatele — Makej" />
-  <meta property="og:description" content="Žádné inzeráty na portálech, žádné čekání týdny. Vytvoříte nabídku za 60 sekund a kandidáti přicházejí sami." />
+  <meta property="og:url" content="https://makej.eu/pro-zamestnavatele" />
+  <meta property="og:title" content="Inzerce brigád — najděte brigádníka za hodiny | Makej" />
+  <meta property="og:description" content="Hledáte brigádníka? Zadejte inzerát na brigádu za 60 sekund a vybírejte z lidí, kteří sami projevili zájem. Bez zdlouhavého náboru a životopisů." />
   <meta property="og:image" content="https://makej.eu/og-image.png" />
   <meta property="og:locale" content="cs_CZ" />
   <meta property="og:site_name" content="Makej" />
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Pro zaměstnavatele — Makej" />
-  <meta name="twitter:description" content="Žádné inzeráty na portálech, žádné čekání týdny. Vytvoříte nabídku za 60 sekund a kandidáti přicházejí sami." />
+  <meta name="twitter:title" content="Inzerce brigád — najděte brigádníka za hodiny | Makej" />
+  <meta name="twitter:description" content="Hledáte brigádníka? Zadejte inzerát na brigádu za 60 sekund a vybírejte z lidí, kteří sami projevili zájem. Bez zdlouhavého náboru a životopisů." />
   <meta name="twitter:image" content="https://makej.eu/og-image.png" />
-  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="/favicon.png?v=3" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="/iconify-solar.js"></script>
-  <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" async></script>
-  <link rel="stylesheet" href="style.css?v=108" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="/iconify-icons.js"></script>
+  <!-- lokálně a synchronně: přes CDN s async se komponenta upgradovala pozdě a ikony posouvaly layout -->
+  <script src="/iconify-icon.min.js?v=3.0.0"></script>
+  <link rel="stylesheet" href="style.css?v=86" />
   <style>
     /* ═══════════ BENTO DESIGN (pro zaměstnavatele) ═══════════ */
     #employers { padding: 0; }
@@ -54,8 +67,8 @@
 
     .bz-eyebrow {
       display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: .68rem; letter-spacing: .18em; text-transform: uppercase;
+      font-family: var(--font-heading);
+      font-size: .68rem; letter-spacing: .15em; text-transform: uppercase;
       color: var(--muted-fg); margin-bottom: 20px;
     }
 
@@ -69,7 +82,7 @@
     /* Hero dashboard skeleton */
     .bz-dash { padding: 22px; min-height: 360px; }
     .bz-dash-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .bz-dash-label { font-family: 'JetBrains Mono', monospace; font-size: .6rem; letter-spacing: .22em; color: rgba(208,208,255,.4); }
+    .bz-dash-label { font-family: var(--font-heading); font-size: .6rem; letter-spacing: .18em; color: rgba(208,208,255,.4); }
     .bz-dash-dots { color: rgba(208,208,255,.3); letter-spacing: 2px; font-size: .8rem; }
     .bz-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
     .bz-kpi { background: rgba(255,255,255,.04); border: 1px solid rgba(208,208,255,.08); border-radius: 14px; padding: 14px 16px; }
@@ -86,20 +99,31 @@
 
     /* Stats */
     .bz-stats { grid-template-columns: repeat(4, 1fr); margin-bottom: 18px; }
-    .bz-stat { padding: 30px 26px; min-height: 150px; display: flex; flex-direction: column; justify-content: center; }
+    /* flex-start, ne center: karty jsou v gridu stejně vysoké, ale mají různě dlouhý
+       text. Při centrování začínal obsah delší karty výš — a s ním i její ikona. */
+    .bz-stat { padding: 30px 26px; min-height: 150px; display: flex; flex-direction: column; justify-content: flex-start; }
     .bz-stat .v { font-family: var(--font-heading); font-size: clamp(1.9rem, 3vw, 2.6rem); font-weight: 800; color: #fff; line-height: 1; }
     .bz-stat .l { color: rgba(208,208,255,.45); font-size: .82rem; line-height: 1.4; margin-top: 10px; }
     .bz-stat.accent .v { color: #fff; }
     .bz-stat.accent .l { color: rgba(255,255,255,.82); }
     .bz-stat.accent p { color: rgba(255,255,255,.85); }
-    .bz-stat.accent .bz-step2-ic { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.28); color: #fff; }
+    .bz-stat.accent .bz-step2-ic { color: #fff; }
 
     /* Duo: jak to funguje + proč Makej */
     .bz-duo { grid-template-columns: 1fr 1fr; margin-bottom: 18px; }
     .bz-panel { padding: 32px 30px; }
     .bz-steps2 { display: flex; flex-direction: column; gap: 20px; }
     .bz-step2 { display: flex; gap: 14px; align-items: flex-start; }
-    .bz-step2-ic { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid rgba(208,208,255,.1); display: grid; place-items: center; color: var(--secondary); flex-shrink: 0; }
+    /* bez rámečku — ikona stojí samostatně */
+    .bz-step2-ic { width: 34px; height: 34px; display: grid; place-items: center; color: var(--secondary); flex-shrink: 0; }
+    /* Všechny čtyři ikony jsou PNG masky ořezané těsně na kresbu a vykreslené stejně:
+       32px rámeček, contain, barva z currentColor. Díky tomu mají zaručeně stejnou
+       velikost i výšku — dopočítávat metriky Solar ikon se neosvědčilo. */
+    .bz-step2-ic .bz-ico { display: block; width: 32px; height: 32px; background: currentColor; }
+    .bz-ico-verified { -webkit-mask: url(/ico-verified.png) center / contain no-repeat; mask: url(/ico-verified.png) center / contain no-repeat; }
+    .bz-ico-chart    { -webkit-mask: url(/ico-chart.png)    center / contain no-repeat; mask: url(/ico-chart.png)    center / contain no-repeat; }
+    .bz-ico-chat     { -webkit-mask: url(/ico-chat.png)     center / contain no-repeat; mask: url(/ico-chat.png)     center / contain no-repeat; }
+    .bz-ico-wallet   { -webkit-mask: url(/ico-wallet.png)   center / contain no-repeat; mask: url(/ico-wallet.png)   center / contain no-repeat; }
     .bz-step2 h4, .bz-why2-item h4 { font-family: var(--font-heading); font-size: .98rem; font-weight: 700; margin: 0 0 4px; color: #fff; }
     .bz-step2 p, .bz-why2-item p { color: rgba(208,208,255,.5); font-size: .83rem; line-height: 1.5; margin: 0; }
     .bz-why2 { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 20px; }
@@ -127,97 +151,98 @@
       padding: 134px 24px 0; text-align: center;
     }
     .eh-head { max-width: 950px; margin: 0 auto; position: relative; z-index: 2; }
-    .eh-head h1 { font-family: var(--font-heading); font-size: clamp(2.7rem, 7vw, 5.4rem); font-weight: 800; color: #fff; line-height: 1.0; letter-spacing: -.025em; margin: 0 0 26px; }
+    .eh-head h1 { font-family: var(--font-heading); font-size: clamp(2.7rem, 7vw, 5.4rem); font-weight: 800; color: #fff; line-height: 1.02; letter-spacing: -.025em; margin: 0 0 26px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
     .eh-head h1 .eh-accent, .eh-head h1 .gradient-text { color: #c3c8ff; -webkit-text-fill-color: #c3c8ff; background: none; }
-    /* Zvýrazněná část nadpisů (dashboard, „Makej", „Makat?") v primární modré
-       místo bledě fialové. Hero výš má vlastní světlou variantu a je specifičtější,
-       takže na tmavém pozadí zůstává čitelný. */
-    .gradient-text { color: #0020f6; -webkit-text-fill-color: #0020f6; }
+    /* ── Vstupní animace hero (v duchu landing page) ── */
+    .eh-line { display: block; overflow: hidden; padding-bottom: .3em; margin-bottom: -.3em; }
+    .eh-line-in { display: inline-block; transform: translateY(120%); animation: heroLineUp 1s cubic-bezier(.19,1,.22,1) both; will-change: transform; }
+    .eh-line:nth-child(1) .eh-line-in { animation-delay: .1s; }
+    .eh-line:nth-child(2) .eh-line-in { animation-delay: .26s; }
+    .emp-hero-blue .eh-grad {
+      background-image: linear-gradient(100deg, #aab2ff 0%, #d8ddff 30%, #ffffff 50%, #d8ddff 70%, #aab2ff 100%) !important;
+      background-size: 200% auto !important;
+      -webkit-background-clip: text !important; background-clip: text !important;
+      -webkit-text-fill-color: transparent !important; color: transparent;
+      /* Safari: -webkit-background-clip:text ořezává dotažení písmen (j/y) — dolní rezerva to vyřeší, záporný margin drží layout */
+      padding-bottom: .2em; margin-bottom: -.2em;
+      animation: heroLineUp 1s cubic-bezier(.19,1,.22,1) .26s both, heroGradSweep 6s linear 1.4s infinite;
+    }
+    .eh-sub { animation: fadeInUp .7s ease-out .5s both; }
+    .eh-btn { animation: fadeInUp .7s ease-out .62s both; }
+    .mkj-visual { animation: fadeInUp .9s cubic-bezier(.19,1,.22,1) .5s both; }
+    @media (prefers-reduced-motion: reduce) {
+      .eh-line-in, .emp-hero-blue .eh-grad, .eh-sub, .eh-btn, .mkj-visual { animation: none !important; transform: none !important; }
+    }
     .eh-sub { color: rgba(255,255,255,.85); font-size: clamp(1.02rem, 1.6vw, 1.3rem); line-height: 1.5; max-width: 640px; margin: 0 auto 34px; }
-    .eh-btn { display: inline-block; background: #eef6f0; color: #0a0d2e; font-family: var(--font-sans); font-weight: 700; font-size: 1.02rem; padding: 16px 32px; border-radius: 16px; text-decoration: none; cursor: pointer; transition: background .2s, transform .2s; }
-    .eh-btn:hover { background: #fff; transform: translateY(-2px); }
+        .eh-btn { display: inline-block; background: #eef6f0; color: #0a0d2e; font-family: var(--font-sans); font-weight: 700; font-size: 1.02rem; padding: 16px 32px; border-radius: 16px; text-decoration: none; cursor: pointer; transition: background .25s ease, color .25s ease, transform .2s ease; }
+    .eh-btn:hover { background: #0020f6; color: #fff; transform: translateY(-2px); }
 
-    /* Telefon — vystupuje zespoda (Bolt styl) */
-    .mkj-visual { position: relative; height: 600px; margin: -110px auto 0; max-width: 1100px; overflow: hidden; pointer-events: none; }
+    /* Notebook s dashboardem — vystupuje zespoda (Bolt styl) */
+    .mkj-visual { position: relative; margin: clamp(10px, 3vh, 40px) auto 0; max-width: 1280px; padding: 0 16px 28px; pointer-events: none; }
     .mkj-glow { display: none; }
-    .mkj-stage { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); perspective: 1500px; perspective-origin: 50% 28%; }
-    .mkj-phone {
-      width: 384px; height: 790px; background: #0a0b10; border-radius: 50px; padding: 12px;
-      transform: rotateX(46deg); transform-origin: 50% 50%;
-      box-shadow: 0 0 0 2px rgba(255,255,255,.08) inset, 0 40px 90px rgba(0,0,40,.45);
+    .mkj-stage { perspective: 2000px; perspective-origin: 50% 15%; display: flex; justify-content: center; }
+    .mkj-laptop {
+      display: block; width: 672px; max-width: 100%; height: auto;
+      transform: rotateX(13deg); transform-origin: 50% 100%;
+      filter: drop-shadow(0 24px 40px rgba(0,0,40,.38));
     }
-    .mkj-screen {
-      width: 100%; height: 100%; border-radius: 32px; overflow: hidden; position: relative;
-      background: linear-gradient(162deg,#10183c 0%,#1a2356 58%,#202a64 100%);
-    }
-    .mkj-notch { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 108px; height: 26px; background: #0a0b10; border-radius: 999px; z-index: 3; }
-
-    /* Dashboard obsah */
-    .db-top { display: flex; align-items: center; justify-content: space-between; padding: 40px 15px 8px; }
-    .db-brand { display: flex; align-items: center; gap: 8px; }
-    .db-logo { width: 30px; height: 30px; border-radius: 9px; background: #2f54f5; color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 16px; font-family: var(--font-heading); }
-    .db-bname { font-size: 15px; font-weight: 800; color: #fff; line-height: 1.05; font-family: var(--font-heading); }
-    .db-bsub { font-size: 7.5px; letter-spacing: .14em; color: #8b93c8; }
-    .db-icons { display: flex; align-items: center; gap: 9px; }
-    .db-bell { color: #cfd6f5; font-size: 17px; display: flex; }
-    .db-add { width: 30px; height: 30px; border-radius: 9px; background: #2f54f5; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 17px; }
-    .db-title { padding: 3px 16px 11px; }
-    .db-h { font-family: var(--font-heading); font-size: 22px; font-weight: 800; color: #fff; }
-    .db-hsub { font-size: 10.5px; color: #9aa3d4; margin-top: 2px; }
-    .db-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 15px 11px; }
-    .db-stat { background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.09); border-radius: 13px; padding: 10px 11px; }
-    .db-slab { font-size: 8px; letter-spacing: .06em; color: #9aa3d4; text-transform: uppercase; }
-    .db-snum { font-family: var(--font-heading); font-size: 20px; font-weight: 800; color: #fff; margin-top: 3px; line-height: 1; }
-    .db-sunit { font-size: 8.5px; color: #8b93c8; font-weight: 500; margin-top: 2px; }
-    .db-chips { display: flex; gap: 6px; padding: 0 15px 11px; }
-    .db-chip { font-size: 10.5px; color: #b9c0e6; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); padding: 6px 10px; border-radius: 999px; white-space: nowrap; }
-    .db-chip.on { background: rgba(47,84,245,.25); border-color: rgba(120,150,255,.5); color: #fff; font-weight: 600; }
-    .db-list { padding: 0 15px 16px; display: flex; flex-direction: column; gap: 10px; }
-    .db-card { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09); border-radius: 15px; padding: 12px 13px; }
-    .db-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 8.5px; font-weight: 700; letter-spacing: .05em; padding: 4px 8px; border-radius: 999px; background: rgba(54,208,127,.16); color: #5fe0a0; }
-    .db-dot { width: 6px; height: 6px; border-radius: 50%; background: #36d07f; }
-    .db-std { font-size: 9.5px; color: #8b93c8; margin-left: 7px; }
-    .db-jt { font-family: var(--font-heading); font-size: 17px; font-weight: 800; color: #fff; margin: 8px 0 5px; }
-    .db-pay { font-size: 11.5px; color: #cdd4f2; display: flex; align-items: center; gap: 5px; }
-    .db-coin { color: #6fe0a8; display: flex; }
-    .db-met { display: flex; justify-content: space-between; margin: 11px 0; gap: 5px; }
-    .db-m { flex: 1; }
-    .db-mlab { font-size: 7.5px; letter-spacing: .04em; color: #8b93c8; text-transform: uppercase; }
-    .db-mnum { font-family: var(--font-heading); font-size: 15px; font-weight: 800; color: #fff; margin-top: 2px; }
-    .db-mnum.hl { color: #86a3ff; }
-    .db-cbtn { display: flex; align-items: center; justify-content: center; gap: 7px; background: linear-gradient(90deg,#2f54f5,#3b6bff); color: #fff; font-size: 12.5px; font-weight: 700; padding: 10px; border-radius: 11px; }
 
     @media (max-width: 600px) {
       .emp-hero-blue { padding-top: 112px; }
-      .mkj-visual { height: 470px; margin-top: -70px; }
-      .mkj-stage { transform: translateX(-50%) scale(.8); top: 8px; }
+      .mkj-visual { padding: 0 12px 18px; }
+      .mkj-laptop { transform: rotateX(9deg); filter: drop-shadow(0 24px 36px rgba(0,0,40,.34)); }
     }
 
     /* Kroky — alternující řady (foto + text), stejné jako pro brigádníky */
-    .bolt-head { text-align: center; max-width: 1080px; margin: 96px auto 56px; padding: 0 24px; }
-    .bolt-head h2 { font-family: var(--font-heading); font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin: 0; }
+
+    /* ── Kroky jako galerie (vzor ze sekce Lidé, přizpůsobený obrázkům na šířku) ──
+       Čtyři screenshoty 2×2 místo čtyř řad pod sebou — pravý sloupec je výškově
+       posunutý, aby mřížka nebyla strohá. Za kartami prosvítá velké slovo. */
+    .emp-gal { position: relative; max-width: 1080px; margin: 0 auto; padding: 10px 24px 0; overflow: hidden; }
+    .emp-gal-word { position: absolute; left: 0; right: 0; top: 46%; transform: translateY(-50%); text-align: center;
+      font-family: var(--font-heading); font-weight: 900; text-transform: uppercase;
+      font-size: clamp(4rem, 15vw, 13rem); letter-spacing: -.04em; color: rgba(10,13,46,.05);
+      line-height: 1; z-index: 0; pointer-events: none; white-space: nowrap; }
+    .emp-gal-cards { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 1fr;
+      gap: clamp(28px, 5vw, 60px) clamp(24px, 4vw, 54px); align-items: start; }
+    .emp-gal-card:nth-child(2), .emp-gal-card:nth-child(4) { margin-top: clamp(28px, 6vw, 74px); }
+    /* kaskáda, když do obrazu přijde víc karet najednou */
+    .emp-gal-card:nth-child(2) { transition-delay: .1s; }
+    .emp-gal-card:nth-child(3) { transition-delay: .2s; }
+    .emp-gal-card:nth-child(4) { transition-delay: .3s; }
+    .emp-gal-ph { border-radius: 18px; border: 1px solid rgba(10,13,46,.07); overflow: hidden;
+      box-shadow: 0 34px 64px -32px rgba(10,13,46,.45); background: #f4f5fb; }
+    .emp-gal-ph img { width: 100%; height: auto; display: block; }
+    .emp-gal-cap { margin-top: 16px; }
+    .emp-gal-cap .n { font-family: var(--font-heading); font-weight: 800;
+      font-size: .76rem; letter-spacing: .08em; color: var(--primary); font-variant-numeric: tabular-nums; }
+    .emp-gal-cap h3 { font-family: var(--font-heading); font-weight: 800; text-transform: uppercase;
+      font-size: 1.05rem; letter-spacing: -.01em; margin: 5px 0 0; color: #0a0d2e; }
+    .emp-gal-cap p { color: rgba(10,13,46,.6); font-size: .92rem; line-height: 1.5; margin: 6px 0 0; max-width: 380px; }
+    @media (max-width: 760px) {
+      .emp-gal-cards { grid-template-columns: 1fr; gap: 34px; }
+      .emp-gal-card:nth-child(2), .emp-gal-card:nth-child(4) { margin-top: 0; }
+      .emp-gal-word { font-size: clamp(3rem, 22vw, 7rem); }
+    }
     .bolt-journey { position: relative; max-width: 1080px; margin: 0 auto; padding: 0 24px; }
-    .bolt-steps { display: flex; flex-direction: column; gap: 88px; }
-    .bolt-path { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: visible; }
     .bolt-cta { display: flex; justify-content: center; margin-top: 60px; position: relative; z-index: 1; }
-    .bolt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; position: relative; z-index: 1; }
-    .bolt-row:nth-child(even) .bolt-media { order: 2; }
-    .bolt-media {
-      aspect-ratio: 4 / 3; border-radius: 24px; overflow: hidden;
-      background: linear-gradient(150deg, #0a1640, #0a0e26);
-      border: 1px solid rgba(208,208,255,.1); display: grid; place-items: center;
+    /* CTA morph: tlačítko je bílé a zmodrá teprve až doscrolluje na obrazovku (chytne pozornost) */
+    .bolt-cta a.cta-morph {
+      background: #fff !important; color: #0020f6 !important;
+      box-shadow: inset 0 0 0 2px #0020f6 !important;
+      transition: background .5s cubic-bezier(.2,.8,.2,1), color .5s cubic-bezier(.2,.8,.2,1),
+                  box-shadow .5s cubic-bezier(.2,.8,.2,1), transform .35s cubic-bezier(.2,.8,.2,1);
     }
-    .bolt-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .bolt-media-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; color: rgba(208,208,255,.32); font-size: .85rem; font-weight: 500; }
-    .bolt-text-label {
-      display: inline-block; font-family: var(--font-heading);
-      font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-      color: var(--secondary); margin-bottom: 16px;
-      padding: 5px 14px; border-radius: 100px;
-      background: rgba(0,32,246,.16); border: 1px solid rgba(208,208,255,.14);
+    .bolt-cta a.cta-morph.seen {
+      background: #0020f6 !important; color: #fff !important;
+      box-shadow: 0 16px 38px rgba(0,32,246,.30) !important;
+      animation: ctaMorphPop .6s cubic-bezier(.2,.8,.2,1) .12s both;
     }
-    .bolt-text h3 { font-family: var(--font-heading); font-size: clamp(1.7rem, 3vw, 2.4rem); font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
-    .bolt-text p { color: var(--muted-fg); font-size: 1.05rem; line-height: 1.7; max-width: 460px; }
+    @keyframes ctaMorphPop { 0% { transform: scale(1); } 42% { transform: scale(1.07); } 100% { transform: scale(1); } }
+    @media (prefers-reduced-motion: reduce) {
+      .bolt-cta a.cta-morph { transition: none; }
+      .bolt-cta a.cta-morph.seen { animation: none; }
+    }
 
     /* Dashboard sekce (ovládací panel — 3 karty) */
     .dctrl { padding: 96px 0 24px; }
@@ -231,48 +256,7 @@
       border: 1px solid rgba(208,208,255,.12);
       box-shadow: 0 30px 70px rgba(0,0,0,.4);
     }
-
-    /* ── Before/After slider (dashboard) ── */
-    .ba {
-      position: relative; width: 100%; aspect-ratio: 2340 / 1256;
-      border-radius: 20px; overflow: hidden;
-      border: 1px solid rgba(208,208,255,.12);
-      box-shadow: 0 30px 70px rgba(0,0,0,.4);
-      user-select: none; touch-action: pan-y; cursor: ew-resize;
-      --pos: 50%;
-    }
-    .dctrl-shot .ba img {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      object-fit: cover; display: block; pointer-events: none;
-      aspect-ratio: auto; border: none; border-radius: 0; box-shadow: none;
-    }
-    .ba .ba-top { clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
-    .ba-divider {
-      position: absolute; top: 0; bottom: 0; left: var(--pos);
-      width: 3px; background: #fff; transform: translateX(-50%);
-      box-shadow: 0 0 0 1px rgba(0,0,0,.12); pointer-events: none;
-    }
-    .ba-handle {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      width: 46px; height: 46px; border-radius: 50%; background: #fff;
-      box-shadow: 0 4px 16px rgba(0,0,0,.3);
-      display: flex; align-items: center; justify-content: center; gap: 1px;
-      color: #0020F6;
-    }
-    .ba-label {
-      position: absolute; top: 14px; z-index: 2; pointer-events: none;
-      padding: 6px 13px; border-radius: 999px;
-      background: rgba(10,13,46,.72); color: #fff;
-      font-family: var(--font-heading); font-size: .72rem; font-weight: 700;
-      letter-spacing: .03em; backdrop-filter: blur(6px);
-    }
-    .ba-label.l { left: 14px; }
-    .ba-label.r { right: 14px; }
     @media (max-width: 768px) {
-      .bolt-steps { gap: 48px; }
-      .bolt-row { grid-template-columns: 1fr; gap: 24px; }
-      .bolt-row:nth-child(even) .bolt-media { order: 0; }
-      .bolt-path { display: none; }
     }
 
     /* Bílá zóna: kroky + dashboard + Proč Makej */
@@ -281,10 +265,11 @@
     .emp-white-zone .dctrl-head p { color: rgba(10,13,46,.55); }
     .emp-white-zone .bz-wrap > h2 { color: #0a0d2e; }
     /* Kroky na bílé */
-    .emp-white-zone .bolt-text h3 { color: #0a0d2e; }
-    .emp-white-zone .bolt-text p { color: rgba(10,13,46,.6); }
-    .emp-white-zone .bolt-text-label { color: var(--primary); background: rgba(0,32,246,.07); border-color: rgba(0,32,246,.18); }
-    .emp-white-zone .bolt-path path { stroke: rgba(0,32,246,.3); }
+    /* Nadpis nad kroky (paralela k brigádnickému „Pojď si vydělat s Makej") */
+    /* Kicker nad nadpisem — čistý text, bez podkladu */
+    /* Zvýrazněné slovo + ručně kreslené podtržení, které se nakreslí při reveal */
+    @media (prefers-reduced-motion: reduce) {
+    }
 
     /* ── Ceník na bílé ── */
     #pricing { background: #fff; }
@@ -312,7 +297,102 @@
     #pricing .cn-plan-cta a.primary:hover { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--primary), 0 10px 28px rgba(0,32,246,.5); }
     #pricing .cn-expand-btn { color: rgba(10,13,46,.45); border-color: rgba(10,13,46,.12); }
     #pricing .cn-expand-btn:hover { color: var(--primary); border-color: var(--primary); }
+    /* Ceník na mobilu — tarify pod sebe (bez horizontálního scrollu) */
+    @media (max-width: 680px) {
+      #pricing .cn-plans-wrap { overflow-x: visible; padding-bottom: 20px; }
+      #pricing .cn-plans { grid-template-columns: 1fr; min-width: 0; gap: 16px; padding: 14px 0 4px; }
+      #pricing .cn-plan { margin-top: 0; }
+      #pricing .cn-plan.popular { margin-top: 0; }
+    }
+
+    /* FAQ (zaměstnavatelé) */
+    .emp-faq { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+    .emp-faq-list { border-top: 1px solid var(--border); }
+    .emp-faq-item { border-bottom: 1px solid var(--border); }
+    .emp-faq-q {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      padding: 22px 4px; cursor: pointer; font-family: var(--font-heading); font-weight: 800; font-size: 1.02rem; color: #fff;
+      user-select: none; transition: color .15s;
+    }
+    .emp-faq-q:hover { color: #d0d0ff; }
+    /* Plusko → minusko jako u FAQ na /lide (kříž z CSS, svislá čárka se otočí a zmizí) */
+    .emp-faq-plus { flex-shrink:0; width:24px; height:24px; position:relative; color:#a0b4ff; }
+    .emp-faq-plus::before,.emp-faq-plus::after { content:""; position:absolute; background:currentColor; border-radius:2px; }
+    .emp-faq-plus::before { top:11px; left:4px; right:4px; height:2.5px; }
+    .emp-faq-plus::after { left:11px; top:4px; bottom:4px; width:2.5px; transition:transform .25s,opacity .25s; }
+    .emp-faq-item.open .emp-faq-plus::after { transform:rotate(90deg); opacity:0; }
+    .emp-faq-a { display: none; padding: 0 4px 22px; color: var(--muted-fg); font-size: .92rem; line-height: 1.7; }
+    .emp-faq-a a { color: #a0b4ff; text-decoration: none; }
+    .emp-faq-a a:hover { text-decoration: underline; }
+    .emp-faq-item.open .emp-faq-a { display: block; }
+
+    /* ── Navbar ve stylu Lidé (VEXO) + hero jako u Lidé (gradient + drop animace) ── */
+    /* #navbar slouží na těchto stránkách jen jako nosič panelu #mobile-menu */
+    #navbar { background: none !important; box-shadow: none !important; pointer-events: none; }
+    #navbar .nav-inner { display: none !important; }
+    #navbar .mobile-menu { pointer-events: auto; }
+    .emp-hero-blue { padding-top: 0 !important; background: linear-gradient(180deg,#0020f6 0%,#1a37ff 12%,#5875ff 30%,#aebcff 46%,#ffffff 60%) !important; min-height: 100vh; min-height: var(--hero-h, 100vh); }
+    .eh-head { margin-top: clamp(94px, 12vh, 120px); margin-top: clamp(94px, calc(var(--hero-h, 100vh) * .12), 120px); }
+        /* Rozložení stejné jako hlavní navbar: logo vlevo, odkazy absolutně vycentrované
+       přes celou lištu, CTA vpravo. */
+    .vx-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; padding: 16px 24px; transition: background .25s, box-shadow .25s, padding .2s; }
+    .vx-nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; position: relative; }
+    .vx-nav.scrolled { background: rgba(255,255,255,.48); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 6px 24px -10px rgba(10,13,46,.3); padding-top: 10px; padding-bottom: 10px; }
+    .vx-nav.scrolled .vx-nav-links a { color: #0a0d2e; }
+    .vx-nav.scrolled .vx-nav-links a:hover { color: #0020f6; }
+    .vx-nav.scrolled .vx-logo { color: #0020f6; }
+    .vx-nav.scrolled .vx-nav-actions a.vx-signin { background: #0020f6; color: #fff; box-shadow: 0 8px 20px -8px rgba(0,32,246,.5); }
+    .vx-nav-links { position: absolute; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 32px; height: 44px; pointer-events: none; }
+    .vx-nav-links a { pointer-events: all; }
+    .vx-nav-links a.vx-active { opacity: 1; font-weight: 700; border-bottom: 2px solid currentColor; padding-bottom: 2px; }
+    .vx-nav-links a { font-weight: 600; font-size: .89rem; letter-spacing: .01em; color: #fff; text-decoration: none; opacity: .88; transition: opacity .2s; }
+    .vx-nav-links a:hover { opacity: 1; }
+    .vx-nav-actions { display: flex; align-items: center; gap: 10px; height: 44px; }
+    .vx-nav-actions a.vx-signin { font-weight: 700; font-size: .95rem; letter-spacing: .01em; color:#0020f6; opacity:1; background:#fff; border:none; border-radius:999px; padding:11px 20px; cursor:pointer; text-decoration:none; transition:transform .18s, box-shadow .2s; white-space:nowrap; box-shadow:0 8px 20px -8px rgba(0,0,0,.35); }
+    .vx-nav-actions a.vx-signin:hover { transform: translateY(-1px); box-shadow:0 12px 26px -8px rgba(0,0,0,.45); }
+    .vx-logo { font-family: var(--font-nav); font-weight: 900; font-size: 1.8rem; color: #fff; text-decoration: none; line-height: 1; }
+    @media (max-width: 900px) {
+      /* Mobil: odkazy i CTA schované pod hamburger (panel #mobile-menu ve skrytém #navbar) */
+      .vx-nav-links, .vx-nav-actions { display: none; }
+      .vx-nav { padding: 10px 16px; }
+      }
+    .mkj-visual { position: relative; z-index: 3; animation: vxDrop 1.5s cubic-bezier(.5,0,.15,1) both; }
+    @keyframes vxDrop { 0%,33% { transform: translateY(-42vh); } 100% { transform: translateY(0); } }
+    .eh-line:nth-child(1) .eh-line-in { animation-delay: .62s; }
+    .eh-line:nth-child(2) .eh-line-in { animation-delay: .78s; }
+    .eh-sub { animation-delay: .95s; }
+    .eh-btn { animation-delay: 1.08s; }
+    @media (prefers-reduced-motion: reduce) { .mkj-visual { animation: none !important; } }
+
+    /* ── Intro sekce (styl jako u Lidé) ── */
+    .vx-intro { background:#f6f7fb; padding: 92px 0; }
+    .vx-intro .vx-wrap { width: min(1100px, 90vw); margin: 0 auto; text-align:center; }
+    .vx-intro .vx-kick { display:inline-block; font-family:var(--font-heading); font-size:.72rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#0020f6; }
+    .vx-intro h2 { font-family: var(--font-heading); font-weight: 900; text-transform: uppercase; font-size: clamp(1.9rem, 4.4vw, 3rem); letter-spacing: -.02em; line-height: 1.03; margin: 12px 0 0; color:#0a0d2e; }
+    .vx-intro p { max-width: 780px; margin: 16px auto 0; color:#5b6478; font-size: 1.16rem; line-height: 1.6; }
+    .js-reveal-up { opacity:0; transform: translateY(60px); transition: opacity 1s cubic-bezier(.2,.8,.25,1), transform 1s cubic-bezier(.2,.8,.25,1); }
+    .js-reveal-up.is-in { opacity:1; transform:none; }
+    @media (prefers-reduced-motion: reduce){ .js-reveal-up { opacity:1 !important; transform:none !important; } }
   </style>
+  <!-- Výška hero se zafixuje podle okna při načtení. Vestavěné prohlížeče (Instagram,
+       Facebook) i mobilní Safari mění při scrollu velikost okna — a s ní každou výškovou
+       jednotku (vh, svh i dvh). Cokoli na nich visí pak při scrollu poskakuje.
+       Přepočítá se jen při skutečné změně: otočení displeje / změna šířky. -->
+  <script>
+    (function () {
+      var r = document.documentElement, lastW = null;
+      function set() {
+        r.style.setProperty('--hero-h', window.innerHeight + 'px');
+        lastW = window.innerWidth;
+      }
+      set();
+      window.addEventListener('resize', function () {
+        if (window.innerWidth !== lastW) set();
+      }, { passive: true });
+      window.addEventListener('orientationchange', set, { passive: true });
+    })();
+  </script>
+  <link rel="stylesheet" href="/motion.css?v=4" />
 </head>
 <body>
 
@@ -321,27 +401,27 @@
     <div class="nav-inner">
       <a href="/" class="nav-logo">Makej</a>
       <div class="nav-links">
-        <a href="/hledam-si-praci.html">Hledám si práci</a>
-        <a href="/pro-zamestnavatele.html" class="nav-active">Pro zaměstnavatele</a>
-        <a href="/o-nas.html">O nás</a>
+        <a href="/hledam-si-praci">Hledám si práci</a>
+        <a href="/pro-zamestnavatele" class="nav-active">Pro zaměstnavatele</a>
+        <a href="/lide">Lidé</a>
         <a href="#download">Stáhnout</a>
-        <a href="/podpora.html">Podpora</a>
+        <a href="/podpora">Podpora</a>
       </div>
       <div class="nav-actions nav-actions-visible" id="nav-actions">
         <a href="javascript:void(0)" class="btn-ghost" id="nav-login-btn">Přihlásit se</a>
         <a href="javascript:void(0)" class="btn-primary" id="nav-register-btn">Vytvořit účet</a>
       </div>
-      <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
-        <iconify-icon icon="solar:hamburger-menu-bold" width="24"></iconify-icon>
+      <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span>
       </button>
     </div>
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobile-menu">
-      <a href="/hledam-si-praci.html">Hledám si práci</a>
-      <a href="/pro-zamestnavatele.html" class="nav-active">Pro zaměstnavatele</a>
-      <a href="/o-nas.html">O nás</a>
+      <a href="/hledam-si-praci">Hledám si práci</a>
+      <a href="/pro-zamestnavatele" class="nav-active">Pro zaměstnavatele</a>
+      <a href="/lide">Lidé</a>
       <a href="#download">Stáhnout</a>
-      <a href="/podpora.html">Podpora</a>
+      <a href="/podpora">Podpora</a>
       <div class="mobile-menu-actions">
         <a href="javascript:void(0)" class="btn-ghost" id="mobile-login-btn">Přihlásit se</a>
         <a href="javascript:void(0)" class="btn-primary" id="mobile-register-btn">Vytvořit účet</a>
@@ -355,131 +435,79 @@
 
       <!-- ═══════════ HERO (modré, Bolt styl) ═══════════ -->
       <div class="emp-hero-blue">
+        <!-- Navbar ve stylu Lidé (aktuální stránka „Pro zaměstnavatele" skrytá) -->
+        <nav class="vx-nav">
+          <div class="vx-nav-inner">
+            <a href="/" class="vx-logo">Makej</a>
+            <div class="vx-nav-links">
+              <a href="/hledam-si-praci">Hledám si práci</a>
+              <a href="/pro-zamestnavatele" class="vx-active">Pro zaměstnavatele</a>
+              <a href="/lide">Lidé</a>
+              <a href="#download">Stáhnout</a>
+              <a href="/podpora">Podpora</a>
+            </div>
+            <button class="mobile-menu-btn vx-burger" aria-label="Menu" aria-expanded="false">
+              <span></span><span></span>
+            </button>
+            <div class="vx-nav-actions">
+              <a href="#" class="vx-signin employer-cta-register">Vytvořit účet</a>
+            </div>
+          </div>
+        </nav>
         <div class="eh-head">
-          <h1>Sežeňte brigádníky rychle</h1>
-          <p class="eh-sub">Žádné portály, žádné čekání týdny. Vytvoříte nabídku za 60 sekund a kandidáti přicházejí sami.</p>
+          <h1>
+            <span class="eh-line"><span class="eh-line-in">Najděte brigádníky</span></span>
+            <span class="eh-line"><span class="eh-line-in eh-accent eh-grad">rychle a jednoduše</span></span>
+          </h1>
+          <p class="eh-sub">Kandidáti si vás najdou sami. Stačí založit nabídku, opětovat zájem, propojit se a domluvit si podmínky.</p>
           <a href="#" class="eh-btn employer-cta-register">Začít zdarma</a>
         </div>
 
-        <!-- Telefon s business dashboardem -->
+        <!-- Notebook s business dashboardem -->
         <div class="mkj-visual" aria-hidden="true">
-        <div class="mkj-stage">
-          <div class="mkj-phone">
-            <div class="mkj-screen">
-              <div class="mkj-notch"></div>
-              <div class="db-top">
-                <div class="db-brand">
-                  <span class="db-logo">M</span>
-                  <div><div class="db-bname">makej.</div><div class="db-bsub">FOR BUSINESS</div></div>
-                </div>
-                <div class="db-icons">
-                  <span class="db-bell"><iconify-icon icon="solar:bell-bold"></iconify-icon></span>
-                  <span class="db-add"><iconify-icon icon="solar:add-circle-bold" width="17"></iconify-icon></span>
-                </div>
-              </div>
-              <div class="db-title">
-                <div class="db-h">Inzeráty</div>
-                <div class="db-hsub">Správa a výkon vašich brigád</div>
-              </div>
-              <div class="db-stats">
-                <div class="db-stat"><div class="db-slab">Aktivních</div><div class="db-snum">8</div><div class="db-sunit">inzerátů</div></div>
-                <div class="db-stat"><div class="db-slab">Celkem zhlédnutí</div><div class="db-snum">18 740</div><div class="db-sunit">za 30 dní</div></div>
-                <div class="db-stat"><div class="db-slab">Průměrný CTR</div><div class="db-snum">23,6 %</div><div class="db-sunit">swajp → match</div></div>
-                <div class="db-stat"><div class="db-slab">Najato celkem</div><div class="db-snum">19</div><div class="db-sunit">tento měsíc</div></div>
-              </div>
-              <div class="db-chips">
-                <span class="db-chip on">Vše 8</span>
-                <span class="db-chip">Aktivní 6</span>
-                <span class="db-chip">ASAP 1</span>
-                <span class="db-chip">Naplněno 1</span>
-              </div>
-              <div class="db-list">
-                <div class="db-card">
-                  <span class="db-badge"><span class="db-dot"></span>AKTIVNÍ</span><span class="db-std">Standard</span>
-                  <div class="db-jt">Barista — víkendy</div>
-                  <div class="db-pay"><span class="db-coin"><iconify-icon icon="solar:tag-price-bold" width="13"></iconify-icon></span>165 Kč/h · 5 dní zbývá</div>
-                  <div class="db-met">
-                    <div class="db-m"><div class="db-mlab">Zhléd.</div><div class="db-mnum">1 842</div></div>
-                    <div class="db-m"><div class="db-mlab">Swipe →</div><div class="db-mnum">421</div></div>
-                    <div class="db-m"><div class="db-mlab">Match</div><div class="db-mnum">63</div></div>
-                    <div class="db-m"><div class="db-mlab">Najato</div><div class="db-mnum">4</div></div>
-                  </div>
-                  <div class="db-cbtn"><iconify-icon icon="solar:users-group-rounded-bold" width="15"></iconify-icon> Kandidáti (63)</div>
-                </div>
-                <div class="db-card">
-                  <span class="db-badge"><span class="db-dot"></span>AKTIVNÍ</span><span class="db-std">Standard</span>
-                  <div class="db-jt">Kuchař — výpomoc</div>
-                  <div class="db-pay"><span class="db-coin"><iconify-icon icon="solar:tag-price-bold" width="13"></iconify-icon></span>195 Kč/h · 3 dny zbývá</div>
-                  <div class="db-met">
-                    <div class="db-m"><div class="db-mlab">Zhléd.</div><div class="db-mnum">2 230</div></div>
-                    <div class="db-m"><div class="db-mlab">Swipe →</div><div class="db-mnum">540</div></div>
-                    <div class="db-m"><div class="db-mlab">Match</div><div class="db-mnum hl">78</div></div>
-                    <div class="db-m"><div class="db-mlab">Najato</div><div class="db-mnum">5</div></div>
-                  </div>
-                  <div class="db-cbtn"><iconify-icon icon="solar:users-group-rounded-bold" width="15"></iconify-icon> Kandidáti (78)</div>
-                </div>
-              </div>
-            </div>
+          <div class="mkj-stage">
+            <img class="mkj-laptop" src="/emp-hero-macbook.png" alt="" width="1550" height="938" fetchpriority="high" decoding="async" />
           </div>
         </div>
       </div>
-      </div>
+
+      <!-- ═══════════ INTRO (styl Lidé) ═══════════ -->
+      <section class="vx-intro">
+        <div class="vx-wrap js-reveal-up">
+          <h2>Inzerce brigád, u které si vás kandidáti najdou sami</h2>
+          <p>Založíte nabídku a brigádníci ve vašem okolí vám začnou projevovat zájem. Žádné inzeráty do prázdna ani třídění stovek životopisů — jen oboustranný zájem, rychlé propojení a domluva přímo v chatu.</p>
+        </div>
+      </section>
 
       <!-- ░░░ BÍLÁ ZÓNA: kroky + dashboard + Proč Makej ░░░ -->
       <div class="emp-white-zone nav-light">
 
-      <!-- KROKY (alternující řady, prázdná místa pro fotky) -->
-      <div class="bolt-journey" id="jak-to-funguje">
-        <svg class="bolt-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M 26,10 C 26,22 74,23 74,35 C 74,47 26,48 26,59 C 26,71 74,72 74,84 C 74,93 50,93 50,98"
-                fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2.5"
-                stroke-linecap="round" vector-effect="non-scaling-stroke" />
-        </svg>
-        <div class="bolt-steps">
-        <div class="bolt-row">
-          <div class="bolt-media">
-            <img src="/emp-krok-1.png" alt="Vytvoření inzerátu v appce" loading="lazy" />
+      <!-- KROKY — galerie 2×2 (vzor ze sekce Lidé) -->
+      <div class="bolt-journey">
+        <div class="emp-gal">
+          <div class="emp-gal-word" aria-hidden="true">NÁBOR</div>
+          <div class="emp-gal-cards">
+          <div class="emp-gal-card js-reveal-up">
+            <div class="emp-gal-ph"><img src="/emp-krok-1.jpg?v=2" alt="Vytvoření inzerátu v appce" loading="lazy" decoding="async" /></div>
+            <div class="emp-gal-cap"><span class="n"></span><h3>Vytvořte inzerát</h3><p>Vyplňte pozici, datum, hodinovou mzdu a popis. Hotovo za 60 sekund přímo v aplikaci.</p></div>
           </div>
-          <div class="bolt-text">
-
-            <h3>Vytvořte inzerát</h3>
-            <p>Vyplňte pozici, datum, hodinovou mzdu a popis. Hotovo za 60 sekund přímo v aplikaci.</p>
+          <div class="emp-gal-card js-reveal-up">
+            <div class="emp-gal-ph"><img src="/emp-krok-2.jpg?v=2" alt="Kandidáti swajpují vaši nabídku" loading="lazy" decoding="async" /></div>
+            <div class="emp-gal-cap"><span class="n"></span><h3>Kandidáti swajpují</h3><p>Tisíce brigádníků uvidí vaši nabídku ve feedu. Ti co chtějí, swajpnou doprava — a vy je vidíte okamžitě.</p></div>
           </div>
-        </div>
-        <div class="bolt-row">
-          <div class="bolt-media">
-            <img src="/emp-krok-2.png" alt="Kandidáti swajpují vaši nabídku" loading="lazy" />
+          <div class="emp-gal-card js-reveal-up">
+            <div class="emp-gal-ph"><img src="/emp-krok-3.jpg?v=2" alt="Výběr kandidátů" loading="lazy" decoding="async" /></div>
+            <div class="emp-gal-cap"><span class="n"></span><h3>Přijmete nebo odmítnete</h3><p>Podívejte se na profil, hodnocení a zkušenosti. Jedním tapem přijmete — nebo posunete dál.</p></div>
           </div>
-          <div class="bolt-text">
-
-            <h3>Kandidáti swajpují</h3>
-            <p>Tisíce brigádníků uvidí vaši nabídku ve feedu. Ti co chtějí, swajpnou doprava — a vy je vidíte okamžitě.</p>
+          <div class="emp-gal-card js-reveal-up">
+            <div class="emp-gal-ph"><img src="/emp-krok-4.jpg?v=2" alt="Domluva detailů přes chat" loading="lazy" decoding="async" /></div>
+            <div class="emp-gal-cap"><span class="n"></span><h3>Domluvíte detaily</h3><p>Po přijetí se otevře chat. Upřesněte čas, místo a co si vzít. Brigádník je připravený.</p></div>
           </div>
-        </div>
-        <div class="bolt-row">
-          <div class="bolt-media">
-            <img src="/emp-krok-3.png" alt="Výběr kandidátů" loading="lazy" />
           </div>
-          <div class="bolt-text">
-
-            <h3>Přijmete nebo odmítnete</h3>
-            <p>Podívejte se na profil, hodnocení a zkušenosti. Jedním tapem přijmete — nebo posunete dál.</p>
-          </div>
-        </div>
-        <div class="bolt-row">
-          <div class="bolt-media">
-            <img src="/emp-krok-4.png" alt="Domluva detailů přes chat" loading="lazy" />
-          </div>
-          <div class="bolt-text">
-
-            <h3>Domluvíte detaily</h3>
-            <p>Po přijetí se otevře chat. Upřesněte čas, místo a co si vzít. Brigádník je připravený.</p>
-          </div>
-        </div>
         </div>
         <div class="bolt-cta">
-          <a href="#" class="btn-primary btn-lg employer-cta-register">
-            Vytvořit účet <iconify-icon icon="solar:arrow-right-linear" width="18"></iconify-icon>
+          <a href="#" class="btn-primary btn-lg employer-cta-register cta-morph">
+            Vytvořit účet <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="flex-shrink:0"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12h16m0 0l-6-6m6 6l-6 6"/></svg>
           </a>
         </div>
       </div>
@@ -491,17 +519,35 @@
           <p>Získejte přehled o inzerátech, kandidátech a výkonu — a spravujte celý nábor na jednom místě.</p>
         </div>
         <div class="dctrl-shot">
-          <div class="ba" id="dash-ba">
-            <img class="ba-under" src="/dashboard-2.png" alt="Dashboard — mapa trhu práce" loading="lazy" />
-            <img class="ba-top" src="/dashboard-1.png" alt="Dashboard — statistiky" loading="lazy" />
-            <div class="ba-label l">Statistiky</div>
-            <div class="ba-label r">Mapa trhu práce</div>
-            <div class="ba-divider">
-              <div class="ba-handle">
-                <iconify-icon icon="solar:alt-arrow-left-bold" width="13"></iconify-icon>
-                <iconify-icon icon="solar:alt-arrow-right-bold" width="13"></iconify-icon>
-              </div>
+          <style>
+          .dashmock-frame{position:relative;width:100%;max-width:1180px;margin:0 auto;aspect-ratio:2360/1407;border-radius:22px;overflow:hidden;border:1px solid rgba(16,24,64,.08);box-shadow:0 50px 110px -45px rgba(16,24,64,.55);background:#eef1f9;}
+          @media (max-width:640px){ .dashmock-frame{border-radius:14px;} }
+          /* Before/After posuvník */
+          .cmp{position:absolute;inset:0;--pos:55%;cursor:ew-resize;-webkit-user-select:none;user-select:none;touch-action:none;}
+          .cmp-lay{position:absolute;inset:0;overflow:hidden;}
+          .cmp-lay img{width:100%;height:100%;object-fit:cover;display:block;}
+          .cmp-a{clip-path:inset(0 calc(100% - var(--pos)) 0 0);}
+          .cmp-handle{position:absolute;top:0;bottom:0;left:var(--pos);width:3px;margin-left:-1.5px;background:#5b6bff;box-shadow:0 0 0 1px rgba(91,107,255,.35),0 0 18px rgba(91,107,255,.5);z-index:6;pointer-events:none;}
+          .cmp-grip{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:#5b6bff;box-shadow:0 8px 22px rgba(91,107,255,.45);display:flex;align-items:center;justify-content:center;}
+          .cmp-grip svg{width:22px;height:22px;}
+          .cmp-tag{position:absolute;top:14px;z-index:6;pointer-events:none;font:700 11.5px 'Inter';letter-spacing:.3px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.92);color:#14162b;box-shadow:0 4px 14px rgba(16,24,64,.14);}
+          .cmp-tag-l{left:14px;} .cmp-tag-r{right:14px;color:#1a34e8;}
+          </style>
+          <div class="dashmock-frame" role="img" aria-label="Náhled dashboardu a analytiky zaměstnavatele">
+           <div class="cmp" id="cmpDash" style="--pos:55%">
+
+            <!-- Vrstva B: Analytika (vespod, vidět vpravo od posuvníku) -->
+            <div class="cmp-lay cmp-b">
+              <img src="/emp-dash-analytika.jpg" alt="" width="2360" height="1407" loading="lazy" decoding="async" />
             </div>
+            <!-- Vrstva A: Dashboard (nahoře, oříznuté zleva) -->
+            <div class="cmp-lay cmp-a">
+              <img src="/emp-dash-dashboard.jpg" alt="" width="2360" height="1407" loading="lazy" decoding="async" />
+            </div>
+            <div class="cmp-handle"><span class="cmp-grip"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/></svg></span></div>
+            <span class="cmp-tag cmp-tag-l">Dashboard</span>
+            <span class="cmp-tag cmp-tag-r">Analytika</span>
+           </div>
           </div>
         </div>
       </div>
@@ -511,22 +557,22 @@
         <h2 style="padding-bottom: 15px;">Proč <span class="gradient-text">Makej</span></h2>
         <div class="bz-grid bz-stats">
           <div class="bz-card bz-stat accent bz-why2-item">
-            <div class="bz-step2-ic"><iconify-icon icon="solar:shield-star-bold" width="18"></iconify-icon></div>
+            <div class="bz-step2-ic"><span class="bz-ico bz-ico-verified"></span></div>
             <h4>Ověřené profily</h4>
             <p>Viditelné hodnocení, historie brigád a úroveň. Víte, koho přijímáte.</p>
           </div>
-          <div class="bz-card bz-stat bz-why2-item">
-            <div class="bz-step2-ic"><iconify-icon icon="solar:chart-bold" width="18"></iconify-icon></div>
+          <div class="bz-card bz-stat accent bz-why2-item">
+            <div class="bz-step2-ic"><span class="bz-ico bz-ico-chart"></span></div>
             <h4>Analytika v reálném čase</h4>
             <p>Kolik lidí vidělo inzerát, kolik swajplo, kolik matchovalo.</p>
           </div>
-          <div class="bz-card bz-stat bz-why2-item">
-            <div class="bz-step2-ic"><iconify-icon icon="solar:chat-round-bold" width="18"></iconify-icon></div>
+          <div class="bz-card bz-stat accent bz-why2-item">
+            <div class="bz-step2-ic"><span class="bz-ico bz-ico-chat"></span></div>
             <h4>Chat místo emailů</h4>
             <p>Napíšete zprávu, brigádník odpoví do minut. Vše na jednom místě.</p>
           </div>
-          <div class="bz-card bz-stat bz-why2-item">
-            <div class="bz-step2-ic"><iconify-icon icon="solar:wallet-bold" width="18"></iconify-icon></div>
+          <div class="bz-card bz-stat accent bz-why2-item">
+            <div class="bz-step2-ic"><span class="bz-ico bz-ico-wallet"></span></div>
             <h4>Zdarma pro začátek</h4>
             <p>Základní plán bez poplatků. Platíte, až když chcete víc.</p>
           </div>
@@ -538,12 +584,225 @@
   </main>
 
   <!-- ═══════════ PRICING ═══════════ -->
-  <section id="pricing" class="nav-light" style="padding:60px 0 120px;">
+  <section id="pricing" class="nav-light" style="background:#fff; padding:72px 0 100px;">
+    <style>
+      #pricing .yp-wrap{max-width:1320px;margin:0 auto;padding:0 24px;}
+      #pricing .yp-head{text-align:center;}
+      #pricing .yp-kick{display:inline-block;font-family:var(--font-heading);font-size:clamp(1.05rem,2vw,1.35rem);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#0020f6;margin:0 0 14px;}
+      #pricing .yp-h2{font-family:var(--font-heading);font-size:clamp(1.9rem,4vw,2.4rem);font-weight:800;color:#111827;margin:0 0 10px;}
+      #pricing .yp-sub{color:#6b7280;font-size:1.05rem;margin:0 0 24px;}
+      #pricing .yp-toggle{display:inline-flex;flex-direction:column;align-items:center;gap:10px;}
+      #pricing .yp-trow{display:inline-flex;align-items:center;gap:14px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:99px;padding:8px 20px;}
+      #pricing .yp-trow span{font-weight:700;font-size:15px;color:#9ca3af;transition:color .2s;}
+      #pricing .yp-trow span.on{color:#111827;}
+      #pricing .yp-sw{width:48px;height:26px;border-radius:999px;background:#d1d5db;position:relative;cursor:pointer;transition:background .2s;flex:0 0 auto;}
+      #pricing .yp-sw.on{background:#00c637;}
+      #pricing .yp-sw i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:left .2s;}
+      #pricing .yp-sw.on i{left:25px;}
+      #pricing .yp-save{background:rgba(0,198,55,.12);border:1px solid rgba(0,198,55,.3);color:#00a82f;font-size:14px;font-weight:800;border-radius:12px;padding:7px 18px;opacity:0;transform:scale(.9);transition:opacity .2s,transform .2s;}
+      #pricing .yp-save.on{opacity:1;transform:scale(1);}
+      #pricing .yp-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px;align-items:stretch;margin-top:32px;}
+      #pricing .yp-card{position:relative;display:flex;flex-direction:column;text-align:center;border-radius:22px;padding:34px 22px 28px;transition:transform .25s cubic-bezier(.34,1.3,.5,1),box-shadow .25s;}
+      #pricing .yp-card:hover{transform:translateY(-6px);box-shadow:0 16px 36px rgba(16,24,64,.14);}
+      #pricing .yp-badge{position:absolute;top:0;right:0;display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#0020F6,#5B6BFF);color:#fff;font-size:10.5px;font-weight:800;padding:6px 12px;border-radius:0 20px 0 14px;}
+      #pricing .yp-name{font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:1.4px;margin:10px 0 16px;}
+      #pricing .yp-price{min-height:52px;display:flex;align-items:baseline;justify-content:center;gap:4px;flex-wrap:wrap;}
+      #pricing .yp-price .free{font-family:var(--font-heading);font-size:40px;font-weight:800;color:#111827;line-height:1;}
+      #pricing .yp-price .yp-num{font-family:var(--font-heading);font-size:48px;font-weight:800;color:#111827;line-height:1;}
+      #pricing .yp-price .pre{color:#9ca3af;font-size:15px;font-weight:600;}
+      #pricing .yp-price .kc{color:#6b7280;font-size:17px;font-weight:600;}
+      #pricing .yp-period{color:#9ca3af;font-size:12.5px;margin-top:5px;}
+      #pricing .yp-savew{min-height:24px;margin:6px 0 4px;display:flex;justify-content:center;align-items:center;}
+      #pricing .yp-savew span{opacity:0;transition:opacity .2s;background:rgba(0,198,55,.12);border:1px solid rgba(0,198,55,.3);color:#00a82f;font-size:10.5px;font-weight:800;border-radius:8px;padding:3px 9px;}
+      #pricing .yp-savew.on span{opacity:1;}
+      #pricing .yp-hr{border-top:1px solid rgba(0,0,0,.07);margin:4px 0 14px;}
+      #pricing .yp-feats{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;text-align:left;}
+      #pricing .yp-feat{display:flex;align-items:flex-start;gap:9px;font-size:13px;font-weight:600;line-height:1.35;}
+      #pricing .yp-feat iconify-icon{flex:0 0 auto;margin-top:1px;}
+      #pricing .yp-cta{margin-top:auto;padding-top:10px;}
+      #pricing .yp-btn{display:block;width:100%;padding:13px 0;border-radius:13px;font-size:14px;font-weight:800;text-align:center;text-decoration:none;cursor:pointer;box-sizing:border-box;background:#fff;transition:filter .15s;}
+      #pricing .yp-btn:hover{filter:brightness(.97);}
+      #pricing .yp-btn.pop{background:linear-gradient(135deg,#0020F6,#3a3a99);color:#fff;border:none;}
+      #pricing .yp-comparebtn{display:block;margin:14px auto 0;background:none;border:none;color:#0020f6;font-weight:700;font-size:14px;cursor:pointer;padding:12px;font-family:inherit;}
+      #pricing .yp-table-wrap{max-width:1320px;margin:14px auto 0;overflow-x:auto;display:none;}
+      #pricing .yp-table-wrap.on{display:block;}
+      #pricing .yp-table{width:100%;border-collapse:collapse;min-width:840px;}
+      #pricing .yp-table th,#pricing .yp-table td{padding:12px 14px;text-align:center;font-size:12.5px;border-bottom:1px solid #eef0f6;}
+      #pricing .yp-table th:first-child,#pricing .yp-table td:first-child{text-align:left;color:#374151;font-weight:600;}
+      #pricing .yp-table thead th{font-family:var(--font-heading);font-weight:800;color:#111827;font-size:14px;border-bottom:2px solid #e5e7eb;}
+      #pricing .yp-sec td{background:#f7f8fc;font-weight:800;color:#111827;text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;}
+      #pricing .yp-cell-no{color:#d1d5db;font-weight:700;}
+      #pricing .yp-cell-txt{font-family:var(--font-heading);font-weight:700;color:#111827;font-size:12px;font-variant-numeric:tabular-nums;}
+      #pricing .yp-cell-tbd{display:inline-block;padding:2px 9px;border-radius:6px;background:#f3f4f6;color:#9ca3af;font-size:10.5px;font-weight:700;}
+      @media (max-width:900px){#pricing .yp-cards{grid-template-columns:repeat(2,1fr);}}
+      @media (max-width:560px){#pricing .yp-cards{grid-template-columns:1fr;}}
+    </style>
+    <div class="yp-wrap">
+      <div class="yp-head reveal">
+        <h2 class="yp-h2">Vyber si svůj plán</h2>
+        <p class="yp-sub">Bez závazků. Zrušení kdykoliv.</p>
+        <div class="yp-toggle">
+          <div class="yp-trow">
+            <span id="yp-lbl-m" class="on">Měsíčně</span>
+            <div class="yp-sw" id="yp-sw"><i></i></div>
+            <span id="yp-lbl-a">Ročně</span>
+          </div>
+          <div class="yp-save" id="yp-save">chci šetřit</div>
+        </div>
+      </div>
+      <div class="yp-cards">
+          <div class="yp-card" style="background:rgba(138,180,255,.07);border:1.5px solid rgba(138,180,255,.30)">
+            
+            <div class="yp-name">Základní</div>
+            <div class="yp-price"><span class="free">Zdarma</span></div>
+            <div class="yp-period">navždy zdarma</div>
+            <div class="yp-savew"></div>
+            <div class="yp-hr"></div>
+            <div class="yp-feats"><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">1 aktivní inzerát</span></div><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">Oslovování brigádníků 1×/měs</span></div><div class="yp-feat"><iconify-icon icon="solar:close-circle-bold" width="15" style="color:#d1d5db"></iconify-icon><span style="color:#9ca3af">Topování inzerátu</span></div><div class="yp-feat"><iconify-icon icon="solar:close-circle-bold" width="15" style="color:#d1d5db"></iconify-icon><span style="color:#9ca3af">Ověřená firma</span></div></div>
+            <div class="yp-cta"><a class="yp-btn employer-cta-register" href="javascript:void(0)" style="border:1.5px solid #8AB4FF;color:#111827">Začít zdarma</a></div>
+          </div>
+          <div class="yp-card" style="background:rgba(91,107,255,.07);border:1.5px solid rgba(91,107,255,.30)">
+            <div class="yp-badge"><iconify-icon icon="solar:star-bold" width="12"></iconify-icon>Nejoblíbenější</div>
+            <div class="yp-name">Výhodný</div>
+            <div class="yp-price"><span class="yp-num" data-a="1" data-plan="vyhodny">499</span><span class="kc"> Kč</span></div>
+            <div class="yp-period">za měsíc bez DPH</div>
+            <div class="yp-savew"><span>ušetříš 900 Kč/rok</span></div>
+            <div class="yp-hr"></div>
+            <div class="yp-feats"><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">2 aktivní inzeráty</span></div><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">Topování inzerátu 1×/měs</span></div><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">Ověřená firma + branding</span></div><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">Oslovování brigádníků 10×/měs</span></div></div>
+            <div class="yp-cta"><a class="yp-btn pop employer-cta-register" href="javascript:void(0)">Vybrat Výhodný</a></div>
+          </div>
+          <div class="yp-card" style="background:rgba(91,214,138,.07);border:1.5px solid rgba(91,214,138,.30)">
+            
+            <div class="yp-name">Dynamický</div>
+            <div class="yp-price"><span class="yp-num">2 000</span><span class="kc"> Kč</span></div>
+            <div class="yp-period">za měsíc bez DPH</div>
+            <div class="yp-savew"></div>
+            <div class="yp-hr"></div>
+            <div class="yp-feats"><div class="yp-feat"><iconify-icon icon="solar:clock-circle-bold" width="15" style="color:#9ca3af"></iconify-icon><span style="color:#9ca3af">Funkce doplníme společně</span></div></div>
+            <div class="yp-cta"><a class="yp-btn employer-cta-register" href="javascript:void(0)" style="border:1.5px solid #5BD68A;color:#111827">Vybrat Dynamický</a></div>
+          </div>
+          <div class="yp-card" style="background:rgba(255,209,102,.07);border:1.5px solid rgba(255,209,102,.30)">
+            
+            <div class="yp-name">Maximální</div>
+            <div class="yp-price"><span class="yp-num" data-a="1" data-plan="maximalni">4 999</span><span class="kc"> Kč</span></div>
+            <div class="yp-period">za měsíc bez DPH</div>
+            <div class="yp-savew"><span>ušetříš 9 000 Kč/rok</span></div>
+            <div class="yp-hr"></div>
+            <div class="yp-feats"><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">10 aktivních inzerátů</span></div><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">Topování inzerátu 5×/měs</span></div><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">SMS Urgent + prémiový badge</span></div><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">Pokročilá analytika</span></div></div>
+            <div class="yp-cta"><a class="yp-btn employer-cta-register" href="javascript:void(0)" style="border:1.5px solid #FFD166;color:#111827">Vybrat Maximální</a></div>
+          </div>
+          <div class="yp-card" style="background:rgba(224,176,255,.07);border:1.5px solid rgba(224,176,255,.30)">
+            
+            <div class="yp-name">Vlastní</div>
+            <div class="yp-price"><span class="pre">od </span><span class="yp-num">9 999</span><span class="kc"> Kč</span></div>
+            <div class="yp-period">kalkulace na míru</div>
+            <div class="yp-savew"></div>
+            <div class="yp-hr"></div>
+            <div class="yp-feats"><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">Vše z Maximální</span></div><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">Custom integrace (HR)</span></div><div class="yp-feat"><iconify-icon icon="solar:check-circle-bold" width="15" style="color:#16a34a"></iconify-icon><span style="color:#374151">Dedikovaný account manager</span></div></div>
+            <div class="yp-cta"><a class="yp-btn" style="border:1px solid rgba(224,176,255,.47);color:#374151" href="mailto:admin@makej.eu">Nezávazná poptávka</a></div>
+          </div>
+      </div>
+      <button class="yp-comparebtn" id="yp-comparebtn">Zobrazit srovnání funkcí</button>
+      <div class="yp-table-wrap" id="yp-table-wrap">
+        <table class="yp-table">
+          <thead><tr><th></th><th>Základní</th><th>Výhodný</th><th>Dynamický</th><th>Maximální</th><th>Vlastní</th></tr></thead>
+          <tbody>
+                        <tr class="yp-sec"><td colspan="6">Inzeráty</td></tr>
+            <tr><td>Aktivní inzeráty</td><td><span class="yp-cell-txt">1</span></td><td><span class="yp-cell-txt">2</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><span class="yp-cell-txt">10</span></td><td><span class="yp-cell-txt">10</span></td></tr>
+            <tr><td>Full-time inzerce</td><td><span class="yp-cell-txt">1</span></td><td><span class="yp-cell-txt">1</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><span class="yp-cell-txt">1</span></td><td><span class="yp-cell-txt">1</span></td></tr>
+            <tr><td>Topování inzerátu</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-txt">1×/měs</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><span class="yp-cell-txt">5×/měs</span></td><td><span class="yp-cell-txt">5×/měs</span></td></tr>
+            <tr><td>Plánování inzerátu předem</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Šablony inzerátů</td><td><span class="yp-cell-no">–</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr class="yp-sec"><td colspan="6">Nábor a viditelnost</td></tr>
+            <tr><td>Oslovování brigádníků</td><td><span class="yp-cell-txt">1×/měs</span></td><td><span class="yp-cell-txt">10×/měs</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><span class="yp-cell-txt">100×/měs</span></td><td><span class="yp-cell-txt">100×/měs</span></td></tr>
+            <tr><td>Ověřená firma + branding</td><td><span class="yp-cell-no">–</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Video na profilu</td><td><span class="yp-cell-no">–</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Prémiový badge</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>SMS Urgent</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Zmínka na FB + IG Makej</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr class="yp-sec"><td colspan="6">Data a reporting</td></tr>
+            <tr><td>Základní statistiky</td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Plné statistiky + CSV export</td><td><span class="yp-cell-no">–</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Pokročilá analytika</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Custom integrace (HR systémy)</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><span class="yp-cell-no">–</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Vlastní reporting na míru</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><span class="yp-cell-no">–</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Co-marketing s Makej</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><span class="yp-cell-no">–</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr class="yp-sec"><td colspan="6">Tým a podpora</td></tr>
+            <tr><td>Možnost konzultace</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Role uživatelů</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Neomezení uživatelé v týmu</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><span class="yp-cell-no">–</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Onboarding a školení týmu</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><span class="yp-cell-no">–</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>SLA 99,99 % + prioritní podpora</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><span class="yp-cell-no">–</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+            <tr><td>Dedikovaný account manager</td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-no">–</span></td><td><span class="yp-cell-tbd">brzy</span></td><td><span class="yp-cell-no">–</span></td><td><iconify-icon icon="solar:check-circle-bold" width="17" style="color:#16a34a"></iconify-icon></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  <section id="faq" style="padding:40px 0 110px; background:#fff;">
+    <style>
+      #faq .section-header h2{color:#0f1222;}
+      #faq .section-header h2 .gradient-text{-webkit-text-fill-color:#0020f6;color:#0020f6;background:none;}
+      #faq .section-header p{color:#5b6478;}
+      #faq .section-header p a{color:#0020f6 !important;}
+      #faq .emp-faq-list,#faq .emp-faq-item{border-color:rgba(15,18,40,.1);}
+      #faq .emp-faq-q{color:#0f1222;}
+      #faq .emp-faq-q:hover{color:#0020f6;}
+      #faq .emp-faq-plus{color:#0020f6;}
+      #faq .emp-faq-a{color:#5b6478;}
+      #faq .emp-faq-a a{color:#0020f6;}
+    </style>
     <div class="container">
-
-      <!-- Dashboardový ceník — stejný React komponent jako v dashboardu -->
-      <div id="makej-pricing-root"></div>
-
+      <div class="section-header reveal">
+        <h2>Časté <span class="gradient-text">otázky</span></h2>
+        <p>Nenašli jste odpověď? Napište nám na <a href="mailto:admin@makej.eu" style="color:#a0b4ff;text-decoration:none;">admin@makej.eu</a></p>
+      </div>
+      <div class="emp-faq">
+        <div class="emp-faq-list">
+          <div class="emp-faq-item">
+            <div class="emp-faq-q" onclick="toggleFaq(this)">
+              <span>Kolik stojí zveřejnění inzerátu?</span>
+              <span class="emp-faq-plus"></span>
+            </div>
+            <div class="emp-faq-a">Plán Starter je zdarma a navždy — zveřejníte 1 aktivní inzerát. Placené plány začínají na 499 Kč/měsíc a přidávají víc aktivních inzerátů, topování, oslovování brigádníků a pokročilou analytiku.</div>
+          </div>
+          <div class="emp-faq-item">
+            <div class="emp-faq-q" onclick="toggleFaq(this)">
+              <span>Jak rychle najdu brigádníka?</span>
+              <span class="emp-faq-plus"></span>
+            </div>
+            <div class="emp-faq-a">První kandidát chodí v průměru do 2,4 hodiny a 94 % firem najme do 48 hodin. Rychlost závisí na oboru, lokalitě a atraktivitě nabídky — topování ji ještě zrychlí.</div>
+          </div>
+          <div class="emp-faq-item">
+            <div class="emp-faq-q" onclick="toggleFaq(this)">
+              <span>Jak probíhá výběr kandidátů?</span>
+              <span class="emp-faq-plus"></span>
+            </div>
+            <div class="emp-faq-a">Brigádníci swajpují vaši nabídku ve feedu. U každého zájemce vidíte profil, hodnocení a historii brigád. Jedním tapem ho přijmete, nebo posunete dál — a po přijetí se otevře chat.</div>
+          </div>
+          <div class="emp-faq-item">
+            <div class="emp-faq-q" onclick="toggleFaq(this)">
+              <span>Můžu inzerovat i part-time nebo full-time pozice?</span>
+              <span class="emp-faq-plus"></span>
+            </div>
+            <div class="emp-faq-a">Ano. Makej pokrývá jednorázové brigády, part-time i full-time pozice napříč obory — od gastra a skladů po eventy a retail.</div>
+          </div>
+          <div class="emp-faq-item">
+            <div class="emp-faq-q" onclick="toggleFaq(this)">
+              <span>Platím za každou obsazenou pozici?</span>
+              <span class="emp-faq-plus"></span>
+            </div>
+            <div class="emp-faq-a">Ne. Platíte jen měsíční nebo roční předplatné zvoleného plánu — žádné provize z jednotlivých náborů ani skryté poplatky.</div>
+          </div>
+          <div class="emp-faq-item">
+            <div class="emp-faq-q" onclick="toggleFaq(this)">
+              <span>Jak komunikuju s kandidáty?</span>
+              <span class="emp-faq-plus"></span>
+            </div>
+            <div class="emp-faq-a">Po matchi se otevře chat — v mobilní aplikaci i ve web dashboardu, plně synchronizovaně. Domluvíte čas, místo a detaily na jednom místě.</div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -556,11 +815,11 @@
           <p class="dl-sub">Stáhni si aplikaci zdarma a prozkoumej pracovní příležitosti ve tvém okolí ještě dnes.</p>
           <div class="dl-btns">
             <a href="#" class="dl-btn" aria-disabled="true">
-              <iconify-icon icon="logos:apple"></iconify-icon>
+              <svg class="dl-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 315" aria-hidden="true"><path d="M213.803 167.03c.442 47.58 41.74 63.413 42.197 63.615c-.35 1.116-6.599 22.563-21.757 44.716c-13.104 19.153-26.705 38.235-48.13 38.63c-21.05.388-27.82-12.483-51.888-12.483c-24.061 0-31.582 12.088-51.51 12.871c-20.68.783-36.428-20.71-49.64-39.793c-27-39.033-47.633-110.3-19.928-158.406c13.763-23.89 38.36-39.017 65.056-39.405c20.307-.387 39.475 13.662 51.889 13.662c12.406 0 35.699-16.895 60.186-14.414c10.25.427 39.026 4.14 57.503 31.186c-1.49.923-34.335 20.044-33.978 59.822M174.24 50.199c10.98-13.29 18.369-31.79 16.353-50.199c-15.826.636-34.962 10.546-46.314 23.828c-10.173 11.763-19.082 30.589-16.678 48.633c17.64 1.365 35.66-8.964 46.64-22.262"/></svg>
               <span><small>Brzy dostupné na</small><strong>App Store</strong></span>
             </a>
             <a href="#" class="dl-btn" aria-disabled="true">
-              <iconify-icon icon="logos:google-play-icon"></iconify-icon>
+              <svg class="dl-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 283" aria-hidden="true"><path fill="#ea4335" d="M119.553 134.916L1.06 259.061a32.14 32.14 0 0 0 47.062 19.071l133.327-75.934z"/><path fill="#fbbc04" d="M239.37 113.814L181.715 80.79l-64.898 56.95l65.162 64.28l57.216-32.67a31.345 31.345 0 0 0 0-55.537z"/><path fill="#4285f4" d="M1.06 23.487A30.6 30.6 0 0 0 0 31.61v219.327a32.3 32.3 0 0 0 1.06 8.124l122.555-120.966z"/><path fill="#34a853" d="m120.436 141.274l61.278-60.483L48.564 4.503A32.85 32.85 0 0 0 32.051 0C17.644-.028 4.978 9.534 1.06 23.399z"/></svg>
               <span><small>Brzy dostupné na</small><strong>Google Play</strong></span>
             </a>
           </div>
@@ -576,31 +835,33 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="/" class="footer-logo">Makej</a>
-          <p>Brigádní appka nové generace. Swajpuj, matchuj a pracuj.</p>
+          <p>Aplikace na brigády a práci ve tvém okolí. Swajpuj, matchuj a pracuj.</p>
           <div class="footer-social">
-            <!-- Sociální sítě — doplň skutečné URL před launchem -->
-            <!-- <a href="https://instagram.com/makej.eu" aria-label="Instagram"><iconify-icon icon="mdi:instagram" width="22"></iconify-icon></a> -->
-            <!-- <a href="https://tiktok.com/@makej.eu" aria-label="TikTok"><iconify-icon icon="ic:baseline-tiktok" width="22"></iconify-icon></a> -->
+            <a href="https://www.instagram.com/makej.eu" aria-label="Instagram" target="_blank" rel="noopener"><iconify-icon icon="mdi:instagram" width="22"></iconify-icon></a>
+            <a href="https://www.facebook.com/share/19Kq5N1R2u/?mibextid=wwXIfr" aria-label="Facebook" target="_blank" rel="noopener"><iconify-icon icon="mdi:facebook" width="22"></iconify-icon></a>
+            <a href="https://www.tiktok.com/@makejaplikace" aria-label="TikTok" target="_blank" rel="noopener"><iconify-icon icon="ic:baseline-tiktok" width="22"></iconify-icon></a>
+            <a href="https://www.linkedin.com/company/makej-s-r-o/" aria-label="LinkedIn" target="_blank" rel="noopener"><iconify-icon icon="mdi:linkedin" width="22"></iconify-icon></a>
           </div>
         </div>
         <div class="footer-col">
           <h4>Produkt</h4>
-          <a href="/hledam-si-praci.html">Hledám si práci</a>
-          <a href="/pro-zamestnavatele.html">Pro zaměstnavatele</a>
-          <a href="/pro-zamestnavatele.html#pricing">Ceník</a>
+          <a href="/hledam-si-praci">Hledám si práci</a>
+          <a href="/pro-zamestnavatele">Pro zaměstnavatele</a>
+          <a href="/lide">Lidé</a>
           <a href="#download">Stáhnout</a>
         </div>
         <div class="footer-col">
           <h4>Firma</h4>
-          <a href="/podpora.html">Podpora</a>
-          <a href="mailto:hello@makej.eu">Kontakt</a>
-          <a href="/o-nas.html">O nás</a>
+          <a href="/blog">Blog</a>
+          <a href="/podpora">Podpora</a>
+          <a href="mailto:admin@makej.eu">Kontakt</a>
+          <a href="/o-nas">O nás</a>
         </div>
         <div class="footer-col">
           <h4>Právní</h4>
-          <a href="/terms.html">Podmínky použití</a>
-          <a href="/privacy.html">Ochrana soukromí</a>
-          <a href="/privacy.html#cookies">Cookies</a>
+          <a href="/terms">Podmínky použití</a>
+          <a href="/privacy">Ochrana soukromí</a>
+          <a href="/privacy#cookies">Cookies</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -622,16 +883,16 @@
         transition: transform 0.4s cubic-bezier(.2,.8,.2,1);
         animation: peekerIn 0.45s cubic-bezier(.2,.8,.2,1) both;
       ">
-        <div style="width:88px;height:76px;background:linear-gradient(160deg,#2a39ff 0%,#0a17d2 100%);border-radius:50% 50% 44% 44%;position:relative;box-shadow:0 14px 36px rgba(0,0,60,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:2px solid rgba(120,145,255,0.35);">
+        <div style="width:88px;height:76px;background:linear-gradient(160deg,#4848c4 0%,#1c1c7a 100%);border-radius:50% 50% 44% 44%;position:relative;box-shadow:0 14px 36px rgba(0,0,60,0.65),inset 0 1px 0 rgba(255,255,255,0.18);border:2px solid rgba(140,140,255,0.3);">
           <div id="main-browL" style="position:absolute;left:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
           <div id="main-browR" style="position:absolute;right:13px;top:15px;width:18px;height:3px;background:rgba(190,190,255,0.6);border-radius:2px;transition:transform 0.22s ease;"></div>
           <div id="main-eyeL" style="position:absolute;left:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
             <div id="main-pupilL" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
-            <div id="main-lidL" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#4358ff,#0f22cc);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+            <div id="main-lidL" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
           </div>
           <div id="main-eyeR" style="position:absolute;right:15px;top:28px;width:21px;height:21px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.12);">
             <div id="main-pupilR" style="width:11px;height:11px;background:#16163c;border-radius:50%;transition:transform 0.09s ease;position:relative;"><div style="position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.9);border-radius:50%;top:1px;right:1px;"></div></div>
-            <div id="main-lidR" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#4358ff,#0f22cc);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
+            <div id="main-lidR" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(180deg,#5050c8,#3030a0);transition:height 0.3s cubic-bezier(.4,0,.2,1);z-index:2;"></div>
           </div>
           <div style="position:absolute;bottom:11px;left:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
           <div style="position:absolute;bottom:11px;right:7px;width:16px;height:8px;border-radius:50%;background:rgba(255,100,150,0.22);"></div>
@@ -639,65 +900,35 @@
       </div>
       <button class="modal-close" id="login-close" aria-label="Zavřít">✕</button>
       <div class="modal-logo">Makej</div>
-      <!-- Krok 1: výběr role -->
-      <div id="login-step-1">
-        <h2 class="modal-title">Přihlásit se</h2>
-        <div class="role-cards">
-          <button type="button" class="role-card" data-login-role="worker">
-            <span class="role-ic role-ic--user"></span>
-            <strong>Brigádník</strong>
-            <small>Hledám práci</small>
-          </button>
-          <button type="button" class="role-card" data-login-role="employer">
-            <span class="role-ic role-ic--company"></span>
-            <strong>Zaměstnavatel</strong>
-            <small>Hledám brigádníky</small>
-          </button>
+      <h2 class="modal-title">Přihlásit se</h2>
+      <p class="modal-subtitle">Vítej zpět! Přihlaš se ke svému účtu.</p>
+      <div class="modal-error" id="login-error"></div>
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email</label>
+          <input class="form-input" type="email" id="login-email" placeholder="tvuj@email.cz" autocomplete="email" required />
         </div>
-      </div>
-
-      <!-- Krok 2: přihlašovací údaje -->
-      <div id="login-step-2" style="display:none">
-        <button class="modal-back" id="login-back">
-          <span class="back-ic"></span>
-          Zpět
-        </button>
-        <h2 class="modal-title">Přihlásit se</h2>
-        <p class="modal-subtitle" id="login-role-subtitle">Brigádník</p>
-        <div class="modal-error" id="login-error"></div>
-        <form id="login-form" novalidate>
-          <div class="form-group">
-            <label class="form-label" for="login-email">Email</label>
-            <input class="form-input" type="email" id="login-email" placeholder="tvuj@email.cz" autocomplete="email" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="login-password">Heslo</label>
-            <div class="password-wrap">
-              <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
-              <button type="button" class="pw-toggle pw-toggle--text" id="login-pw-toggle" tabindex="-1"><span id="login-pw-label">Zobrazit</span></button>
-            </div>
-          </div>
-          <div class="login-forgot-row">
-            <a href="#" id="login-forgot" class="login-forgot">Zapomněl jsem heslo?</a>
-          </div>
-          <div class="form-group">
+        <div class="form-group">
+          <label class="form-label" for="login-password">Heslo</label>
+          <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
+        </div>
+        <div class="form-group">
             <label class="form-label" for="login-key">Přístupový klíč</label>
             <input class="form-input" type="text" id="login-key" placeholder="Zadej klíč" inputmode="numeric" autocomplete="off" />
             <p class="form-hint">Pouze pro oficiální testovací a vývojářské účty.</p>
           </div>
           <button type="submit" class="btn-primary btn-full btn-lg" id="login-submit">Přihlásit se</button>
-        </form>
-        <div class="modal-divider"><span>nebo</span></div>
-        <button class="btn-google" id="login-google">
-          <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
-            <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.6 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
-            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-            <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.3C29.4 35.5 26.8 36.5 24 36.5c-5.2 0-9.6-3.4-11.2-8l-6.6 5C9.7 39.7 16.3 44 24 44z"/>
-            <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.7l6.2 5.3C37.5 39.7 44 35.4 44 24c0-1.3-.1-2.6-.4-3.9z"/>
-          </svg>
-          Pokračovat s Google
-        </button>
-      </div>
+      </form>
+      <div class="modal-divider"><span>nebo</span></div>
+      <button class="btn-google" id="login-google">
+        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.6 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
+          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+          <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.3C29.4 35.5 26.8 36.5 24 36.5c-5.2 0-9.6-3.4-11.2-8l-6.6 5C9.7 39.7 16.3 44 24 44z"/>
+          <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.7l6.2 5.3C37.5 39.7 44 35.4 44 24c0-1.3-.1-2.6-.4-3.9z"/>
+        </svg>
+        Pokračovat s Google
+      </button>
       <p class="modal-switch">Nemáš účet? <a href="#" id="switch-to-register">Zaregistruj se</a></p>
     </div>
 
@@ -712,12 +943,12 @@
         <p class="modal-subtitle">Kdo jsi?</p>
         <div class="role-cards">
           <button type="button" class="role-card" data-role="worker">
-            <span class="role-ic role-ic--user"></span>
+            <iconify-icon icon="solar:user-bold" width="32"></iconify-icon>
             <strong>Brigádník</strong>
             <small>Hledám práci</small>
           </button>
           <button type="button" class="role-card" data-role="employer">
-            <span class="role-ic role-ic--company"></span>
+            <iconify-icon icon="solar:buildings-bold" width="32"></iconify-icon>
             <strong>Zaměstnavatel</strong>
             <small>Hledám brigádníky</small>
           </button>
@@ -727,7 +958,7 @@
       <!-- Krok 2: údaje -->
       <div id="reg-step-2" style="display:none">
         <button class="modal-back" id="reg-back">
-          <span class="back-ic"></span>
+          <iconify-icon icon="solar:arrow-left-bold" width="16"></iconify-icon>
           Zpět
         </button>
         <h2 class="modal-title">Tvoje údaje</h2>
@@ -750,24 +981,28 @@
             <label class="form-label" for="reg-password">Heslo</label>
             <div class="password-wrap">
               <input class="form-input" type="password" id="reg-password" placeholder="Min. 6 znaků" autocomplete="new-password" required />
-              <button type="button" class="pw-toggle pw-toggle--text" id="reg-pw-toggle" tabindex="-1">Zobrazit</button>
+              <button type="button" class="pw-toggle" id="reg-pw-toggle" aria-label="Zobrazit heslo" tabindex="-1">
+                <iconify-icon icon="solar:eye-bold" width="18" id="reg-pw-icon"></iconify-icon>
+              </button>
             </div>
           </div>
           <div class="form-group">
             <label class="form-label" for="reg-password2">Heslo znovu</label>
             <div class="password-wrap">
               <input class="form-input" type="password" id="reg-password2" placeholder="Zopakuj heslo" autocomplete="new-password" required />
-              <button type="button" class="pw-toggle pw-toggle--text" id="reg-pw2-toggle" tabindex="-1">Zobrazit</button>
+              <button type="button" class="pw-toggle" id="reg-pw2-toggle" aria-label="Zobrazit heslo" tabindex="-1">
+                <iconify-icon icon="solar:eye-bold" width="18" id="reg-pw2-icon"></iconify-icon>
+              </button>
             </div>
           </div>
           <label for="reg-marketing" class="reg-consent" style="display:flex;align-items:flex-start;gap:10px;margin:2px 2px 15px;cursor:pointer;font-size:.82rem;line-height:1.45;color:rgba(10,13,46,.62);text-align:left;">
             <input type="checkbox" id="reg-marketing" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--primary);cursor:pointer;" />
-            <span>Souhlasím se zasíláním novinek, výhodných nabídek a dalších sdělení pro <a href="/privacy.html#marketing" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="color:var(--primary);font-weight:600;">marketingové účely</a>. <em style="font-style:normal;opacity:.65;">(nepovinné)</em></span>
+            <span>Souhlasím se zasíláním novinek, výhodných nabídek a dalších sdělení pro <a href="/privacy#marketing" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="color:var(--primary);font-weight:600;">marketingové účely</a>. <em style="font-style:normal;opacity:.65;">(nepovinné)</em></span>
           </label>
           <button type="submit" class="btn-primary btn-full btn-lg" id="register-submit">Vytvořit účet</button>
-          <p style="font-size:.78rem;color:rgba(10,13,46,.55);text-align:center;margin-top:12px;line-height:1.5;">
-            Registrací souhlasíš s našimi <a href="/terms.html" target="_blank" style="color:var(--primary);font-weight:600">Obchodními podmínkami</a>
-            a <a href="/privacy.html" target="_blank" style="color:var(--primary);font-weight:600">Zásadami ochrany osobních údajů</a>.
+          <p style="font-size:.78rem;color:var(--muted-fg);text-align:center;margin-top:12px;line-height:1.5;">
+            Registrací souhlasíš s našimi <a href="/terms" target="_blank" style="color:var(--secondary)">Obchodními podmínkami</a>
+            a <a href="/privacy" target="_blank" style="color:var(--secondary)">Zásadami ochrany osobních údajů</a>.
           </p>
         </form>
       </div>
@@ -782,7 +1017,7 @@
     <div class="cookie-inner">
       <p class="cookie-text">
         🍪 Používáme pouze technicky nezbytné cookies a localStorage pro udržení přihlášení.
-        Žádné reklamní trackery. Více informací v naší <a href="/privacy.html#cookies">Politice ochrany soukromí</a>.
+        Žádné reklamní trackery. Více informací v naší <a href="/privacy#cookies">Politice ochrany soukromí</a>.
       </p>
       <div class="cookie-actions">
         <button class="cookie-btn cookie-btn-reject" id="cookie-reject">Jen nezbytné</button>
@@ -793,8 +1028,17 @@
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="script.js?v=60"></script>
+  <script src="script.js?v=31"></script>
+  <script src="/motion.js?v=4"></script>
   <script>
+    // FAQ accordion
+    function toggleFaq(el) {
+      var item = el.parentElement;
+      var isOpen = item.classList.contains('open');
+      document.querySelectorAll('.emp-faq-item.open').forEach(function (i) { i.classList.remove('open'); });
+      if (!isOpen) item.classList.add('open');
+    }
+
     // Pricing: expand / collapse plan details
     function toggleExpand(btn) {
       var plan = btn.closest('.cn-plan');
@@ -829,56 +1073,111 @@
       });
     }
 
-    // Pricing: annual billing toggle
-    var annualOn = false;
-    var prices = {
-      std: { monthly: 499,  annual: Math.round(499  * 12 * 0.85 / 12) },
-      biz: { monthly: 4999, annual: Math.round(4999 * 12 * 0.85 / 12) },
-    };
-    function toggleBilling() {
-      annualOn = !annualOn;
-      var toggle = document.getElementById('billing-toggle');
-      var badge  = document.getElementById('billing-badge');
-      toggle.classList.toggle('on', annualOn);
-      badge.textContent = annualOn ? 'aktivní — 15 % sleva' : 'ušetři 15 %';
-      cnAnimateNumber(document.getElementById('std-price'), annualOn ? prices.std.annual : prices.std.monthly);
-      cnAnimateNumber(document.getElementById('biz-price'), annualOn ? prices.biz.annual : prices.biz.monthly);
-      if (annualOn) cnConfetti(toggle);
-    }
-  </script>
-
-  <!-- Before/After slider dashboardu -->
-  <script>
+    // Ceník: přepínač měsíčně/ročně + srovnání
     (function () {
-      var ba = document.getElementById('dash-ba');
-      if (!ba) return;
-      var dragging = false;
-      function setPos(clientX) {
-        var r = ba.getBoundingClientRect();
-        var p = (clientX - r.left) / r.width * 100;
-        p = Math.max(0, Math.min(100, p));
-        ba.style.setProperty('--pos', p + '%');
+      var annual = false;
+      var data = { vyhodny: { m: 499, a: 424 }, maximalni: { m: 4999, a: 4249 } };
+      function cz(n){ return n.toLocaleString('cs-CZ'); }
+      function apply() {
+        document.querySelectorAll('#pricing .yp-num[data-plan]').forEach(function (el) {
+          var d = data[el.getAttribute('data-plan')]; if (d) el.textContent = cz(annual ? d.a : d.m);
+        });
+        document.querySelectorAll('#pricing .yp-savew').forEach(function (w) { w.classList.toggle('on', annual); });
+        var sw = document.getElementById('yp-sw'); if (sw) sw.classList.toggle('on', annual);
+        var lm = document.getElementById('yp-lbl-m'); if (lm) lm.classList.toggle('on', !annual);
+        var la = document.getElementById('yp-lbl-a'); if (la) la.classList.toggle('on', annual);
+        var sv = document.getElementById('yp-save'); if (sv) sv.classList.toggle('on', annual);
       }
-      ba.addEventListener('pointerdown', function (e) { dragging = true; try { ba.setPointerCapture(e.pointerId); } catch (x) {} setPos(e.clientX); });
-      ba.addEventListener('pointermove', function (e) { if (dragging) setPos(e.clientX); });
-      window.addEventListener('pointerup', function () { dragging = false; });
-      ba.addEventListener('pointercancel', function () { dragging = false; });
+      var sw = document.getElementById('yp-sw');
+      if (sw) sw.addEventListener('click', function () { annual = !annual; apply(); });
+      var cb = document.getElementById('yp-comparebtn');
+      if (cb) cb.addEventListener('click', function () {
+        var on = document.getElementById('yp-table-wrap').classList.toggle('on');
+        cb.textContent = on ? 'Skrýt srovnání funkcí' : 'Zobrazit srovnání funkcí';
+      });
+      apply();
     })();
   </script>
+  <script>
+    // Before/after posuvník nad screenshoty dashboardu
+    (function () {
+      document.querySelectorAll('.cmp').forEach(function (cmp) {
+        var dragging = false;
+        function setPos(clientX) {
+          var r = cmp.getBoundingClientRect();
+          var p = ((clientX - r.left) / r.width) * 100;
+          p = Math.max(3, Math.min(97, p));
+          cmp.style.setProperty('--pos', p + '%');
+        }
+        cmp.addEventListener('pointerdown', function (e) {
+          hintStop();
+          dragging = true; cmp.setPointerCapture(e.pointerId); setPos(e.clientX); e.preventDefault();
+        });
+        cmp.addEventListener('pointermove', function (e) { if (dragging) setPos(e.clientX); });
+        cmp.addEventListener('pointerup', function () { dragging = false; });
+        cmp.addEventListener('pointercancel', function () { dragging = false; });
 
-  <!-- Dashboardový ceník (React komponent, stejný jako v dashboardu) -->
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
-  <script type="text/babel" src="/pricing-embed.jsx?v=4"></script>
-  <!-- Plovoucí tlačítko „Startujeme" — přejde na homepage s čekacím listem -->
-  <button class="wl-fab" type="button" aria-label="Startujeme – přidat se na waitlist">
-    <span class="wl-fab__icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-        <path d="M13.6 2 5.4 13.1c-.4.5 0 1.3.7 1.3h4.2l-1.4 7.4c-.1.8.9 1.2 1.4.6l8.3-11.1c.4-.5 0-1.3-.7-1.3h-4.2l1.4-7.4c.1-.8-.9-1.2-1.5-.6Z" fill="currentColor"/>
-      </svg>
-    </span>
-    <span class="wl-fab__label">Startujeme</span>
-  </button>
+        // ── Upoutávka: posuvník sám popojede tam a zpět, ať je vidět, že je tažný ──
+        // Spustí se, až je komponenta pořádně v obraze (je pod ohybem), a jen jednou.
+        // Jakmile na ni uživatel sáhne, animace se okamžitě zruší.
+        var hintRaf = null, hintDone = false;
+        function hintStop() { if (hintRaf) cancelAnimationFrame(hintRaf); hintRaf = null; hintDone = true; }
+        function hintRun() {
+          if (hintDone) return;
+          hintDone = true;
+          var home = parseFloat(getComputedStyle(cmp).getPropertyValue('--pos')) || 55;
+          var stops = [home, home - 13, home + 9, home];   // doleva, doprava, zpět
+          var seg = 620, total = seg * (stops.length - 1), t0 = null;
+          var ease = function (x) { return x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2; };
+          hintRaf = requestAnimationFrame(function step(ts) {
+            if (t0 === null) t0 = ts;
+            var el = ts - t0;
+            if (el >= total) { cmp.style.setProperty('--pos', home + '%'); hintRaf = null; return; }
+            var i = Math.floor(el / seg), k = ease((el - i * seg) / seg);
+            cmp.style.setProperty('--pos', (stops[i] + (stops[i + 1] - stops[i]) * k) + '%');
+            hintRaf = requestAnimationFrame(step);
+          });
+        }
+        if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          hintDone = true;
+        } else if (!('IntersectionObserver' in window)) {
+          hintDone = true;
+        } else {
+          var hintObs = new IntersectionObserver(function (en) {
+            en.forEach(function (e) {
+              if (e.isIntersecting && e.intersectionRatio >= 0.5) {
+                hintObs.unobserve(cmp);
+                setTimeout(hintRun, 450);
+              }
+            });
+          }, { threshold: [0, 0.5, 1] });
+          hintObs.observe(cmp);
+        }
+      });
+    })();
+  </script>
+  <!-- CTA morph: „Vytvořit účet" zmodrá až doscrolluje na obrazovku -->
+  <script>
+    (function () {
+      var btn = document.querySelector('.bolt-cta a.cta-morph');
+      if (!btn) return;
+      if (!('IntersectionObserver' in window)) { btn.classList.add('seen'); return; }
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          // spustí se, až je tlačítko pořádně vidět (ne jen okrajem)
+          if (e.isIntersecting && e.intersectionRatio >= 0.6) {
+            btn.classList.add('seen');
+            obs.unobserve(btn);
+          }
+        });
+      }, { threshold: [0, 0.6, 1], rootMargin: '0px 0px -8% 0px' });
+      obs.observe(btn);
+    })();
+  </script>
+  <!-- Scroll-reveal intro sekce + připnutý navbar -->
+  <script>
+  (function(){var els=document.querySelectorAll('.js-reveal-up');if(!els.length)return;if(!('IntersectionObserver'in window)){els.forEach(function(e){e.classList.add('is-in');});return;}var io=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('is-in');io.unobserve(e.target);}});},{threshold:.2,rootMargin:'0px 0px -8% 0px'});els.forEach(function(e){io.observe(e);});})();
+  (function(){var n=document.querySelector('.vx-nav');if(!n)return;var f=function(){n.classList.toggle('scrolled',(window.scrollY||document.documentElement.scrollTop)>40);};f();window.addEventListener('scroll',f,{passive:true});})();
+  </script>
 </body>
 </html>

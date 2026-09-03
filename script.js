@@ -25,6 +25,16 @@ function updateNav() {
   });
   navbar.classList.toggle('nav-over-light', overLight);
 
+  // Světlá stránka (blog, články): nad modrou patičkou přepnout navbar zpátky do bílé
+  if (navbar.classList.contains('nav-light-page')) {
+    let overBlue = false;
+    document.querySelectorAll('[data-nav-blue]').forEach(sec => {
+      const r = sec.getBoundingClientRect();
+      if (r.top <= 70 && r.bottom >= 10) overBlue = true;
+    });
+    navbar.classList.toggle('nav-over-blue', overBlue);
+  }
+
   if (hasStaticActive) return; // aktivní je jen odkaz aktuální stránky
 
   const mid = window.innerHeight * 0.35;
@@ -45,16 +55,16 @@ updateNav();
 // ═══════════ NAVBAR DROPDOWNS ═══════════
 function setupNavDropdowns() {
   const menus = {
-    'pro-zamestnavatele.html': [
-      ['Jak to funguje', '/pro-zamestnavatele.html#jak-to-funguje'],
-      ['Dashboard',      '/pro-zamestnavatele.html#dashboard'],
-      ['Ceník',          '/pro-zamestnavatele.html#pricing'],
-      ['Časté dotazy',   '/podpora.html'],
+    'pro-zamestnavatele': [
+      ['Jak to funguje', '/pro-zamestnavatele#jak-to-funguje'],
+      ['Dashboard',      '/pro-zamestnavatele#dashboard'],
+      ['Ceník',          '/pro-zamestnavatele#pricing'],
+      ['Časté dotazy',   '/pro-zamestnavatele#faq'],
     ],
-    'hledam-si-praci.html': [
-      ['Jak to funguje', '/hledam-si-praci.html#how-it-works'],
-      ['Proč Makej',     '/hledam-si-praci.html#features'],
-      ['Stáhnout',       '/hledam-si-praci.html#download'],
+    'hledam-si-praci': [
+      ['Jak to funguje', '/hledam-si-praci#how-it-works'],
+      ['Vyzkoušej appku','/hledam-si-praci#features'],
+      ['Stáhnout',       '/hledam-si-praci#download'],
     ],
   };
   document.querySelectorAll('.nav-links > a').forEach(a => {
@@ -76,7 +86,9 @@ function setupNavDropdowns() {
     wrap.appendChild(menu);
   });
 }
-setupNavDropdowns();
+// Vypnuto: rozbalovací podmenu v navbaru při najetí myší.
+// Funkce i CSS (.nav-dropdown*) zůstávají — stačí odkomentovat řádek níž.
+// setupNavDropdowns();
 
 // Po načtení (vč. obrázků) doskroluj přesně na kotvu z URL — opraví posun z lazy-load
 window.addEventListener('load', function () {
@@ -91,14 +103,33 @@ window.addEventListener('load', function () {
 });
 
 // ═══════════ MOBILE MENU ═══════════
-const menuBtn = document.getElementById('mobile-menu-btn');
+// Tlačítek může být na stránce víc — .vx-nav (Lidé / Hledám práci / Pro zaměstnavatele)
+// má vlastní hamburger, ale sdílí jeden panel #mobile-menu.
+const menuBtns = document.querySelectorAll('.mobile-menu-btn');
 const mobileMenu = document.getElementById('mobile-menu');
-menuBtn.addEventListener('click', () => {
-  mobileMenu.classList.toggle('active');
-});
-mobileMenu.querySelectorAll('a').forEach(link => {
-  link.addEventListener('click', () => mobileMenu.classList.remove('active'));
-});
+if (mobileMenu && menuBtns.length) {
+  const setMenu = (open) => {
+    mobileMenu.classList.toggle('active', open);
+    menuBtns.forEach(b => {
+      b.classList.toggle('open', open);
+      b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.body.style.overflow = open ? 'hidden' : '';
+  };
+  menuBtns.forEach(btn => {
+    btn.addEventListener('click', () => setMenu(!mobileMenu.classList.contains('active')));
+  });
+  mobileMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => setMenu(false));
+  });
+  // klik mimo panel a Esc menu zavřou
+  document.addEventListener('click', (e) => {
+    if (!mobileMenu.classList.contains('active')) return;
+    if (mobileMenu.contains(e.target) || e.target.closest('.mobile-menu-btn')) return;
+    setMenu(false);
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+}
 
 // ═══════════ SMOOTH SCROLL FOR NAV LINKS ═══════════
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -137,24 +168,35 @@ function animateCounters() {
 
 // ═══════════ SCROLL REVEAL ═══════════
 function setupReveal() {
-  const revealElements = document.querySelectorAll(
-    '.step-card, .feature-card, .testimonial-card, .download-card, .section-header, .cn-plan'
-  );
-  revealElements.forEach(el => el.classList.add('reveal'));
+  // Bezpečné obsahové bloky napříč stránkami. POZOR: nezahrnovat prvky s vlastním
+  // transformem (.dl-card rotate) ani kroky u „jak to funguje" (.bolt-row — konflikt
+  // s kreslenou spojnicí), aby se transform nepřebil.
+  const SEL = [
+    '.step-card', '.feature-card', '.testimonial-card', '.download-card',
+    '.section-header', '.cn-plan', '.yp-head',
+    '.ref-grid', '.bolt-head', '.bolt-text',
+    '.ab-lead', '.ab-col', '.ab-team-block', '.ab-person', '.ab-quote', '.ab-cta',
+    '.emp-faq-item', '.faq-item',
+  ].join(', ');
+  const revealElements = document.querySelectorAll(SEL);
+
+  revealElements.forEach(el => {
+    el.classList.add('reveal');
+    // Stagger: prvek dostane zpoždění podle pořadí mezi reveal-sourozenci ve stejném
+    // rodiči → skupiny karet naskakují kaskádovitě, samostatné bloky bez zpoždění.
+    let i = 0, s = el.previousElementSibling;
+    while (s) { if (s.classList && s.classList.contains('reveal')) i++; s = s.previousElementSibling; }
+    if (i > 0) el.style.transitionDelay = (Math.min(i, 5) * 0.08).toFixed(2) + 's';
+  });
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        const el = entry.target;
-        el.classList.add('visible');
-        observer.unobserve(el);
-        // Once the entrance animation has played, drop 'reveal' so its
-        // transition-delay (used for the staggered entrance) doesn't
-        // linger and delay unrelated :hover transitions afterwards.
-        setTimeout(() => el.classList.remove('reveal', 'visible'), 900);
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 
   revealElements.forEach(el => observer.observe(el));
 }
@@ -193,10 +235,114 @@ function setupHeroUnderline() {
   if (heroH1) observer.observe(heroH1);
 }
 
+// ═══════════ DATUMOVÝ „REVOLVER" PICKER (den·měsíc·rok) ═══════════
+// Vanilla verze Yasinova WDatumPicker — nahrazuje nativní <input type="date">
+// hezkým rolovacím výběrem (den · měsíc · rok, roluješ do středu).
+function initDatePicker(input, opts) {
+  if (!input || input.dataset.dp) return;
+  input.dataset.dp = '1';
+  input.type = 'hidden';
+  opts = opts || {};
+  const MES = ['Leden','Únor','Březen','Duben','Květen','Červen','Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
+  const letos = new Date().getFullYear();
+  const yFrom = opts.yearFrom != null ? opts.yearFrom : letos;
+  const yTo   = opts.yearTo   != null ? opts.yearTo   : 1920;
+  const ROKY = [];
+  if (yFrom >= yTo) { for (let r = yFrom; r >= yTo; r--) ROKY.push(r); }
+  else { for (let r = yFrom; r <= yTo; r++) ROKY.push(r); }
+  const placeholder = opts.placeholder || 'Vyber datum';
+  const parse = v => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||''); return m?{y:+m[1],mo:+m[2]-1,d:+m[3]}:{y:(opts.defYear||2005),mo:0,d:1}; };
+  const fmt = v => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||''); return m?(+m[3]+'. '+(+m[2])+'. '+m[1]):''; };
+  const daysIn = (y,mo) => new Date(y, mo+1, 0).getDate();
+
+  let cur = parse(input.value);
+
+  const wrap = document.createElement('div'); wrap.className = 'mdp';
+  wrap.innerHTML =
+    '<button type="button" class="mdp-btn"><iconify-icon icon="solar:calendar-bold"></iconify-icon><span class="mdp-label"></span></button>' +
+    '<div class="mdp-pop"></div>';
+  input.parentNode.insertBefore(wrap, input.nextSibling);
+  const btn = wrap.querySelector('.mdp-btn');
+  const pop = wrap.querySelector('.mdp-pop');
+  const labelEl = wrap.querySelector('.mdp-label');
+
+  function syncLabel() {
+    labelEl.textContent = input.value ? fmt(input.value) : placeholder;
+    wrap.classList.toggle('mdp-empty', !input.value);
+  }
+  function commit() {
+    input.value = cur.y + '-' + String(cur.mo+1).padStart(2,'0') + '-' + String(cur.d).padStart(2,'0');
+    syncLabel();
+    try { input.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+  }
+  function divEl(){ const d=document.createElement('div'); d.className='mdp-div'; return d; }
+
+  function makeWheel(items, index, itemW, onIndex) {
+    const w = document.createElement('div'); w.className = 'mdp-wheel-wrap';
+    const hl = document.createElement('div'); hl.className='mdp-hl'; hl.style.width=(itemW-10)+'px';
+    const fl = document.createElement('div'); fl.className='mdp-fade mdp-fade-l';
+    const fr = document.createElement('div'); fr.className='mdp-fade mdp-fade-r';
+    const track = document.createElement('div'); track.className='w-wheel mdp-track';
+    const pad1 = document.createElement('div'); pad1.style.flex='0 0 calc(50% - '+(itemW/2)+'px)'; track.appendChild(pad1);
+    const btns = items.map((it,i)=>{
+      const b=document.createElement('button'); b.type='button'; b.className='mdp-item'+(i===index?' is-active':'');
+      b.style.flex='0 0 '+itemW+'px'; b.textContent=it;
+      b.addEventListener('click',()=>{
+        track.scrollTo({left:i*itemW,behavior:'smooth'});
+        btns.forEach((bb,bi)=>bb.classList.toggle('is-active',bi===i));
+        onIndex(i);
+      });
+      track.appendChild(b); return b;
+    });
+    const pad2 = document.createElement('div'); pad2.style.flex='0 0 calc(50% - '+(itemW/2)+'px)'; track.appendChild(pad2);
+    w.appendChild(hl); w.appendChild(fl); w.appendChild(fr); w.appendChild(track);
+    requestAnimationFrame(()=>{ track.scrollLeft = index*itemW; });
+    let tim;
+    track.addEventListener('scroll',()=>{
+      clearTimeout(tim);
+      tim=setTimeout(()=>{
+        const i=Math.max(0,Math.min(items.length-1,Math.round(track.scrollLeft/itemW)));
+        btns.forEach((b,bi)=>b.classList.toggle('is-active',bi===i));
+        onIndex(i);
+      },90);
+    },{passive:true});
+    return w;
+  }
+
+  let dayHolder;
+  function buildDayWheel() {
+    const cnt = daysIn(cur.y, cur.mo);
+    if (cur.d > cnt) cur.d = cnt;
+    const DNY=[]; for(let d=1; d<=cnt; d++) DNY.push(d);
+    return makeWheel(DNY, cur.d-1, 62, i=>{ cur.d=i+1; commit(); });
+  }
+  function refreshDay() { const nw = buildDayWheel(); pop.replaceChild(nw, dayHolder); dayHolder = nw; }
+  function renderPop() {
+    pop.innerHTML='';
+    dayHolder = buildDayWheel();
+    pop.appendChild(dayHolder);
+    pop.appendChild(divEl());
+    pop.appendChild(makeWheel(MES, cur.mo, 116, i=>{ cur.mo=i; refreshDay(); commit(); }));
+    pop.appendChild(divEl());
+    pop.appendChild(makeWheel(ROKY, Math.max(0,ROKY.indexOf(cur.y)), 86, i=>{ cur.y=ROKY[i]; refreshDay(); commit(); }));
+  }
+
+  btn.addEventListener('click', e=>{
+    e.preventDefault();
+    const opening = !wrap.classList.contains('is-open');
+    if (opening) { cur = parse(input.value); renderPop(); }
+    wrap.classList.toggle('is-open');
+  });
+  document.addEventListener('click', e=>{ if(!wrap.contains(e.target)) wrap.classList.remove('is-open'); }, true);
+  syncLabel();
+}
+
 // ═══════════ INIT ═══════════
 document.addEventListener('DOMContentLoaded', () => {
   setupReveal();
   initAuth();
+  // Datum narození v registraci → „revolver" picker (1920 … letos)
+  initDatePicker(document.getElementById('reg-birth'), { placeholder: 'Vyber datum narození', defYear: 2005 });
 });
 
 // ═══════════ AUTH / SUPABASE ═══════════
@@ -212,11 +358,16 @@ function initAuth() {
   const loginModal   = document.getElementById('login-modal');
   const registerModal = document.getElementById('register-modal');
   let selectedRole = 'worker';
+  // true = registrace otevřena z waitlistu → „Zpět" vede zpět na waitlist,
+  // ne na rozcestník. Resetuje se při každém otevření modálu (wlGoRegister ho pak nastaví).
+  let regFromWaitlist = false;
+  // true = po signUp NEpřesměrovávat (když je v Supabase vypnuté potvrzování e-mailu,
+  // signUp uživatele rovnou přihlásí — nechceme ho hodit do dashboardu). Viz register-form.
+  let skipAutoRedirect = false;
 
-  // ── PŘÍSTUPOVÝ KLÍČ ────────────────────────────────────────────────────────
+  // ── PŘÍSTUPOVÝ KLÍČ ──────────────────────────────────────────────────────
   // Web je před spuštěním: registrace běží pro všechny, ale PŘIHLÁSIT se (a jít
   // do dashboardu) může jen ten, kdo v přihlašovacím formuláři zadá platný klíč.
-  // Klíč rozdává Yasin oficiálním testovacím / vývojářským účtům.
   //   ⇒ ZMĚNIT KLÍČ = uprav ACCESS_KEY.  ⇒ NAOSTRO = dej ACCESS_KEY na '' (pustí všechny).
   const ACCESS_KEY = '8939';
   const ACCESS_LOCKED_MSG =
@@ -226,9 +377,6 @@ function initAuth() {
     const el = document.getElementById('login-key');
     return !!el && el.value.trim() === ACCESS_KEY;
   }
-  // true = registrace byla otevřena z waitlistu → „Zpět" vede zpět na waitlist,
-  // ne na rozcestník s výběrem role. Resetuje se při každém otevření modálu.
-  let regFromWaitlist = false;
 
   // ─── Modal open/close ───
   function openModal(type, role) {
@@ -237,18 +385,23 @@ function initAuth() {
     if (type === 'login') {
       loginModal.classList.add('active');
       registerModal.classList.remove('active');
-      if (role) { applyLoginRole(role); showLoginStep(2); } else { showLoginStep(1); }
       // Restart peeker animation
       const p = document.getElementById('main-peeker');
       if (p) { p.style.animation = 'none'; requestAnimationFrame(() => { p.style.animation = 'peekerIn 0.45s cubic-bezier(.2,.8,.2,1) both'; }); }
     } else {
       registerModal.classList.add('active');
       loginModal.classList.remove('active');
+      const backBtn = document.getElementById('reg-back');
       if (role) {
+        // Role je předvybraná (worker-cta / employer-cta) → přeskoč rozcestník
+        // a skryj „Zpět", aby se na rozcestník nedalo vrátit.
         applyRole(role);
         showRegStep(2);
+        if (backBtn) backBtn.style.display = 'none';
       } else {
+        // Bez role (tlačítko v navbaru) → ukaž rozcestník a nech „Zpět" dostupné.
         showRegStep(1);
+        if (backBtn) backBtn.style.display = '';
       }
     }
     document.body.style.overflow = 'hidden';
@@ -283,39 +436,17 @@ function initAuth() {
 
   function applyRole(role) {
     selectedRole = role;
-    document.getElementById('reg-role-subtitle').textContent =
-      role === 'worker' ? 'Brigádník' : 'Zaměstnavatel';
-    document.getElementById('reg-company-group').style.display =
-      role === 'employer' ? 'block' : 'none';
+    // Null-safe: některé stránky mají zjednodušený registrační modal (bez
+    // birth/gender/kraj polí). Kdyby applyRole spadl na null, nepřeskočil by se
+    // rozcestník rolí u worker-cta / employer-cta tlačítek.
+    const setText  = (id, txt)  => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+    const setDisp  = (id, disp) => { const el = document.getElementById(id); if (el) el.style.display = disp; };
+    setText('reg-role-subtitle', role === 'worker' ? 'Brigádník' : 'Zaměstnavatel');
+    setDisp('reg-company-group', role === 'employer' ? 'block' : 'none');
+    setDisp('reg-birth-group',   role === 'worker' ? 'block' : 'none');
+    setDisp('reg-gender-group',  role === 'worker' ? 'block' : 'none');
+    setText('reg-kraj-label',    role === 'worker' ? 'Z jakého jsi kraje?' : 'Kraj firmy');
   }
-
-  // ─── Login steps (rozcestník brigádník / zaměstnavatel) ───
-  let loginRole = 'worker';
-  let skipAutoRedirect = false;
-
-  function showLoginStep(n) {
-    const s1 = document.getElementById('login-step-1');
-    const s2 = document.getElementById('login-step-2');
-    if (!s1 || !s2) return;
-    s1.style.display = n === 1 ? 'block' : 'none';
-    s2.style.display = n === 2 ? 'block' : 'none';
-  }
-
-  function applyLoginRole(role) {
-    loginRole = role;
-    const sub = document.getElementById('login-role-subtitle');
-    if (sub) sub.textContent = role === 'worker' ? 'Brigádník' : 'Zaměstnavatel';
-  }
-
-  document.querySelectorAll('[data-login-role]').forEach(card => {
-    card.addEventListener('click', () => {
-      applyLoginRole(card.dataset.loginRole);
-      showLoginStep(2);
-    });
-  });
-
-  const loginBackBtn = document.getElementById('login-back');
-  if (loginBackBtn) loginBackBtn.addEventListener('click', () => { clearErrors(); showLoginStep(1); });
 
   // ─── Nav update ───
   // Voláno z onAuthStateChange — jednoduše vymění obsah nav a přidá listenery na nové prvky
@@ -344,7 +475,6 @@ function initAuth() {
            </a>`;
       navActions.innerHTML = `
         ${dashBtn}
-        <span class="nav-user-greeting">Ahoj, ${name}!</span>
         <button class="btn-ghost" id="logout-btn">Odhlásit se</button>
       `;
       mobileActions.innerHTML = `
@@ -379,7 +509,7 @@ function initAuth() {
         ['mobile-register-btn','register'],
       ].forEach(([id, type]) => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener('click', e => { e.preventDefault(); openModal(type); });
+        if (el) el.addEventListener('click', e => { e.preventDefault(); type === 'register' ? goWaitlist() : openModal(type); });
       });
 
       // Hero CTA: show auth buttons, hide dashboard/worker
@@ -388,27 +518,31 @@ function initAuth() {
     }
   }
 
+  // „Registrovat se / Vytvořit účet" → nejdřív na čekací list (předregistrace).
+  // Na index.html (kde je overlay) otevře čekací list rovnou; z ostatních stránek
+  // přesměruje na /?wl (index čekací list po načtení sám otevře).
+  function goWaitlist(role) {
+    if (document.getElementById('wl-overlay') && typeof openWaitlist === 'function') {
+      openWaitlist();
+      if (role && window.wlSetTab) window.wlSetTab(role);
+    } else {
+      window.location.href = '/?wl=1' + (role ? '&role=' + role : '');
+    }
+  }
+
   // ─── Statická tlačítka (nejsou nikdy přepisována) — bindujeme jen jednou ───
   document.querySelectorAll('.employer-cta-register').forEach(btn => {
-    btn.addEventListener('click', e => { e.preventDefault(); openModal('register', 'employer'); });
+    btn.addEventListener('click', e => { e.preventDefault(); goWaitlist('employer'); });
   });
   document.querySelectorAll('.worker-cta-register').forEach(btn => {
-    btn.addEventListener('click', e => { e.preventDefault(); openModal('register', 'worker'); });
+    btn.addEventListener('click', e => { e.preventDefault(); goWaitlist('worker'); });
   });
 
   // Hero CTA buttons (Vytvořit účet zdarma / Přihlásit se)
   const heroRegisterBtn = document.getElementById('hero-register-btn');
   const heroLoginBtn    = document.getElementById('hero-login-btn');
-  if (heroRegisterBtn) heroRegisterBtn.addEventListener('click', e => { e.preventDefault(); openModal('register'); });
+  if (heroRegisterBtn) heroRegisterBtn.addEventListener('click', e => { e.preventDefault(); goWaitlist(); });
   if (heroLoginBtn)    heroLoginBtn.addEventListener('click',    e => { e.preventDefault(); openModal('login'); });
-
-  // Hluboký odkaz na přihlášení: /?login=employer (nebo worker) otevře rovnou
-  // přihlašovací modál s vybranou rolí. Sem míří i dashboard, když ho někdo
-  // otevře nepřihlášený — jedno přihlášení s rozcestníkem pro obojí, žádná
-  // druhá přihlašovačka navíc.
-  const _loginParam = new URLSearchParams(location.search).get('login');
-  if (_loginParam === 'employer' || _loginParam === 'worker') openModal('login', _loginParam);
-  else if (_loginParam !== null) openModal('login');
 
   // Escape key zavře modál
   document.addEventListener('keydown', e => {
@@ -421,13 +555,13 @@ function initAuth() {
   document.getElementById('register-close').addEventListener('click', closeModals);
   document.getElementById('switch-to-register').addEventListener('click', e => { e.preventDefault(); openModal('register'); });
   document.getElementById('switch-to-login').addEventListener('click', e => { e.preventDefault(); openModal('login'); });
-  document.getElementById('reg-back').addEventListener('click', () => {
+  const regBackBtn = document.getElementById('reg-back');
+  if (regBackBtn) regBackBtn.addEventListener('click', () => {
     if (regFromWaitlist) { closeModals(); openWaitlist(); }   // přišel z waitlistu → zpět na waitlist
-    else showRegStep(1);                                      // jinak zpět na rozcestník
+    else showRegStep(1);
   });
 
-  // pozor: role-card je i v login rozcestníku → bereme jen ty registrační
-  document.querySelectorAll('.role-card[data-role]').forEach(card => {
+  document.querySelectorAll('.role-card').forEach(card => {
     card.addEventListener('click', () => {
       applyRole(card.dataset.role);
       showRegStep(2);
@@ -438,11 +572,7 @@ function initAuth() {
   document.getElementById('login-form').addEventListener('submit', async e => {
     e.preventDefault();
     clearErrors();
-    const btn = document.getElementById('login-submit');
-    const email    = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
-
-    // Přístupový klíč — bez platného klíče se nikdo nepřihlásí (web makáme na tom).
+    // Přístupový klíč — bez něj se dovnitř nedostaneš (viz komentář výš).
     if (!accessKeyOk()) {
       showError('login-error', ACCESS_LOCKED_MSG);
       return;
@@ -450,16 +580,16 @@ function initAuth() {
     // Klíč prošel → poznač do session, ať /worker/ po přesměrování ví, že brána byla ověřena.
     try { sessionStorage.setItem('makej-gate-ok', ACCESS_KEY); } catch (e) {}
 
+    const btn = document.getElementById('login-submit');
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
     btn.disabled = true;
     btn.textContent = 'Přihlašování...';
 
-    // SIGNED_IN by jinak přesměroval dřív, než ověříme roli — redirect si řídíme sami
-    skipAutoRedirect = true;
-
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    const { error } = await sb.auth.signInWithPassword({ email, password });
 
     if (error) {
-      skipAutoRedirect = false;
       showError('login-error',
         error.message === 'Invalid login credentials'
           ? 'Nesprávný email nebo heslo'
@@ -467,75 +597,27 @@ function initAuth() {
       );
       btn.disabled = false;
       btn.textContent = 'Přihlásit se';
-      return;
+    } else {
+      closeModals();
     }
-
-    // Účet má roli v profilu — musí sedět s tím, co si uživatel vybral v rozcestníku
-    const { data: profile } = await sb
-      .from('profiles').select('role').eq('id', data.user.id).single();
-
-    if (profile && profile.role !== loginRole) {
-      await sb.auth.signOut();
-      skipAutoRedirect = false;
-      showError('login-error', profile.role === 'employer'
-        ? 'Tenhle účet je zaměstnavatelský. Vrať se zpět a přihlas se jako zaměstnavatel.'
-        : 'Tenhle účet je brigádnický. Vrať se zpět a přihlas se jako brigádník.');
-      btn.disabled = false;
-      btn.textContent = 'Přihlásit se';
-      return;
-    }
-
-    // Role sedí → teprve teď pryč. Redirect (a ne jen zavření modálu) je zároveň
-    // signál pro správce hesel v prohlížeči, že přihlášení dopadlo dobře.
-    const role = (profile && profile.role) || data.user.user_metadata?.role;
-    window.location.href = role === 'employer' ? '/employer/' : '/worker/';
   });
 
-  // ─── Zapomenuté heslo — pošle reset odkaz na email ───
-  const forgotLink = document.getElementById('login-forgot');
-  if (forgotLink) {
-    forgotLink.addEventListener('click', async e => {
-      e.preventDefault();
-      clearErrors();
-      const email = document.getElementById('login-email').value.trim();
-      if (!email) {
-        showError('login-error', 'Nejdřív napiš svůj email a pak klikni na „Zapomněl jsem heslo?".');
-        document.getElementById('login-email').focus();
-        return;
-      }
-      forgotLink.textContent = 'Odesílám…';
-      forgotLink.style.pointerEvents = 'none';
-      const { error } = await sb.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/obnova-hesla.html',
-      });
-      forgotLink.textContent = 'Zapomněl jsem heslo?';
-      forgotLink.style.pointerEvents = '';
-      if (error) {
-        showError('login-error', translateAuthError(error.message));
-      } else {
-        closeModals();
-        showToast('Poslali jsme ti odkaz na obnovu hesla na ' + email + '.');
-      }
-    });
-  }
-
-  // ─── Heslo je vidět jen po dobu držení tlačítka „Zobrazit" (login i registrace) ───
-  function setupHoldToShow(toggleId, inputId) {
+  // ─── Zobrazit / skrýt heslo ───
+  // Null-safe: některé stránky mají jednodušší modal bez všech pw-toggle tlačítek.
+  function setupPwToggle(toggleId, inputId, iconId) {
     const toggle = document.getElementById(toggleId);
     if (!toggle) return;
-    const input  = () => document.getElementById(inputId);
-    const reveal = e => { e.preventDefault(); const i = input(); if (i) i.type = 'text'; };
-    const hide   = () => { const i = input(); if (i) i.type = 'password'; };
-    toggle.addEventListener('pointerdown', reveal);
-    toggle.addEventListener('pointerup', hide);
-    toggle.addEventListener('pointerleave', hide);
-    toggle.addEventListener('pointercancel', hide);
-    // pojistka: kdyby uživatel pustil tlačítko mimo prvek
-    window.addEventListener('pointerup', hide);
+    toggle.addEventListener('click', () => {
+      const input = document.getElementById(inputId);
+      const icon  = document.getElementById(iconId);
+      if (!input) return;
+      const show  = input.type === 'password';
+      input.type  = show ? 'text' : 'password';
+      if (icon) icon.setAttribute('icon', show ? 'solar:eye-closed-bold' : 'solar:eye-bold');
+    });
   }
-  setupHoldToShow('login-pw-toggle', 'login-password');
-  setupHoldToShow('reg-pw-toggle',   'reg-password');
-  setupHoldToShow('reg-pw2-toggle',  'reg-password2');
+  setupPwToggle('reg-pw-toggle',  'reg-password',  'reg-pw-icon');
+  setupPwToggle('reg-pw2-toggle', 'reg-password2', 'reg-pw2-icon');
 
   // ─── Register form — stejná logika jako makej/src/app/(auth)/register/page.tsx ───
   document.getElementById('register-form').addEventListener('submit', async e => {
@@ -547,12 +629,22 @@ function initAuth() {
     const password = document.getElementById('reg-password').value;
     const password2 = document.getElementById('reg-password2').value;
     const company  = document.getElementById('reg-company').value.trim();
-    // Nepovinný marketingový souhlas (opt-in) — uloží se k účtu.
-    const marketing = !!document.getElementById('reg-marketing')?.checked;
+    const birth    = document.getElementById('reg-birth').value;  // 'YYYY-MM-DD'
+    const gender   = document.getElementById('reg-gender').value; // 'zena'|'muz'|'jine'|''
+    const kraj     = document.getElementById('reg-kraj').value;   // 'praha'|…
 
     if (!name) {
       showError('register-error', 'Zadejte své jméno.');
       return;
+    }
+    if (selectedRole === 'worker') {
+      if (!birth) { showError('register-error', 'Zadej datum narození.'); return; }
+      const bd = new Date(birth);
+      const age = (Date.now() - bd.getTime()) / (365.25 * 24 * 3600 * 1000);
+      if (isNaN(bd.getTime()) || bd > new Date() || age < 15 || age > 100) {
+        showError('register-error', 'Zadej platné datum narození (min. 15 let).');
+        return;
+      }
     }
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       showError('register-error', 'Zadejte platný email.');
@@ -566,25 +658,34 @@ function initAuth() {
       showError('register-error', 'Hesla se neshodují. Zkontroluj je a zkus to znovu.');
       return;
     }
+    if (!kraj) {
+      showError('register-error', 'Vyber kraj.');
+      return;
+    }
+
+    // Nepovinný marketingový souhlas (opt-in) — uloží se k účtu.
+    const marketing = !!document.getElementById('reg-marketing')?.checked;
 
     btn.disabled = true;
     btn.textContent = 'Registrace...';
 
     // Registrace nesmí po signUp přesměrovat: když je v Supabase VYPNUTÉ potvrzování
-    // e-mailu, signUp uživatele rovnou přihlásí — to bychom nechtěli, hodilo by ho to
-    // do (nedodělaného) dashboardu. Proto redirect potlačíme a hned se odhlásíme.
+    // e-mailu, signUp uživatele rovnou přihlásí → hodilo by ho to do (nedodělaného)
+    // dashboardu. Proto redirect potlačíme a hned se odhlásíme.
     skipAutoRedirect = true;
 
     const { data, error } = await sb.auth.signUp({
       email,
       password,
       options: {
-        // Použije se jen když je potvrzování e-mailu zapnuté (vrátí na správnou adresu).
         emailRedirectTo: window.location.origin,
         data: {
           name,
           role: selectedRole,
           company_name: selectedRole === 'employer' ? company : null,
+          birth_date: selectedRole === 'worker' ? birth : null,
+          gender: selectedRole === 'worker' ? (gender || null) : null,
+          kraj: kraj || null,
           marketing_consent: marketing,
         }
       }
@@ -598,9 +699,8 @@ function initAuth() {
       return;
     }
 
-    // Účet je založený v DB. Když potvrzování e-mailu vypnuté → signUp nás rovnou
-    // přihlásil; hned se odhlásíme, ať nikdo nespadne do nedodělaného dashboardu.
-    // Přihlásit se pak jde jen přes přístupový klíč (viz login form).
+    // Účet je v DB. Když je potvrzování e-mailu vypnuté, signUp nás rovnou přihlásil →
+    // hned se odhlásíme, ať nikdo nespadne do nedodělaného dashboardu.
     let msg;
     if (data && data.session) {
       try { await sb.auth.signOut(); } catch (e) {}
@@ -616,7 +716,37 @@ function initAuth() {
     btn.textContent = 'Vytvořit účet';
   });
 
-  // ═══════════ ČEKACÍ LIST (WAITLIST) — full-screen split ═══════════
+  // ─── Google OAuth — stejný provider jako v makej ───
+  document.getElementById('login-google').addEventListener('click', async () => {
+    // Přístupový klíč platí i pro Google login — ať není zadní vrátka.
+    if (!accessKeyOk()) {
+      showError('login-error', ACCESS_LOCKED_MSG);
+      return;
+    }
+    // Klíč prošel → poznač do session i pro Google (redirect na /worker/ ho pak nechce znovu).
+    try { sessionStorage.setItem('makej-gate-ok', ACCESS_KEY); } catch (e) {}
+    await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href }
+    });
+  });
+
+  // ─── Auth state — Supabase v2 posílá INITIAL_SESSION při startu, getSession není potřeba ───
+  sb.auth.onAuthStateChange((event, session) => {
+    updateNavAuth(session?.user || null);
+
+    // INITIAL_SESSION = obnova existující session při načtení stránky → nepřesměrovávat
+    // SIGNED_IN = aktivní přihlášení (formulář / Google OAuth callback) → přesměrovat
+    if (event === 'SIGNED_IN' && session?.user) {
+      if (skipAutoRedirect) { skipAutoRedirect = false; return; }   // registrace se odhlásí sama
+      const role = session.user.user_metadata?.role;
+      window.location.href = role === 'employer' ? '/employer/' : '/worker/';
+    }
+  });
+
+  // ═══════════ ČEKACÍ LIST (WAITLIST) — přeneseno z Makej-sro/Yasin ═══════════
+  // Běží jen na stránce s overlayem (index.html); jinak se přeskočí.
+  if (document.getElementById('wl-overlay')) {
   const wlOverlay   = document.getElementById('wl-overlay');
   const wlPanel     = document.getElementById('wl-panel');
   const wlCompanyGr = document.getElementById('wl-company-group');
@@ -656,30 +786,23 @@ function initAuth() {
     setTimeout(() => { const n = document.getElementById('wl-name'); if (n) n.focus(); }, 60);
   }
 
-  // Pojistky (?. / if): waitlist markup je jen na landing page — na ostatních
-  // stránkách tyhle prvky chybí, ať to nespadne (jinak by se nenapojil zbytek initAuth).
-  document.getElementById('wl-close')?.addEventListener('click', () => closeWaitlist(true));
-  document.getElementById('wl-done-close')?.addEventListener('click', () => closeWaitlist(false));
-  // Plovoucí tlačítko „Startujeme" (.wl-fab) — je na VŠECH stránkách.
-  // Na landing page otevře čekací list; na ostatních přejde na homepage s waitlistem.
+  document.getElementById('wl-close').addEventListener('click', () => closeWaitlist(true));
+  document.getElementById('wl-done-close').addEventListener('click', () => closeWaitlist(false));
+  // Plovoucí tlačítko „Startujeme" (.wl-fab) — otevře čekací list i po zavření křížkem
   const wlFab = document.querySelector('.wl-fab');
   if (wlFab) {
-    wlFab.addEventListener('click', () => {
-      if (wlOverlay) openWaitlist();
-      else window.location.href = '/?wl';
-    });
-    // mobil: pilulka se sama ukáže ~2 s po načtení a po 4 s se složí
+    wlFab.addEventListener('click', () => openWaitlist());
     if (window.matchMedia('(max-width: 640px)').matches) {
       setTimeout(() => wlFab.classList.add('is-open'), 2000);
       setTimeout(() => wlFab.classList.remove('is-open'), 6000);
     }
   }
-  document.getElementById('wl-back')?.addEventListener('click', () => wlPanel && wlPanel.classList.remove('active'));
-  if (wlPanel) wlPanel.addEventListener('click', e => { if (e.target === wlPanel) wlPanel.classList.remove('active'); });
+  document.getElementById('wl-back').addEventListener('click', () => wlPanel.classList.remove('active'));
+  wlPanel.addEventListener('click', e => { if (e.target === wlPanel) wlPanel.classList.remove('active'); });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (wlPanel && wlPanel.classList.contains('active')) wlPanel.classList.remove('active');
-    else if (wlOverlay && wlOverlay.classList.contains('active')) closeWaitlist(true);
+    if (wlPanel.classList.contains('active')) wlPanel.classList.remove('active');
+    else if (wlOverlay.classList.contains('active')) closeWaitlist(true);
   });
 
   // CTA na každé straně → zavři čekací list a otevři NORMÁLNÍ registraci
@@ -873,6 +996,7 @@ function initAuth() {
       if (window.wlSetSocialRole) window.wlSetSocialRole(tab);
     }
     opts.forEach(o => o.addEventListener('click', () => setTab(o.dataset.wlTab)));
+    window.wlSetTab = setTab;   // ať jde předvybrat roli při otevření z registračních tlačítek
   })();
 
   // Odpočet do spuštění (1. 10. 2026) — modrý pás s ubývajícími linkami
@@ -968,38 +1092,27 @@ function initAuth() {
   const wlSeen   = (() => { try { return localStorage.getItem('wl-joined') || sessionStorage.getItem('wl-dismissed'); } catch (e) { return null; } })();
   const wlLogged = (() => { try { return !!localStorage.getItem('makej-auth'); } catch (e) { return false; } })();
   if (WL_DEV_ALWAYS || wlForce) {
-    setTimeout(openWaitlist, 300);              // dev / ?wl v adrese = vždy ukázat
+    setTimeout(() => {                          // dev / ?wl v adrese = vždy ukázat
+      openWaitlist();
+      try { const r = new URLSearchParams(location.search).get('role'); if (r && window.wlSetTab) window.wlSetTab(r); } catch (e) {}
+    }, 300);
   } else if (!wlSeen && !wlLogged) {
-    setTimeout(openWaitlist, 900);
+    // Nevyskakovat hned po načtení — ať si návštěvník stránku nejdřív prohlédne.
+    // Popup přijde, až projeví zájem: doscrolluje pod hero, nebo po 25 s na stránce.
+    // Pořád platí, že se ukáže jen jednou (wl-joined / wl-dismissed výš).
+    let wlFired = false;
+    const wlOpenOnce = () => {
+      if (wlFired) return;
+      wlFired = true;
+      window.removeEventListener('scroll', wlOnScroll);
+      clearTimeout(wlTimer);
+      openWaitlist();
+    };
+    const wlOnScroll = () => { if (window.scrollY > window.innerHeight * 0.6) wlOpenOnce(); };
+    const wlTimer = setTimeout(wlOpenOnce, 25000);
+    window.addEventListener('scroll', wlOnScroll, { passive: true });
   }
-
-  // ─── Google OAuth — stejný provider jako v makej ───
-  document.getElementById('login-google').addEventListener('click', async () => {
-    // Přístupový klíč platí i pro Google login — ať není zadní vrátka.
-    if (!accessKeyOk()) {
-      showError('login-error', ACCESS_LOCKED_MSG);
-      return;
-    }
-    // Klíč prošel → poznač do session i pro Google (redirect na /worker/ ho pak nechce znovu).
-    try { sessionStorage.setItem('makej-gate-ok', ACCESS_KEY); } catch (e) {}
-    await sb.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.href }
-    });
-  });
-
-  // ─── Auth state — Supabase v2 posílá INITIAL_SESSION při startu, getSession není potřeba ───
-  sb.auth.onAuthStateChange((event, session) => {
-    updateNavAuth(session?.user || null);
-
-    // INITIAL_SESSION = obnova existující session při načtení stránky → nepřesměrovávat
-    // SIGNED_IN = aktivní přihlášení (formulář / Google OAuth callback) → přesměrovat
-    // skipAutoRedirect = login formulář si redirect řídí sám (až po kontrole role)
-    if (event === 'SIGNED_IN' && session?.user && !skipAutoRedirect) {
-      const role = session.user.user_metadata?.role;
-      window.location.href = role === 'employer' ? '/employer/' : '/worker/';
-    }
-  });
+  }
 }
 
 function translateAuthError(msg) {
@@ -1043,11 +1156,13 @@ function showToast(msg) {
 
   document.getElementById('cookie-accept').addEventListener('click', () => {
     localStorage.setItem(COOKIE_KEY, 'accepted');
+    if (window.gtag) gtag('consent', 'update', { analytics_storage: 'granted' });
     banner.classList.remove('visible');
   });
 
   document.getElementById('cookie-reject').addEventListener('click', () => {
     localStorage.setItem(COOKIE_KEY, 'rejected');
+    if (window.gtag) gtag('consent', 'update', { analytics_storage: 'denied' });
     banner.classList.remove('visible');
   });
 })();
@@ -1177,6 +1292,82 @@ function showToast(msg) {
 })();
 
 
+/* ═══════════ MAKÁČI CAROUSEL ═══════════ */
+(function () {
+  var N = 8;
+  var center = 2; // Makač basic starts in center
+  var wrappers = Array.from(document.querySelectorAll('.makac-wrap[data-makac]'));
+  var dots = Array.from(document.querySelectorAll('.makaci-dot[data-dot]'));
+  var timer;
+
+  if (!wrappers.length) return;
+
+  function getPos(i) {
+    var diff = ((i - center) % N + N) % N;
+    if (diff > 2) diff -= N;
+    return diff;
+  }
+
+  function update() {
+    wrappers.forEach(function (el, i) {
+      var oldPos = parseInt(el.getAttribute('data-pos') || '99');
+      var newPos = getPos(i);
+
+      // Both off-screen — teleport instantly to avoid cross-screen animation
+      if (Math.abs(oldPos) >= 2 && Math.abs(newPos) >= 2 && oldPos !== newPos) {
+        el.classList.add('no-transition');
+        el.setAttribute('data-pos', newPos);
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            el.classList.remove('no-transition');
+          });
+        });
+      } else {
+        el.setAttribute('data-pos', newPos);
+      }
+    });
+
+    dots.forEach(function (d) {
+      d.classList.toggle('active', parseInt(d.getAttribute('data-dot')) === center);
+    });
+  }
+
+  function rotate() {
+    center = (center + 1) % N;
+    update();
+  }
+
+  function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(rotate, 5000);
+  }
+
+  // Click dot to jump to character
+  dots.forEach(function (d) {
+    d.addEventListener('click', function () {
+      center = parseInt(d.getAttribute('data-dot'));
+      update();
+      startTimer();
+    });
+  });
+
+  // Click side characters to bring them to center
+  wrappers.forEach(function (el) {
+    el.addEventListener('click', function () {
+      var pos = parseInt(el.getAttribute('data-pos') || '0');
+      if (pos !== 0) {
+        center = (center + pos + N) % N;
+        update();
+        startTimer();
+      }
+    });
+  });
+
+  update();
+  startTimer();
+})();
+
+
 /* ═══════════ REFERENCE — kroužkový sešit s listováním (z Yasin/recenze) ═══════════ */
 (function () {
   var reviews = [
@@ -1246,4 +1437,43 @@ function showToast(msg) {
   stack.addEventListener('click', function () { if (!busy) { paused = false; advance(); } });
 
   startTimer();
+})();
+
+/* ═══════════ Scroll-driven kreslení spojnice „jak to funguje" (bolt-path) ═══════════ */
+/* Čára se postupně prodlužuje podle toho, jak uživatel scrolluje sekcí — jde s ním
+   a dovede ho až k „Vytvořit účet". Funguje na /hledam-si-praci i /pro-zamestnavatele. */
+(function () {
+  var svg = document.querySelector('.bolt-path');
+  if (!svg) return;
+  var path = svg.querySelector('path');
+  var journey = svg.closest('.bolt-journey');
+  if (!path || !journey) return;
+
+  // Plná (nepřerušovaná) čára, která se s posunem odkrývá: jeden dash o délce
+  // celé dráhy + offset. Délku bereme z getTotalLength (kvůli non-scaling-stroke
+  // se čárkování měří v reálné délce dráhy, ne v normalizované).
+  var L = path.getTotalLength();
+  path.style.strokeDasharray = L;
+  path.style.strokeDashoffset = L;
+  // Bez transition: update běží na rAF (frame-synced se scrollem), takže čára sleduje
+  // posun přesně. Dřívější .12s transition dobíhala scroll → u tlačítka dole to poskakovalo.
+
+  var ticking = false;
+  function update() {
+    ticking = false;
+    var rect = journey.getBoundingClientRect();
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    // Kreslit začne, když vršek sekce projde ~88 % výšky okna, a dokreslí se,
+    // než spodek sekce vyjede nad ~40 % okna.
+    var start = vh * 0.88;
+    var span = rect.height + vh * 0.48;
+    var p = (start - rect.top) / span;
+    p = p < 0 ? 0 : p > 1 ? 1 : p;
+    path.style.strokeDashoffset = L * (1 - p);
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', update);
+  update();
 })();

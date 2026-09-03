@@ -112,33 +112,14 @@ async def do_escalate(db, conversation_id: str, reason: str):
         (conversation_id,)
     )
     db.commit()
-
-    # Build conversation transcript
-    rows = db.execute(
-        "SELECT sender, text FROM messages WHERE conversation_id = ? ORDER BY created_at",
-        (conversation_id,)
-    ).fetchall()
-    labels = {"customer": "👤 Zákazník", "bot": "🤖 Bot", "human": "👨‍💼 Operátor"}
-    transcript_lines = [f"{labels.get(r['sender'], r['sender'])}: {r['text']}" for r in rows]
-    transcript = "\n".join(transcript_lines) if transcript_lines else "(žádné zprávy)"
-
-    header = (
+    msg = (
         f"🚨 <b>Eskalace na člověka</b>\n"
         f"Konverzace: <code>{conversation_id}</code>\n"
         f"Důvod: {reason}\n\n"
-        f"<b>📜 Celá konverzace:</b>\n"
-    )
-    footer = (
-        f"\n\nOdpověz do tohoto chatu — zpráva bude přeposlána zákazníkovi.\n"
+        f"Odpověz do tohoto chatu — zpráva bude přeposlána zákazníkovi.\n"
         f"Až budeš hotov, pošli /hotovo"
     )
-
-    # Telegram limit is 4096 chars — truncate transcript from the start if needed
-    max_transcript = 4096 - len(header) - len(footer) - 20
-    if len(transcript) > max_transcript:
-        transcript = "...(zkráceno)\n" + transcript[-max_transcript:]
-
-    await send_telegram(header + transcript + footer)
+    await send_telegram(msg)
 
 
 @app.post("/chat/message", response_model=ChatResponse)
@@ -152,7 +133,6 @@ async def chat_message(req: ChatRequest):
     if conv["status"] == "human_active":
         save_message(db, req.conversation_id, "customer", req.text)
         db.close()
-        await send_telegram(f"👤 <b>Zákazník:</b> {req.text}")
         return ChatResponse(reply="__human_active__")
 
     save_message(db, req.conversation_id, "customer", req.text)

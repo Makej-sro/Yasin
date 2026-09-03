@@ -480,3 +480,317 @@ async function createJobE(employerId, fields) {
 }
 
 Object.assign(window, { fetchEmployerData, acceptCandidate, rejectCandidate, updateEmployerProfile, createJobE, _strColor, _relTime, _fmtTime });
+
+
+// ═══════════════════════════════════════════════════════════════
+// Doplněno zpět z původního dashboardu — funkce, které Yasinova verze neměla.
+// Zatím je nic z UI nevolá (komponenty, které je používaly, byly nahrazeny);
+// jsou tu připravené k napojení: boost/úprava/smazání inzerátu, recenze,
+// poznámky, tým a pozvánky, upload obrázků a příloh, podklady pro analytiku.
+// ═══════════════════════════════════════════════════════════════
+
+function _buildKrajeStats(all, hired) {
+  const ids = Object.keys(KRAJ_CITIES);
+  const stats = {};
+  ids.forEach(k => { stats[k] = { workers: 0, companies: 0 }; });
+  const hiredSet = new Set((hired || []).map(h => h.id));
+  (all || []).forEach(c => {
+    const k = (c.kraj && stats[c.kraj]) ? c.kraj : _cityToKraj(c.city);  // primárně kraj z profilu
+    if (!k) return;
+    stats[k].workers += 1;
+    if (hiredSet.has(c.id)) stats[k].companies += 1;  // „z toho najato"
+  });
+  window.E_KRAJE_STATS = stats;
+}
+
+function _buildResponseStats(messages, matches, employerId) {
+  const byMatch = {};
+  (messages || []).forEach(m => { (byMatch[m.match_id] = byMatch[m.match_id] || []).push(m); });
+  const deltas = [];
+  (matches || []).forEach(mt => {
+    const msgs = (byMatch[mt.id] || []).slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const fw = msgs.find(x => x.sender_id === mt.worker_id);
+    if (!fw) return;
+    const w0 = new Date(fw.created_at).getTime();
+    const fe = msgs.find(x => x.sender_id === employerId && new Date(x.created_at).getTime() >= w0);
+    if (!fe) return;
+    deltas.push((new Date(fe.created_at).getTime() - w0) / 60000);  // minuty
+  });
+  const buckets = [
+    { l: '<5 min', max: 5,        color: '#5BD68A' },
+    { l: '5-30m',  max: 30,       color: '#5BD68A' },
+    { l: '30-1h',  max: 60,       color: '#FFD166' },
+    { l: '1-3h',   max: 180,      color: '#FFD166' },
+    { l: '3-12h',  max: 720,      color: '#f43f5e' },
+    { l: '>12h',   max: Infinity, color: '#f43f5e' },
+  ];
+  const data = buckets.map(b => ({ l: b.l, v: 0, color: b.color }));
+  deltas.forEach(d => { let i = buckets.findIndex(b => d < b.max); if (i < 0) i = buckets.length - 1; data[i].v += 1; });
+  const avg = deltas.length ? Math.round(deltas.reduce((a, b) => a + b, 0) / deltas.length) : null;
+  window.E_RESPONSE = { data, avg, count: deltas.length };
+}
+
+function _buildWageDistro(jobs) {
+  const rates = (jobs || []).map(j => Number(j.pay)).filter(p => p > 0);
+  const buckets = [
+    { l: '<130',    lo: 0,   hi: 130 },
+    { l: '130-150', lo: 130, hi: 150 },
+    { l: '150-170', lo: 150, hi: 170 },
+    { l: '170-200', lo: 170, hi: 200 },
+    { l: '200-250', lo: 200, hi: 250 },
+    { l: '250+',    lo: 250, hi: Infinity },
+  ];
+  window.E_WAGE_DISTRO = buckets.map(b => ({ l: b.l, v: rates.filter(r => r >= b.lo && r < b.hi).length }));
+}
+
+function _cityToKraj(city) {
+  const s = (city || '').toLowerCase();
+  if (!s) return null;
+  for (const k in KRAJ_CITIES) {
+    if (KRAJ_CITIES[k].split('|').some(kw => s.includes(kw))) return k;
+  }
+  return null;
+}
+
+function _eJobPassed(eventDate) {
+  if (!eventDate) return false;
+  const d = new Date(eventDate + 'T23:59:59');
+  return !isNaN(d) && d < new Date();
+}
+
+function _eResizeImage(file, maxDim, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width, h = img.height;
+      if (Math.max(w, h) > maxDim) { const s = maxDim / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('toBlob')), 'image/jpeg', quality || 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load')); };
+    img.src = url;
+  });
+}
+
+function _eResolveEventDate(job, matchCreatedAt) {
+  if (!job) return null;
+  if (job.event_date) return job.event_date;
+  const raw = (job.date || '').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  const m = raw.match(/(\d{1,2})\s*\.\s*(\d{1,2})/);
+  if (!m) return null;
+  const day = parseInt(m[1], 10), mon = parseInt(m[2], 10);
+  if (!(day >= 1 && day <= 31 && mon >= 1 && mon <= 12)) return null;
+  const anchor = matchCreatedAt ? new Date(matchCreatedAt) : new Date();
+  const ay = anchor.getFullYear();
+  let best = null, bestDiff = Infinity;
+  for (const y of [ay - 1, ay, ay + 1]) {
+    const d = new Date(y, mon - 1, day);
+    const diff = Math.abs(d - anchor);
+    if (diff < bestDiff) { bestDiff = diff; best = d; }
+  }
+  if (!best) return null;
+  const mm = String(best.getMonth() + 1).padStart(2, '0');
+  const dd = String(best.getDate()).padStart(2, '0');
+  return `${best.getFullYear()}-${mm}-${dd}`;
+}
+
+function _isoDate(v) {
+  return (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) ? v : null;
+}
+
+function _teamInviteLink(token) {
+  return window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + '?join=' + token;
+}
+
+async function boostJobE(jobId, hours) {
+  const until = new Date(Date.now() + (hours || 48) * 3600000).toISOString();
+  const { error } = await sb.from('jobs').update({ top_until: until }).eq('id', jobId);
+  if (error) { console.error('boostJobE error:', error); return false; }
+  const j = E_JOBS.find(x => x.id === jobId);
+  if (j) { j.boosted = true; j.boostedUntil = until; }
+  return true;
+}
+
+async function chatSignedUrlE(path) {
+  if (!path) return null;
+  const { data, error } = await sb.storage.from('chat-prilohy').createSignedUrl(path, 3600);
+  if (error) { console.error('chatSignedUrlE:', error); return null; }
+  return data && data.signedUrl ? data.signedUrl : null;
+}
+
+async function createTeamInviteE(email) {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session?.user) return { ok: false, msg: 'Nejsi přihlášený.' };
+  const ownerId = window._makejActingId || session.user.id;
+  const clean = (email || '').trim().toLowerCase() || null;
+  const { data, error } = await sb.from('team_members')
+    .insert({ owner_id: ownerId, email: clean, role: 'member', status: 'invited' })
+    .select().single();
+  if (error) {
+    if (error.code === '23505') return { ok: false, msg: 'Na tento e-mail už pozvánka existuje.' };
+    console.error('createTeamInviteE:', error);
+    return { ok: false, msg: 'Pozvánku se nepodařilo vytvořit.' };
+  }
+  E_TEAM.push(data);
+  return { ok: true, invite: data, link: _teamInviteLink(data.invite_token) };
+}
+
+async function deleteJobE(jobId) {
+  const { error } = await sb.from('jobs').delete().eq('id', jobId);
+  if (error) { console.error('deleteJobE error:', error); return false; }
+  // odeber lokálně, ať zmizí hned bez refetchu
+  const i = E_JOBS.findIndex(j => j.id === jobId);
+  if (i !== -1) E_JOBS.splice(i, 1);
+  return true;
+}
+
+async function dismissCancelE(matchId) {
+  const { error } = await sb.from('matches').update({ cancel_handled: true }).eq('id', matchId);
+  if (error) { console.error('dismissCancelE error:', error); return false; }
+  const i = E_CANCELLED.findIndex(c => c.match_id === matchId);
+  if (i >= 0) E_CANCELLED.splice(i, 1);
+  return true;
+}
+
+async function fetchNotesE(employerId) {
+  const { data, error } = await sb.from('candidate_notes')
+    .select('worker_id, note').eq('employer_id', employerId);
+  if (error) { console.error('fetchNotesE:', error); return E_NOTES; }
+  Object.keys(E_NOTES).forEach(k => delete E_NOTES[k]);
+  (data || []).forEach(r => { E_NOTES[r.worker_id] = r.note || ''; });
+  return E_NOTES;
+}
+
+async function fetchTeamE(ownerId) {
+  const { data, error } = await sb.from('team_members')
+    .select('*, member:profiles!team_members_member_id_fkey(name, company_name)')
+    .eq('owner_id', ownerId).order('created_at', { ascending: true });
+  if (error) { console.error('fetchTeamE:', error); return E_TEAM; }
+  E_TEAM.length = 0;
+  (data || []).forEach(m => E_TEAM.push(m));
+  return E_TEAM;
+}
+
+async function removeTeamMemberE(id) {
+  const { error } = await sb.from('team_members').delete().eq('id', id);
+  if (error) { console.error('removeTeamMemberE:', error); return false; }
+  const i = E_TEAM.findIndex(m => m.id === id);
+  if (i !== -1) E_TEAM.splice(i, 1);
+  return true;
+}
+
+async function reopenJobE(matchId, jobId) {
+  const { error: jErr } = await sb.from('jobs').update({ status: 'active' }).eq('id', jobId);
+  if (jErr) { console.error('reopenJobE job error:', jErr); return false; }
+  await sb.from('matches').update({ cancel_handled: true }).eq('id', matchId);
+  const i = E_CANCELLED.findIndex(c => c.match_id === matchId);
+  if (i >= 0) E_CANCELLED.splice(i, 1);
+  return true;
+}
+
+async function saveNoteE(workerId, note) {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session?.user) return false;
+  const empId = window._makejActingId || session.user.id;
+  const txt = (note || '').trim();
+  if (!txt) {
+    // prázdná poznámka → smaž řádek
+    const { error } = await sb.from('candidate_notes').delete()
+      .eq('employer_id', empId).eq('worker_id', workerId);
+    if (error) { console.error('saveNoteE(delete):', error); return false; }
+    delete E_NOTES[workerId];
+    return true;
+  }
+  const { error } = await sb.from('candidate_notes').upsert(
+    { employer_id: empId, worker_id: workerId, note: txt, updated_at: new Date().toISOString() },
+    { onConflict: 'employer_id,worker_id' }
+  );
+  if (error) { console.error('saveNoteE:', error); return false; }
+  E_NOTES[workerId] = txt;
+  return true;
+}
+
+async function submitReviewE(matchId, workerId, rating, text) {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session?.user) return false;
+  const { error } = await sb.from('reviews').insert({
+    reviewer_id: session.user.id,
+    reviewed_id: workerId,
+    match_id: matchId,
+    rating: Math.max(1, Math.min(5, parseInt(rating) || 0)),
+    text: (text || '').trim(),
+  });
+  if (error) { console.error('submitReviewE:', error); return false; }
+  const i = E_REVIEW_QUEUE.findIndex(r => r.match_id === matchId);
+  if (i >= 0) E_REVIEW_QUEUE.splice(i, 1);
+  return true;
+}
+
+async function updateJobE(jobId, fields) {
+  const ts = fields.time_start || '00:00';
+  const te = fields.time_end   || '00:00';
+  let duration = 0;
+  try {
+    const [sh, sm] = ts.split(':').map(Number);
+    const [eh, em] = te.split(':').map(Number);
+    duration = Math.max(0, (eh * 60 + em) - (sh * 60 + sm));
+  } catch (_) {}
+
+  const dateVal = fields.date || new Date().toISOString().slice(0, 10);
+  const payload = {
+    title:       fields.title,
+    description: fields.description || '',
+    pay:         parseInt(fields.pay) || 0,
+    pay_unit:    fields.pay_unit || 'Kč/h',
+    location:    fields.location || '',
+    date:        dateVal,
+    event_date:  _isoDate(dateVal),
+    time_start:  ts,
+    time_end:    te,
+    duration,
+    tags:        Array.isArray(fields.tags) ? fields.tags : [],
+    requirements: Array.isArray(fields.requirements) ? fields.requirements : [],
+    benefits:    Array.isArray(fields.benefits) ? fields.benefits : [],
+    positions:   parseInt(fields.positions) || 1,
+    dress_code:  fields.dress_code || null,
+    contact_note: fields.contact_note || null,
+    job_type:    fields.job_type || 'brigada',
+    kraj:        fields.kraj || null,
+    lat:         fields.lat != null ? fields.lat : null,
+    lng:         fields.lng != null ? fields.lng : null,
+    photos:      Array.isArray(fields.photos) ? fields.photos : [],
+  };
+  const { data, error } = await sb.from('jobs').update(payload).eq('id', jobId).select().single();
+  if (error) { console.error('updateJobE error:', error); return null; }
+  return data;
+}
+
+async function uploadChatFileE(matchId, file, fileType) {
+  if (!matchId || !file) return null;
+  try {
+    let blob = file, ext = 'bin', contentType = file.type || 'application/octet-stream';
+    if (fileType === 'image') { blob = await _eResizeImage(file, 1600, 0.85); ext = 'jpg'; contentType = 'image/jpeg'; }
+    else { const m = (file.name || '').match(/\.([a-z0-9]+)$/i); ext = m ? m[1].toLowerCase() : (fileType === 'audio' ? 'webm' : 'bin'); }
+    const path = `${matchId}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+    const { error } = await sb.storage.from('chat-prilohy').upload(path, blob, { contentType, upsert: false });
+    if (error) { console.error('uploadChatFileE:', error); return null; }
+    return { path, name: file.name || (fileType === 'audio' ? 'Hlasová zpráva' : 'soubor'), size: (blob.size || file.size || 0) };
+  } catch (e) { console.error('uploadChatFileE:', e); return null; }
+}
+
+async function uploadImageE(userId, prefix, file, maxDim) {
+  if (!userId || !file) return null;
+  try {
+    const blob = await _eResizeImage(file, maxDim || 1400, 0.85);
+    const path = `${userId}/${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.jpg`;
+    const { error } = await sb.storage.from('uploads').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+    if (error) { console.error('uploadImageE:', error); return null; }
+    const { data } = sb.storage.from('uploads').getPublicUrl(path);
+    return data && data.publicUrl ? data.publicUrl : null;
+  } catch (e) { console.error('uploadImageE:', e); return null; }
+}

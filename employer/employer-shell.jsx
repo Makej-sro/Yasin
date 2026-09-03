@@ -59,7 +59,7 @@ function ELogo() {
 // ─────────────────────────────────────────────────────────────
 // SIDEBAR
 // ─────────────────────────────────────────────────────────────
-function ESidebar({ tab, onTab, onSignOut }) {
+function ESidebar({ tab, onTab, onSignOut, mobile = false, open = false, onClose }) {
   // Reálné počty z živých globálů (0 → badge se skryje)
   const jobsBadge = (typeof E_JOBS !== 'undefined' ? E_JOBS.filter(j => j.status === 'active' || j.status === 'urgent').length : 0) || null;
   const candBadge = (typeof E_CANDIDATES !== 'undefined' ? (E_CANDIDATES.new || []).length : 0) || null;
@@ -100,7 +100,13 @@ function ESidebar({ tab, onTab, onSignOut }) {
       borderRight: '1px solid #E5E7EB',
       background: '#ffffff',
       overflowY: 'auto',
-      position: 'relative', zIndex: 1,
+      // Desktop = pevný sloupec. Mobil = drawer vysunutý přes obsah.
+      ...(mobile ? {
+        position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 60,
+        transform: open ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform .28s cubic-bezier(.2,.8,.2,1)',
+        boxShadow: open ? '0 0 60px rgba(10,13,46,.35)' : 'none',
+      } : { position: 'relative', zIndex: 1 }),
     }}>
       <div style={{ padding: '4px 8px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <ELogo />
@@ -133,7 +139,7 @@ function ESidebar({ tab, onTab, onSignOut }) {
               {sec.items.map(it => {
                 const active = tab === it.k;
                 return (
-                  <button key={it.k} onClick={() => !it.disabled && onTab(it.k)} style={{
+                  <button key={it.k} onClick={() => { if (it.disabled) return; onTab(it.k); if (mobile && onClose) onClose(); }} style={{
                     display: 'flex', alignItems: 'center', gap: 11,
                     padding: '9px 12px', borderRadius: 10,
                     background: active ? 'rgba(0,32,246,0.08)' : 'transparent',
@@ -187,7 +193,7 @@ function ESidebar({ tab, onTab, onSignOut }) {
           background: '#0020F6', border: 'none',
           color: '#fff', cursor: 'pointer',
           fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700,
-        }} onClick={() => onTab('pricing')}>Spravovat tarif</button>
+        }} onClick={() => { onTab('pricing'); if (mobile && onClose) onClose(); }}>Spravovat tarif</button>
       </div>
 
       {/* Company footer */}

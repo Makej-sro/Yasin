@@ -1,123 +1,116 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-25X9CMKGRD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    // GDPR: výchozí souhlas odepřen (žádné analytické cookies), dokud uživatel nepřijme cookie lištu.
+    gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', wait_for_update: 500 });
+    try { if (localStorage.getItem('makej-cookie-consent') === 'accepted') gtag('consent', 'update', { analytics_storage: 'granted' }); } catch (e) {}
+    gtag('js', new Date());
+    gtag('config', 'G-25X9CMKGRD');
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Zásady ochrany osobních údajů — Makej</title>
   <meta name="description" content="Zásady ochrany osobních údajů platformy Makej — jak zpracováváme tvá data a jaká máš práva." />
-  <link rel="icon" type="image/png" href="/favicon.png" />
+  <meta name="theme-color" content="#0020f6" />
+  <link rel="canonical" href="https://makej.eu/privacy" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://makej.eu/privacy" />
+  <meta property="og:title" content="Zásady ochrany osobních údajů — Makej" />
+  <meta property="og:description" content="Jak Makej zpracovává tvá osobní data a jaká máš práva." />
+  <meta property="og:image" content="https://makej.eu/og-image.png" />
+  <meta property="og:locale" content="cs_CZ" />
+  <meta property="og:site_name" content="Makej" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="/favicon.png?v=3" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
+    /* League Spartan — vlastní hosting (tahle stránka nenačítá style.css) */
+    @font-face {
+      font-family: 'League Spartan';
+      src: url('/fonts/LeagueSpartan-Variable.woff2') format('woff2');
+      font-weight: 100 900; font-style: normal; font-display: swap;
+    }
+
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Metrikami sladěné fallbacky (Arial) — bez CLS při dotažení webfontů */
+    @font-face {
+      font-family: 'Plus Jakarta Sans Fallback';
+      src: local('Arial');
+      size-adjust: 106.08%;
+      ascent-override: 97.85%;
+      descent-override: 20.93%;
+      line-gap-override: 0.00%;
+    }
+    @font-face {
+      font-family: 'Bricolage Grotesque Fallback';
+      src: local('Arial');
+      size-adjust: 99.36%;
+      ascent-override: 93.60%;
+      descent-override: 27.17%;
+      line-gap-override: 0.00%;
+    }
     :root {
-      --bg: #050510;
-      --fg: #ffffff;
-      --card: #16163b;
-      --primary: #292978;
-      --secondary: #d0d0ff;
-      --muted-fg: #9999cc;
-      --border: rgba(208,208,255,.1);
-      --font-sans: 'Plus Jakarta Sans', sans-serif;
-      --font-heading: 'Bricolage Grotesque', 'Plus Jakarta Sans', sans-serif;
+      --bg: #eef1f9;
+      --surface: #ffffff;
+      --fg: #0a0d2e;
+      --muted: #5b6478;
+      --primary: #0020f6;
+      --primary-soft: rgba(0,32,246,.07);
+      --border: rgba(10,13,46,.10);
+      --font-sans: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', sans-serif;
+      --font-heading: 'Bricolage Grotesque', 'Bricolage Grotesque Fallback', 'Plus Jakarta Sans', sans-serif;
     }
     html { scroll-behavior: smooth; }
     body {
-      background: var(--bg);
+      background: radial-gradient(120% 60% at 50% 0%, #e3e8fb 0%, #eef1f9 55%);
+      background-attachment: fixed;
       color: var(--fg);
       font-family: var(--font-sans);
       line-height: 1.75;
-      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
-    /* NAV */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(5,5,16,.85);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-    }
-    .nav-inner {
-      max-width: 800px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
-      height: 60px;
-    }
-    .nav-logo {
-      font-family: var(--font-heading);
-      font-size: 1.3rem; font-weight: 700;
-      color: #fff; text-decoration: none;
-    }
-    .nav-back {
-      font-size: .875rem; color: var(--muted-fg);
-      text-decoration: none; transition: color .2s;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .nav-back:hover { color: #fff; }
-    /* CONTENT */
-    .page {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 64px 24px 120px;
-    }
-    .page-label {
-      display: inline-block;
-      font-size: .75rem; font-weight: 600; letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--secondary);
-      background: rgba(208,208,255,.08);
-      border: 1px solid rgba(208,208,255,.15);
-      border-radius: 100px;
-      padding: 4px 12px;
-      margin-bottom: 20px;
-    }
-    h1 {
-      font-family: var(--font-heading);
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
-      font-weight: 700;
-      line-height: 1.2;
-      margin-bottom: 12px;
-    }
-    .page-meta {
-      color: var(--muted-fg);
-      font-size: .9rem;
-      margin-bottom: 56px;
-      padding-bottom: 32px;
-      border-bottom: 1px solid var(--border);
-    }
-    h2 {
-      font-family: var(--font-heading);
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin: 48px 0 16px;
-      color: #fff;
-    }
-    h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin: 28px 0 10px;
-      color: var(--secondary);
-    }
-    p { margin-bottom: 16px; color: rgba(255,255,255,.8); font-size: .95rem; }
-    ul, ol { margin: 0 0 16px 20px; color: rgba(255,255,255,.8); font-size: .95rem; }
-    li { margin-bottom: 8px; }
-    a { color: var(--secondary); text-decoration: underline; text-underline-offset: 3px; }
-    a:hover { color: #fff; }
-    .highlight-box {
-      background: rgba(41,41,120,.25);
-      border: 1px solid rgba(208,208,255,.12);
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin: 24px 0;
-    }
-    .highlight-box p { margin: 0; font-size: .9rem; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0 28px; font-size: .875rem; }
-    th { text-align: left; padding: 10px 14px; background: rgba(208,208,255,.06); color: var(--secondary); font-weight: 600; border-bottom: 1px solid var(--border); }
-    td { padding: 10px 14px; border-bottom: 1px solid rgba(208,208,255,.05); color: rgba(255,255,255,.75); vertical-align: top; }
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.78); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 24px; }
+    .nav-inner { max-width: 860px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 62px; }
+    .nav-logo { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 900; color: var(--primary); text-decoration: none; letter-spacing: -.01em; }
+    .nav-back { font-size: .875rem; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .2s; display: flex; align-items: center; gap: 6px; }
+    .nav-back:hover { color: var(--fg); }
+    .page { max-width: 820px; margin: 44px auto 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 22px; box-shadow: 0 30px 70px rgba(10,13,46,.09); padding: clamp(28px, 5vw, 60px); }
+    .page-label { display: inline-block; font-family: var(--font-heading); font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--primary); background: var(--primary-soft); border-radius: 100px; padding: 6px 14px; margin-bottom: 18px; }
+    h1 { font-family: var(--font-heading); font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; line-height: 1.08; letter-spacing: -.02em; margin-bottom: 14px; }
+    .page-meta { color: var(--muted); font-size: .9rem; line-height: 1.7; margin-bottom: 44px; padding-bottom: 26px; border-bottom: 1px solid var(--border); }
+    .page-meta strong { color: var(--fg); }
+    h2 { font-family: var(--font-heading); font-size: 1.32rem; font-weight: 700; margin: 44px 0 14px; color: var(--fg); scroll-margin-top: 84px; }
+    h3 { font-size: 1.02rem; font-weight: 700; margin: 26px 0 8px; color: var(--fg); }
+    p { margin-bottom: 15px; color: #3a4260; font-size: .97rem; }
+    ul, ol { margin: 0 0 16px 2px; padding-left: 22px; color: #3a4260; font-size: .97rem; }
+    li { margin-bottom: 9px; }
+    li::marker { color: var(--primary); }
+    strong { color: var(--fg); font-weight: 700; }
+    a { color: var(--primary); text-decoration: none; border-bottom: 1px solid rgba(0,32,246,.3); text-underline-offset: 3px; transition: border-color .2s, color .2s; }
+    a:hover { border-color: var(--primary); color: #0018c8; }
+    .highlight-box { background: var(--primary-soft); border: 1px solid rgba(0,32,246,.14); border-left: 3px solid var(--primary); border-radius: 12px; padding: 18px 22px; margin: 22px 0; }
+    .highlight-box p { margin: 0; font-size: .93rem; color: #2a3350; }
+    .warning-box { background: rgba(244,63,94,.06); border: 1px solid rgba(244,63,94,.22); border-left: 3px solid #f43f5e; border-radius: 12px; padding: 18px 22px; margin: 22px 0; }
+    .warning-box p { margin: 0; font-size: .93rem; color: #2a3350; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0 28px; font-size: .9rem; }
+    th { text-align: left; padding: 11px 14px; background: var(--primary-soft); color: var(--fg); font-weight: 700; border-bottom: 1px solid var(--border); }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: #3a4260; vertical-align: top; }
     tr:last-child td { border-bottom: none; }
-    /* FOOTER */
-    footer { border-top: 1px solid var(--border); padding: 32px 24px; text-align: center; }
-    footer p { color: var(--muted-fg); font-size: .875rem; margin: 0; }
+    footer { max-width: 820px; margin: 0 auto; padding: 4px 24px 52px; text-align: center; }
+    footer p { color: var(--muted); font-size: .875rem; margin: 0; }
+    footer a { color: var(--muted); border: none; }
+    footer a:hover { color: var(--primary); }
+    footer .foot-soc { margin-top: 16px; display: flex; gap: 14px; justify-content: center; align-items: center; }
+    footer .foot-soc a { color: var(--muted); display: inline-flex; border: none; transition: color .2s ease; }
+    footer .foot-soc a:hover { color: var(--primary); }
+    @media (max-width: 560px) { .page { border-radius: 16px; margin: 18px auto 30px; } }
   </style>
 </head>
 <body>
@@ -132,14 +125,14 @@
   <main class="page">
     <span class="page-label">Právní dokumenty</span>
     <h1>Zásady ochrany osobních údajů</h1>
-    <p class="page-meta">Platné od: 1. června 2026 &nbsp;·&nbsp; Správce: Samuel Pseja, IČO: <strong>[DOPLŇ IČO]</strong>, e-mail: <a href="mailto:privacy@makej.eu">privacy@makej.eu</a></p>
+    <p class="page-meta">Platné od: 1. června 2026 &nbsp;·&nbsp; Správce: Makej s náma s.r.o., IČO: <strong>29900590</strong>, e-mail: <a href="mailto:privacy@makej.eu">privacy@makej.eu</a></p>
 
     <div class="highlight-box">
       <p>Tyto zásady popisují, jaké osobní údaje o tobě zpracováváme, k čemu je používáme a jaká máš práva. Pokud máš jakékoliv dotazy, napiš nám na <a href="mailto:privacy@makej.eu">privacy@makej.eu</a>.</p>
     </div>
 
     <h2>1. Správce osobních údajů</h2>
-    <p>Správcem osobních údajů je Samuel Pseja, se sídlem v České republice, IČO: <strong>[DOPLŇ IČO]</strong> (dále jen „my" nebo „Makej"). Kontaktní e-mail pro záležitosti ochrany osobních údajů: <a href="mailto:privacy@makej.eu">privacy@makej.eu</a>.</p>
+    <p>Správcem osobních údajů je společnost Makej s náma s.r.o., se sídlem Nové sady 988/2, Staré Brno, 602 00 Brno, IČO: <strong>29900590</strong>, zapsaná v obchodním rejstříku vedeném Krajským soudem v Brně, sp. zn. C 153411 (dále jen „my" nebo „Makej"). Kontaktní e-mail pro záležitosti ochrany osobních údajů: <a href="mailto:privacy@makej.eu">privacy@makej.eu</a>.</p>
 
     <h2>2. Jaké údaje zpracováváme</h2>
 
@@ -208,7 +201,7 @@
       <li><strong>Co posíláme:</strong> informace o spuštění a novinkách, výhodné nabídky, tipy a další sdělení pro marketingové účely.</li>
       <li><strong>Kanál:</strong> primárně e-mailem (na adresu zadanou při registraci), případně formou oznámení přímo v aplikaci.</li>
       <li><strong>Právní základ:</strong> tvůj <strong>souhlas</strong> (čl. 6 odst. 1 písm. a GDPR). Souhlas je zcela <strong>dobrovolný</strong> — i bez něj se normálně zaregistruješ a službu používáš. Není podmínkou vytvoření účtu.</li>
-      <li><strong>Odvolání souhlasu:</strong> souhlas můžeš <strong>kdykoliv a zdarma odvolat</strong> — odkazem „Odhlásit" v každém e-mailu, v nastavení profilu, nebo napsáním na <a href="mailto:hello@makej.eu">hello@makej.eu</a>. Odvolání nemá vliv na tvůj účet ani na zákonnost zpracování před odvoláním.</li>
+      <li><strong>Odvolání souhlasu:</strong> souhlas můžeš <strong>kdykoliv a zdarma odvolat</strong> — odkazem „Odhlásit" v každém e-mailu, v nastavení profilu, nebo napsáním na <a href="mailto:admin@makej.eu">admin@makej.eu</a>. Odvolání nemá vliv na tvůj účet ani na zákonnost zpracování před odvoláním.</li>
       <li><strong>Jaké údaje k tomu používáme:</strong> jméno a e-mail (u firem i název firmy). Tyto údaje <strong>nepředáváme</strong> třetím stranám pro jejich vlastní marketing ani neprodáváme.</li>
     </ul>
 
@@ -261,13 +254,20 @@
     <p>Máš-li jakékoliv dotazy nebo chceš uplatnit svá práva, napiš nám:</p>
     <div class="highlight-box">
       <p>📧 <a href="mailto:privacy@makej.eu">privacy@makej.eu</a><br/>
-      Správce: Samuel Pseja, IČO: <strong>[DOPLŇ IČO]</strong><br/>
-      Česká republika</p>
+      Správce: Makej s náma s.r.o., IČO: <strong>29900590</strong><br/>
+      Sídlo: Nové sady 988/2, Staré Brno, 602 00 Brno<br/>
+      Zapsaná v obchodním rejstříku vedeném Krajským soudem v Brně, sp. zn. C 153411</p>
     </div>
   </main>
 
   <footer>
-    <p>© 2026 Makej &nbsp;·&nbsp; <a href="/privacy.html">Soukromí</a> &nbsp;·&nbsp; <a href="/terms.html">Podmínky</a> &nbsp;·&nbsp; <a href="/">Zpět na hlavní stránku</a></p>
+    <p>© 2026 Makej &nbsp;·&nbsp; <a href="/privacy">Soukromí</a> &nbsp;·&nbsp; <a href="/terms">Podmínky</a> &nbsp;·&nbsp; <a href="/">Zpět na hlavní stránku</a></p>
+     <div class="foot-soc">
+       <a href="https://www.instagram.com/makej.eu" target="_blank" rel="noopener" aria-label="Instagram"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1.1" fill="currentColor" stroke="none"/></svg></a>
+       <a href="https://www.facebook.com/share/19Kq5N1R2u/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.9 3.78-3.9 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.9h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94Z"/></svg></a>
+       <a href="https://www.tiktok.com/@makejaplikace" target="_blank" rel="noopener" aria-label="TikTok"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c.3 2.1 1.5 3.5 3.5 3.7v2.4c-1.2.1-2.4-.2-3.5-.8v5.9c0 3-2.2 5.3-5.1 5.3S6.3 19.2 6.3 16.2c0-2.8 2.1-5 4.9-5 .3 0 .6 0 .9.1v2.5c-.3-.1-.6-.2-.9-.2-1.4 0-2.5 1.2-2.5 2.6s1.1 2.6 2.5 2.6c1.4 0 2.6-1.1 2.6-2.6V3h2.7z"/></svg></a>
+       <a href="https://www.linkedin.com/company/makej-s-r-o/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0-.02-5ZM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05C20.4 8.65 21 11 21 14.1V21h-4v-6.1c0-1.45-.03-3.3-2-3.3-2 0-2.3 1.56-2.3 3.2V21H9z"/></svg></a>
+     </div>
   </footer>
 
 </body>
