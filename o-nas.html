@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="/iconify-solar.js"></script>
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" async></script>
-  <link rel="stylesheet" href="/style.css?v=108" />
+  <link rel="stylesheet" href="/style.css?v=110" />
   <style>
     /* ═══════════ O NÁS — světlá stránka (přebíjí tmavé téma jen zde) ═══════════ */
     body { background: #ffffff; color: #0B1233; }
@@ -140,7 +140,43 @@
       .on-band, .on-banner, .on-future { padding-left: 22px; padding-right: 22px; }
       .on-pain-grid { grid-template-columns: 1fr; }
     }
+
+    /* ══ Blog — příspěvky z našeho Instagramu (převzato od Sama, umístěno pod O nás) ══ */
+    .blog-wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    .blog-head { max-width: 720px; margin: 0 0 40px; }
+    .blog-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-heading); font-weight: 800; font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: #0020f6; margin-bottom: 16px; }
+    .blog-eyebrow iconify-icon { font-size: 16px; }
+    .blog-title { font-family: var(--font-heading); font-weight: 800; font-size: clamp(2rem,4.6vw,3rem); line-height: 1.08; letter-spacing: -.02em; color: #16163c; margin: 0 0 18px; text-wrap: balance; }
+    .blog-accent { color: #0020f6; }
+    .blog-lead { font-size: 16px; line-height: 1.6; color: #5a5c7a; max-width: 52ch; margin: 0 0 26px; }
+    .blog-ig-btn { display: inline-flex; align-items: center; gap: 9px; padding: 13px 24px; border-radius: 100px; background: #16163c; color: #fff; font-weight: 700; font-size: .95rem; transition: transform .2s ease, background .2s ease; }
+    .blog-ig-btn iconify-icon { font-size: 20px; }
+    .blog-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 26px; }
+    .blog-card { display: flex; flex-direction: column; background: #fff; border: 1px solid rgba(22,22,60,.09); border-radius: 20px; overflow: hidden; text-decoration: none; transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease, border-color .25s ease; }
+    .blog-card-media { position: relative; aspect-ratio: 4/3; overflow: hidden; background: #eef0f7; }
+    .blog-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s cubic-bezier(.2,.8,.2,1); }
+    .blog-card-ig { position: absolute; top: 12px; right: 12px; z-index: 2; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.92); color: #16163c; box-shadow: 0 4px 14px rgba(22,22,60,.18); }
+    .blog-card-ig iconify-icon { font-size: 19px; }
+    .blog-card-body { display: flex; flex-direction: column; flex: 1; padding: 20px 20px 22px; }
+    .blog-card-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .blog-chip { font-family: var(--font-heading); font-weight: 700; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: #0020f6; background: rgba(0,32,246,.08); padding: 4px 10px; border-radius: 100px; }
+    .blog-card-title { font-family: var(--font-heading); font-weight: 700; font-size: 1.12rem; line-height: 1.3; letter-spacing: -.01em; color: #16163c; margin: 0 0 10px; text-wrap: balance; }
+    .blog-card-excerpt { font-size: 14px; line-height: 1.62; color: #5a5c7a; margin: 0 0 18px; }
+    .blog-card-more { margin-top: auto; display: inline-flex; align-items: center; gap: 7px; font-weight: 700; font-size: .88rem; color: #16163c; transition: color .2s ease, gap .2s ease; }
+    .blog-card-more iconify-icon { font-size: 17px; }
+    @media (hover: hover) and (pointer: fine) {
+      .blog-ig-btn:hover { background: #0020f6; transform: translateY(-2px); }
+      .blog-card:hover { transform: translateY(-5px); box-shadow: 0 18px 44px rgba(22,22,60,.12); border-color: rgba(0,32,246,.25); }
+      .blog-card:hover .blog-card-media img { transform: scale(1.05); }
+      .blog-card:hover .blog-card-more { color: #0020f6; gap: 10px; }
+    }
+    @media (max-width: 900px) { .blog-grid { grid-template-columns: repeat(2,1fr); gap: 20px; } }
+    @media (max-width: 620px) { .blog-grid { grid-template-columns: 1fr; gap: 18px; } }
   </style>
+
+  <!-- Scroll animace pro O nás (drop-in od Sama, bez závislostí) — v <head>, ať .mk-on naskočí dřív a obsah neproblikne -->
+  <link rel="stylesheet" href="/makej-animace.css?v=2" />
+  <script src="/makej-animace.js?v=3"></script>
 </head>
 <body class="on">
 
@@ -204,6 +240,60 @@
             <div class="on-pain"><iconify-icon icon="solar:close-circle-bold" width="18"></iconify-icon>Neproklientské prostředí</div>
           </div>
           <p class="on-band-note">Ale obě strany se často vůbec nepotkají.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Blog — příspěvky z našeho Instagramu (převzato od Sama, hned pod první částí O nás) -->
+    <section>
+      <div class="blog-wrap">
+        <div class="blog-head">
+          <span class="blog-eyebrow"><iconify-icon icon="mdi:instagram"></iconify-icon> Z našeho Instagramu</span>
+          <h2 class="blog-title">Blog <span class="blog-accent">Makej</span></h2>
+          <p class="blog-lead">Zajímavosti, tipy a novinky ze světa brigád a práce. Sesbírané příspěvky z našeho Instagramu — přehledně na jednom místě.</p>
+          <a href="https://www.instagram.com/makej.eu" class="blog-ig-btn" target="_blank" rel="noopener">
+            <iconify-icon icon="mdi:instagram"></iconify-icon> Sledovat @makej.eu
+          </a>
+        </div>
+
+        <div class="blog-grid">
+
+          <!-- ▸ PŘÍSPĚVEK (nejnovější první) -->
+          <article class="blog-card">
+            <a href="https://www.instagram.com/p/DbiO-tBjDQD/" target="_blank" rel="noopener" style="text-decoration:none;display:contents;">
+              <div class="blog-card-media">
+                <span class="blog-card-ig"><iconify-icon icon="mdi:instagram"></iconify-icon></span>
+                <img src="/blog-img/post-2.jpg" alt="Posíláš životopisy a pořád ticho?" loading="lazy" />
+              </div>
+              <div class="blog-card-body">
+                <div class="blog-card-meta">
+                  <span class="blog-chip">Ze světa práce</span>
+                </div>
+                <h3 class="blog-card-title">Posíláš životopisy a pořád ticho? Není to tvoje vina</h3>
+                <p class="blog-card-excerpt">Novináři poslali životopis do 1000 firem — přes polovina měsíc mlčela. Přesně tohle ticho jsme zažili taky. Proto vzniklo Makej.</p>
+                <span class="blog-card-more">Číst na Instagramu <iconify-icon icon="solar:arrow-right-linear"></iconify-icon></span>
+              </div>
+            </a>
+          </article>
+
+          <!-- ▸ PŘÍSPĚVEK -->
+          <article class="blog-card">
+            <a href="https://www.instagram.com/p/Da-f75SjKc2/" target="_blank" rel="noopener" style="text-decoration:none;display:contents;">
+              <div class="blog-card-media">
+                <span class="blog-card-ig"><iconify-icon icon="mdi:instagram"></iconify-icon></span>
+                <img src="/blog-img/post-1.jpg" alt="Co je Makej?" loading="lazy" />
+              </div>
+              <div class="blog-card-body">
+                <div class="blog-card-meta">
+                  <span class="blog-chip">O Makej</span>
+                </div>
+                <h3 class="blog-card-title">Co je Makej?</h3>
+                <p class="blog-card-excerpt">Platforma, na které si jednoduše domluvíš jednorázové i pravidelné brigády. Vysvětlujeme, jak to celé funguje.</p>
+                <span class="blog-card-more">Číst na Instagramu <iconify-icon icon="solar:arrow-right-linear"></iconify-icon></span>
+              </div>
+            </a>
+          </article>
+
         </div>
       </div>
     </section>
@@ -590,39 +680,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/script.js?v=60"></script>
-  <!-- Odhalování sekcí při scrollu — stejný efekt jako na ostatních stránkách (generická třída .reveal) -->
-  <script>
-  (function () {
-    if (!('IntersectionObserver' in window)) return;
-    var sel = '.on-h2, .on-sub, .on-band, .on-banner, .on-story, .on-future, .dl-stage,'
-            + '.on-pain, .on-step, .on-two > .on-card, .on-feat__cell, .on-sol__col,'
-            + '.on-future-item, .on-person';
-    var els = Array.prototype.slice.call(document.querySelectorAll(sel));
-    if (!els.length) return;
-    // Stagger: postupné zpoždění pro sourozence ve stejném gridu
-    var counts = new Map();
-    els.forEach(function (el) {
-      el.classList.add('reveal');
-      var p = el.parentNode, i = counts.get(p) || 0;
-      if (i) el.style.transitionDelay = Math.min(i * 0.06, 0.3) + 's';
-      counts.set(p, i + 1);
-    });
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        var el = e.target;
-        el.classList.add('visible');
-        io.unobserve(el);
-        // Po dojetí animace uklidit třídy, ať transition-delay nezdržuje pozdější :hover
-        setTimeout(function () {
-          el.classList.remove('reveal', 'visible');
-          el.style.transitionDelay = '';
-        }, 1000);
-      });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-    els.forEach(function (el) { io.observe(el); });
-  })();
-  </script>
+  <!-- Odhalování sekcí při scrollu řeší nově makej-animace.js (připojený v head). Starý reveal skript odstraněn dle handoffu. -->
   <!-- Plovoucí tlačítko „Startujeme" — přejde na homepage s čekacím listem -->
   <button class="wl-fab" type="button" aria-label="Startujeme – přidat se na waitlist">
     <span class="wl-fab__icon" aria-hidden="true">
