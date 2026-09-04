@@ -270,6 +270,55 @@ img { max-width: 100%; display: block; }
   from { clip-path: inset(0 0 100% 0); transform: translateY(16px); }
   to   { clip-path: inset(0 0 -22% 0); transform: none; }
 }
+
+/* ── Poslední slovo v hero se přepisuje (swajp → klik → dotek) ──────────────
+   Vše je <span>, ne <i>: League Spartan má v @font-face jen `font-style: normal`,
+   takže kurzívu (kterou <i> dědí) prohlížeč nemá a spadl by na náhradní font.
+
+   Přepis jde po písmenech (fade + blur + posun), kontejner k tomu plynule mění
+   šířku — proto ta neviditelná měřicí kopie slova. `white-space: nowrap` drží
+   slovo pohromadě: nikdy se nesmí rozlomit ani spadnout pod řádek.
+   Tečka je v HTML až za boxem: nevyměňuje se se slovem, jen se veze na jeho
+   šířce, takže při delším slově plynule odjede doprava a zase zpátky.
+
+   `.hero-h1 span` má na sobě odhalovací masku (mkMask); u vnořených ji proto
+   ručně vypínáme, jinak by se spustila i na slově. Po dojetí masky JS přidá
+   .mk-hotovo, aby clip-path neuřezával písmena vylétávající nahoru. */
+.hero-h1 .hero-typer,
+.hero-h1 .hero-typer span { animation: none; }
+.hero-h1.mk-hotovo { overflow: visible; }
+.hero-h1.mk-hotovo > span { animation: none; clip-path: none; }
+
+/* Pozor na specificitu: `.hero-h1 span` (0,1,1) přebíjí holé třídy (0,1,0) a
+   vnutilo by všem display:inline-block. Proto je tu všude předřazené .hero-h1. */
+.hero-h1 .hero-typer {
+  font: inherit; position: relative;
+  display: inline-flex; align-items: baseline; vertical-align: baseline;
+  white-space: nowrap;
+  transition: width .48s cubic-bezier(.22,1,.36,1);
+  will-change: width;
+}
+.hero-h1 .typer-measure {
+  position: absolute; left: 0; top: 0;
+  visibility: hidden; pointer-events: none; white-space: nowrap;
+}
+.hero-h1 .typer-word { font: inherit; display: flex; white-space: nowrap; }
+.hero-h1 .typer-char {
+  display: block;
+  transition: opacity .42s ease, filter .42s ease,
+              transform .42s cubic-bezier(.22,1,.36,1);
+  will-change: opacity, filter, transform;
+}
+.hero-h1 .typer-char.je-prichod { opacity: 0; filter: blur(8px); transform: translateY(.42em); }
+.hero-h1 .typer-char.je-odchod {
+  opacity: 0; filter: blur(8px); transform: translateY(-.42em);
+  transition-duration: .26s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-h1 .hero-typer { transition: none; }
+  .hero-h1 .typer-char { transition: none; }
+}
+
 @keyframes mkRise {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: none; }

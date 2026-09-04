@@ -1480,3 +1480,113 @@ function showToast(msg) {
   window.addEventListener('resize', update);
   update();
 })();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HERO — poslední slovo se přepisuje (swajp → klik → dotek)
+
+   Přepis nejde po písmenech jako psaní na stroji, ale výměnou: stará písmena
+   po řadě vyblednou a odletí nahoru, nová přiletí zdola. Kontejner k tomu
+   plynule přejíždí na šířku nového slova — tu měříme neviditelnou kopií
+   dopředu, protože při výměně už v DOM žádné celé slovo není. Tečka sedí až
+   za kontejnerem, takže se veze na jeho šířce a jen se posune za slovem.
+
+   Slovo se nikdy nesmí rozlomit ani spadnout pod řádek: proto nowrap a proto
+   měříme až po `document.fonts.ready` (v náhradním fontu vyjdou jiná čísla).
+   ═══════════════════════════════════════════════════════════════════════════ */
+(function heroTyper() {
+  const box  = document.getElementById('hero-typer');
+  const slot = document.getElementById('typer-word');
+  if (!box || !slot) return;
+
+  const SLOVA   = ['swajp', 'klik', 'dotek'];   // tečka je v HTML za boxem, nevyměňuje se
+  const KROK    = 28;    // ms mezi písmeny (vlnka)
+  const ODCHOD  = 260;   // ms než staré písmeno zmizí — drží se .typer-char v CSS
+  const PRICHOD = 420;   // ms než nové doletí — taky z CSS
+  const DRZENI  = 2400;  // jak dlouho slovo stojí, než se vymění
+  const START   = 1500;  // nechat dojet odhalení nadpisu (mkMask)
+
+  const h1 = box.closest('.hero-h1');
+  const bezPohybu = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Odhalovací maska nadpisu (mkMask) dojede v 1,1 s. Sundat ji musíme hned pak:
+  // písmena vylétávající nahoru přesahují nad výšku řádku a do té doby by je
+  // overflow:hidden / clip-path ořezával.
+  if (h1) setTimeout(() => h1.classList.add('mk-hotovo'), 1200);
+
+  // Měřicí kopie: neviditelná, mimo tok, takže nic neposouvá.
+  const merak = document.createElement('span');
+  merak.className = 'typer-measure';
+  merak.setAttribute('aria-hidden', 'true');
+  box.appendChild(merak);
+
+  let i = 0;
+
+  // Měřák skládá slovo ze stejných boxů jako ostrá verze. Kdyby měřil slovo
+  // jako jeden text, započítal by kerning mezi dvojicemi písmen — ten se ale
+  // rozpadem na samostatné spany ztrácí a šířka by vyšla o kus jinak.
+  function sirka(text) {
+    merak.textContent = '';
+    const radka = document.createElement('span');
+    radka.className = 'typer-word';
+    [...text].forEach(znak => {
+      const s = document.createElement('span');
+      s.className = 'typer-char';
+      s.textContent = znak;
+      radka.appendChild(s);
+    });
+    merak.appendChild(radka);
+    box.style.width = radka.getBoundingClientRect().width + 'px';
+  }
+
+  function vykresli(text, animovat) {
+    slot.textContent = '';
+    [...text].forEach((znak, idx) => {
+      const s = document.createElement('span');
+      s.className = 'typer-char' + (animovat ? ' je-prichod' : '');
+      s.textContent = znak;
+      s.style.transitionDelay = animovat ? idx * KROK + 'ms' : '0ms';
+      slot.appendChild(s);
+    });
+    // Dva rámce: první nechá prohlížeč uložit počáteční stav, druhý ho pustí.
+    // Bez toho by se třída sundala dřív, než vznikne co animovat.
+    if (animovat) requestAnimationFrame(() => requestAnimationFrame(() => {
+      slot.querySelectorAll('.typer-char').forEach(s => s.classList.remove('je-prichod'));
+    }));
+  }
+
+  function vymen(dalsi) {
+    const znaky = [...slot.querySelectorAll('.typer-char')];
+    znaky.forEach((s, idx) => {
+      s.style.transitionDelay = idx * KROK + 'ms';
+      s.classList.add('je-odchod');
+    });
+    sirka(dalsi);          // šířka jede souběžně s odchodem, ne až po něm
+    const az = ODCHOD + znaky.length * KROK * 0.5;
+    setTimeout(() => vykresli(dalsi, true), az);
+    return az;
+  }
+
+  function cyklus() {
+    setTimeout(() => {
+      i = (i + 1) % SLOVA.length;
+      const az = vymen(SLOVA[i]);
+      setTimeout(cyklus, az + PRICHOD * 0.4);
+    }, DRZENI);
+  }
+
+  function spust() {
+    sirka(SLOVA[0]);
+    vykresli(SLOVA[0], false);
+    let t;
+    window.addEventListener('resize', () => {
+      clearTimeout(t);
+      t = setTimeout(() => sirka(SLOVA[i]), 150);
+    });
+    if (!bezPohybu) cyklus();
+  }
+
+  const pripraveno = (document.fonts && document.fonts.ready)
+    ? document.fonts.ready.catch(() => {})
+    : Promise.resolve();
+  pripraveno.then(() => setTimeout(spust, START));
+})();
