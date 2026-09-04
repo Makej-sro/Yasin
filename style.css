@@ -331,6 +331,41 @@ img { max-width: 100%; display: block; }
 .hero-line:nth-child(2) .hero-line-in { animation-delay: .22s; }
 .hero-line:nth-child(3) .hero-line-in { animation-delay: .36s; }
 @keyframes heroLineUp { from { transform: translateY(120%); } to { transform: translateY(0); } }
+
+/* ── První hero slovo — psací stroj + načítací linka pod slovem ──────────────
+   Slovo se přepisuje (Swajpuj → Klikni → …). Pod ním se mezitím „nahrává"
+   linka, která ukazuje, kolik zbývá do dalšího slova.
+   Šířka je zamčená na nejdelší slovo, jinak by se nadpis při psaní roztahoval
+   a poskakoval do stran — u fontu přes 9rem je to hodně vidět. */
+.hero-typer {
+  position: relative; text-align: left;
+  min-width: 7.2ch; padding-bottom: .16em;
+}
+.typer-word { white-space: pre; }
+.typer-caret {
+  display: inline-block; width: .06em; height: .82em;
+  margin-left: .04em; vertical-align: -.08em;
+  background: currentColor; opacity: .85;
+  animation: typerCaret 1s steps(1) infinite;
+}
+@keyframes typerCaret { 0%, 50% { opacity: .85; } 50.01%, 100% { opacity: 0; } }
+/* Linka sedí na spodku slova a kopíruje jeho šířku. */
+.typer-bar {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: .055em; border-radius: 999px;
+  background: currentColor; opacity: .18;
+  overflow: hidden;
+}
+.typer-bar > i {
+  display: block; width: 100%; height: 100%;
+  background: currentColor; opacity: 1;
+  transform: scaleX(0); transform-origin: left center;
+}
+/* Bez animací: zůstane první slovo, kurzor ani linka neblikají. */
+@media (prefers-reduced-motion: reduce) {
+  .typer-caret { animation: none; opacity: 0; }
+  .typer-bar { display: none; }
+}
 /* Prostřední slovo „Matchuj" — bez gradientu, stejná bílá jako zbytek nadpisu.
    .gradient-text v HTML zůstává, přebíjíme ho tady; sweep je zakomentovaný pod tím. */
 #hero .hero-grad {

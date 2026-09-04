@@ -1477,3 +1477,63 @@ function showToast(msg) {
   window.addEventListener('resize', update);
   update();
 })();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HERO — psací stroj na prvním slově
+   Slovo se smaže po písmenkách a napíše se další (Swajpuj → Klikni → …).
+   Mezi přepisy se pod slovem „nahraje" linka — ukazuje, kolik zbývá do další
+   výměny, takže to nepůsobí jako náhodné cukání.
+
+   Čeká se na dojetí úvodní animace nadpisu (heroLineUp), jinak by se slovo
+   začalo přepisovat ještě než vyjede zpod masky.
+   ═══════════════════════════════════════════════════════════════════════════ */
+(function heroTyper() {
+  const el = document.getElementById('typer-word');
+  const bar = document.querySelector('#hero-typer .typer-bar > i');
+  if (!el) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const SLOVA = ['Swajpuj', 'Klikni', 'Najdi', 'Vyber'];
+  const PSANI = 85;      // ms na písmeno při psaní
+  const MAZANI = 45;     // mazání je svižnější, jinak to zdržuje
+  const DRZ = 2000;      // jak dlouho hotové slovo zůstane
+  const PO_SMAZANI = 260;
+
+  let i = 0;             // které slovo
+  let n = SLOVA[0].length;  // kolik písmen je vidět (start = celé první slovo)
+
+  const spi = (ms) => new Promise(r => setTimeout(r, ms));
+
+  function nahrajLinku(ms) {
+    if (!bar) return;
+    bar.style.transition = 'none';
+    bar.style.transform = 'scaleX(0)';
+    void bar.offsetWidth;                  // vynutí restart animace
+    bar.style.transition = 'transform ' + ms + 'ms linear';
+    bar.style.transform = 'scaleX(1)';
+  }
+  function schovejLinku() {
+    if (!bar) return;
+    bar.style.transition = 'transform 180ms ease';
+    bar.style.transform = 'scaleX(0)';
+  }
+
+  async function bezi() {
+    // Nejdřív nechat dojet vyjetí nadpisu zpod masky.
+    await spi(1400);
+    for (;;) {
+      nahrajLinku(DRZ);
+      await spi(DRZ);
+      schovejLinku();
+
+      const ted = SLOVA[i];
+      while (n > 0) { n--; el.textContent = ted.slice(0, n); await spi(MAZANI); }
+      await spi(PO_SMAZANI);
+
+      i = (i + 1) % SLOVA.length;
+      const dalsi = SLOVA[i];
+      while (n < dalsi.length) { n++; el.textContent = dalsi.slice(0, n); await spi(PSANI); }
+    }
+  }
+  bezi();
+})();
