@@ -173,7 +173,7 @@ function setupReveal() {
   // s kreslenou spojnicí), aby se transform nepřebil.
   const SEL = [
     '.step-card', '.feature-card', '.testimonial-card', '.download-card',
-    '.section-header', '.cn-plan', '.yp-head', '.soon-card',
+    '.section-header', '.cn-plan', '.yp-head',
     '.bolt-head', '.bolt-text',
     '.ab-lead', '.ab-col', '.ab-team-block', '.ab-person', '.ab-quote', '.ab-cta',
     '.emp-faq-item', '.faq-item',
@@ -528,7 +528,7 @@ function initAuth() {
     const sec = document.getElementById('brzy');
     if (!sec) { window.location.href = '/#brzy'; return; }
     sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    const input = sec.querySelector('.soon-input');
+    const input = sec.querySelector('.wl-in');
     if (input) setTimeout(() => input.focus({ preventScroll: true }), 650);
   }
 
@@ -1262,61 +1262,320 @@ function showToast(msg) {
   pripraveno.then(() => setTimeout(spust, START));
 })();
 
-/* ═══════════ BRZY SPOUŠTÍME — sběr e-mailů ═══════════
-   Nahrazuje zrušený dvourolový čekací list. Ukládá se jen e-mail, a to přes RPC
-   join_launch_list (SECURITY DEFINER) — tabulka launch_emails nemá žádnou RLS
-   policy, takže z webu z ní nejde nic přečíst ani vyjmenovat. Opakované
-   přihlášení stejné adresy projde tiše (on conflict do nothing v DB).
-   Voláno přes fetch, ne přes supabase.createClient: druhý klient se stejným
-   storageKey hlásí konflikt instancí GoTrue a pro jedno RPC ho není potřeba. */
-(function launchEmails() {
-  const form = document.querySelector('.soon-form');
-  if (!form) return;
-  const input = form.querySelector('.soon-input');
-  const btn   = form.querySelector('.soon-btn');
-  const msg   = document.getElementById('soon-msg');
-  if (!input || !btn) return;
+/* ═══════════ VYJETÍ ČEKACÍHO LISTU DO POPŘEDÍ ═══════════
+   Hero zůstane přilepené vzadu a s postupem scrollu se rozmazává, čekací list
+   přes něj vyjede jako karta v popředí. Animace nadpisu vzadu běží dál — hero
+   se nikam neodpojuje, jen se rozostří.
 
-  function stav(text, druh) {
-    if (!msg) return;
-    msg.textContent = text;
-    msg.className = 'soon-msg' + (druh ? ' is-' + druh : '');
+   Postup držíme v CSS proměnné `--p` (0..1): počítat ho v JS a přepisovat
+   jednotlivé styly by znamenalo sahat na DOM v každém snímku. Takhle se mění
+   jediná hodnota a zbytek dopočítá prohlížeč.
+
+   Práh pro vypnutí odkazů je zvlášť: na proměnnou se v CSS podmínit nedá a
+   rozmazané tlačítko, na které jde kliknout, je past. */
+(function popredi() {
+  const uvod = document.querySelector('.uvod');
+  if (!uvod) return;
+  const korenu = document.documentElement;
+  let p = -1, ceka = false;
+
+  function prepocti() {
+    ceka = false;
+    // Rozmazání dojede za tři čtvrtiny obrazovky — to je zhruba chvíle, kdy
+    // karta vyjíždí do popředí. Delší dráha působí, že se nic neděje.
+    const draha = window.innerHeight * 0.75;
+    const nove = Math.min(1, Math.max(0, window.scrollY / draha));
+    if (Math.abs(nove - p) < 0.004) return;
+    p = nove;
+    korenu.style.setProperty('--p', p.toFixed(3));
+    if (p > 0.55) uvod.setAttribute('data-vzadu', '');
+    else uvod.removeAttribute('data-vzadu');
+  }
+  function naScroll() { if (!ceka) { ceka = true; requestAnimationFrame(prepocti); } }
+
+  window.addEventListener('scroll', naScroll, { passive: true });
+  window.addEventListener('resize', naScroll, { passive: true });
+  prepocti();
+})();
+
+/* ═══════════ AVATARY U POČTU ZAPSANÝCH ═══════════
+   Kreslené, ne fotky: kolečka stojí vedle věty „X lidí už u nás je", takže
+   fotorealistická tvář by vydávala vymyšleného člověka za skutečně zapsaného.
+   U ilustrace je každému zřejmé, že je to ozdoba.
+
+   Skládají se z dílů (pozadí, pleť, vlasy, tričko), ne z hotových obrázků —
+   osm hotových kreseb by znamenalo osm souborů ke stažení a přitom by se pořád
+   dokola opakovaly ty samé tři.
+
+   Sestava se mění podle dne: kdo se vrátí za týden, uvidí jiné lidi. V rámci
+   jednoho dne je stálá, ať se to nepřekresluje při každém načtení stránky.
+   POZOR: číslo vedle nich se takhle točit NESMÍ — to je skutečný počet ze
+   serveru a měnit ho jinak než zápisem by byl výmysl. */
+(function avatary() {
+  const box = document.querySelector('.wl-faces');
+  if (!box) return;
+
+  const POZADI = ['#0020F6', '#F5B301', '#E2564A', '#0014A3', '#2FA84F'];
+  const LIDE = [
+    { plet: '#F7C9A5', vlasy: '#2E3457', styl: 'kratke',  tricko: '#1B2140' },
+    { plet: '#E8B08B', vlasy: '#4A3728', styl: 'mikado',  tricko: '#FFFFFF' },
+    { plet: '#8D5524', vlasy: '#1A1A22', styl: 'drdol',   tricko: '#E7EAFA' },
+    { plet: '#F1BE96', vlasy: '#8C6239', styl: 'culik',   tricko: '#2E3457' },
+    { plet: '#C68A5F', vlasy: '#2E3457', styl: 'kudrny',  tricko: '#FFFFFF' },
+    { plet: '#FAD7B8', vlasy: '#C9913F', styl: 'mikado',  tricko: '#1B2140' },
+    { plet: '#A9683C', vlasy: '#1A1A22', styl: 'kratke',  tricko: '#E7EAFA' },
+    { plet: '#EFC3A0', vlasy: '#2E3457', styl: 'drdol',   tricko: '#2E3457' },
+  ];
+
+  // Vlasy se kreslí ZA obličej a jsou o kus větší — nad čelem z nich pak zůstane
+  // jen lem, což je přesně to, co se v 34 px pozná jako účes. Kreslit je před
+  // obličej znamená přilbu: vejde se pod ni akorát brada.
+  // Nahoru (drdol, kudrny) přijde jen to, co leží nad temenem a do tváře nesahá.
+  function vlasyZa(styl, barva) {
+    let d = `<ellipse cx="12" cy="9.3" rx="5.3" ry="5.3" fill="${barva}"/>`;
+    if (styl === 'mikado') d = `<rect x="6.5" y="4.2" width="11" height="12.4" rx="5.5" fill="${barva}"/>`;
+    if (styl === 'culik')  d += `<rect x="15.6" y="8.6" width="3" height="7.2" rx="1.5" fill="${barva}"/>`;
+    return d;
+  }
+  function vlasyNad(styl, barva) {
+    if (styl === 'drdol')  return `<circle cx="12" cy="3.8" r="2.1" fill="${barva}"/>`;
+    if (styl === 'kudrny') return `<circle cx="8.4" cy="6.2" r="2.2" fill="${barva}"/>`
+                                + `<circle cx="12" cy="5.1" r="2.4" fill="${barva}"/>`
+                                + `<circle cx="15.6" cy="6.2" r="2.2" fill="${barva}"/>`;
+    return '';
   }
 
-  async function odesli() {
-    const email = (input.value || '').trim();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-      stav('Zkontroluj prosím tvar e-mailu.', 'err');
-      input.focus();
-      return;
+  function postava(clovek, pozadi) {
+    return `<svg viewBox="0 0 24 24" aria-hidden="true" style="background:${pozadi}">`
+      + `<path d="M3.2 24c0-4.8 4-7.3 8.8-7.3s8.8 2.5 8.8 7.3Z" fill="${clovek.tricko}"/>`
+      + `<rect x="10.4" y="13.6" width="3.2" height="4.6" rx="1.6" fill="${clovek.plet}"/>`
+      + vlasyZa(clovek.styl, clovek.vlasy)
+      + `<circle cx="7.2" cy="11.4" r="1.25" fill="${clovek.plet}"/>`
+      + `<circle cx="16.8" cy="11.4" r="1.25" fill="${clovek.plet}"/>`
+      + `<ellipse cx="12" cy="10.9" rx="4.5" ry="4.9" fill="${clovek.plet}"/>`
+      + vlasyNad(clovek.styl, clovek.vlasy)
+      // Oči a pusa až nakonec. V 34 px z nich zbydou dvě tečky, ale ve zvětšení
+      // (retina, náhled) by bez nich postavička vypadala jako manekýn.
+      + `<circle cx="10.2" cy="11.2" r=".72" fill="#1B2140"/>`
+      + `<circle cx="13.8" cy="11.2" r=".72" fill="#1B2140"/>`
+      + `<path d="M10.5 13.5a2.1 2.1 0 0 0 3 0" stroke="#1B2140" stroke-width=".8" stroke-linecap="round" fill="none"/>`
+      + `</svg>`;
+  }
+
+  // Den v roce jako počáteční index — v rámci dne stálé, další den jiná trojice.
+  const den = Math.floor(Date.now() / 86400000);
+  const kousky = [];
+  for (let i = 0; i < 3; i++) {
+    const clovek = LIDE[(den * 3 + i) % LIDE.length];
+    const pozadi = POZADI[(den + i) % POZADI.length];
+    kousky.push(`<span class="wl-face">${postava(clovek, pozadi)}</span>`);
+  }
+  box.innerHTML = kousky.join('');
+})();
+
+/* ═══════════ ČEKACÍ LIST — tři kroky ═══════════
+   1) e-mail  → RPC join_launch_list (SECURITY DEFINER) do tabulky launch_emails.
+      Tabulka má zapnuté RLS bez čtecí policy, takže z webu z ní nejde nic
+      přečíst ani vyjmenovat (ověřeno: select vrací prázdno). Opakovaný zápis
+      stejné adresy projde tiše (on conflict do nothing v DB).
+   2) volitelný účet → /auth/v1/signup. Záměrně přes fetch, ne přes klienta
+      webu: ten by po signUp založil session a onAuthStateChange by návštěvníka
+      odhodil do (nedodělaného) dashboardu. Takhle žádná session nevznikne.
+   3) hotovo.
+
+   Počty lidí NEJSOU natvrdo. Ukážou se jen tehdy, když je vrátí server —
+   dokud v databázi není funkce launch_list_pocet, zůstane ten řádek schovaný.
+   Vymyšlené číslo na veřejném webu je slib, který nemáme čím krýt. */
+(function cekaciList() {
+  const $ = id => document.getElementById(id);
+  const form1 = $('wl-form1');
+  if (!form1) return;
+
+  // Kdo se zapsal, nemá při další návštěvě dostat prázdný formulář, jako by se
+  // nic nestalo. Prohlížeč si zápis pamatuje; server se zeptat nemůžeme —
+  // `launch_emails` je zamčená a návštěvník není přihlášený.
+  const PAMET = 'makej-cekacka';
+  function zapamatuj(zmena) {
+    try {
+      const stary = nactiPamet() || {};
+      localStorage.setItem(PAMET, JSON.stringify({ ...stary, ...zmena }));
+    } catch (e) { /* soukromé okno / zakázané úložiště — nevadí */ }
+  }
+  function nactiPamet() {
+    try { return JSON.parse(localStorage.getItem(PAMET) || 'null'); } catch (e) { return null; }
+  }
+  function zapomen() { try { localStorage.removeItem(PAMET); } catch (e) {} }
+
+  const KROKY = ['wl-1', 'wl-2', 'wl-3'];
+  function ukaz(id, bezScrollu) {
+    KROKY.forEach(k => { const el = $(k); if (el) el.hidden = k !== id; });
+    // Při obnovení stavu po návratu se scrollovat nesmí — návštěvník na stránku
+    // teprve přišel a stránka by mu pod rukama sama ujela dolů.
+    if (bezScrollu) return;
+    const sek = $('brzy');
+    if (sek) sek.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Chyba sedí u pole, ne v alertu — a zmizí, jakmile člověk začne psát.
+  function chyba(pole, box, text) {
+    pole.setAttribute('aria-invalid', 'true');
+    box.textContent = text; box.hidden = false; pole.focus();
+    return false;
+  }
+  [['wl-email', 'wl-e1'], ['wl-name', 'wl-e2'], ['wl-pw', 'wl-e3'], ['wl-pw2', 'wl-e4']].forEach(([a, b]) => {
+    const pole = $(a), box = $(b);
+    if (!pole || !box) return;
+    pole.addEventListener('input', () => { pole.removeAttribute('aria-invalid'); box.hidden = true; });
+  });
+
+  const hlavicky = {
+    'Content-Type': 'application/json',
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: 'Bearer ' + SUPABASE_ANON_KEY,
+  };
+
+  async function pocetLidi() {
+    try {
+      const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/launch_list_pocet', {
+        method: 'POST', headers: hlavicky, body: '{}',
+      });
+      if (!r.ok) return null;                       // funkce ještě není → nic neukazuj
+      const n = Number(await r.text());
+      return Number.isFinite(n) && n > 0 ? n : null;
+    } catch (e) { return null; }
+  }
+  const cislo = n => n.toLocaleString('cs-CZ').replace(/ /g, ' ');
+
+  pocetLidi().then(n => {
+    if (n == null) return;
+    $('wl-pocet').textContent = cislo(n);
+    $('wl-foot').hidden = false;
+  });
+
+  // ── Návrat po čase: ukázat, že už je zapsaný ─────────────────────────
+  (function obnov() {
+    const p = nactiPamet();
+    if (!p || !p.email) return;
+    $('wl-shown').textContent = p.email;
+    $('wl-mail2').textContent = p.email;
+    // „Díky" se hodí bezprostředně po odeslání, ne za týden — tam už to zní,
+    // jako by appka zapomněla, co se stalo.
+    $('wl-h2').textContent = 'Na seznamu už jsi.';
+    $('wl-jiny').hidden = false;
+    if (p.ucet) {
+      // Účet už má → nabízet mu ho podruhé nemá smysl.
+      $('wl-acc').hidden = true;
+      $('wl-fine').textContent = 'Účet už máš založený. Dáme vědět, až spustíme.';
     }
+    // Pořadí neukazujeme: server vrací aktuální počet zapsaných, ne jeho místo.
+    // Po týdnu by to bylo cizí číslo vydávané za jeho.
+    ukaz('wl-2', true);
+  })();
+
+  $('wl-jiny').addEventListener('click', () => {
+    zapomen();
+    $('wl-email').value = '';
+    $('wl-h2').textContent = 'Díky, jsi na seznamu.';
+    $('wl-jiny').hidden = true;
+    $('wl-acc').hidden = false;
+    $('wl-fine').textContent = 'Účet si můžeš založit i později z e-mailu, který ti pošleme.';
+    ukaz('wl-1');
+    $('wl-email').focus();
+  });
+
+  // ── 1 · zápis na seznam ──────────────────────────────────────────────
+  form1.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const pole = $('wl-email'), box = $('wl-e1'), btn = $('wl-go');
+    const email = (pole.value || '').trim();
+    if (!email) return chyba(pole, box, 'Zadej e-mail.');
+    if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)) return chyba(pole, box, 'Tohle není platný e-mail.');
 
     btn.disabled = true;
-    stav('Odesílám…', '');
-
     try {
       const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/join_launch_list', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: 'Bearer ' + SUPABASE_ANON_KEY
-        },
-        body: JSON.stringify({ p_email: email, p_source: 'landing' })
+        method: 'POST', headers: hlavicky,
+        body: JSON.stringify({ p_email: email, p_source: 'landing' }),
       });
       if (!r.ok) throw new Error(await r.text());
-
-      input.value = '';
-      stav('Hotovo! Ozveme se ti na e-mail, jakmile spustíme.', 'ok');
     } catch (e) {
-      console.error('[launch-emails]', e);
-      stav('Nepovedlo se odeslat. Zkus to prosím za chvíli znovu.', 'err');
-    } finally {
-      btn.disabled = false;   // text nepřepisujeme — smazalo by to i SVG šipku uvnitř
+      console.error('[cekaci-list]', e);
+      btn.disabled = false;
+      return chyba(pole, box, 'Nepovedlo se odeslat. Zkus to prosím za chvíli znovu.');
     }
-  }
+    btn.disabled = false;
 
-  btn.addEventListener('click', odesli);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); odesli(); } });
-  input.addEventListener('input', () => { if (msg && msg.textContent) stav('', ''); });
+    zapamatuj({ email: email, kdy: Date.now() });
+    $('wl-shown').textContent = email;
+    $('wl-mail2').textContent = email;
+    $('wl-h2').textContent = 'Díky, jsi na seznamu.';
+    ukaz('wl-2');
+
+    // Pořadí = počet záznamů po zápisu. Ptáme se znovu, ať je to skutečné číslo.
+    pocetLidi().then(n => {
+      if (n == null) return;
+      $('wl-pos').textContent = cislo(n) + '.';
+      $('wl-pos-box').hidden = false;
+    });
+  });
+
+  // ── Rozbalovací „Chci výhody" ────────────────────────────────────────
+  const acc = $('wl-acc'), accBtn = $('wl-acc-btn'), accBd = $('wl-acc-bd');
+  function zavri() {
+    accBd.style.maxHeight = accBd.scrollHeight + 'px';   // z 'none' na měřenou, jinak není co animovat
+    requestAnimationFrame(() => { accBd.style.maxHeight = '0px'; });
+    acc.removeAttribute('data-open');
+    accBtn.setAttribute('aria-expanded', 'false');
+    accBd.setAttribute('inert', '');    // sbalená pole nesmí být ve fokusu ani pro čtečku
+  }
+  function otevri() {
+    accBd.style.maxHeight = accBd.scrollHeight + 'px';
+    acc.setAttribute('data-open', '');
+    accBtn.setAttribute('aria-expanded', 'true');
+    accBd.removeAttribute('inert');
+    setTimeout(() => {
+      accBd.style.maxHeight = 'none';   // uvolnit, ať se vejdou i chybové hlášky
+      $('wl-name').focus();
+    }, 320);
+  }
+  accBtn.addEventListener('click', () => (acc.hasAttribute('data-open') ? zavri() : otevri()));
+
+  // ── 2 · založení účtu ────────────────────────────────────────────────
+  $('wl-form2').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const jmeno = ($('wl-name').value || '').trim();
+    const heslo = $('wl-pw').value, heslo2 = $('wl-pw2').value;
+    if (jmeno.length < 3)   return chyba($('wl-name'), $('wl-e2'), 'Napiš jméno a příjmení.');
+    if (heslo.length < 8)   return chyba($('wl-pw'),   $('wl-e3'), 'Heslo musí mít aspoň 8 znaků.');
+    if (heslo !== heslo2)   return chyba($('wl-pw2'),  $('wl-e4'), 'Hesla se neshodují.');
+
+    const btn = $('wl-sub');
+    btn.disabled = true;
+    btn.textContent = 'Zakládám…';
+    try {
+      const r = await fetch(SUPABASE_URL + '/auth/v1/signup', {
+        method: 'POST', headers: hlavicky,
+        body: JSON.stringify({
+          email: $('wl-mail2').textContent, password: heslo,
+          data: { name: jmeno, role: 'worker', zdroj: 'cekaci-list' },
+        }),
+      });
+      const odpoved = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        const m = (odpoved && (odpoved.msg || odpoved.error_description || odpoved.message)) || '';
+        btn.disabled = false; btn.textContent = 'Založit účet';
+        return chyba($('wl-pw'), $('wl-e3'), typeof translateAuthError === 'function'
+          ? translateAuthError(m) : 'Účet se nepodařilo založit. Zkus to prosím znovu.');
+      }
+    } catch (e) {
+      console.error('[cekaci-list · ucet]', e);
+      btn.disabled = false; btn.textContent = 'Založit účet';
+      return chyba($('wl-pw'), $('wl-e3'), 'Účet se nepodařilo založit. Zkus to prosím znovu.');
+    }
+    btn.disabled = false; btn.textContent = 'Založit účet';
+
+    zapamatuj({ ucet: true });
+    $('wl-hi').textContent = jmeno.split(' ')[0];
+    ukaz('wl-3');
+  });
 })();

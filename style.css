@@ -605,70 +605,214 @@ img { max-width: 100%; display: block; }
   .testimonials-grid { grid-template-columns: 1fr; }
 }
 
-/* ═══════════ BRZY SPOUŠTÍME ═══════════
-   Levandulová karta mezi herem a recenzemi. Fonty i modrá jsou naše proměnné,
-   ne hodnoty z návrhu (ten sahal po DM Sans a #1F2DFF) — kvůli jednomu bloku
-   nemá smysl tahat další webfont a mít vedle sebe dvě skoro stejné modré. */
-#brzy { background: #fff; padding: clamp(28px, 4vw, 56px) 0 clamp(40px, 5vw, 72px); }
-.soon-card {
-  border-radius: 28px; background: #E7E9FF; text-align: center;
-  padding: clamp(56px, 8vw, 110px) clamp(24px, 4vw, 48px) clamp(48px, 7vw, 96px);
+/* ═══════════ ČEKACÍ LIST ═══════════
+   Tři kroky (zápis → díky → účet) v jedné sekci. Z návrhu beru rozvržení,
+   ne hodnoty: fonty i modrá jdou z proměnných webu, ať vedle sebe nestojí
+   dvě skoro stejné modré a netahá se kvůli jednomu bloku další webfont. */
+/* ── Vyjetí do popředí ────────────────────────────────────────────────────
+   Hero se při scrollu přilepí a rozmaže, čekací list přes něj vyjede jako
+   karta v popředí. `--p` (0..1) nastavuje JS podle uraženého scrollu.
+   Přilepení potřebuje společný obal: končí totiž až s ním, takže bez `.uvod`
+   by hero viselo vzadu i pod recenzemi. */
+.uvod { position: relative; }
+#hero {
+  position: sticky; top: 0;
+  height: 100vh; height: 100svh; min-height: 0;
 }
-.soon-kicker {
-  margin: 0 0 clamp(30px, 4vw, 54px);
-  font-size: 14px; font-weight: 500; letter-spacing: .24em;
-  text-transform: uppercase; color: #4A5070;
+.hero-main {
+  filter: blur(calc(var(--p, 0) * 16px));
+  transform: scale(calc(1 + var(--p, 0) * .06));
+  opacity: calc(1 - var(--p, 0) * .45);
+  will-change: filter, transform, opacity;
 }
-.soon-word {
-  font-family: var(--font-nav); font-weight: 900;
-  font-size: clamp(72px, 13vw, 190px); line-height: .82;
-  letter-spacing: -.045em; color: var(--primary);
-}
-.soon-lead {
-  margin: clamp(44px, 6vw, 76px) auto 0; max-width: 660px;
-  font-size: clamp(20px, 2.1vw, 27px); line-height: 1.4;
-  color: #14161C; text-wrap: pretty;
-}
-.soon-form {
-  margin: clamp(32px, 4vw, 52px) auto 0; max-width: 720px;
-  display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
-}
-.soon-input {
-  flex: 1 1 320px; min-width: 0; box-sizing: border-box;
-  padding: 20px 28px; border: 1px solid #CDD2F5; border-radius: 999px;
-  background: #F4F5FF; font-family: var(--font-sans); font-size: 18px;
-  color: #14161C; outline: none; transition: border-color .2s, background-color .2s;
-}
-.soon-input:focus { border-color: var(--primary); background: #fff; }
-.soon-btn {
-  display: inline-flex; align-items: center; gap: 12px;
-  padding: 20px 34px; border: 0; border-radius: 999px;
-  background: #0A0A0F; color: #fff;
-  font-family: var(--font-sans); font-size: 18px; font-weight: 700;
-  white-space: nowrap; cursor: pointer;
-  transition: background-color .2s ease, transform .18s ease;
-}
-.soon-btn:hover { background: var(--primary); }
-.soon-btn:active { transform: scale(.98); }
-.soon-msg {
-  margin: 18px 0 0; min-height: 1.4em;
-  font-size: 15px; line-height: 1.4; color: #4A5070;
-}
-.soon-msg.is-ok  { color: #1a7f4b; font-weight: 700; }
-.soon-msg.is-err { color: #c02b3a; font-weight: 700; }
-.soon-btn:disabled { opacity: .6; cursor: default; }
+/* Rozmazané odkazy zůstávají klikatelné — než se do nich někdo trefí naslepo,
+   radši je vypneme. Práh přepíná JS, v CSS se na proměnnou podmínit nedá. */
+.uvod[data-vzadu] .hero-main { pointer-events: none; }
 
-@media (max-width: 560px) {
-  .soon-form { flex-direction: column; }
-  /* ve svislém flexu by se flex-basis: 320px vzal jako VÝŠKA — pole by se
-     nafouklo do 320px a border-radius: 999px z něj udělal elipsu */
-  .soon-input { flex: 0 0 auto; width: 100%; }
-  /* nowrap by tlačítko drželo na 339 px a přeteklo přes okraj karty (342 px);
-     na úzkých displejích proto radši zalomit popisek než přetéct */
-  .soon-btn {
-    width: 100%; justify-content: center; text-align: center;
-    white-space: normal; padding: 18px 24px; font-size: 16px;
-  }
+#brzy {
+  position: relative; z-index: 2; background: transparent;
+  /* Dráha: první obrazovka karta vyjíždí, zbytek zůstane stát v popředí. */
+  padding: 0; min-height: 185vh;
+}
+.wl-slot {
+  position: sticky; top: 0;
+  min-height: 100vh; min-height: 100svh;
+  display: flex; align-items: center; justify-content: center;
+  padding: clamp(80px, 11vh, 118px) clamp(16px, 4vw, 24px) 28px;
+}
+/* Žádná karta: čekací list stojí přímo v popředí přes rozmazané hero, takže
+   může být velký jako celá obrazovka. Bílý obdélník by ho naopak zmenšil na
+   výřez a celý efekt „přenese se dopředu" by z toho zmizel. */
+.wl-panel {
+  width: min(760px, 100%);
+  transform: translateY(calc((1 - var(--p, 0)) * 7vh));
+  will-change: transform;
+}
+
+.wl-krok {
+  width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: clamp(22px, 3vh, 30px);
+  animation: wlUp .36s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes wlUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.wl-krok[hidden] { display: none !important; }
+
+.wl-mark {
+  margin: 0; font-family: var(--font-nav); font-weight: 800;
+  font-size: clamp(44px, 8.4vw, 84px); line-height: 1.0;
+  letter-spacing: -.042em; color: #14162b; text-align: center;
+}
+.wl-mark b { color: var(--primary); font-weight: 800; }
+.wl-h2 {
+  margin: 0; font-family: var(--font-nav); font-weight: 800;
+  font-size: clamp(34px, 6vw, 58px); line-height: 1.04;
+  letter-spacing: -.042em; color: #14162b; text-align: center;
+}
+.wl-lead {
+  margin: 0; max-width: 560px; text-align: center;
+  font-size: clamp(17px, 2.4vw, 22px); line-height: 1.55; color: #4E5680;
+}
+.wl-lead b { color: var(--primary); font-weight: 700; }
+.wl-blok { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+
+/* ── Krok 1: e-mail ── */
+.wl-form { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.wl-row { width: 100%; max-width: 520px; margin: 0 auto; display: flex; gap: 11px; }
+.wl-in {
+  flex: 1; min-width: 0; font-family: var(--font-sans); font-size: 16.5px; font-weight: 500;
+  color: #14162b; background: #fff; border: 1px solid #dfe4f2; border-radius: 999px;
+  padding: 19px 24px; outline: none; box-shadow: 0 6px 20px -12px rgba(0,8,60,.35);
+  transition: border-color .18s;
+}
+.wl-in::placeholder { color: #5B6488; }
+.wl-in:focus { border-color: var(--primary); }
+.wl-in[aria-invalid="true"] { border-color: #E2564A; }
+.wl-go {
+  flex: none; font-family: var(--font-sans); font-size: 16px; font-weight: 700; color: #fff;
+  background: var(--primary); border: 0; border-radius: 999px; padding: 19px 30px;
+  cursor: pointer; white-space: nowrap; transition: background-color .18s, opacity .18s;
+  box-shadow: 0 10px 26px -12px rgba(0,32,246,.7);
+}
+.wl-go:hover { background: #0014A3; }
+.wl-go:disabled { opacity: .6; cursor: default; }
+.wl-err  { font-size: 13px; font-weight: 600; color: #E2564A; text-align: center; }
+.wl-fine { font-size: 13px; line-height: 1.55; color: #5B6488; text-align: center; }
+.wl-jiny {
+  font-family: var(--font-sans); font-size: 13.5px; font-weight: 700; color: #4E5680;
+  background: none; border: 0; padding: 0; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 4px;
+}
+.wl-jiny:hover { color: var(--primary); }
+.wl-jiny[hidden] { display: none !important; }
+
+/* ── Sociální důkaz — číslo je skutečné, nebo tu není vůbec ── */
+.wl-foot { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.wl-foot[hidden] { display: none !important; }
+.wl-faces { display: flex; }
+.wl-face {
+  width: 34px; height: 34px; border-radius: 999px; border: 3px solid #fff;
+  overflow: hidden;   /* postavička vyplní kolečko a hrany se oříznou */
+  display: flex; align-items: center; justify-content: center;
+}
+.wl-face svg { width: 100%; height: 100%; display: block; }
+.wl-face-t { fill: #fff; }                    /* tělo a hlava */
+.wl-face-v { fill: #2E3457; }                 /* vlasy — plná tmavá, průsvitná by se na třech různých pozadích chovala pokaždé jinak */
+/* Tři odlišné odstíny, jinak stoh splyne v jednu skvrnu. První nahoře —
+   při opačném pořadí každý překryje předchozí a stoh vypadá sekaný. */
+/* Barvu pozadí nese samotný obrázek (mění se s postavičkou), kolečko drží
+   jen pořadí — první nahoře, jinak každý překryje předchozí a stoh vypadá
+   sekaný. Barvy tady zůstávají jako záloha, kdyby JS nedoběhl. */
+.wl-face:nth-child(1) { z-index: 3; background: var(--primary); }
+.wl-face:nth-child(2) { z-index: 2; background: #F5B301; }
+.wl-face:nth-child(3) { z-index: 1; background: #E2564A; }
+.wl-face + .wl-face { margin-left: -11px; }
+.wl-foot-t { font-size: 14px; color: #5B6488; }
+.wl-foot-t b { font-weight: 700; color: #14162b; }
+
+/* ── Krok 2 a 3 ── */
+.wl-ok {
+  width: 78px; height: 78px; border-radius: 999px; background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+}
+.wl-pos {
+  display: flex; align-items: baseline; gap: 8px; background: #fff;
+  border: 1px solid #edf0f7; border-radius: 999px; padding: 10px 18px;
+}
+.wl-pos[hidden] { display: none !important; }
+.wl-pos-v { font-size: 19px; font-weight: 900; color: var(--primary); letter-spacing: -.03em; }
+.wl-pos-k { font-size: 13.5px; font-weight: 600; color: #5B6488; }
+
+.wl-acc {
+  width: 100%; max-width: 520px; background: #fff; border: 1px solid #e4e8f5;
+  box-shadow: 0 14px 40px -22px rgba(0,8,60,.45);
+  border-radius: 22px; overflow: hidden; text-align: left;
+}
+.wl-acc-hd {
+  display: flex; align-items: center; gap: 14px; width: 100%; border: 0; background: none;
+  font-family: var(--font-sans); text-align: left; padding: 20px 22px; cursor: pointer;
+}
+.wl-acc-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.wl-acc-n { font-size: 17px; font-weight: 800; color: #14162b; letter-spacing: -.02em; }
+.wl-acc-s { font-size: 13px; color: #5B6488; }
+.wl-acc-i {
+  width: 40px; height: 40px; flex: none; border-radius: 14px; background: #e9edff;
+  color: var(--primary); display: flex; align-items: center; justify-content: center;
+}
+.wl-acc-cv { flex: none; color: #5B6488; transition: transform .26s cubic-bezier(.4,0,.2,1); }
+.wl-acc[data-open] .wl-acc-cv { transform: rotate(90deg); }
+/* max-height místo height: obsah nemá předem známou výšku, tak se animuje
+   proti naměřené hodnotě a po dojetí se uvolní, ať se vejdou i chybové hlášky. */
+.wl-acc-bd { overflow: hidden; max-height: 0; transition: max-height .3s cubic-bezier(.4,0,.2,1); }
+.wl-acc-pd { padding: 2px 22px 22px; display: flex; flex-direction: column; gap: 16px; }
+.wl-hr { height: 1px; background: #edf0f7; }
+
+.wl-adv { display: flex; flex-direction: column; gap: 10px; }
+.wl-adv-i { position: relative; padding-left: 26px; font-size: 14px; line-height: 1.5; color: #14162b; }
+.wl-adv-i::before {
+  content: ""; position: absolute; left: 6px; top: 8px; width: 7px; height: 7px;
+  border-radius: 999px; background: var(--primary);
+}
+
+.wl-f  { display: flex; flex-direction: column; gap: 13px; }
+.wl-lb { display: flex; flex-direction: column; gap: 7px; }
+.wl-lb-t { font-size: 13px; font-weight: 700; color: #14162b; }
+.wl-fi {
+  width: 100%; font-family: var(--font-sans); font-size: 16px; font-weight: 500; color: #14162b;
+  background: #f7f8fc; border: 1.5px solid #e4e8f5; border-radius: 14px; padding: 15px 16px;
+  outline: none; transition: border-color .18s, background-color .18s;
+}
+.wl-fi::placeholder { color: #5B6488; }
+.wl-fi:focus { border-color: var(--primary); background: #fff; }
+.wl-fi[aria-invalid="true"] { border-color: #E2564A; background: #fff; }
+.wl-err2 { font-size: 12.5px; font-weight: 600; color: #E2564A; }
+.wl-mail {
+  font-size: 14px; font-weight: 700; color: #14162b; background: #f7f8fc;
+  border: 1px solid #e4e8f5; border-radius: 12px; padding: 13px 15px; word-break: break-all;
+}
+.wl-sub {
+  width: 100%; font-family: var(--font-sans); font-size: 16.5px; font-weight: 800; color: #fff;
+  background: var(--primary); border: 0; border-radius: 15px; padding: 17px; cursor: pointer;
+  transition: background-color .18s, opacity .18s;
+}
+.wl-sub:hover { background: #0014A3; }
+.wl-sub:disabled { opacity: .6; cursor: default; }
+
+@media (max-width: 620px) {
+  .wl-row { flex-direction: column; }
+  .wl-go { text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wl-krok { animation: none; }
+  .wl-acc-bd, .wl-acc-cv { transition: none; }
+  /* Rozmazání necháme napevno — bez něj by karta stála na plném nadpisu
+     a nešlo by ji přečíst — ale nesmí se hýbat se scrollem. */
+  .hero-main { filter: blur(10px); opacity: .5; transform: none; }
+  .wl-panel { transform: none; }
+}
+/* Nízké displeje: přilepená karta se musí vejít i s klávesnicí. */
+@media (max-height: 720px) {
+  .wl-krok { gap: 16px; }
+  .wl-mark { font-size: clamp(36px, 7vw, 54px); }
 }
 
 /* ═══════════ REFERENCE — galerie recenzí (stejný jazyk jako galerie na /lide) ═══════════ */
