@@ -244,9 +244,8 @@
     lista = el(
       '<div class="mk-ck" role="region" aria-label="Nastavení cookies">' +
         '<div class="mk-ck__body">' +
-          '<p class="mk-ck__t">Vedle nezbytných cookies bychom rádi měřili návštěvnost webu a pamatovali si tvá nastavení v aplikaci. ' +
-            'Bez tvého souhlasu nic z toho nespustíme. ' +
-            '<a href="' + ODKAZY.cookies + '">Zásady cookies</a> · <a href="' + ODKAZY.soukromi + '">Ochrana osobních údajů</a></p>' +
+          '<p class="mk-ck__t">Používáme cookies na měření návštěvnosti a zapamatování nastavení — jen s tvým souhlasem. ' +
+            '<a href="' + ODKAZY.cookies + '">Zásady cookies</a></p>' +
           '<div class="mk-ck__row">' +
             '<button class="mk-ck__btn mk-ck__btn--reject" type="button" data-akce="odmitnout">Odmítnout vše</button>' +
             '<button class="mk-ck__btn mk-ck__btn--accept" type="button" data-akce="prijmout">Přijmout vše</button>' +
