@@ -59,6 +59,8 @@ body { padding-bottom: var(--mk-ck-h, 0); }
   text-decoration: underline; text-underline-offset: 3px; transition: color .18s;
 }
 .mk-ck__more:hover, .mk-ck__link:hover { color: var(--mk-ink); }
+/* Podrobné nastavení stojí ve větě hned za odkazem na zásady, stejná velikost jako text */
+.mk-ck__t .mk-ck__more { font-size: inherit; line-height: inherit; vertical-align: baseline; }
 .mk-ck :focus-visible, .mk-pf :focus-visible { outline: 2.5px solid var(--mk-blue); outline-offset: 2px; }
 
 @keyframes mk-ck-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
@@ -137,7 +139,6 @@ body { padding-bottom: var(--mk-ck-h, 0); }
   .mk-ck__t { flex: none; }     /* ve sloupci by flex-basis 300px udělal 300 px vysoký odstavec */
   .mk-ck__row { flex-direction: column; }
   .mk-ck__btn { width: 100%; padding: 15px 20px; }
-  .mk-ck__more { text-align: center; }
   .mk-pf { padding: 0; }
   .mk-pf__box { max-width: none; max-height: 92vh; border-radius: 24px 24px 0 0; border-bottom: 0; }
 }
