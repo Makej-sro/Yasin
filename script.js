@@ -1422,10 +1422,111 @@ function showToast(msg) {
     box.textContent = text; box.hidden = false; pole.focus();
     return false;
   }
-  [['wl-email', 'wl-e1'], ['wl-name', 'wl-e2'], ['wl-pw', 'wl-e3'], ['wl-pw2', 'wl-e4']].forEach(([a, b]) => {
+  [['wl-email', 'wl-e1'], ['wl-name', 'wl-e2'], ['wl-pw', 'wl-e3'], ['wl-pw2', 'wl-e4'], ['wl-ico', 'wl-e5']].forEach(([a, b]) => {
     const pole = $(a), box = $(b);
     if (!pole || !box) return;
-    pole.addEventListener('input', () => { pole.removeAttribute('aria-invalid'); box.hidden = true; });
+    pole.addEventListener('input', () => {
+      pole.removeAttribute('aria-invalid'); box.hidden = true;
+      if (a !== 'wl-email') obrysy();
+    });
+  });
+
+  // Psací stroj v nadpisu. Kurzor za dopsaným textem bliká dál — mizí jen tam,
+  // kde by po dopsání překážel (krok 3). Kdo má vypnuté animace, dostane text
+  // rovnou celý; dopisování po znacích je pro něj přesně ta věc, co vadí.
+  let psaciCasovac = null;
+  function napis(text, kamId, kurzorId, ponechatKurzor) {
+    const kam = $(kamId), kurzor = $(kurzorId);
+    clearInterval(psaciCasovac);
+    if (!kam) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      kam.textContent = text;
+      if (kurzor) kurzor.hidden = true;
+      return;
+    }
+    kam.textContent = '';
+    if (kurzor) kurzor.hidden = false;
+    let i = 0;
+    psaciCasovac = setInterval(() => {
+      kam.textContent = text.slice(0, ++i);
+      if (i < text.length) return;
+      clearInterval(psaciCasovac);
+      if (kurzor && !ponechatKurzor) kurzor.hidden = true;
+    }, 46);
+  }
+
+  function typUctu() {
+    const zvoleny = document.querySelector('input[name="wl-typ"]:checked');
+    return zvoleny ? zvoleny.value : 'fyzicka';
+  }
+
+  // IČO má osmou číslici kontrolní (váhy 8..2, modulo 11). Kontrolovat jen
+  // „osm číslic" by pustilo každý překlep — a špatné IČO se pak tahá celou
+  // fakturací dál, protože si ho nikdo znovu neověřuje.
+  function icoOk(hodnota) {
+    const c = String(hodnota || '').trim();
+    if (!/^\d{8}$/.test(c)) return false;
+    let soucet = 0;
+    for (let i = 0; i < 7; i++) soucet += Number(c[i]) * (8 - i);
+    const zbytek = soucet % 11;
+    const kontrolni = zbytek === 0 ? 1 : zbytek === 1 ? 0 : 11 - zbytek;
+    return Number(c[7]) === kontrolni;
+  }
+
+  // Přepnutí typu ukáže / schová IČO. Schované pole se zároveň vyprázdní,
+  // ať se u fyzické osoby neodešle hodnota, kterou už nikdo nevidí.
+  // `hidden` v šabloně je jen pro případ, že by JS nedoběhl. Jakmile běží,
+  // sundáme ho a zavřený stav drží CSS — jinak by nebylo co animovat.
+  $('wl-ico-box').hidden = false;
+  $('wl-ico').tabIndex = -1;
+  $('wl-ico').setAttribute('aria-hidden', 'true');
+
+  document.querySelectorAll('input[name="wl-typ"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const firma = typUctu() === 'pravnicka';
+      // Prvek zůstává v rozvržení pořád; přepíná se jen `data-open`, na kterém
+      // visí animace. Přes `hidden` (display:none) by se nedalo animovat nic.
+      if (firma) $('wl-ico-box').setAttribute('data-open', '');
+      else $('wl-ico-box').removeAttribute('data-open');
+      $('wl-name').placeholder = firma ? 'Název firmy' : 'Jméno a příjmení';
+      $('wl-name').setAttribute('aria-label', firma ? 'Název firmy' : 'Jméno a příjmení');
+      // Schované pole nesmí zůstat ve fokus-orderu ani pro čtečku.
+      $('wl-ico').tabIndex = firma ? 0 : -1;
+      $('wl-ico').setAttribute('aria-hidden', firma ? 'false' : 'true');
+      if (!firma) { $('wl-ico').value = ''; $('wl-e5').hidden = true; $('wl-ico').removeAttribute('aria-invalid'); }
+      obrysy();
+      // Rozbalený formulář si drží naměřenou výšku; po přidání pole ji musíme
+      // uvolnit, jinak by se IČO schovalo za spodní hranou.
+      if (acc.hasAttribute('data-open')) accBd.style.maxHeight = 'none';
+    });
+  });
+
+  // Zelený obrys až když je pole opravdu v pořádku, ne po prvním znaku —
+  // jinak by potvrzovalo i rozepsanou hloupost.
+  function obrysy() {
+    const jmeno = ($('wl-name').value || '').trim();
+    const h1 = $('wl-pw').value, h2 = $('wl-pw2').value;
+    const firma = typUctu() === 'pravnicka';
+    const stav = {
+      // U firmy stačí název, mezera se po něm chtít nedá („Alza" je platný název).
+      'wl-name': firma ? jmeno.length >= 2 : (jmeno.length >= 3 && jmeno.indexOf(' ') > 0),
+      'wl-ico':  firma && icoOk($('wl-ico').value),
+      'wl-pw':   h1.length >= 8,
+      'wl-pw2':  h2.length >= 8 && h2 === h1,
+    };
+    Object.keys(stav).forEach(id => {
+      if (stav[id]) $(id).setAttribute('data-ok', '');
+      else $(id).removeAttribute('data-ok');
+    });
+  }
+
+  // Zobrazit / skrýt heslo
+  document.querySelectorAll('.wl-peek').forEach(b => {
+    b.addEventListener('click', () => {
+      const pole = $(b.dataset.peek), skryte = pole.type === 'password';
+      pole.type = skryte ? 'text' : 'password';
+      b.textContent = skryte ? 'Skrýt' : 'Zobrazit';
+    });
   });
 
   const hlavicky = {
@@ -1456,29 +1557,27 @@ function showToast(msg) {
   (function obnov() {
     const p = nactiPamet();
     if (!p || !p.email) return;
-    $('wl-shown').textContent = p.email;
     $('wl-mail2').textContent = p.email;
-    // „Díky" se hodí bezprostředně po odeslání, ne za týden — tam už to zní,
-    // jako by appka zapomněla, co se stalo.
-    $('wl-h2').textContent = 'Na seznamu už jsi.';
+    // Po týdnu se nedopisuje ani neděkuje. „Děkujeme za zaslání" dává smysl
+    // vteřinu po odeslání; při návratu už to zní, jako by web zapomněl.
+    $('wl-typed').textContent = 'Na seznamu už jsi.';
+    $('wl-cur2').hidden = true;
+    $('wl-lead2').innerHTML = 'Zapsali jsme si <b>' + p.email.replace(/[<>&]/g, '') + '</b>. Dáme ti vědět, až appku spustíme.';
     $('wl-jiny').hidden = false;
     if (p.ucet) {
       // Účet už má → nabízet mu ho podruhé nemá smysl.
       $('wl-acc').hidden = true;
-      $('wl-fine').textContent = 'Účet už máš založený. Dáme vědět, až spustíme.';
+      $('wl-or').hidden = true;
     }
-    // Pořadí neukazujeme: server vrací aktuální počet zapsaných, ne jeho místo.
-    // Po týdnu by to bylo cizí číslo vydávané za jeho.
     ukaz('wl-2', true);
   })();
 
   $('wl-jiny').addEventListener('click', () => {
     zapomen();
     $('wl-email').value = '';
-    $('wl-h2').textContent = 'Díky, jsi na seznamu.';
     $('wl-jiny').hidden = true;
     $('wl-acc').hidden = false;
-    $('wl-fine').textContent = 'Účet si můžeš založit i později z e-mailu, který ti pošleme.';
+    $('wl-or').hidden = false;
     ukaz('wl-1');
     $('wl-email').focus();
   });
@@ -1506,21 +1605,16 @@ function showToast(msg) {
     btn.disabled = false;
 
     zapamatuj({ email: email, kdy: Date.now() });
-    $('wl-shown').textContent = email;
     $('wl-mail2').textContent = email;
-    $('wl-h2').textContent = 'Díky, jsi na seznamu.';
+    $('wl-lead2').textContent = 'Dáme ti vědět, až appku spustíme.';
     ukaz('wl-2');
-
-    // Pořadí = počet záznamů po zápisu. Ptáme se znovu, ať je to skutečné číslo.
-    pocetLidi().then(n => {
-      if (n == null) return;
-      $('wl-pos').textContent = cislo(n) + '.';
-      $('wl-pos-box').hidden = false;
-    });
+    napis('Děkujeme za zaslání.', 'wl-typed', 'wl-cur2', true);
   });
 
   // ── Rozbalovací „Chci výhody" ────────────────────────────────────────
   const acc = $('wl-acc'), accBtn = $('wl-acc-btn'), accBd = $('wl-acc-bd');
+  const orBox = document.querySelector('.wl-or');
+  if (orBox) orBox.id = 'wl-or';
   function zavri() {
     accBd.style.maxHeight = accBd.scrollHeight + 'px';   // z 'none' na měřenou, jinak není co animovat
     requestAnimationFrame(() => { accBd.style.maxHeight = '0px'; });
@@ -1535,7 +1629,7 @@ function showToast(msg) {
     accBd.removeAttribute('inert');
     setTimeout(() => {
       accBd.style.maxHeight = 'none';   // uvolnit, ať se vejdou i chybové hlášky
-      $('wl-name').focus();
+      $('wl-name').focus({ preventScroll: true });
     }, 320);
   }
   accBtn.addEventListener('click', () => (acc.hasAttribute('data-open') ? zavri() : otevri()));
@@ -1545,7 +1639,15 @@ function showToast(msg) {
     ev.preventDefault();
     const jmeno = ($('wl-name').value || '').trim();
     const heslo = $('wl-pw').value, heslo2 = $('wl-pw2').value;
-    if (jmeno.length < 3)   return chyba($('wl-name'), $('wl-e2'), 'Napiš jméno a příjmení.');
+    const firma = typUctu() === 'pravnicka';
+    const ico = ($('wl-ico').value || '').trim();
+    if (firma) {
+      if (jmeno.length < 2) return chyba($('wl-name'), $('wl-e2'), 'Napiš název firmy.');
+      if (!/^\d{8}$/.test(ico)) return chyba($('wl-ico'), $('wl-e5'), 'IČO má osm číslic.');
+      if (!icoOk(ico))      return chyba($('wl-ico'), $('wl-e5'), 'Tohle IČO neexistuje — zkontroluj číslice.');
+    } else if (jmeno.length < 3 || jmeno.indexOf(' ') < 1) {
+      return chyba($('wl-name'), $('wl-e2'), 'Napiš jméno a příjmení.');
+    }
     if (heslo.length < 8)   return chyba($('wl-pw'),   $('wl-e3'), 'Heslo musí mít aspoň 8 znaků.');
     if (heslo !== heslo2)   return chyba($('wl-pw2'),  $('wl-e4'), 'Hesla se neshodují.');
 
@@ -1557,7 +1659,11 @@ function showToast(msg) {
         method: 'POST', headers: hlavicky,
         body: JSON.stringify({
           email: $('wl-mail2').textContent, password: heslo,
-          data: { name: jmeno, role: 'worker', zdroj: 'cekaci-list' },
+          // Právnická osoba = zaměstnavatel, fyzická = brigádník. Stejné rozdělení,
+          // jaké používá běžná registrace webu (role v user_metadata).
+          data: firma
+            ? { name: jmeno, role: 'employer', company_name: jmeno, ico: ico, zdroj: 'cekaci-list' }
+            : { name: jmeno, role: 'worker', zdroj: 'cekaci-list' },
         }),
       });
       const odpoved = await r.json().catch(() => ({}));
@@ -1577,5 +1683,7 @@ function showToast(msg) {
     zapamatuj({ ucet: true });
     $('wl-hi').textContent = jmeno.split(' ')[0];
     ukaz('wl-3');
+    // Nadpis se dopisuje až po dokreslení fajfky, jinak by se to prali o pozornost.
+    setTimeout(() => napis('Účet je založený.', 'wl-typed3', 'wl-cur3'), 900);
   });
 })();

@@ -40,7 +40,7 @@
   <!-- lokálně a synchronně: přes CDN s async se komponenta upgradovala pozdě a ikony posouvaly layout -->
   <script src="/iconify-icon.min.js?v=3.0.0"></script>
   <link rel="preload" href="/fonts/LeagueSpartan-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v=118" />
+  <link rel="stylesheet" href="style.css?v=121" />
 
   <!-- ═══════════ ÚVODNÍ OBRAZOVKA ═══════════
        Modrá plocha s ikonou, dokud se stránka nenačte. Třídu nasazuje skript
@@ -271,59 +271,70 @@
 
         <!-- 2 · díky + volitelný účet -->
         <div class="wl-krok" id="wl-2" hidden>
-          <span class="wl-ok" aria-hidden="true"><svg width="32" height="25" viewBox="0 0 30 24"><path d="M2.5 12.5 10.5 20.5 27.5 3" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <div class="wl-blok">
-            <h2 class="wl-h2" id="wl-h2">Díky, jsi na seznamu.</h2>
-            <p class="wl-lead">Ozveme se na <b id="wl-shown">—</b>, jakmile appku spustíme.</p>
-            <span class="wl-pos" id="wl-pos-box" hidden><span class="wl-pos-v" id="wl-pos">—</span><span class="wl-pos-k">v řadě</span></span>
+            <h2 class="wl-h2"><span id="wl-typed"></span><span class="wl-cur" id="wl-cur2" aria-hidden="true"></span></h2>
+            <p class="wl-lead wl-rise" id="wl-lead2" style="animation-delay:1.5s">Dáme ti vědět, až appku spustíme.</p>
           </div>
 
-          <div class="wl-acc" id="wl-acc">
-            <button class="wl-acc-hd" id="wl-acc-btn" type="button" aria-expanded="false" aria-controls="wl-acc-bd">
-              <span class="wl-acc-i" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 20 20"><path d="M2.6 7.6h14.8v9.2a1.6 1.6 0 0 1-1.6 1.6H4.2a1.6 1.6 0 0 1-1.6-1.6V7.6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M1.6 4.6h16.8v3H1.6zM10 4.6v13.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 4.6S9.2 1.4 6.8 1.4a2 2 0 0 0 0 3.2H10Zm0 0s.8-3.2 3.2-3.2a2 2 0 0 1 0 3.2H10Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
-              <span class="wl-acc-t">
-                <span class="wl-acc-n">Chci výhody</span>
-                <span class="wl-acc-s">Založ si účet a dostaneš je při spuštění</span>
-              </span>
-              <svg class="wl-acc-cv" width="8" height="14" viewBox="0 0 8 14" aria-hidden="true"><path d="M1.5 1.5 6.5 7l-5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
+          <div class="wl-or wl-rise" style="animation-delay:1.74s"><span class="wl-or-t">nebo</span></div>
 
+          <div class="wl-acc wl-rise" id="wl-acc" style="animation-delay:1.82s">
+            <button class="wl-prize" id="wl-acc-btn" type="button" aria-expanded="false" aria-controls="wl-acc-bd">
+              Založ si účet a získej odměnu
+            </button>
             <div class="wl-acc-bd" id="wl-acc-bd" inert>
               <div class="wl-acc-pd">
-                <div class="wl-adv">
-                  <span class="wl-adv-i">Přednostní přístup, než appku pustíme veřejně</span>
-                  <span class="wl-adv-i">Tři měsíce bez provize z odpracovaných směn</span>
-                  <span class="wl-adv-i">Odznak zakládajícího člena na profilu</span>
-                </div>
-                <div class="wl-hr"></div>
-
                 <form class="wl-f" id="wl-form2" novalidate>
-                  <label class="wl-lb">
-                    <span class="wl-lb-t">E-mail</span>
-                    <span class="wl-mail" id="wl-mail2">—</span>
-                  </label>
-                  <label class="wl-lb">
-                    <span class="wl-lb-t">Jméno a příjmení</span>
-                    <input class="wl-fi" id="wl-name" type="text" autocomplete="name" placeholder="Jan Novák" aria-describedby="wl-e2">
+                  <!-- Přepínač typu účtu. Právnická osoba dostane navíc pole na IČO —
+                       schované, ne jen zašedlé: prázdná kolonka, která se netýká
+                       fyzické osoby, formulář jen prodlužuje. -->
+                  <div class="wl-seg" role="radiogroup" aria-label="Typ účtu">
+                    <label><input type="radio" name="wl-typ" value="fyzicka" checked><span>Fyzická osoba</span></label>
+                    <label><input type="radio" name="wl-typ" value="pravnicka"><span>Právnická osoba</span></label>
+                  </div>
+                  <!-- E-mail je potvrzený z prvního kroku, proto má zelený obrys hned -->
+                  <span class="wl-mail" id="wl-mail2">—</span>
+                  <div class="wl-lb">
+                    <span class="wl-pole">
+                      <input class="wl-fi" id="wl-name" type="text" autocomplete="name"
+                             placeholder="Jméno a příjmení" aria-label="Jméno a příjmení" aria-describedby="wl-e2">
+                    </span>
                     <span class="wl-err2" id="wl-e2" role="alert" hidden></span>
-                  </label>
-                  <label class="wl-lb">
-                    <span class="wl-lb-t">Heslo</span>
-                    <input class="wl-fi" id="wl-pw" type="password" autocomplete="new-password" placeholder="Aspoň 8 znaků" aria-describedby="wl-e3">
+                  </div>
+                  <!-- Obal navíc kvůli plynulému vyjetí: animovat se dá přechod
+                       mřížky z 0fr na 1fr, ale vnitřek k tomu musí mít vlastní
+                       prvek s overflow: hidden, jinak obsah při zavírání přeteče. -->
+                  <div class="wl-ico-box" id="wl-ico-box" hidden>
+                    <div class="wl-ico-in">
+                      <span class="wl-pole">
+                        <input class="wl-fi" id="wl-ico" type="text" inputmode="numeric" maxlength="8"
+                               autocomplete="off" placeholder="IČO" aria-label="IČO" aria-describedby="wl-e5">
+                      </span>
+                      <span class="wl-err2" id="wl-e5" role="alert" hidden></span>
+                    </div>
+                  </div>
+                  <div class="wl-lb">
+                    <span class="wl-pole">
+                      <input class="wl-fi wl-fi--pw" id="wl-pw" type="password" autocomplete="new-password"
+                             placeholder="Heslo" aria-label="Heslo" aria-describedby="wl-e3">
+                      <button class="wl-peek" type="button" data-peek="wl-pw" aria-controls="wl-pw">Zobrazit</button>
+                    </span>
                     <span class="wl-err2" id="wl-e3" role="alert" hidden></span>
-                  </label>
-                  <label class="wl-lb">
-                    <span class="wl-lb-t">Heslo znovu</span>
-                    <input class="wl-fi" id="wl-pw2" type="password" autocomplete="new-password" placeholder="Pro ověření" aria-describedby="wl-e4">
+                  </div>
+                  <div class="wl-lb">
+                    <span class="wl-pole">
+                      <input class="wl-fi wl-fi--pw" id="wl-pw2" type="password" autocomplete="new-password"
+                             placeholder="Heslo znovu" aria-label="Heslo znovu" aria-describedby="wl-e4">
+                      <button class="wl-peek" type="button" data-peek="wl-pw2" aria-controls="wl-pw2">Zobrazit</button>
+                    </span>
                     <span class="wl-err2" id="wl-e4" role="alert" hidden></span>
-                  </label>
+                  </div>
                   <button class="wl-sub" type="submit" id="wl-sub">Založit účet</button>
                 </form>
               </div>
             </div>
           </div>
 
-          <span class="wl-fine" id="wl-fine">Účet si můžeš založit i později z e-mailu, který ti pošleme.</span>
           <!-- Únikovka pro překlep v adrese: bez ní by se člověk, který se zapsal
                s chybou, do formuláře už nikdy nedostal. -->
           <button class="wl-jiny" id="wl-jiny" type="button" hidden>Zapsat jiný e-mail</button>
@@ -331,11 +342,18 @@
 
         <!-- 3 · účet hotov -->
         <div class="wl-krok" id="wl-3" hidden>
-          <span class="wl-ok" aria-hidden="true"><svg width="32" height="25" viewBox="0 0 30 24"><path d="M2.5 12.5 10.5 20.5 27.5 3" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="wl-ok" aria-hidden="true">
+            <span class="wl-ok-halo"></span>
+            <svg width="78" height="78" viewBox="0 0 78 78">
+              <circle class="wl-ok-fill" cx="39" cy="39" r="34.5"/>
+              <circle class="wl-ok-ring" cx="39" cy="39" r="34.5" fill="none" stroke-width="4" stroke-linecap="round"/>
+              <path class="wl-ok-chk" d="M24 40.4 34 50 55 28.4" fill="none" stroke="#fff" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
           <div class="wl-blok">
-            <h2 class="wl-h2">Účet je založený.</h2>
-            <p class="wl-lead">Vítej, <b id="wl-hi">—</b>. Výhody máš přiřazené k účtu — dáme vědět, až spustíme.</p>
-            <span class="wl-pos"><span class="wl-pos-k">Zakládající člen</span></span>
+            <h2 class="wl-h2"><span id="wl-typed3"></span><span class="wl-cur" id="wl-cur3" aria-hidden="true" hidden></span></h2>
+            <p class="wl-lead wl-rise" style="animation-delay:1.86s">Vítej, <b id="wl-hi">—</b>. Teď už máš všechno, víc se dozvíš v e-mailu.</p>
+            <span class="wl-pos wl-rise" style="animation-delay:1.98s"><span class="wl-pos-k">Zakládající člen</span></span>
           </div>
         </div>
 
@@ -648,6 +666,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="script.js?v=46"></script>
+  <script src="script.js?v=49"></script>
 </body>
 </html>
