@@ -253,6 +253,7 @@ img { max-width: 100%; display: block; }
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: clamp(96px, 12vh, 128px) 40px 0; text-align: center;
+  position: relative; z-index: 1;   /* nad aurorou (positioned, z-index 0) */
 }
 /* overflow:hidden dělá masku, pod kterou nadpis vyjíždí; padding-bottom
    nechává dole místo pro dotažnice, jinak by je maska uřízla */
@@ -909,7 +910,7 @@ img { max-width: 100%; display: block; }
 }
 
 /* ═══════════ REFERENCE — galerie recenzí (stejný jazyk jako galerie na /lide) ═══════════ */
-#makaci { padding: 118px 0 44px; background: #eceef3; overflow: hidden; }
+#makaci { padding: 118px 0 44px; background: var(--pl-canvas); overflow: hidden; }
 /* panel jde přes celou šířku, aby se velké slovo v pozadí mohlo rozjet až k okrajům */
 #makaci .container { width: 100%; max-width: none; padding: 0; }
 /* nadpis sekce — stejné hodnoty jako .vx-sec-head / .vx-h2 na /lide */
@@ -1017,7 +1018,7 @@ img { max-width: 100%; display: block; }
 }
 
 /* ═══════════ DOWNLOAD ═══════════ */
-#download { padding: 64px 0; background: #eef1fb; }
+#download { padding: 64px 0; background: var(--pl-canvas); }
 .download-stage { position: relative; max-width: 900px; margin: 0 auto; }
 .download-hero-img { display: block; width: 100%; max-width: 1120px; height: auto; margin: 0 auto; }
 
@@ -1092,33 +1093,7 @@ img { max-width: 100%; display: block; }
 .store-btn strong { display: block; font-size: 1rem; text-align: left; color: #0f1222; }
 .store-btn--soon { opacity: .55; cursor: not-allowed; pointer-events: none; }
 
-/* ═══════════ COOKIE BANNER ═══════════ */
-#cookie-banner {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
-  background: rgba(22,22,59,.97);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(208,208,255,.12);
-  padding: 20px 24px;
-  transform: translateY(100%);
-  transition: transform 400ms cubic-bezier(0.23,1,0.32,1);
-}
-#cookie-banner.visible { transform: translateY(0); }
-.cookie-inner {
-  max-width: 1200px; margin: 0 auto;
-  display: flex; align-items: center; gap: 24px;
-  flex-wrap: wrap;
-}
-.cookie-text { flex: 1; min-width: 260px; font-size: .875rem; color: rgba(255,255,255,.75); line-height: 1.6; }
-.cookie-text a { color: var(--secondary); }
-.cookie-actions { display: flex; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
-.cookie-btn {
-  padding: 9px 20px; border-radius: 10px; font-size: .875rem; font-weight: 600;
-  cursor: pointer; border: none; font-family: var(--font-sans);
-  transition: opacity .15s, transform .15s;
-}
-.cookie-btn:hover { opacity: .85; }
-.cookie-btn-accept { background: linear-gradient(135deg,var(--primary),var(--accent)); color: #fff; }
-.cookie-btn-reject { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); color: rgba(255,255,255,.8); }
+/* Lišta cookies: consent.css + consent.js (hlavička každé stránky). */
 .download-note { color: #8a93a8; font-size: .85rem; font-weight: 600; }
 
 /* ═══════════ FOOTER ═══════════ */
@@ -2348,3 +2323,97 @@ iconify-icon[width="22"] { width: 22px; height: 22px; }
 iconify-icon[width="26"] { width: 26px; height: 26px; }
 iconify-icon[width="32"] { width: 32px; height: 32px; }
 iconify-icon[width="56"] { width: 56px; height: 56px; }
+
+/* ═══════════ POZADÍ — JEDNO PLÁTNO (2026) ═══════════
+   Jeden systém pozadí pro celý web: bílé hero se „zářící aurorou" (tři pomalu
+   plující modré skvrny), sekce střídají bílou a jediné plátno --pl-canvas,
+   na stránku jeden plochý modrý blok a modrá patička. Žádné pruhové přechody
+   modrá→bílá. Všechny dřívější šedé (#eceef3, #f6f7fb, #eef1fb, #f4f5fb,
+   #f4f4fc) jsou sjednocené na --pl-canvas — kdo přidává sekci, bere tuhle. */
+:root { --pl-canvas: #F5F6FA; }
+
+/* Aurora: tři měkké skvrny. Měkkost dělá sám radiální přechod (dojede do
+   nuly přesně na hraně boxu), žádný filter: blur — Chrome u vrstvy s blur
+   a border-radius ořezává rozmazaný okraj až po rozmazání a kolem skvrny
+   zůstal ostrý kruh. Bez filtru je to i levné: animuje se jen transform.
+   Rodič musí být position: relative a jeho obsah positioned (z-index ≥ 1),
+   jinak by skončil pod ní — aurora je positioned s z-index 0. */
+.aurora { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+.aurora i { position: absolute; display: block; will-change: transform; }
+.aurora i:nth-child(1) {
+  width: max(620px, 64vw); height: max(500px, 50vw); left: -16vw; top: -20vw;
+  background: radial-gradient(closest-side, rgba(0,32,246,.26) 0%, rgba(0,32,246,.15) 34%, rgba(0,32,246,.05) 68%, rgba(0,32,246,0) 100%);
+  animation: plPluj1 26s ease-in-out infinite alternate;
+}
+.aurora i:nth-child(2) {
+  width: max(560px, 58vw); height: max(620px, 62vw); right: -18vw; top: -4vh;
+  background: radial-gradient(closest-side, rgba(124,141,255,.30) 0%, rgba(124,141,255,.17) 34%, rgba(124,141,255,.06) 68%, rgba(124,141,255,0) 100%);
+  animation: plPluj2 34s ease-in-out infinite alternate;
+}
+.aurora i:nth-child(3) {
+  width: max(520px, 54vw); height: max(360px, 36vw); left: 28vw; bottom: -18vw;
+  background: radial-gradient(closest-side, rgba(0,32,246,.16) 0%, rgba(0,32,246,.09) 34%, rgba(0,32,246,.03) 68%, rgba(0,32,246,0) 100%);
+  animation: plPluj3 40s ease-in-out infinite alternate;
+}
+@keyframes plPluj1 { to { transform: translate3d(16vw, 12vh, 0) scale(1.15); } }
+@keyframes plPluj2 { to { transform: translate3d(-14vw, 18vh, 0) scale(.9); } }
+@keyframes plPluj3 { to { transform: translate3d(-18vw, -10vh, 0) scale(1.2); } }
+@media (max-width: 700px) {
+  .aurora i:nth-child(3) { display: none; }
+}
+
+/* ── Vyjetí obsahu do popředí přes přilepené hero ────────────────────────
+   Stejná mechanika jako čekací list na hlavní straně: hero se přilepí,
+   rozmaže a zesvětlí (--p řídí popredi() ve script.js), první sekce přes něj
+   vyjede jako list se zaoblenou hranou. Na /lide, /hledam-si-praci a
+   /pro-zamestnavatele je .uvod obal hera + prvních sekcí; ty musí mít
+   neprůhledné pozadí, jinak by skrz ně hero prosvítalo. */
+.uvod > :not(:first-child) { position: relative; z-index: 5; }   /* nad notebookem (.mkj-visual má 3) */
+.uvod > .vx-shell, .uvod > .emp-hero-blue {
+  position: sticky; top: calc(-1 * var(--uvod-presah, 0px));
+  height: 100vh; height: var(--hero-h, 100vh); min-height: 0;
+}
+/* Hero vyšší než okno (/pro-zamestnavatele — notebook musí být celý vidět):
+   roste s obsahem. popredi() ve script.js změří, o kolik přesahuje okno
+   (--uvod-presah); o tolik se stránka nejdřív odroluje a teprve pak se hero
+   přilepí (záporný top nahoře) a začne rozmazávat. */
+#employers > .emp-hero-blue { height: auto; min-height: var(--hero-h, 100vh); }
+#employers .mkj-visual { padding-bottom: 56px; }   /* místo pro stín pod notebookem */
+.uvod > .vx-shell > .vx-frame { height: 100%; min-height: 0; }
+.uvod .vx-hero, .uvod .eh-head, .uvod .mkj-visual {
+  filter: blur(calc(var(--p, 0) * 16px));
+  opacity: calc(1 - var(--p, 0) * .45);
+  will-change: filter, opacity;
+}
+.uvod .vx-hero { transform: scale(calc(1 + var(--p, 0) * .06)); }
+.uvod[data-vzadu] .vx-hero, .uvod[data-vzadu] .eh-head { pointer-events: none; }
+.uvod > .vx-intro {
+  background: #fff;
+  border-radius: 32px 32px 0 0;
+  box-shadow: 0 -22px 60px -22px rgba(10,13,46,.22);
+}
+@media (max-width: 700px) { .uvod > .vx-intro { border-radius: 22px 22px 0 0; } }
+
+/* ── Plochý modrý blok ──────────────────────────────────────────────────
+   Jedna barva a měkké světlo shora místo šikmého přechodu. Sdílí to závěr
+   produktových stránek, citát na /o-nas i kontakt na /podpora. */
+.vx-close, .oc-quote, .sup-cards-wrap { position: relative; overflow: hidden; isolation: isolate; }
+.vx-close::before, .oc-quote::before, .sup-cards-wrap::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(60% 70% at 50% -12%, rgba(150,168,255,.42), rgba(150,168,255,0) 62%);
+}
+
+/* ── Navigace produktových stránek na bílém heru ────────────────────────
+   Barvy jako po odscrollování (.scrolled): modré logo, inkoustové odkazy,
+   hamburger tmavý. Když je menu otevřené, je pod ním tmavý panel → bílá. */
+.vx-nav .vx-burger { background: rgba(10,13,46,.06); border-color: rgba(10,13,46,.22); }
+.vx-nav .vx-burger span { background: #0a0d2e; }
+.vx-nav .vx-burger.open { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.34); }
+.vx-nav .vx-burger.open span { background: #fff; }
+.vx-nav:has(.vx-burger.open) .vx-logo { color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora i { animation: none; }
+  /* Sekce hero stejně zakryjí — bez pohybu není co rozmazávat. */
+  .uvod .vx-hero, .uvod .eh-head, .uvod .mkj-visual { filter: none; opacity: 1; transform: none; }
+}

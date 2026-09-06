@@ -774,30 +774,8 @@ function showToast(msg) {
   }, 4500);
 }
 
-// ═══════════ COOKIE CONSENT BANNER ═══════════
-(function () {
-  const COOKIE_KEY = 'makej-cookie-consent';
-  const banner = document.getElementById('cookie-banner');
-  if (!banner) return;
-
-  // Pokud uživatel už rozhodl, nezobrazuj banner
-  if (localStorage.getItem(COOKIE_KEY)) return;
-
-  // Zobraz banner s malým zpožděním (po načtení stránky)
-  setTimeout(() => banner.classList.add('visible'), 800);
-
-  document.getElementById('cookie-accept').addEventListener('click', () => {
-    localStorage.setItem(COOKIE_KEY, 'accepted');
-    if (window.gtag) gtag('consent', 'update', { analytics_storage: 'granted' });
-    banner.classList.remove('visible');
-  });
-
-  document.getElementById('cookie-reject').addEventListener('click', () => {
-    localStorage.setItem(COOKIE_KEY, 'rejected');
-    if (window.gtag) gtag('consent', 'update', { analytics_storage: 'denied' });
-    banner.classList.remove('visible');
-  });
-})();
+// ═══════════ COOKIE CONSENT ═══════════
+// Lišta a nastavení cookies žijí v consent.js (načítá ho hlavička každé stránky).
 
 // ═══════════ PEEKER (cursor-tracking face in login modal) ═══════════
 (function() {
@@ -1277,14 +1255,24 @@ function showToast(msg) {
   const uvod = document.querySelector('.uvod');
   if (!uvod) return;
   const korenu = document.documentElement;
-  let p = -1, ceka = false;
+  const hero = uvod.firstElementChild;
+  let p = -1, ceka = false, presah = 0, merit = true;
 
+  // Hero vyšší než okno (notebook na /pro-zamestnavatele): stránka se nejdřív
+  // odroluje, až je hero celé vidět, a teprve pak se přilepí (CSS má záporný
+  // top = --uvod-presah). O stejný kus se posouvá i start rozmazání, jinak by
+  // se hero rozmazávalo, ještě než ho návštěvník celé uvidí.
+  function zmer() {
+    presah = hero ? Math.max(0, hero.offsetHeight - window.innerHeight) : 0;
+    uvod.style.setProperty('--uvod-presah', presah + 'px');
+  }
   function prepocti() {
     ceka = false;
+    if (merit) { merit = false; zmer(); }
     // Rozmazání dojede za tři čtvrtiny obrazovky — to je zhruba chvíle, kdy
     // karta vyjíždí do popředí. Delší dráha působí, že se nic neděje.
     const draha = window.innerHeight * 0.75;
-    const nove = Math.min(1, Math.max(0, window.scrollY / draha));
+    const nove = Math.min(1, Math.max(0, (window.scrollY - presah) / draha));
     if (Math.abs(nove - p) < 0.004) return;
     p = nove;
     korenu.style.setProperty('--p', p.toFixed(3));
@@ -1292,9 +1280,11 @@ function showToast(msg) {
     else uvod.removeAttribute('data-vzadu');
   }
   function naScroll() { if (!ceka) { ceka = true; requestAnimationFrame(prepocti); } }
+  function naZmenu() { merit = true; naScroll(); }
 
   window.addEventListener('scroll', naScroll, { passive: true });
-  window.addEventListener('resize', naScroll, { passive: true });
+  window.addEventListener('resize', naZmenu, { passive: true });
+  window.addEventListener('load', naZmenu);   // po dotažení obrázků a fontů výška sedí
   prepocti();
 })();
 
