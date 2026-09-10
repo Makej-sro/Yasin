@@ -31,6 +31,12 @@ Po změně JSX **vždy bumpni `?v=N`** u daného souboru v `employer/index.html`
 
 ---
 
+## Předávka mezi Yasinem a Samem
+
+Co si má druhá strana vzít a co z toho pro ni plyne, s daty a novějším nahoře:
+**`PRO-SAMA.md`** (tenhle repo) pro web, **`DATABASE.md`** (repo mobilní appky)
+pro změny databáze. Tenhle soubor zůstává podrobný pracovní deník.
+
 ## Hotovo naposledy
 
 - **Čekací list: převzata Samova produkční verze — bez fyzická/právnická (Yasin)** (2026-09-10): dohodnuto, že v předregistraci se role neřeší. `index.html` + `script.js` vzaty z živého makej.eu: pryč přepínač `.wl-seg`, pole IČO (`wl-ico-box`), funkce `typUctu()` a `icoOk()`; kolonka jména má „Jméno a příjmení nebo název firmy". Účet ze 2. kroku se zakládá **bez role** (`profiles.role` NULL) a při prvním přihlášení Samův `ukazRozcestnik()` nabídne „Hledám práci / Nabízím práci", uloží roli do metadat i profilu a přesměruje. **Nevracet přepínač zpět.** Sam navíc ošetřil „adresu už na seznamu máme" a dal `.wl-or` id až v JS. Já k tomu přidal `script.js?v=52` — Sam obsah změnil, ale nechal `?v=51`, takže vracející se návštěvník dostal starý skript k nové stránce (sahá na `wl-ico-box`, který už v HTML není → čekací list se mu rozbil).
