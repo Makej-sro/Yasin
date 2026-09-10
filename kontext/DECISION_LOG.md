@@ -5,6 +5,14 @@ argumentem — jinak se točíme dokola.*
 
 ---
 
+**10. 9. 2026 — Na stránce Hledám si práci jsou skutečné fotky.**
+Tři kroky ilustrují reálné fotografie, u prvního je člověk v tričku Makej
+s appkou v ruce.
+*Proč:* vygenerované obrázky vypadaly obecně a nesly rukopis AI. Fotka z Brna
+působí věrohodněji. *Pozor:* kupovat místo toho fotobanku by bylo horší —
+připojili bychom tvář skutečného člověka k vymyšlenému jménu a tvrzení, což
+většina licencí zakazuje. Proto buď vlastní lidé se souhlasem, nebo kreslené.
+
 **10. 9. 2026 — V čekacím listu se neptáme na roli.**
 Jen kolonka na e-mail. Kdo chce, může si založit i účet, ale bez určení, jestli
 je brigádník nebo firma. Roli si vybere až v onboardingu, kde ho to teprve navede

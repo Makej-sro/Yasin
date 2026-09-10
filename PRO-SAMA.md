@@ -22,6 +22,24 @@ neuloží a stránka se jen přenačte. Ověřeno v prohlížeči, není to teor
 rolí i odebraný přepínač fyzická/právnická zůstávají přesně jak jsi je udělal.
 Dohoda platí: v předregistraci se role neřeší, vybírá se až v onboardingu appky.
 
+**4. Kroky na /hledam-si-praci jsou nově karty (vzor bolt.eu).**
+Text je nahoře jako normální HTML, fotka dosedá na spodní hranu karty.
+Pozadí karty **není plná barva, ale vodorovný přechod odečtený z horní hrany
+její fotky** — proti jedné barvě se na napojení rýsoval světlý předěl, protože
+studiové pozadí není přes celou šířku stejné. **Když se fotky vymění, musí se
+přegenerovat i ty přechody** (postup je popsaný v komentáři v CSS).
+Velké slovo BRIGÁDA v pozadí je v téhle sekci vypnuté — mezi plnými kartami
+z něj koukaly jen útržky.
+
+**5. Skutečné fotky místo vygenerovaných na /hledam-si-praci.**
+Tři kroky (Swajpni / Matchni / Pracuj) mají nově fotky od Yasina —
+`krok-1.jpg`, `krok-2.jpg`, `krok-3.jpg`. **Staré `krok-1.png`, `krok-2.png`
+a `krok-3.png` smaž**, už na ně nic neodkazuje. Zároveň ubylo 1,6 MB: PNG měly
+dohromady 1 895 kB, nové JPEG mají 259 kB.
+Opravil jsem i `lide.html`, kde `<link rel="preload">` mířil na `/krok-1.png`
+a `/krok-2.png` — soubory, které ta stránka vůbec nepoužívá. Stahovala tak přes
+1 MB pro nic a po smazání by to navíc byly dva požadavky do prázdna.
+
 **3. Skrytý posuvník stránky.** `style.css` + právní stránky, které ho nenačítají
 (`privacy`, `terms`, `zasady-cookies`). Stránka se posouvá dál, jen se lišta
 nekreslí. `style.css?v=126`.
