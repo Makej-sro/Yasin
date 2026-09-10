@@ -40,7 +40,7 @@
   <!-- lokálně a synchronně: přes CDN s async se komponenta upgradovala pozdě a ikony posouvaly layout -->
   <script src="/iconify-icon.min.js?v=3.0.0"></script>
   <link rel="preload" href="/fonts/LeagueSpartan-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v=125" />
+  <link rel="stylesheet" href="style.css?v=126" />
 
   <!-- ═══════════ ÚVODNÍ OBRAZOVKA ═══════════
        Modrá plocha s ikonou, dokud se stránka nenačte. Třídu nasazuje skript
@@ -290,33 +290,14 @@
             <div class="wl-acc-bd" id="wl-acc-bd" inert>
               <div class="wl-acc-pd">
                 <form class="wl-f" id="wl-form2" novalidate>
-                  <!-- Přepínač typu účtu. Právnická osoba dostane navíc pole na IČO —
-                       schované, ne jen zašedlé: prázdná kolonka, která se netýká
-                       fyzické osoby, formulář jen prodlužuje. -->
-                  <div class="wl-seg" role="radiogroup" aria-label="Typ účtu">
-                    <label><input type="radio" name="wl-typ" value="fyzicka" checked><span>Fyzická osoba</span></label>
-                    <label><input type="radio" name="wl-typ" value="pravnicka"><span>Právnická osoba</span></label>
-                  </div>
                   <!-- E-mail je potvrzený z prvního kroku, proto má zelený obrys hned -->
                   <span class="wl-mail" id="wl-mail2">—</span>
                   <div class="wl-lb">
                     <span class="wl-pole">
                       <input class="wl-fi" id="wl-name" type="text" autocomplete="name"
-                             placeholder="Jméno a příjmení" aria-label="Jméno a příjmení" aria-describedby="wl-e2">
+                             placeholder="Jméno a příjmení nebo název firmy" aria-label="Jméno a příjmení nebo název firmy" aria-describedby="wl-e2">
                     </span>
                     <span class="wl-err2" id="wl-e2" role="alert" hidden></span>
-                  </div>
-                  <!-- Obal navíc kvůli plynulému vyjetí: animovat se dá přechod
-                       mřížky z 0fr na 1fr, ale vnitřek k tomu musí mít vlastní
-                       prvek s overflow: hidden, jinak obsah při zavírání přeteče. -->
-                  <div class="wl-ico-box" id="wl-ico-box" hidden>
-                    <div class="wl-ico-in">
-                      <span class="wl-pole">
-                        <input class="wl-fi" id="wl-ico" type="text" inputmode="numeric" maxlength="8"
-                               autocomplete="off" placeholder="IČO" aria-label="IČO" aria-describedby="wl-e5">
-                      </span>
-                      <span class="wl-err2" id="wl-e5" role="alert" hidden></span>
-                    </div>
                   </div>
                   <div class="wl-lb">
                     <span class="wl-pole">
@@ -660,6 +641,6 @@
   <!-- ═══════════ COOKIE BANNER ═══════════ -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="script.js?v=51"></script>
+  <script src="script.js?v=52"></script>
 </body>
 </html>

@@ -732,6 +732,61 @@ function initAuth() {
     });
   });
 
+  // ─── Rozcestník pro předregistrované (ještě nemají roli) ───────────────
+  // Stavíme ho v JS, ne v markupu: přihlásit se dá z každé stránky a držet
+  // stejný blok v jedenácti souborech je past. Třídy .modal / .role-card jsou
+  // ve style.css globálně, takže to vypadá stejně jako rozcestník v registraci.
+  function ukazRozcestnik(user) {
+    if (document.getElementById('role-pick')) return;
+
+    const ov = document.createElement('div');
+    ov.id = 'role-pick';
+    ov.className = 'modal-overlay active';
+    ov.innerHTML = `
+      <div class="modal active" role="dialog" aria-modal="true" aria-label="Vyber, co chceš dělat">
+        <p class="modal-title">Ještě jedna věc</p>
+        <p class="modal-subtitle">Co tě k nám přivádí?</p>
+        <div class="modal-error" id="role-pick-error"></div>
+        <div class="role-cards">
+          <button type="button" class="role-card" data-role="worker">
+            <iconify-icon icon="solar:user-bold" width="32"></iconify-icon>
+            <strong>Hledám práci</strong>
+            <small>Chci brát brigády</small>
+          </button>
+          <button type="button" class="role-card" data-role="employer">
+            <iconify-icon icon="solar:buildings-bold" width="32"></iconify-icon>
+            <strong>Nabízím práci</strong>
+            <small>Sháním brigádníky</small>
+          </button>
+        </div>
+      </div>`;
+    document.body.appendChild(ov);
+
+    const chyba = t => { const e = document.getElementById('role-pick-error'); e.textContent = t; e.style.display = 'block'; };
+
+    ov.querySelectorAll('.role-card').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const role = btn.dataset.role;
+        ov.querySelectorAll('.role-card').forEach(b => { b.disabled = true; b.style.opacity = .6; });
+        try {
+          // Metadata i profil naráz. Metadata proto, aby se rozcestník
+          // příště přeskočil (přesměrování čte právě je), profil proto,
+          // aby roli viděla appka i dashboard — do té chvíle je tam NULL.
+          const { error: e1 } = await sb.auth.updateUser({ data: { role } });
+          if (e1) throw e1;
+          const { error: e2 } = await sb.from('profiles')
+            .update({ role }).eq('id', user.id);
+          if (e2) throw e2;
+        } catch (err) {
+          console.error('[rozcestnik]', err);
+          ov.querySelectorAll('.role-card').forEach(b => { b.disabled = false; b.style.opacity = 1; });
+          return chyba('Nepovedlo se uložit. Zkus to prosím znovu.');
+        }
+        window.location.href = role === 'employer' ? '/employer/' : '/worker/';
+      });
+    });
+  }
+
   // ─── Auth state — Supabase v2 posílá INITIAL_SESSION při startu, getSession není potřeba ───
   sb.auth.onAuthStateChange((event, session) => {
     updateNavAuth(session?.user || null);
@@ -741,6 +796,9 @@ function initAuth() {
     if (event === 'SIGNED_IN' && session?.user) {
       if (skipAutoRedirect) { skipAutoRedirect = false; return; }   // registrace se odhlásí sama
       const role = session.user.user_metadata?.role;
+      // Univerzální předregistrace roli neposílá — chybějící role je tedy signál
+      // „ještě si nevybral". Nemusíme se kvůli tomu ptát databáze.
+      if (!role) { ukazRozcestnik(session.user); return; }
       window.location.href = role === 'employer' ? '/employer/' : '/worker/';
     }
   });
@@ -1412,7 +1470,7 @@ function showToast(msg) {
     box.textContent = text; box.hidden = false; pole.focus();
     return false;
   }
-  [['wl-email', 'wl-e1'], ['wl-name', 'wl-e2'], ['wl-pw', 'wl-e3'], ['wl-pw2', 'wl-e4'], ['wl-ico', 'wl-e5']].forEach(([a, b]) => {
+  [['wl-email', 'wl-e1'], ['wl-name', 'wl-e2'], ['wl-pw', 'wl-e3'], ['wl-pw2', 'wl-e4']].forEach(([a, b]) => {
     const pole = $(a), box = $(b);
     if (!pole || !box) return;
     pole.addEventListener('input', () => {
@@ -1445,62 +1503,13 @@ function showToast(msg) {
     }, 46);
   }
 
-  function typUctu() {
-    const zvoleny = document.querySelector('input[name="wl-typ"]:checked');
-    return zvoleny ? zvoleny.value : 'fyzicka';
-  }
-
-  // IČO má osmou číslici kontrolní (váhy 8..2, modulo 11). Kontrolovat jen
-  // „osm číslic" by pustilo každý překlep — a špatné IČO se pak tahá celou
-  // fakturací dál, protože si ho nikdo znovu neověřuje.
-  function icoOk(hodnota) {
-    const c = String(hodnota || '').trim();
-    if (!/^\d{8}$/.test(c)) return false;
-    let soucet = 0;
-    for (let i = 0; i < 7; i++) soucet += Number(c[i]) * (8 - i);
-    const zbytek = soucet % 11;
-    const kontrolni = zbytek === 0 ? 1 : zbytek === 1 ? 0 : 11 - zbytek;
-    return Number(c[7]) === kontrolni;
-  }
-
-  // Přepnutí typu ukáže / schová IČO. Schované pole se zároveň vyprázdní,
-  // ať se u fyzické osoby neodešle hodnota, kterou už nikdo nevidí.
-  // `hidden` v šabloně je jen pro případ, že by JS nedoběhl. Jakmile běží,
-  // sundáme ho a zavřený stav drží CSS — jinak by nebylo co animovat.
-  $('wl-ico-box').hidden = false;
-  $('wl-ico').tabIndex = -1;
-  $('wl-ico').setAttribute('aria-hidden', 'true');
-
-  document.querySelectorAll('input[name="wl-typ"]').forEach(r => {
-    r.addEventListener('change', () => {
-      const firma = typUctu() === 'pravnicka';
-      // Prvek zůstává v rozvržení pořád; přepíná se jen `data-open`, na kterém
-      // visí animace. Přes `hidden` (display:none) by se nedalo animovat nic.
-      if (firma) $('wl-ico-box').setAttribute('data-open', '');
-      else $('wl-ico-box').removeAttribute('data-open');
-      $('wl-name').placeholder = firma ? 'Název firmy' : 'Jméno a příjmení';
-      $('wl-name').setAttribute('aria-label', firma ? 'Název firmy' : 'Jméno a příjmení');
-      // Schované pole nesmí zůstat ve fokus-orderu ani pro čtečku.
-      $('wl-ico').tabIndex = firma ? 0 : -1;
-      $('wl-ico').setAttribute('aria-hidden', firma ? 'false' : 'true');
-      if (!firma) { $('wl-ico').value = ''; $('wl-e5').hidden = true; $('wl-ico').removeAttribute('aria-invalid'); }
-      obrysy();
-      // Rozbalený formulář si drží naměřenou výšku; po přidání pole ji musíme
-      // uvolnit, jinak by se IČO schovalo za spodní hranou.
-      if (acc.hasAttribute('data-open')) accBd.style.maxHeight = 'none';
-    });
-  });
-
   // Zelený obrys až když je pole opravdu v pořádku, ne po prvním znaku —
   // jinak by potvrzovalo i rozepsanou hloupost.
   function obrysy() {
     const jmeno = ($('wl-name').value || '').trim();
     const h1 = $('wl-pw').value, h2 = $('wl-pw2').value;
-    const firma = typUctu() === 'pravnicka';
     const stav = {
-      // U firmy stačí název, mezera se po něm chtít nedá („Alza" je platný název).
-      'wl-name': firma ? jmeno.length >= 2 : (jmeno.length >= 3 && jmeno.indexOf(' ') > 0),
-      'wl-ico':  firma && icoOk($('wl-ico').value),
+      'wl-name': jmeno.length >= 2,
       'wl-pw':   h1.length >= 8,
       'wl-pw2':  h2.length >= 8 && h2 === h1,
     };
@@ -1543,6 +1552,13 @@ function showToast(msg) {
     $('wl-foot').hidden = false;
   });
 
+  // Oddělovač „nebo" má v markupu jen třídu, ne id — id mu dáváme až tady.
+  // MUSÍ to být před obnov(): ta na něj sahá přes getElementById, a když
+  // ho nenajde, spadne na null. Tím se přeruší zbytek bloku včetně navěšení
+  // obsluhy formuláře → prohlížeč ho pak odešle nativně a stránka se přenačte.
+  const orBox = document.querySelector('.wl-or');
+  if (orBox) orBox.id = 'wl-or';
+
   // ── Návrat po čase: ukázat, že už je zapsaný ─────────────────────────
   (function obnov() {
     const p = nactiPamet();
@@ -1580,6 +1596,7 @@ function showToast(msg) {
     if (!email) return chyba(pole, box, 'Zadej e-mail.');
     if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)) return chyba(pole, box, 'Tohle není platný e-mail.');
 
+    let pribylo = true;
     btn.disabled = true;
     try {
       const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/join_launch_list', {
@@ -1587,6 +1604,8 @@ function showToast(msg) {
         body: JSON.stringify({ p_email: email, p_source: 'landing' }),
       });
       if (!r.ok) throw new Error(await r.text());
+      // RPC vrací true, když adresa přibyla, a false, když už na seznamu byla.
+      pribylo = await r.json().catch(() => true);
     } catch (e) {
       console.error('[cekaci-list]', e);
       btn.disabled = false;
@@ -1596,15 +1615,22 @@ function showToast(msg) {
 
     zapamatuj({ email: email, kdy: Date.now() });
     $('wl-mail2').textContent = email;
-    $('wl-lead2').textContent = 'Dáme ti vědět, až appku spustíme.';
-    ukaz('wl-2');
-    napis('Děkujeme za zaslání.', 'wl-typed', 'wl-cur2', true);
+    // Stejná úprava jako u poděkování — mění se jen text, ne vzhled. Když už
+    // adresu máme, nemá smysl děkovat za zaslání, jako by dorazila poprvé.
+    if (pribylo) {
+      $('wl-lead2').textContent = 'Dáme ti vědět, až appku spustíme.';
+      ukaz('wl-2');
+      napis('Děkujeme za zaslání.', 'wl-typed', 'wl-cur2', true);
+    } else {
+      $('wl-lead2').innerHTML = 'Adresu <b>' + email.replace(/[<>&]/g, '') +
+        '</b> už na seznamu máme. Dáme ti vědět, až appku spustíme.';
+      ukaz('wl-2');
+      napis('Na seznamu už jsi.', 'wl-typed', 'wl-cur2', true);
+    }
   });
 
   // ── Rozbalovací „Chci výhody" ────────────────────────────────────────
   const acc = $('wl-acc'), accBtn = $('wl-acc-btn'), accBd = $('wl-acc-bd');
-  const orBox = document.querySelector('.wl-or');
-  if (orBox) orBox.id = 'wl-or';
   function zavri() {
     accBd.style.maxHeight = accBd.scrollHeight + 'px';   // z 'none' na měřenou, jinak není co animovat
     requestAnimationFrame(() => { accBd.style.maxHeight = '0px'; });
@@ -1629,14 +1655,10 @@ function showToast(msg) {
     ev.preventDefault();
     const jmeno = ($('wl-name').value || '').trim();
     const heslo = $('wl-pw').value, heslo2 = $('wl-pw2').value;
-    const firma = typUctu() === 'pravnicka';
-    const ico = ($('wl-ico').value || '').trim();
-    if (firma) {
-      if (jmeno.length < 2) return chyba($('wl-name'), $('wl-e2'), 'Napiš název firmy.');
-      if (!/^\d{8}$/.test(ico)) return chyba($('wl-ico'), $('wl-e5'), 'IČO má osm číslic.');
-      if (!icoOk(ico))      return chyba($('wl-ico'), $('wl-e5'), 'Tohle IČO neexistuje — zkontroluj číslice.');
-    } else if (jmeno.length < 3 || jmeno.indexOf(' ') < 1) {
-      return chyba($('wl-name'), $('wl-e2'), 'Napiš jméno a příjmení.');
+    // Formulář je jeden pro lidi i firmy a v tuhle chvíli nevíme, kdo je za ním —
+    // mezeru ve jméně tedy vyžadovat nejde, „Lidl" je platný název.
+    if (jmeno.length < 2) {
+      return chyba($('wl-name'), $('wl-e2'), 'Napiš svoje jméno nebo název firmy.');
     }
     if (heslo.length < 8)   return chyba($('wl-pw'),   $('wl-e3'), 'Heslo musí mít aspoň 8 znaků.');
     if (heslo !== heslo2)   return chyba($('wl-pw2'),  $('wl-e4'), 'Hesla se neshodují.');
@@ -1649,11 +1671,12 @@ function showToast(msg) {
         method: 'POST', headers: hlavicky,
         body: JSON.stringify({
           email: $('wl-mail2').textContent, password: heslo,
-          // Právnická osoba = zaměstnavatel, fyzická = brigádník. Stejné rozdělení,
-          // jaké používá běžná registrace webu (role v user_metadata).
-          data: firma
-            ? { name: jmeno, role: 'employer', company_name: jmeno, ico: ico, zdroj: 'cekaci-list' }
-            : { name: jmeno, role: 'worker', zdroj: 'cekaci-list' },
+          // Roli SCHVÁLNĚ neposíláme: v předregistraci ještě není rozhodnuto,
+          // jestli jde o brigádníka nebo firmu. Trigger ji pak nechá NULL —
+          // RLS politiky, které na roli větví, tak nerozhodnutému nic nepovolí.
+          // Při prvním přihlášení se objeví rozcestník; kdybychom roli poslali,
+          // přeskočil by se.
+          data: { name: jmeno, zdroj: 'cekaci-list' },
         }),
       });
       const odpoved = await r.json().catch(() => ({}));

@@ -2417,3 +2417,10 @@ iconify-icon[width="56"] { width: 56px; height: 56px; }
   /* Sekce hero stejně zakryjí — bez pohybu není co rozmazávat. */
   .uvod .vx-hero, .uvod .eh-head, .uvod .mkj-visual { filter: none; opacity: 1; transform: none; }
 }
+
+/* ═══════════ BEZ POSUVNÍKU STRÁNKY ═══════════
+   Yasin nechce vpravo vidět posuvník (2026-09-06). Stránka se dál posouvá
+   kolečkem, trackpadem i klávesami, jen se lišta nekreslí. Vnitřních
+   posuvných prvků (dialog cookies, FAQ na /podpora) se to netýká. */
+html { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar { display: none; width: 0; height: 0; }

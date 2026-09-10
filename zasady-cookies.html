@@ -69,6 +69,9 @@
       --font-heading: 'Bricolage Grotesque', 'Bricolage Grotesque Fallback', 'Plus Jakarta Sans', sans-serif;
     }
     html { scroll-behavior: smooth; }
+    /* bez posuvníku stránky (stejně jako style.css) — posouvání funguje dál */
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    html::-webkit-scrollbar { display: none; width: 0; height: 0; }
     body {
       background: radial-gradient(120% 60% at 50% 0%, #e3e8fb 0%, #eef1f9 55%);
       background-attachment: fixed;
