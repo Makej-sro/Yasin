@@ -40,7 +40,7 @@
   <!-- lokálně a synchronně: přes CDN s async se komponenta upgradovala pozdě a ikony posouvaly layout -->
   <script src="/iconify-icon.min.js?v=3.0.0"></script>
   <link rel="preload" href="/fonts/LeagueSpartan-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v=126" />
+  <link rel="stylesheet" href="style.css?v=133" />
   <style>
     /* ═══════════ BENTO DESIGN (pro zaměstnavatele) ═══════════ */
     #employers { padding: 0; }
@@ -121,7 +121,6 @@
        32px rámeček, contain, barva z currentColor. Díky tomu mají zaručeně stejnou
        velikost i výšku — dopočítávat metriky Solar ikon se neosvědčilo. */
     .bz-step2-ic .bz-ico { display: block; width: 32px; height: 32px; background: currentColor; }
-    .bz-ico-verified { -webkit-mask: url(/ico-verified.svg)  center / contain no-repeat; mask: url(/ico-verified.svg)  center / contain no-repeat; }
     .bz-ico-chart    { -webkit-mask: url(/ico-chart.svg)      center / contain no-repeat; mask: url(/ico-chart.svg)      center / contain no-repeat; }
     .bz-ico-chat     { -webkit-mask: url(/ico-chat.svg)       center / contain no-repeat; mask: url(/ico-chat.svg)       center / contain no-repeat; }
     .bz-ico-wallet   { -webkit-mask: url(/ico-wallet.png?v=2) center / contain no-repeat; mask: url(/ico-wallet.png?v=2) center / contain no-repeat; }
@@ -231,32 +230,12 @@
        (změřeno nulovým inline-blockem), takže -.12em ho posadí těsně NAD hranu
        panelu — písmena se neuseknou a viditelný pruh pod kartami je co největší.
        V em, aby to sedělo při každé velikosti písma i po zalomení sloupců. */
-    .emp-why-word { position: absolute; left: 0; right: 0; bottom: -.12em; text-align: center;
-      font-family: var(--font-heading); font-weight: 900; text-transform: uppercase;
-      font-size: clamp(4rem, 19.2vw, 17.25rem); letter-spacing: -.04em; color: rgba(10,13,46,.05);
-      line-height: 1; z-index: 0; pointer-events: none; white-space: nowrap; }
-    .emp-why-cards { position: relative; z-index: 2; max-width: 940px; margin: 0 auto;
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: clamp(16px, 2.4vw, 30px); align-items: start; }
-    .emp-why-card { background: #fff; border-radius: 18px; border: 1px solid rgba(10,13,46,.07);
-      box-shadow: 0 34px 64px -32px rgba(10,13,46,.45); padding: 22px 22px 24px; }
-    .emp-why-card:nth-child(2), .emp-why-card:nth-child(4) { margin-top: clamp(18px, 2.6vw, 34px); }
-    .emp-why-card:nth-child(2) { transition-delay: .1s; }
-    .emp-why-card:nth-child(3) { transition-delay: .2s; }
-    .emp-why-card:nth-child(4) { transition-delay: .3s; }
-    .emp-why-card .bz-ico { display: block; width: 28px; height: 28px; background: var(--primary); }
-    .emp-why-card h3 { font-family: var(--font-heading); font-weight: 800; text-transform: uppercase;
-      font-size: .95rem; letter-spacing: -.01em; margin: 14px 0 0; color: #0a0d2e; }
-    .emp-why-card p { color: rgba(10,13,46,.6); font-size: .88rem; line-height: 1.5; margin: 6px 0 0; }
+    /* Karty „Proč Makej" nahradil posuvný pruh (.proc-pruh ve style.css). */
     @media (max-width: 900px) {
       .emp-why { padding-bottom: 60px; }
-      .emp-why-cards { grid-template-columns: 1fr 1fr; max-width: none; }
-      .emp-why-card:nth-child(n) { margin-top: 0; }
-      .emp-why-word { font-size: clamp(3rem, 25vw, 12rem); }
-    }
+      }
     @media (max-width: 560px) {
       .emp-why { padding-bottom: 46px; }
-      .emp-why-cards { grid-template-columns: 1fr; gap: 16px; }
     }
     .bolt-journey { position: relative; max-width: 1080px; margin: 0 auto; padding: 0 24px; }
     .bolt-cta { display: flex; justify-content: center; margin-top: 60px; position: relative; z-index: 1; }
@@ -616,29 +595,31 @@
       <!-- PROČ MAKEJ — kompaktní galerie (stejný jazyk jako kroky výš) -->
       <div class="emp-why" style="margin-top:72px;">
         <h2 class="emp-why-title">Proč Makej</h2>
-        <div class="emp-why-word" aria-hidden="true">FUNKCE</div>
-        <div class="emp-why-cards">
-          <div class="emp-why-card js-reveal-up">
-            <span class="bz-ico bz-ico-verified"></span>
+      </div>
+      <!-- Stejný pruh jako „Proč si zvolíš Makej" na /hledam-si-praci.
+           Stojí MIMO .emp-why, protože ta má max-width a overflow: hidden —
+           uvnitř by se pruh nemohl rozjet až k okraji obrazovky. -->
+      <div class="proc-pruh proc-pruh--mrizka" aria-label="Proč Makej">
+          <article class="proc-bod">
+            <img src="/emp-profily.webp?v=1" alt="Karta brigádníka s ověřovacím odznakem" width="760" height="620" loading="lazy" />
             <h3>Ověřené profily</h3>
             <p>Viditelné hodnocení, historie brigád a úroveň. Víte, koho přijímáte.</p>
-          </div>
-          <div class="emp-why-card js-reveal-up">
-            <span class="bz-ico bz-ico-chart"></span>
+          </article>
+          <article class="proc-bod">
+            <img src="/emp-analytika.webp?v=1" alt="Přehled s grafy výkonu inzerátu" width="760" height="620" loading="lazy" />
             <h3>Analytika v reálném čase</h3>
             <p>Kolik lidí vidělo inzerát, kolik swajplo, kolik matchovalo.</p>
-          </div>
-          <div class="emp-why-card js-reveal-up">
-            <span class="bz-ico bz-ico-chat"></span>
+          </article>
+          <article class="proc-bod">
+            <img src="/emp-chat.webp?v=1" alt="Brigádník s otevřeným chatem s firmou" width="760" height="620" loading="lazy" />
             <h3>Chat místo emailů</h3>
             <p>Napíšete zprávu, brigádník odpoví do minut. Vše na jednom místě.</p>
-          </div>
-          <div class="emp-why-card js-reveal-up">
-            <span class="bz-ico bz-ico-wallet"></span>
+          </article>
+          <article class="proc-bod">
+            <img src="/emp-zdarma.webp?v=1" alt="Nula korun" width="760" height="620" loading="lazy" />
             <h3>Zdarma pro začátek</h3>
             <p>Základní plán bez poplatků. Platíte, až když chcete víc.</p>
-          </div>
-        </div>
+          </article>
       </div>
       </div>
 
@@ -882,7 +863,7 @@
   </section>
 
   <!-- ═══════════ DOWNLOAD CTA ═══════════ -->
-  <section id="download">
+  <section id="download" class="pl-z-bile">
     <div class="container">
       <div class="dl-stage">
         <div class="dl-card">

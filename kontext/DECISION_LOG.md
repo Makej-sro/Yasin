@@ -5,6 +5,13 @@ argumentem — jinak se točíme dokola.*
 
 ---
 
+**11. 9. 2026 — Sekce „Proč" jsou pruh ilustrací, ne seznam textů.**
+Šest důvodů pro brigádníky a čtyři pro firmy má každý svou 3D ilustraci,
+pod ní nadpis a jednu větu. Žádné kartičky ani rámečky.
+*Proč:* šest holých textových boxů vedle sebe vypadalo jako šablona. Vzor je
+bolt.eu. *Pravidlo k tomu:* ilustrace musí být na průhledném pozadí a vsazené
+do stejného plátna se stejnou plochou objektu, jinak jedna v řadě vyčnívá.
+
 **10. 9. 2026 — Na stránce Hledám si práci jsou skutečné fotky.**
 Tři kroky ilustrují reálné fotografie, u prvního je člověk v tričku Makej
 s appkou v ruce.

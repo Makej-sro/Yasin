@@ -7,6 +7,30 @@
 
 ---
 
+## 2026-09-11 — čeká na nasazení
+
+**Sekce „Proč" jsou nově pruh ilustrací (vzor bolt.eu), ne textové boxy.**
+Na `/hledam-si-praci` („Proč si zvolíš Makej", šest důvodů) je vodorovný pruh
+s přichytáváním — poslední položka je u kraje schválně useknutá, aby bylo
+poznat, že se dá jet dál. Na `/pro-zamestnavatele` („Proč Makej", čtyři důvody)
+je mřížka bez posouvání, protože se vejdou na jednu řadu. Obojí sdílí `.proc-pruh`
+ve `style.css`, liší se jen třídou `--mrizka`. Texty zůstaly beze změny.
+
+⚠️ **Když se vymění ilustrace, musí projít stejným srovnáním.** Všechny jsou
+oříznuté na skutečný objekt a vsazené do stejného plátna 760×620 tak, aby
+zabíraly zhruba stejnou **plochu** (ne šířku). Bez toho bude nová v řadě
+viditelně menší nebo větší — čtyři původní si nesly širokou průhlednou zář
+a kvůli ní vypadaly o polovinu menší. Postup je v komentáři u `.proc-bod img`.
+
+**Vyhlazené předěly mezi sekcemi.** Skok z bílé na plátno `#F5F6FA` je jen deset
+jednotek, ale přes celou šířku se rýsoval jako linka. Horní hrana se teď
+rozplyne u `#features` (/hledam-si-praci), `.vx-gallery` (/lide), `#makaci`
+(hlavní strana) a u `#download` tam, kde bílá opravdu předchází — **třídu
+`pl-z-bile` nedávej na / ani /lide**, tam nad ní stojí taky plátno a vznikl by
+světlý pruh uprostřed plochy. Aurora v heru se navíc dole vytrácí.
+
+`style.css?v=133`.
+
 ## 2026-09-10 — čeká na nasazení
 
 **1. Oprava rozbitého čekacího listu (naléhavé).**
