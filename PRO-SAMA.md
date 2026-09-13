@@ -9,6 +9,13 @@
 
 ## 2026-09-13 — čeká na nasazení
 
+**Hero na `/lide`: skutečná fotka místo 3D kresby.**
+`lide-hero-v2.png` (1,1 MB) smazán, nahradila ho `lide-hero-foto.webp` (259 kB)
+— trojice brigádníků, jeden v tričku Makej. Animace vyjetí zdola i všechno
+ostatní zůstalo, měnil se jen obrázek a jeho velikost. Fotka přišla už
+odpozaděná z Photoroomu; ruční odmazávání bílé dávalo horší hrany, tak se
+**fotky do hera posílají rovnou s průhledným pozadím**.
+
 **Kroky náboru na `/pro-zamestnavatele` jsou skutečné fotky.**
 Všechny čtyři (`emp-krok-1..4.jpg`) vyměněné za fotky od Yasina — dashboard na
 notebooku, brigádníci s appkou, domluva na kampusu. Oříznuté na **stejný poměr
