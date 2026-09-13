@@ -7,6 +7,17 @@
 
 ---
 
+## 2026-09-13 — čeká na nasazení
+
+**Kroky náboru na `/pro-zamestnavatele` jsou skutečné fotky.**
+Všechny čtyři (`emp-krok-1..4.jpg`) vyměněné za fotky od Yasina — dashboard na
+notebooku, brigádníci s appkou, domluva na kampusu. Oříznuté na **stejný poměr
+jako dřív (1100×513)**, aby se mřížka nepohnula; výřez vedený přes obličeje, ne
+přes střed fotky. Popisky `alt` přepsané, staré mluvily o něčem jiném.
+Ilustrace u „Chat místo emailů" vyměněna za plavčíka (`emp-chat.webp`).
+Čísla `?v=` u obrázků zvýšena na 3 — **bez toho by vracející se návštěvník
+viděl staré**.
+
 ## 2026-09-11 — čeká na nasazení
 
 **Sekce „Proč" jsou nově pruh ilustrací (vzor bolt.eu), ne textové boxy.**
