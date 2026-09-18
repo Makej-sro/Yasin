@@ -441,13 +441,91 @@
 
     /* ── DETAIL: marketplace vysvětlení ── */
     .vx-intro { background: #fff; padding-bottom: 40px; }
+    /* Zaoblený bílý list přes hero patří první sekci pod ním. Na /lide to už
+       není úvodní text, ale karty — proto se to tady přepisuje. */
+    .uvod > .vx-two { border-radius: 32px 32px 0 0; box-shadow: 0 -22px 60px -22px rgba(10,13,46,.22); }
+    .uvod > .vx-intro { border-radius: 0; box-shadow: none; }
+    @media (max-width: 700px) { .uvod > .vx-two { border-radius: 22px 22px 0 0; } }
     .vx-intro .vx-sec-head { max-width: 780px; margin-bottom: 0; }
     .vx-intro .vx-sec-head p { font-size: 1.16rem; }
     /* Dvě strany — bez karet: dva sloupce dělené linkou, kroky se šipkou */
-    .vx-two { background: #fff; padding-top: 40px; }
-    .vx-two-head { max-width: 640px; margin: 0 0 64px; }
+    .vx-two { background: #fff; }
+    .vx-two .vx-wrap { width: min(1280px, 94vw); }
+    /* ── Dvě cesty jako velké karty (stejný princip jako hero na hlavní) ── */
+    .lc-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+    .lc-card {
+      position:relative; overflow:hidden; border-radius:28px;
+      padding:40px 38px; display:flex; gap:26px; align-items:center;
+      color:#fff; isolation:isolate;
+    }
+    /* Dokud nejsou fotky, drží karty barvu značky. Až fotka přijde, stačí
+       doplnit background-image a překryv zůstane čitelný. */
+    .lc-card--offer { background:
+      linear-gradient(120deg, rgba(0,20,163,.86) 0%, rgba(0,32,246,.72) 62%, rgba(0,32,246,.55) 100%),
+      radial-gradient(120% 120% at 88% 4%, #2b3bff, #0014a3 76%); }
+    .lc-card--seek { background:
+      linear-gradient(120deg, rgba(10,13,46,.9) 0%, rgba(18,22,60,.78) 60%, rgba(30,36,84,.6) 100%),
+      radial-gradient(120% 120% at 88% 4%, #2a3160, #0a0d2e 78%); }
+    .lc-text { flex:1 1 auto; min-width:0; max-width:320px; }
+    .lc-badge {
+      display:inline-block; padding:7px 15px; border-radius:999px; margin-bottom:18px;
+      background:rgba(255,255,255,.18); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+      font-size:.82rem; font-weight:700; letter-spacing:.01em;
+    }
+    .lc-text h3 { font-family:var(--font-heading); font-weight:800; font-size:clamp(2rem,3.4vw,2.9rem); line-height:1.02; letter-spacing:-.03em; margin-bottom:14px; }
+    .lc-text p { font-size:1.02rem; line-height:1.55; color:rgba(255,255,255,.82); text-wrap:pretty; margin-bottom:26px; }
+    .lc-btn {
+      display:inline-flex; align-items:center; gap:10px; padding:15px 26px; border-radius:999px;
+      background:#fff; color:var(--ink); font-weight:700; font-size:1rem; border:0;
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+    .lc-card--offer .lc-btn { background:#fff; color:#0014a3; }
+    .lc-btn:hover { transform:translateY(-2px); box-shadow:0 14px 30px rgba(0,0,0,.22); }
+    .lc-btn span { transition:transform .18s ease; }
+    .lc-btn:hover span { transform:translateX(3px); }
+    /* Telefon vpravo — iPhone s Dynamic Islandem, zespoda přetéká z karty ven.
+       Rozměry uvnitř jsou v procentech obrazovky, ať to sedí v jakékoli velikosti. */
+    .lc-phone {
+      flex:0 0 clamp(212px, 21vw, 288px); width:clamp(212px, 21vw, 288px); align-self:center;
+      border-radius:38px; padding:7px; background:linear-gradient(160deg,#4a4f63,#14162b 42%,#2c3040 70%,#4a4f63);
+      box-shadow:0 26px 60px rgba(0,0,0,.42), 0 0 0 1px rgba(255,255,255,.14) inset;
+    }
+    .lc-screen { position:relative; border-radius:32px; overflow:hidden; }
+    /* height:auto je nutné — atributy width/height na <img> jsou pro prohlížeč
+       rovnou CSS rozměry, takže bez tohohle by obrázek zůstal 1212 px vysoký. */
+    .lc-screen img { display:block; width:100%; height:auto; }
+    /* Dynamic Island — poměry podle iPhonu 15 (125 × 37 pt na šířce 393 pt) */
+    .lc-island { position:absolute; top:1.35%; left:50%; transform:translateX(-50%); width:31.8%; height:4.35%; border-radius:999px; background:#000; z-index:3; }
+    /* Stavový řádek: čas vlevo, signál / wifi / baterie vpravo */
+    .lc-stav { position:absolute; top:1.5%; left:0; right:0; z-index:2; display:flex; align-items:center; justify-content:space-between; padding:0 7.5%; height:4.2%; color:#0b1233; }
+    .lc-stav--svetly { color:#fff; }
+    .lc-domu { position:absolute; bottom:.85%; left:50%; transform:translateX(-50%); width:35%; height:.5%; min-height:3px; border-radius:999px; background:rgba(11,18,51,.42); z-index:3; }
+    .lc-stav b { font-family:var(--font-heading); font-weight:700; font-size:.5rem; letter-spacing:.01em; line-height:1; }
+    .lc-stav svg { display:block; height:.46rem; width:auto; }
+    /* Kroky pod kartami — čísla jako v appce */
+    .lc-kroky { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:26px; }
+    .lc-sloupec { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+    .lc-sloupec--4 { grid-template-columns:repeat(4,1fr); }
+    .lc-krok { border-top:1px solid var(--line); padding-top:14px; }
+    .lc-krok b { display:block; font-family:var(--font-heading); font-size:.78rem; font-weight:800; color:var(--blue); letter-spacing:.06em; margin-bottom:8px; }
+    .lc-krok h4 { font-family:var(--font-heading); font-weight:800; font-size:.98rem; letter-spacing:-.01em; margin-bottom:5px; }
+    .lc-krok p { color:var(--muted); font-size:.86rem; line-height:1.45; text-wrap:pretty; }
+    @media (max-width: 980px) {
+      .lc-grid, .lc-kroky { grid-template-columns:1fr; }
+      .lc-card { min-height:0; padding:30px 24px 0; }
+      .lc-phone { flex-basis:clamp(180px, 34vw, 230px); width:clamp(180px, 34vw, 230px); border-radius:32px; }
+      .lc-screen { border-radius:26px; }
+    }
+    @media (max-width: 620px) {
+      .lc-card { flex-direction:column; align-items:stretch; }
+      .lc-text { max-width:none; padding-bottom:22px; }
+      .lc-phone { align-self:center; flex-basis:min(230px, 62vw); width:min(230px, 62vw); }
+      .lc-sloupec, .lc-sloupec--4 { grid-template-columns:1fr 1fr; }
+    }
+    .vx-two-head { max-width: 780px; margin: 0 auto 64px; text-align: center; }
     .vx-two-head h2 { font-family: var(--font-heading); font-weight: 800; font-size: clamp(2rem, 4.4vw, 3.25rem); letter-spacing: -.03em; line-height: 1.05; text-wrap: balance; }
     .vx-two-head h2 em { font-style: normal; color: var(--blue); }
+    .vx-two-head p { color: var(--muted); font-size: 1.12rem; line-height: 1.6; margin: 18px auto 0; max-width: 620px; text-wrap: pretty; }
     .vx-two-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 0; }
     .vx-aud { display:flex; flex-direction:column; gap:44px; padding-right:48px; }
     .vx-aud.seek { padding-right:0; padding-left:48px; border-left:1px solid var(--line); }
@@ -645,7 +723,7 @@
 
           <!-- 3D portrét lidí — hlavní centerpiece -->
           <div class="vx-heroimg-wrap">
-            <img class="vx-heroimg" src="/lide-hero-foto.webp?v=3" alt="Tři brigádníci, jeden v tričku Makej" width="1080" height="1405" />
+            <img class="vx-heroimg" src="/lide-hero-foto.webp?v=4" alt="Kadeřnice, malíř a fotografka — lidé nabízející své dovednosti" width="1080" height="1361" />
           </div>
 
 
@@ -656,6 +734,64 @@
 
     <!-- ═══════════ JAK TO FUNGUJE ═══════════ -->
     <!-- INTRO — marketplace -->
+    <!-- DVĚ STRANY — nabízíš / sháníš -->
+    <section class="vx-sec vx-two">
+      <div class="vx-wrap">
+        <div class="vx-two-head js-reveal-up">
+          <h2>Nekonečná možnost <em>výdělku.</em></h2>
+          <p>Místo, kde lidé nabídnou, co umí, a zájemci můžou využít jejich služeb.</p>
+        </div>
+        <div class="lc-grid">
+          <article class="lc-card lc-card--offer js-reveal-up">
+            <div class="lc-text">
+              <span class="lc-badge">Umíš?</span>
+              <h3>Nabídni se</h3>
+              <p>Vypíšeš, co umíš, řekneš si cenu a lidé z tvého okolí si tě najdou sami.</p>
+              <a href="javascript:void(0)" class="lc-btn worker-cta-register">Vytvořit kartu <span aria-hidden="true">→</span></a>
+            </div>
+            <div class="lc-phone">
+              <div class="lc-screen">
+                <img src="lide-mock-karta.webp?v=2" width="560" height="1212" loading="lazy" decoding="async" alt="Karta člověka v aplikaci Makej — co nabízí, cena a hodnocení" />
+                <div class="lc-stav lc-stav--svetly"><b>9:41</b><svg viewBox="0 0 66 14" fill="currentColor" aria-hidden="true"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6.5" width="3" height="7.5" rx="1"/><rect x="10" y="4" width="3" height="10" rx="1"/><rect x="15" y="1.5" width="3" height="12.5" rx="1"/><path d="M26.4 4.6a9.6 9.6 0 0 1 12.2 0l-1.6 1.9a7.2 7.2 0 0 0-9 0zm2.6 3.1a5.6 5.6 0 0 1 7 0l-1.6 1.9a3.2 3.2 0 0 0-3.8 0zm2.4 2.9a2 2 0 0 1 2.2 0l-1.1 1.4z"/><rect x="47" y="2" width="15.5" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="48.6" y="3.6" width="10.5" height="6.8" rx="1.8"/><path d="M64 5.6v2.8a2 2 0 0 0 0-2.8z" opacity=".5"/></svg></div>
+                <div class="lc-island" aria-hidden="true"></div>
+                <div class="lc-domu" aria-hidden="true"></div>
+              </div>
+            </div>
+          </article>
+          <article class="lc-card lc-card--seek js-reveal-up">
+            <div class="lc-text">
+              <span class="lc-badge">Potřebuješ?</span>
+              <h3>Najdi</h3>
+              <p>Projdi lidi ve svém okolí, mrkni na jejich práci a napiš tomu, kdo ti sedne.</p>
+              <a href="javascript:void(0)" class="lc-btn worker-cta-register">Projít lidi <span aria-hidden="true">→</span></a>
+            </div>
+            <div class="lc-phone">
+              <div class="lc-screen">
+                <img src="lide-mock-trziste.webp?v=3" width="560" height="1212" loading="lazy" decoding="async" alt="Tržiště lidí v aplikaci Makej — dlaždice s nabídkami v okolí" />
+                <div class="lc-stav"><b>9:41</b><svg viewBox="0 0 66 14" fill="currentColor" aria-hidden="true"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6.5" width="3" height="7.5" rx="1"/><rect x="10" y="4" width="3" height="10" rx="1"/><rect x="15" y="1.5" width="3" height="12.5" rx="1"/><path d="M26.4 4.6a9.6 9.6 0 0 1 12.2 0l-1.6 1.9a7.2 7.2 0 0 0-9 0zm2.6 3.1a5.6 5.6 0 0 1 7 0l-1.6 1.9a3.2 3.2 0 0 0-3.8 0zm2.4 2.9a2 2 0 0 1 2.2 0l-1.1 1.4z"/><rect x="47" y="2" width="15.5" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="48.6" y="3.6" width="10.5" height="6.8" rx="1.8"/><path d="M64 5.6v2.8a2 2 0 0 0 0-2.8z" opacity=".5"/></svg></div>
+                <div class="lc-island" aria-hidden="true"></div>
+                <div class="lc-domu" aria-hidden="true"></div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="lc-kroky">
+          <div class="lc-sloupec">
+            <div class="lc-krok js-reveal-up"><b>01</b><h4>Vytvoř si kartu</h4><p>Vypíšeš, co umíš — třeba „Opravuji nábytek“ nebo „Peču dorty na zakázku“.</p></div>
+            <div class="lc-krok js-reveal-up"><b>02</b><h4>Čekej na poptávky</h4><p>Karta se začne zobrazovat lidem ve tvém okolí.</p></div>
+            <div class="lc-krok js-reveal-up"><b>03</b><h4>Měj to pod kontrolou</h4><p>Přijde ti zpráva se zadáním a ty se rozhodneš, jestli do toho jdeš.</p></div>
+          </div>
+          <div class="lc-sloupec lc-sloupec--4">
+            <div class="lc-krok js-reveal-up"><b>01</b><h4>Projdi lidi</h4><p>Karty šikovných lidí v okolí, stejně jednoduše jako nabídky práce.</p></div>
+            <div class="lc-krok js-reveal-up"><b>02</b><h4>Najdi toho pravého</h4><p>Potřebuješ opravit stůl? Narazíš na kartu s opravami nábytku.</p></div>
+            <div class="lc-krok js-reveal-up"><b>03</b><h4>Napiš poptávku</h4><p>Krátká zpráva s tím, co konkrétně potřebuješ vyřešit.</p></div>
+            <div class="lc-krok js-reveal-up"><b>04</b><h4>Domluvte se v chatu</h4><p>Po potvrzení se otevře společný chat a doladíte detaily.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="jak" class="vx-sec vx-intro">
       <div class="vx-wrap">
         <div class="vx-sec-head js-reveal-up">
@@ -690,30 +826,6 @@
       </div>
     </section>
     </div><!-- /.uvod -->
-
-    <!-- DVĚ STRANY — nabízíš / sháníš -->
-    <section class="vx-sec vx-two">
-      <div class="vx-wrap">
-        <div class="vx-two-head js-reveal-up">
-          <h2>Dvě cesty, <em>jedna appka.</em></h2>
-        </div>
-        <div class="vx-two-grid">
-          <div class="vx-aud offer">
-            <div class="vx-aud-head js-reveal-up"><h3>Nabízíš své služby</h3></div>
-            <div class="vx-aud-step js-reveal-up"><div class="vx-aud-arrow" aria-hidden="true">→</div><div><h4>Vytvoř si kartu dovedností</h4><p>Vypíšeš, co umíš — např. „Opravuji nábytek“, „Stříhám videa“, „Peču dorty na zakázku“.</p></div></div>
-            <div class="vx-aud-step js-reveal-up"><div class="vx-aud-arrow" aria-hidden="true">→</div><div><h4>Čekej na poptávky</h4><p>Tvoje karta se začne zobrazovat ostatním uživatelům ve tvém okolí.</p></div></div>
-            <div class="vx-aud-step js-reveal-up"><div class="vx-aud-arrow" aria-hidden="true">→</div><div><h4>Měj vše pod kontrolou</h4><p>Když tě někdo osloví, přijde ti krátká zpráva se zadáním. Ty se rozhodneš, jestli zakázku přijmeš, nebo odmítneš.</p></div></div>
-          </div>
-          <div class="vx-aud seek">
-            <div class="vx-aud-head js-reveal-up"><h3>Sháníš někoho šikovného</h3></div>
-            <div class="vx-aud-step js-reveal-up"><div class="vx-aud-arrow" aria-hidden="true">→</div><div><h4>Projížděj marketplace lidí</h4><p>Procházej profily šikovných lidí ve tvém okolí stejně jednoduše jako pracovní nabídky.</p></div></div>
-            <div class="vx-aud-step js-reveal-up"><div class="vx-aud-arrow" aria-hidden="true">→</div><div><h4>Najdi přesně toho pravého</h4><p>Hledáš někoho na opravu stolu? Narazíš na kartu s opravou nábytku a swajpneš doprava.</p></div></div>
-            <div class="vx-aud-step js-reveal-up"><div class="vx-aud-arrow" aria-hidden="true">→</div><div><h4>Napiš poptávku</h4><p>Rovnou napíšeš krátkou zprávu, co konkrétně potřebuješ vyřešit.</p></div></div>
-            <div class="vx-aud-step js-reveal-up"><div class="vx-aud-arrow" aria-hidden="true">→</div><div><h4>Domluvte se v chatu</h4><p>Jakmile druhá strana žádost potvrdí, otevře se vám společný chat, kde doladíte detaily a pustíte se do toho.</p></div></div>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <!-- ZÁVĚR -->
     <section class="vx-sec vx-close">
