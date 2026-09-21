@@ -40,40 +40,43 @@
   <!-- lokálně a synchronně: přes CDN s async se komponenta upgradovala pozdě a ikony posouvaly layout -->
   <script src="/iconify-icon.min.js?v=3.0.0"></script>
   <link rel="preload" href="/fonts/LeagueSpartan-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v=133" />
+  <link rel="stylesheet" href="style.css?v=136" />
 
-  <!-- ═══════════ ÚVODNÍ OBRAZOVKA ═══════════
-       Modrá plocha s ikonou, dokud se stránka nenačte. Třídu nasazuje skript
-       níž — bez JS se nenasadí a stránka se chová jako dřív (loader by jinak
-       zůstal viset přes obsah). Modrá je natvrdo: platí i než dojede style.css. -->
+  <!-- ═══════════ ÚVODNÍ NAPSÁNÍ NADPISU ═══════════
+       Místo modré plochy s logem se na čisté stránce po písmenech napíše
+       nadpis a teprve pak naběhne navbar, aurora a tlačítka. Třídu nasazuje
+       skript níž — bez JS (a při prefers-reduced-motion) se nenasadí a hero
+       se chová jako dřív, tedy odhalovací maskou. -->
   <style>
-    #page-loader {
-      position: fixed; inset: 0; z-index: 10000;
-      display: none; place-items: center;
-      background: #0020f6; transition: opacity .45s ease;
-    }
-    .page-loading { overflow: hidden; }
-    .page-loading #page-loader { display: grid; }
-    .page-loading.page-loaded #page-loader { opacity: 0; pointer-events: none; }
-    #page-loader svg { width: clamp(84px, 16vw, 132px); height: auto; }
-    #page-loader svg path { animation: loaderPulse 1.6s ease-in-out infinite; transform-origin: 50% 50%; }
-    @keyframes loaderPulse {
-      0%, 100% { opacity: .82; transform: scale(1); }
-      50%      { opacity: 1;   transform: scale(1.06); }
-    }
-    /* nájezd hera čeká, až loader zmizí — jinak by odběhl schovaný pod ním */
-    .page-loading:not(.page-loaded) .hero-h1 span,
-    .page-loading:not(.page-loaded) .hero-cta { animation-play-state: paused; }
-    @media (prefers-reduced-motion: reduce) {
-      #page-loader { transition: none; }
-      #page-loader svg path { animation: none; }
-    }
+    /* Během psaní je vidět jen nadpis. */
+    html.hero-uvod #navbar,
+    html.hero-uvod #hero .aurora { opacity: 0; }
+    html.hero-uvod .hero-cta { animation-play-state: paused; }
+    /* Psaní nahrazuje odhalovací masku — nesmí běžet obojí. */
+    html.hero-uvod .hero-h1 > span { animation: none !important; clip-path: none !important; transform: none !important; }
+    html.hero-uvod .hero-h1 .hero-typer { opacity: 0; }
+    /* Nadpis je v HTML celý — než ho skript rozloží na písmena, musí být
+       schovaný, jinak na okamžik blikne hotový a teprve pak se začne psát. */
+    html.hero-uvod .hero-h1 > span { opacity: 0; }
+    #navbar, #hero .aurora { transition: opacity .45s ease; }
+    /* Jednotlivá písmena. Slovo drží pohromadě .hero-slovo (nowrap), jinak by
+       se řádek mohl zlomit uprostřed slova.
+       Písmena se prolínají, neskáčou: tvrdý psací stroj i s kurzorem tu byl
+       vyzkoušený a působil hůř. */
+    .hero-slovo { white-space: nowrap; }
+    .hero-pis { opacity: 0; transition: opacity .16s ease; }
+    .hero-pis.je-tu { opacity: 1; }
+
     /* Celý web stojí na bílém plátně — tmavé body::before ze style.css by
        prosvítalo jen při přetažení stránky na mobilu. */
     body { background: #fff; }
     body::before { display: none !important; }
   </style>
-  <script>document.documentElement.classList.add('page-loading');</script>
+  <script>
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
+      document.documentElement.classList.add('hero-uvod');
+  </script>
+
 
   <!-- Structured data -->
   <script type="application/ld+json">
@@ -144,35 +147,75 @@
 </head>
 <body>
 
-  <!-- Ikona je inline (ne <img>), aby na úvodní obrazovce nezáleželo na síti.
-       Modrý čtverec ikony je vynechaný — splynul by s pozadím, zbylo by z něj
-       stejně jen bílé „M". -->
-  <div id="page-loader" aria-hidden="true">
-    <svg viewBox="0 0 512 512" role="img" aria-label="Makej">
-      <path fill="#ffffff" d="M137 128 L198 128 L255 276 L313 128 L375 128 L397 384 L341 384 L328 231 L272 383 L239 383 L183 231 L170 384 L114 384 Z"/>
-    </svg>
-  </div>
+  <!-- Nadpis se po načtení fontů napíše po písmenech, pak naskočí zbytek hera.
+       Písmena jsou seskupená po slovech (nowrap), aby se řádek nezlomil uvnitř
+       slova. Poslední slovo („swajp") kreslí až heroTyper ve script.js — čeká
+       na událost `hero-napsano`, kterou pošleme, až je zbytek nadpisu venku. -->
   <script>
-  (function () {
-    var root = document.documentElement, MIN = 450, start = Date.now(), done = false;
-    function finish() {
-      if (done) return;
-      done = true;
-      root.classList.add('page-loaded');                              // spustí prolnutí
-      setTimeout(function () { root.classList.remove('page-loading'); }, 500);
+  (function uvodniNapis() {
+    var root = document.documentElement;
+    if (!root.classList.contains('hero-uvod')) return;
+    // Skript stojí nad <nav> i nad herem, takže na DOM musí počkat — jinak by
+    // nadpis nenašel a úvod by se tiše vypnul.
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', uvodniNapis, { once: true });
+      return;
     }
-    // Čekáme na rozparsované DOM i na fonty — nadpis v League Spartan by se
-    // jinak po dotažení fontu přeskládal až pod odkrytým herem.
-    var pending = 2;
-    function tick() { if (--pending) return;
-      setTimeout(finish, Math.max(0, MIN - (Date.now() - start)));    // ať to na rychlém načtení jen neproblikne
-    }
-    if (document.readyState === 'loading') addEventListener('DOMContentLoaded', tick, { once: true });
-    else tick();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(tick); else tick();
-    setTimeout(finish, 4000);                                          // pojistka, ať loader nikdy nezůstane viset
+    var h1 = document.querySelector('.hero-h1');
+    var obal = h1 && h1.firstElementChild;
+    var typer = obal && obal.querySelector('.hero-typer');
+    function hotovo() { root.classList.remove('hero-uvod'); }
+    if (!h1 || !obal || !typer) { hotovo(); return; }
+
+    h1.classList.add('mk-hotovo');        // maska je vypnutá, ať clip-path neořezává
+
+    // Textové uzly kolem .hero-typer rozložíme na písmena. Před typerem =
+    // „Práce na jeden ", za ním tečka — ta se musí objevit až po slově.
+    var pred = [], za = [], zaTyperem = false;
+    [].slice.call(obal.childNodes).forEach(function (uzel) {
+      if (uzel === typer) { zaTyperem = true; return; }
+      if (uzel.nodeType !== 3) return;
+      var frag = document.createDocumentFragment();
+      uzel.nodeValue.split(/(\s+)/).forEach(function (kus) {
+        if (!kus) return;
+        if (/^\s+$/.test(kus)) { frag.appendChild(document.createTextNode(kus)); return; }
+        var slovo = document.createElement('span');
+        slovo.className = 'hero-slovo';
+        kus.split('').forEach(function (znak) {
+          var s = document.createElement('span');
+          s.className = 'hero-pis';
+          s.textContent = znak;
+          slovo.appendChild(s);
+          (zaTyperem ? za : pred).push(s);
+        });
+        frag.appendChild(slovo);
+      });
+      obal.replaceChild(frag, uzel);
+    });
+
+    obal.style.opacity = '1';     // písmena jsou schovaná každé zvlášť, obal už ne
+    var KROK = 30;
+    var pripraveno = (document.fonts && document.fonts.ready)
+      ? document.fonts.ready.catch(function () {})
+      : Promise.resolve();
+
+    pripraveno.then(function () {
+      pred.forEach(function (s, i) { setTimeout(function () { s.classList.add('je-tu'); }, i * KROK); });
+      var konecPsani = pred.length * KROK;
+      setTimeout(function () {
+        typer.style.opacity = '1';
+        document.dispatchEvent(new CustomEvent('hero-napsano'));   // heroTyper vykreslí slovo
+      }, konecPsani);
+      // Tečka až za slovem — jinak visí chvíli sama za „jeden".
+      setTimeout(function () { za.forEach(function (s) { s.classList.add('je-tu'); }); }, konecPsani + 300);
+      // Krátké nadechnutí, než naskočí navbar, aurora a tlačítka — ať je věta
+      // chvíli vidět sama a nepřekryje ji hned zbytek stránky.
+      setTimeout(hotovo, konecPsani + 820);
+    });
+    setTimeout(hotovo, 4000);                                      // pojistka
   })();
   </script>
+
 
   <!-- ═══════════ NAVBAR ═══════════ -->
   <nav id="navbar" class="nav-light-page nav-single-action">
@@ -348,55 +391,21 @@
   </section>
   </div><!-- /.uvod -->
 
-  <!-- ═══════════ REFERENCE ═══════════ -->
-  <section id="makaci">
-    <div class="container">
-      <div class="ref-head js-ref-up">
-        <h2>Co říkají makači.</h2>
-        <p>Ohlasy našich budoucích Makačů</p>
-      </div>
-
-      <div class="ref-panel">
-        <div class="ref-word js-ref-word" aria-hidden="true">RECENZE</div>
-
-        <p class="ref-side bl"><b>Bez filtrů.</b> Co nám lidi napsali, to tu je — nic jsme nepřepisovali.</p>
-        <p class="ref-side tr">Reálné reakce z prvních týdnů. Žádné placené recenze, žádní herci.</p>
-
-        <div class="ref-cards" id="ref-cards">
-          <blockquote class="ref-card c1 js-ref-up">
-            <div class="ref-quote">
-              <div class="ref-stars" role="img" aria-label="Hodnocení 5 z 5"><i></i><i></i><i></i><i></i><i></i></div>
-              <p class="ref-text">Těším se, až to vyjde!</p>
-              <footer class="ref-cap">
-                <span class="ref-name">Šimon V.</span>
-                <span class="ref-meta">29. 7. 2026</span>
-              </footer>
-            </div>
-          </blockquote>
-          <blockquote class="ref-card c2 js-ref-pop">
-            <div class="ref-quote">
-              <div class="ref-stars" role="img" aria-label="Hodnocení 5 z 5"><i></i><i></i><i></i><i></i><i></i></div>
-              <p class="ref-text">Moc se těším, až si na Makej najdu brigádu.</p>
-              <footer class="ref-cap">
-                <span class="ref-name">David V.</span>
-                <span class="ref-meta">27. 7. 2026</span>
-              </footer>
-            </div>
-          </blockquote>
-          <blockquote class="ref-card c3 js-ref-up">
-            <div class="ref-quote">
-              <div class="ref-stars" role="img" aria-label="Hodnocení 5 z 5"><i></i><i></i><i></i><i></i><i></i></div>
-              <p class="ref-text">Vypadá to suprově!</p>
-              <footer class="ref-cap">
-                <span class="ref-name">Samuel P.</span>
-                <span class="ref-meta">24. 7. 2026</span>
-              </footer>
-            </div>
-          </blockquote>
-        </div>
-      </div>
+  <!-- ═══════════ UKÁZKA APPKY — celoobrazovková modrá scéna ═══════════
+       Telefon vyjíždí zespoda a je záměrně useknutý spodní hranou: působí,
+       že pokračuje za obrazovku. Snímek má vyříznuté pozadí, takže splývá
+       s modrou bez hrany (blíž viz hsp-mockup.webp). -->
+  <section class="uk" id="ukazka">
+    <div class="uk-head js-reveal-up">
+      <h2>Brigáda na pár swajpů.</h2>
+      <p>Projdi nabídky ve svém okolí, matchni se s firmou a zbytek doladíš přímo v chatu. Žádné životopisy, žádné čekání na odpověď.</p>
+      <a href="#brzy" class="uk-btn">Chci být u toho</a>
+    </div>
+    <div class="uk-foto" aria-hidden="true">
+      <img src="/hsp-mockup.webp" alt="" width="1240" height="732" loading="lazy" decoding="async" />
     </div>
   </section>
+
   <!-- ═══════════ DOWNLOAD CTA ═══════════ -->
   <section id="download">
     <div class="container">

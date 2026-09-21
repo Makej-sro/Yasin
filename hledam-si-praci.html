@@ -42,7 +42,7 @@
   <link rel="preload" as="image" href="/krok-1.jpg?v=1" />
   <link rel="preload" as="image" href="/krok-2.jpg?v=2" />
   <link rel="preload" href="/fonts/LeagueSpartan-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v=133" />
+  <link rel="stylesheet" href="style.css?v=136" />
   <style>
     /* Bolt-style střídavé kroky (foto + text) */
     .bolt-journey { position: relative; max-width: 1080px; margin: 0 auto; padding: 0 24px; }
@@ -85,70 +85,72 @@
 
 
     /* ── Kroky jako karty (vzor: bolt.eu) ──────────────────────────────
-       Karta má vlastní barvu vzatou z horní hrany své fotky, takže fotka
-       do karty plynule přejde a mezi textem a obrázkem není žádný šev.
-       Text je normální HTML nad fotkou, ne vypálený do obrázku. */
+       Fotka vyplňuje celou kartu, text leží na ní v bílé. Aby byl čitelný
+       i na světlých fotkách (krok 1 a 3 mají horní třetinu jasnou), je pod
+       ním tmavý závoj, co se dolů rozplyne do ztracena.
+       Poměr 4:5 místo Boltových vysokých karet: naše fotky jsou na šířku
+       (1,56:1), takže užší výřez by z lidí uřízl půlku. */
     #how-it-works .bolt-steps {
       display: grid; grid-template-columns: repeat(3, 1fr);
       gap: clamp(14px, 1.8vw, 24px); align-items: stretch;
       position: relative; z-index: 2;
     }
     #how-it-works .bolt-row {
-      display: flex; flex-direction: column;
-      border-radius: 26px; overflow: hidden;
+      position: relative; display: block; aspect-ratio: 4 / 5;
+      border-radius: 26px; overflow: hidden; background: #0a0d2e;
       box-shadow: 0 30px 60px -34px rgba(10,13,46,.5);
-    }
-    /* Pozadí karet: světle modrý přechod odečtený z fotky prvního kroku.
-       Ta je focená ve studiu, takže do karty plynule přejde bez švu.
-       Druhá a třetí fotka jsou z reálného prostředí (budova, učebna) a mají
-       tmavý horní okraj — kdyby se z nich barva karty odvozovala taky, byly by
-       karty kalně šedé a text na nich nečitelný. Proto mají všechny tři stejné
-       světlé pozadí a fotky 2 a 3 se do něj shora rozplynou (maska níž). */
-    #how-it-works .bolt-row:nth-child(1),
-    #how-it-works .bolt-row:nth-child(2),
-    #how-it-works .bolt-row:nth-child(3) {
-      background: linear-gradient(to right, #a1cbfb 0%, #a1cbfb 12%, #a0ccfc 25%, #a1caf8 38%, #a2cbf9 50%, #9ecafb 62%, #a5cffc 75%, #a8d1fc 88%, #a7cffc 100%);
     }
     #how-it-works .bolt-row:nth-child(2) { transition-delay: .1s; }
     #how-it-works .bolt-row:nth-child(3) { transition-delay: .2s; }
-    /* Jen u fotek z reálného prostředí. U první se nedá — chlapci sahají vlasy
-       až do horní hrany snímku a maska by je odbarvila. */
-    #how-it-works .bolt-row:nth-child(2) .bolt-media img,
-    #how-it-works .bolt-row:nth-child(3) .bolt-media img {
-      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 20%);
-              mask-image: linear-gradient(to bottom, transparent 0, #000 20%);
+
+    /* fotka přes celou kartu */
+    #how-it-works .bolt-media {
+      /* aspect-ratio ze základního .bolt-media musí pryč: u absolutního prvku
+         si z šířky dopočítá výšku a fotka pak kartu nevyplní. */
+      position: absolute; inset: 0; aspect-ratio: auto; margin: 0; padding: 0;
+      background: none; border: 0; border-radius: 0; box-shadow: none;
+    }
+    #how-it-works .bolt-media img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      -webkit-mask-image: none; mask-image: none;
+    }
+    /* Výřez podle toho, kde na které fotce stojí člověk — na výšku se z nich
+       ukáže zhruba polovina šířky, takže střed by u krajních fotek uřízl hlavu. */
+    #how-it-works .bolt-row:nth-child(1) .bolt-media img { object-position: 46% center; }
+    #how-it-works .bolt-row:nth-child(2) .bolt-media img { object-position: 44% center; }
+    #how-it-works .bolt-row:nth-child(3) .bolt-media img { object-position: 55% center; }   /* ať se vejde celá pilulka s výplatou */
+
+    /* tmavý závoj pod textem */
+    #how-it-works .bolt-row::after {
+      content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background: linear-gradient(to bottom,
+        rgba(6,10,32,.88) 0%, rgba(6,10,32,.74) 20%, rgba(6,10,32,.44) 40%, rgba(6,10,32,0) 64%);
     }
 
     #how-it-works .bolt-text {
-      padding: clamp(22px, 2.4vw, 32px) clamp(22px, 2.4vw, 30px) clamp(18px, 2vw, 26px);
+      position: relative; z-index: 2; order: 0;
+      padding: clamp(22px, 2.4vw, 32px) clamp(20px, 2.2vw, 28px) 0;
     }
     #how-it-works .bolt-text h3 {
       font-family: var(--font-heading); font-weight: 800; text-transform: uppercase;
       font-size: clamp(1.05rem, 1.5vw, 1.35rem); letter-spacing: -.02em; line-height: 1.06;
-      color: #0a0d2e; margin: 0;
+      color: #fff; margin: 0; text-shadow: 0 1px 14px rgba(6,10,32,.55);
       /* „Matchni se s firmou" a „Pracuj a vydělávej" se na šířku karty nevejdou
          na jeden řádek — rezerva na dva srovná začátky popisů do jedné linky. */
       min-height: 2.12em;
     }
     #how-it-works .bolt-text p {
       font-size: clamp(.88rem, 1vw, .95rem); line-height: 1.5;
-      color: rgba(10,13,46,.62); margin: 9px 0 0; max-width: none; text-wrap: pretty;
+      color: rgba(255,255,255,.9); margin: 9px 0 0; max-width: none; text-wrap: pretty;
+      text-shadow: 0 1px 12px rgba(6,10,32,.5);
     }
 
-    /* V markupu je fotka před textem (a sudé řady si ji navíc přehazovaly).
-       Tady chceme vždycky text nahoře a fotku dole, ať karty čtou stejně. */
-    #how-it-works .bolt-text { order: 1; }
-    #how-it-works .bolt-media,
-    #how-it-works .bolt-row:nth-child(even) .bolt-media { order: 2; }
-    /* fotka dosedá na spodní hranu karty a jde od kraje ke kraji */
-    #how-it-works .bolt-media {
-      margin-top: auto; background: none; border: 0; border-radius: 0; box-shadow: none;
-      aspect-ratio: auto; display: block;
-    }
     /* velké slovo v pozadí dávalo smysl u průhledného obsahu; mezi plnými
        kartami z něj koukají jen útržky, tak ho tu vypínáme */
     #how-it-works .hsp-gal-word { display: none; }
-    #how-it-works .bolt-media img { width: 100%; height: auto; display: block; }
+
+
+    #how-it-works .hsp-gal-word { display: none; }
 
     .hsp-gal-word {
       position: absolute; left: 0; right: 0; top: 46%; transform: translateY(-50%); text-align: center;
@@ -184,9 +186,8 @@
 
     /* Kroky na bílé (jako employer) */
     #how-it-works { background: #fff; }
-    /* „Makej" v nadpisu celé v brandové modré (jako tečka nad „j"), ne levandulové */
-    #how-it-works .bolt-text h3 { color: #0a0d2e; }
-    #how-it-works .bolt-text p { color: rgba(10,13,46,.6); }
+    /* Text karet je bílý na fotce (viz blok „Kroky jako karty" výš) — tenhle
+       tmavý zápis je z doby, kdy karty bílé pozadí měly, a přebíjel ho. */
     #how-it-works .bolt-text-label { color: var(--primary); background: rgba(0,32,246,.07); border-color: rgba(0,32,246,.18); }
 
     /* Sekce „Proč si zvolíš Makej" — brandová modrá, na celou výšku obrazovky.
@@ -371,6 +372,25 @@
     .vx-close .vx-btn:hover { background: #0020f6; color: #fff; transform: translateY(-2px);
       box-shadow: 0 20px 40px -12px rgba(0,10,80,.6); }
     @media (max-width: 700px) { .vx-close { padding: 68px 0; } }
+
+    /* ── Varianta se snímkem appky ──
+       Text vlevo, telefon vpravo. Snímek má průhledné pozadí, takže splývá
+       s modrou — proto kolem něj není rámeček ani stín navíc. */
+    .vx-close--foto { text-align: left; padding: 84px 0; }
+    .vx-close--foto .vx-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
+      align-items: center; gap: clamp(28px, 5vw, 64px); }
+    .vx-close--foto .vx-sec-head { max-width: 520px; margin: 0; }
+    .vx-close--foto .vx-sec-head p { margin-left: 0; margin-right: 0; }
+    .vx-close--foto .vxc-foto img { display: block; width: 100%; height: auto; }
+    /* Žádný přesah dolů: .vx-close má overflow:hidden kvůli světlu v pozadí,
+       takže by se telefon neprotáhl ven, ale uřízl v půlce těla. */
+    @media (max-width: 900px) {
+      .vx-close--foto { text-align: center; padding: 68px 0; }
+      .vx-close--foto .vx-wrap { grid-template-columns: 1fr; gap: 34px; }
+      .vx-close--foto .vx-sec-head { margin: 0 auto; }
+      .vx-close--foto .vx-sec-head p { margin-left: auto; margin-right: auto; }
+      .vx-close--foto .vxc-foto { margin-bottom: 0; }
+    }
 
     /* ── FAQ (brigádníci) — světlá sekce ── */
     .emp-faq { max-width: 760px; margin: 0 auto; padding: 0 24px; }
@@ -661,14 +681,17 @@
     </section>
 
     <!-- ═══════════ ZÁVĚR — modrý pruh (stejný jako na /lide) ═══════════ -->
-    <section class="vx-close">
+    <section class="vx-close vx-close--foto">
       <div class="vx-wrap">
         <div class="vx-sec-head">
           <h2 class="vx-h2">Najdi si brigádu ještě dnes</h2>
           <p>Žádné životopisy ani zdlouhavé formuláře. Vytvoř si profil, swajpni nabídku a zbytek doladíš s firmou přímo v chatu.</p>
-        </div>
-        <div>
           <a href="#" class="vx-btn worker-cta-register">Vytvořit účet zdarma</a>
+        </div>
+        <!-- Snímek má vyříznuté pozadí, takže sedí přímo na modré bez hrany.
+             aria-hidden: obsah displeje je stejně napsaný v textu sekce. -->
+        <div class="vxc-foto js-reveal-up" aria-hidden="true">
+          <img src="/hsp-mockup.webp" alt="" width="1240" height="732" loading="lazy" decoding="async" />
         </div>
       </div>
     </section>
