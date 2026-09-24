@@ -366,7 +366,11 @@ img { max-width: 100%; display: block; }
 
 /* heroLineUp a heroGradSweep si berou i hera na /lide, /hledam-si-praci
    a /pro-zamestnavatele — zůstávají, i když je hlavní stránka už nepoužívá. */
-@keyframes heroLineUp { from { transform: translateY(120%); } to { transform: translateY(0); } }
+/* Start 160 %, ne 120 %: řádek má kvůli ocáskům (j, p, y) okno o .3em
+   vyšší než text a tučné písmo vystrkuje špičky (N, d, l, tečky nad i/j)
+   nad vlastní box. Při 120 % to nestačilo a během prodlevy před animací
+   koukaly zpod masky useknuté vršky písmen jako řada čárek. */
+@keyframes heroLineUp { from { transform: translateY(160%); } to { transform: translateY(0); } }
 /* 200 % = přesně jedna šířka dlaždice → smyčka navazuje beze švu (dřív 220 % → skok) */
 @keyframes heroGradSweep { to { background-position: 200% center; } }
 
@@ -908,51 +912,6 @@ img { max-width: 100%; display: block; }
   .wl-krok { gap: 16px; }
   .wl-mark { font-size: clamp(36px, 7vw, 54px); }
 }
-/* ═══════════ UKÁZKA APPKY — celoobrazovková modrá scéna ═══════════
-   Nahradila sekci s recenzemi. Text nahoře, telefon zespoda useknutý hranou
-   sekce (proto overflow:hidden) — vypadá pak, že pokračuje za obrazovku.
-   Snímek má průhledné pozadí, takže kolem něj není potřeba žádný rámeček. */
-.uk {
-  position: relative; min-height: 100svh; overflow: hidden;
-  background: #0020f6; color: #fff; text-align: center;
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-  padding: clamp(72px, 11vh, 132px) 24px 0;
-}
-/* měkké světlo shora, stejné jako u ostatních modrých bloků */
-.uk::before {
-  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: radial-gradient(60% 70% at 50% -12%, rgba(150,168,255,.42), rgba(150,168,255,0) 62%);
-}
-.uk-head { position: relative; z-index: 1; max-width: 900px; }
-.uk h2 {
-  font-family: var(--font-heading); font-weight: 900; text-transform: uppercase;
-  font-size: clamp(2.1rem, 5.6vw, 4.2rem); line-height: 1.02; letter-spacing: -.025em;
-  margin: 0; color: #fff; text-wrap: balance;
-}
-.uk p {
-  color: rgba(255,255,255,.85); font-size: clamp(1rem, 1.35vw, 1.16rem); line-height: 1.6;
-  max-width: 620px; margin: 18px auto 0; text-wrap: pretty;
-}
-.uk-btn {
-  display: inline-flex; align-items: center; gap: 8px; margin-top: 30px;
-  font-family: var(--font-heading); font-weight: 800; font-size: .92rem; letter-spacing: .01em;
-  padding: 14px 28px; border-radius: 999px; cursor: pointer;
-  background: #fff; color: #0020f6; box-shadow: 0 14px 30px -12px rgba(0,10,80,.5);
-  transition: background .25s ease, color .25s ease, transform .2s ease, box-shadow .25s ease;
-}
-.uk-btn:hover { transform: translateY(-2px); box-shadow: 0 20px 40px -12px rgba(0,10,80,.6); }
-
-/* Telefon: pod textem, co nejširší. Na úzkém displeji se místo zmenšování
-   ořízne po stranách (object-fit), jinak by z něj byl proužek. */
-.uk-foto { position: relative; z-index: 1; width: min(1180px, 100%); margin-top: clamp(26px, 5vh, 58px); }
-.uk-foto img { display: block; width: 100%; height: auto; }
-@media (max-width: 860px) {
-  .uk { padding-top: clamp(56px, 8vh, 96px); }
-  .uk-foto { width: 100%; aspect-ratio: 5 / 4; margin-top: 30px; }
-  .uk-foto img { height: 100%; object-fit: cover; object-position: center top; }
-}
-@media (prefers-reduced-motion: reduce) { .uk-btn { transition: none; } }
-
 /* ═══════════ DOWNLOAD ═══════════ */
 #download { padding: 64px 0; background: var(--pl-canvas); }
 /* Sekce na plátně, před kterou stojí bílá: skok #fff → #F5F6FA je jen deset
@@ -1039,6 +998,65 @@ img { max-width: 100%; display: block; }
 
 /* Lišta cookies: consent.css + consent.js (hlavička každé stránky). */
 .download-note { color: #8a93a8; font-size: .85rem; font-weight: 600; }
+
+
+/* ── Čekací list na podstránkách ──────────────────────────────────────────
+   Sběr e-mailů místo tlačítek do obchodů, dokud appka není venku. Vzhled
+   nadpisu i políčka sdílí s úvodkou (.wl-mark / .wl-lead / .wl-in / .wl-go),
+   aby se stejná věc nekreslila dvakrát jinak. Liší se jen rám: tady sekce
+   stojí v proudu stránky — žádné přilepování ani rozmazané hero za ní, to je
+   na úvodce svázané s výškou hera a jinde by nemělo co rozmazávat. */
+/* Pozadí: stejná aurora jako v hero (tři plující modré skvrny) a přes ni
+   mléčné sklo. Skrz sklo je vidět rozmazaná skvrna, takže panel opravdu
+   vypadá jako sklo položené na světle — na plochém plátně by `backdrop-filter`
+   neměl co rozmazat a zbyl by jen bílý obdélník.
+   overflow: hidden ořezává skvrny, ať nepřetečou do sousedních sekcí. */
+#download.cl-sekce { padding: clamp(78px, 9vw, 118px) 0; position: relative; overflow: hidden; }
+/* Kde nad sekcí stojí bílá (FAQ na /hledam-si-praci a /pro-zamestnavatele,
+   bílé tělo na /o-nas), by na hraně vznikla ostrá čára. Plátno proto naběhne
+   přechodem. Na /lide je nad sekcí plátno taky, tam se třída nedává — jinak
+   by se do plynulé plochy naopak vložil bílý pruh. */
+#download.cl-sekce--zbila { background: linear-gradient(180deg, #fff 0, var(--pl-canvas) 190px); }
+/* Aurora má z-index 0, obsah musí být nad ní — jinak by ho překryla. */
+.cl-slot { position: relative; z-index: 1; display: flex; justify-content: center; padding: 0 clamp(16px, 4vw, 24px); }
+/* .wl-panel se na úvodce posouvá podle scrollu přes --p. Tady --p nikdo
+   nenastavuje, takže by zůstal zaseknutý 7vh dole — proto posun rušíme.
+   (transform jiný než none by navíc `backdrop-filter` uvnitř rozbil.) */
+.cl-sekce .wl-panel {
+  width: min(760px, 100%); transform: none;
+  padding: clamp(40px, 5vw, 62px) clamp(22px, 4vw, 52px);
+  background: rgba(255, 255, 255, .55);
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, .75);
+  border-radius: 34px;
+  box-shadow: 0 32px 70px -34px rgba(16, 24, 64, .45), 0 2px 10px rgba(16, 24, 64, .05);
+}
+/* Prohlížeč bez backdrop-filter (starší Firefox s vypnutou vlajkou) by dostal
+   průsvitný panel na skvrnách = nečitelný text. Radši plná bílá. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .cl-sekce .wl-panel { background: rgba(255, 255, 255, .92); }
+}
+/* Skvrny jsou rozměřené na hero přes celou obrazovku. V téhle sekci, která
+   je o dost nižší, by většina zůstala mimo záběr a pod sklem by nebylo co
+   rozmazat — proto je stahujeme k panelu. */
+/* Skvrna, která přesahuje horní okraj, se o `overflow: hidden` ořízne do
+   rovné čáry. Maska ji nechá do okraje vytratit, takže po ní žádná hrana
+   nezbude — a zároveň nic nekreslí přes hranici sekce. */
+.cl-sekce .aurora {
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 24%);
+          mask-image: linear-gradient(180deg, transparent 0, #000 24%);
+}
+.cl-sekce .aurora i:nth-child(1) { width: max(480px, 44vw); height: max(380px, 32vw); left: -4vw; top: -16%; }
+.cl-sekce .aurora i:nth-child(2) { width: max(440px, 40vw); height: max(440px, 38vw); right: -6vw; top: 4%; }
+.cl-sekce .aurora i:nth-child(3) { width: max(420px, 38vw); height: max(320px, 26vw); left: 26vw; bottom: -20%; }
+@media (max-width: 700px) {
+  .cl-sekce .wl-panel { border-radius: 26px; padding: 34px 18px; }
+}
+/* Menší než na úvodce: tam nadpis drží celou obrazovku, tady je to sekce
+   mezi ostatními a v plné velikosti by přebil vlastní obsah stránky. */
+.cl-sekce .wl-mark { font-size: clamp(36px, 5.6vw, 62px); }
+.cl-sekce .wl-h2 { font-size: clamp(30px, 4.6vw, 48px); }
 
 /* ═══════════ FOOTER ═══════════ */
 #footer { padding: 80px 0 32px; border-top: 1px solid rgba(208,208,255,.06); }
@@ -2291,6 +2309,8 @@ iconify-icon[width="56"] { width: 56px; height: 56px; }
           mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
 }
 .aurora i { position: absolute; display: block; will-change: transform; }
+/* Mimo obraz se skvrny zastaví — viz auroraJenVObraze() ve script.js. */
+.aurora--stoji i { animation-play-state: paused; }
 .aurora i:nth-child(1) {
   width: max(620px, 64vw); height: max(500px, 50vw); left: -16vw; top: -20vw;
   background: radial-gradient(closest-side, rgba(0,32,246,.26) 0%, rgba(0,32,246,.15) 34%, rgba(0,32,246,.05) 68%, rgba(0,32,246,0) 100%);
@@ -2393,6 +2413,24 @@ html::-webkit-scrollbar { display: none; width: 0; height: 0; }
   scrollbar-width: none;
 }
 .proc-pruh::-webkit-scrollbar { display: none; }
+
+/* ── Pruh jede sám, ale jde i chytit ──────────────────────────────────
+   Posouvá se skutečným scrollem (scrollLeft v script.js), ne transformem.
+   Jen tak jde do něj zároveň sáhnout myší, prstem nebo kolečkem — CSS
+   animace by proti ručnímu posunu stála a přebíjela ho.
+   Položky zdvojuje JS, smyčka se pozná podle poloviny šířky stopy. */
+.proc-pas {
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scrollbar-width: none; -ms-overflow-style: none;
+  cursor: grab;
+}
+.proc-pas::-webkit-scrollbar { display: none; }
+.proc-pas:active { cursor: grabbing; }
+.proc-pas .proc-pruh {
+  width: max-content; overflow: visible;
+  scroll-snap-type: none; padding-left: 0; padding-right: 0;
+}
+
 .proc-bod {
   flex: 0 0 clamp(240px, 27vw, 330px); scroll-snap-align: start;
   display: flex; flex-direction: column; align-items: center; text-align: center;
@@ -2412,8 +2450,23 @@ html::-webkit-scrollbar { display: none; width: 0; height: 0; }
   color: rgba(14,17,22,.6); margin: 10px 0 0; text-wrap: pretty;
 }
 @media (max-width: 700px) {
-  .proc-pruh { --proc-okraj: 20px; }
-  .proc-bod { flex-basis: 74vw; }
+  /* Na telefonu se nic neposouvá ani nejede — položky stojí pod sebou jako
+     seznam. Vodorovný scroll uvnitř svislého jde na telefonu snadno
+     přehlédnout a poslední důvody by pak nikdo neviděl.
+
+     POZOR na specificitu: `.proc-pas .proc-pruh` výš má (0,2,0), takže
+     samotné `.proc-pruh` (0,1,0) by ho nepřebilo a na mobilu by zůstala
+     `width: max-content` — obrázek by přetekl přes celou obrazovku.
+     Proto se stejný selektor opakuje i tady. */
+  .proc-pas { overflow-x: visible; cursor: auto; }
+  .proc-pas .proc-pruh,
+  .proc-pruh {
+    display: grid; grid-template-columns: 1fr; gap: 44px;
+    width: auto; overflow-x: visible; scroll-snap-type: none;
+    --proc-okraj: 20px;
+    padding: 0 var(--proc-okraj) 10px;
+  }
+  .proc-bod { flex-basis: auto; scroll-snap-align: none; }
 }
 
 /* Varianta bez posouvání: když se položky vejdou na jednu řadu, ať stojí
@@ -2432,4 +2485,3 @@ html::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .proc-pruh--mrizka .proc-bod h3 { min-height: 2.2em; }
 @media (max-width: 900px) { .proc-pruh--mrizka { grid-template-columns: 1fr 1fr; gap: 40px 24px; } }
 @media (max-width: 520px) { .proc-pruh--mrizka { grid-template-columns: 1fr; } }
-

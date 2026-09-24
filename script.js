@@ -62,7 +62,6 @@ function setupNavDropdowns() {
       ['Časté dotazy',   '/pro-zamestnavatele#faq'],
     ],
     'hledam-si-praci': [
-      ['Jak to funguje', '/hledam-si-praci#how-it-works'],
       ['Vyzkoušej appku','/hledam-si-praci#features'],
       ['Stáhnout',       '/hledam-si-praci#download'],
     ],
@@ -521,11 +520,11 @@ function initAuth() {
   }
 
   // Appka ještě neběží, takže „Vytvořit účet" nevede na registraci, ale na sběr
-  // e-mailů v sekci #brzy. Na hlavní stránce doscrolluje a zaostří pole,
-  // odjinud přesměruje na /#brzy (sekce je jen na homepage).
+  // e-mailů. Na úvodce je v sekci #brzy, na podstránkách v #download — použij
+  // ten na stránce, a když na ní žádný není, pošli člověka na /#brzy.
   function goToEmailSignup() {
     closeModals();
-    const sec = document.getElementById('brzy');
+    const sec = document.getElementById('brzy') || document.querySelector('#download.cl-sekce');
     if (!sec) { window.location.href = '/#brzy'; return; }
     sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
     const input = sec.querySelector('.wl-in');
@@ -1354,14 +1353,17 @@ function showToast(msg) {
   }
   function zapomen() { try { localStorage.removeItem(PAMET); } catch (e) {} }
 
+  // Na úvodce je čekací list v sekci #brzy, na podstránkách v #download.
+  // Hledat ho přes formulář je spolehlivější než jmenovat obě id.
+  const sekceCL = document.getElementById('brzy') || form1.closest('section');
+
   const KROKY = ['wl-1', 'wl-2', 'wl-3'];
   function ukaz(id, bezScrollu) {
     KROKY.forEach(k => { const el = $(k); if (el) el.hidden = k !== id; });
     // Při obnovení stavu po návratu se scrollovat nesmí — návštěvník na stránku
     // teprve přišel a stránka by mu pod rukama sama ujela dolů.
     if (bezScrollu) return;
-    const sek = $('brzy');
-    if (sek) sek.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (sekceCL) sekceCL.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   // Chyba sedí u pole, ne v alertu — a zmizí, jakmile člověk začne psát.
@@ -1598,5 +1600,87 @@ function showToast(msg) {
     ukaz('wl-3');
     // Nadpis se dopisuje až po dokreslení fajfky, jinak by se to prali o pozornost.
     setTimeout(() => napis('Účet je založený.', 'wl-typed3', 'wl-cur3'), 900);
+  });
+})();
+
+/* ═══════════ AURORA SE HÝBE, JEN KDYŽ JE VIDĚT ═══════════
+   Tři plující skvrny mají `animation: … infinite`, takže se překreslují
+   pořád — i když je sekce dávno odscrollovaná. Na podstránkách nad nimi
+   navíc leží mléčné sklo čekacího listu, a `backdrop-filter` musí kvůli
+   jejich pohybu přepočítat rozmazané pozadí každý snímek. Mimo obraz to
+   nikdo nevidí, tak ať to nestojí výkon: venku ze záběru se animace pauzne
+   (skvrny zůstanou, kde byly) a se skvrnami se zastaví i to přepočítávání. */
+(function auroraJenVObraze() {
+  if (!('IntersectionObserver' in window)) return;
+  const hlidac = new IntersectionObserver(zaznamy => {
+    zaznamy.forEach(z => z.target.classList.toggle('aurora--stoji', !z.isIntersecting));
+  }, { rootMargin: '140px' });
+  // Některá hera si aurora dokresluje až skriptem, takže jednorázový sběr při
+  // načtení by o ni přišel. Proto se seznam projde znovu po doběhnutí stránky;
+  // `data-hlidano` brání tomu, aby se jedna skvrna hlídala dvakrát.
+  function seber() {
+    document.querySelectorAll('.aurora:not([data-hlidano])').forEach(a => {
+      a.dataset.hlidano = '1';
+      hlidac.observe(a);
+    });
+  }
+  seber();
+  document.addEventListener('DOMContentLoaded', seber);
+  window.addEventListener('load', () => { seber(); setTimeout(seber, 1200); });
+})();
+
+// ═══════════ PRUH DŮVODŮ JEDE SÁM (a jde chytit) ═══════════
+// Posouváme scrollLeft, ne transformem — jen tak lze do pruhu zároveň sáhnout
+// myší, prstem nebo kolečkem. CSS animace by ruční posun přebíjela.
+//
+// Položky zdvojujeme až tady, ne v HTML: obsah se pak upravuje na jednom místě
+// a kopie se nemůže rozejít s originálem. Klony jsou aria-hidden, ať je čtečka
+// nepředčítá dvakrát, a bez tabulátoru.
+//
+// Smyčka: jakmile scroll přejede polovinu stopy (tedy konec originálů), odečte
+// se půlka. Obsah je za ní totožný, takže to oko nepozná.
+(function pruhyJedou() {
+  const RYCHLOST = 60;          // px za vteřinu
+  const KLID     = 1200;        // jak dlouho po dotyku zůstat stát (ms)
+
+  document.querySelectorAll('.proc-pas').forEach(pas => {
+    const pruh = pas.querySelector('.proc-pruh');
+    if (!pruh || pruh.dataset.zdvojeno) return;
+
+    // Na mobilu stojí položky pod sebou jako seznam — nic se neposouvá.
+    // Kontrola MUSÍ být před zdvojením: jinak by se každý důvod na telefonu
+    // objevil dvakrát, protože klony se do seznamu přidají taky.
+    if (pas.scrollWidth <= pas.clientWidth + 4) return;
+
+    Array.from(pruh.children).forEach(b => {
+      const kopie = b.cloneNode(true);
+      kopie.setAttribute('aria-hidden', 'true');
+      kopie.querySelectorAll('a, button, input').forEach(p => p.setAttribute('tabindex', '-1'));
+      pruh.appendChild(kopie);
+    });
+    pruh.dataset.zdvojeno = '1';
+
+    const tiche = matchMedia('(prefers-reduced-motion: reduce)');
+    let stoji = 0;                                  // do kdy stojíme (timestamp)
+    const pozastav = () => { stoji = performance.now() + KLID; };
+
+    // Ruční posun kolečkem, prstem i tažením myši pruh na chvíli zastaví.
+    ['pointerdown', 'wheel', 'touchstart'].forEach(u =>
+      pas.addEventListener(u, pozastav, { passive: true }));
+    pas.addEventListener('pointerenter', () => { stoji = Infinity; });
+    pas.addEventListener('pointerleave', () => { stoji = 0; });
+    pas.addEventListener('focusin',  () => { stoji = Infinity; });
+    pas.addEventListener('focusout', () => { stoji = 0; });
+
+    let minule = performance.now();
+    (function krok(ted) {
+      const dt = Math.min(ted - minule, 100) / 1000;   // po návratu na záložku neskáče
+      minule = ted;
+      if (!tiche.matches && ted >= stoji) pas.scrollLeft += RYCHLOST * dt;
+      const pul = pruh.scrollWidth / 2;
+      if (pas.scrollLeft >= pul) pas.scrollLeft -= pul;
+      else if (pas.scrollLeft < 0) pas.scrollLeft += pul;
+      requestAnimationFrame(krok);
+    })(minule);
   });
 })();

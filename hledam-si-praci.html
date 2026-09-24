@@ -15,21 +15,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Brigády pro studenty a rychlý přivýdělek | Makej</title>
-  <meta name="description" content="Hledáš brigádu? Studentské, víkendové, letní i jednorázové brigády na DPP a DPČ ve tvém okolí. Bez životopisu — vyber si, matchni se a začni vydělávat." />
+  <meta name="description" content="Hledáš brigádu? Studentské, víkendové, letní i jednorázové brigády na DPP a DPČ ve tvém okolí. Vyber si nabídku, matchni se a začni vydělávat." />
   <meta name="theme-color" content="#0020f6" />
   <link rel="canonical" href="https://makej.eu/hledam-si-praci" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://makej.eu/hledam-si-praci" />
   <meta property="og:title" content="Brigády pro studenty a rychlý přivýdělek | Makej" />
-  <meta property="og:description" content="Hledáš brigádu? Studentské, víkendové, letní i jednorázové brigády na DPP a DPČ ve tvém okolí. Bez životopisu — vyber si, matchni se a začni vydělávat." />
+  <meta property="og:description" content="Hledáš brigádu? Studentské, víkendové, letní i jednorázové brigády na DPP a DPČ ve tvém okolí. Vyber si nabídku, matchni se a začni vydělávat." />
   <meta property="og:image" content="https://makej.eu/og-image.png" />
   <meta property="og:locale" content="cs_CZ" />
   <meta property="og:site_name" content="Makej" />
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Brigády pro studenty a rychlý přivýdělek | Makej" />
-  <meta name="twitter:description" content="Hledáš brigádu? Studentské, víkendové, letní i jednorázové brigády na DPP a DPČ ve tvém okolí. Bez životopisu — vyber si, matchni se a začni vydělávat." />
+  <meta name="twitter:description" content="Hledáš brigádu? Studentské, víkendové, letní i jednorázové brigády na DPP a DPČ ve tvém okolí. Vyber si nabídku, matchni se a začni vydělávat." />
   <meta name="twitter:image" content="https://makej.eu/og-image.png" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="/favicon.png?v=3" />
@@ -39,157 +39,9 @@
   <script src="/iconify-icons.js"></script>
   <!-- lokálně a synchronně: přes CDN s async se komponenta upgradovala pozdě a ikony posouvaly layout -->
   <script src="/iconify-icon.min.js?v=3.0.0"></script>
-  <link rel="preload" as="image" href="/krok-1.jpg?v=1" />
-  <link rel="preload" as="image" href="/krok-2.jpg?v=2" />
   <link rel="preload" href="/fonts/LeagueSpartan-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v=136" />
+  <link rel="stylesheet" href="style.css?v=143" />
   <style>
-    /* Bolt-style střídavé kroky (foto + text) */
-    .bolt-journey { position: relative; max-width: 1080px; margin: 0 auto; padding: 0 24px; }
-    .bolt-steps { display: flex; flex-direction: column; gap: 88px; }
-    .bolt-cta { display: flex; justify-content: center; margin-top: 60px; position: relative; z-index: 1; }
-    .bolt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; position: relative; z-index: 1; }
-    .bolt-row:nth-child(even) .bolt-media { order: 2; }
-
-    .bolt-media {
-      aspect-ratio: 4 / 3;
-      border-radius: 24px;
-      overflow: hidden;
-      background: linear-gradient(150deg, #0a1640, #0a0e26);
-      border: 1px solid rgba(208,208,255,.1);
-      display: grid; place-items: center;
-    }
-    .bolt-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .bolt-media-empty {
-      display: flex; flex-direction: column; align-items: center; gap: 10px;
-      color: rgba(208,208,255,.32); font-size: .85rem; font-weight: 500;
-    }
-
-    .bolt-text-label {
-      display: inline-block;
-      font-family: var(--font-heading);
-      font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-      color: var(--secondary);
-      margin-bottom: 16px;
-      padding: 5px 14px; border-radius: 100px;
-      background: rgba(0,32,246,.16); border: 1px solid rgba(208,208,255,.14);
-    }
-    .bolt-text h3 { font-family: var(--font-heading); font-size: clamp(1.7rem, 3vw, 2.4rem); font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
-    .bolt-text p { color: var(--muted-fg); font-size: 1.05rem; line-height: 1.7; max-width: 460px; }
-
-    @media (max-width: 768px) {
-      .bolt-steps { gap: 48px; }
-      .bolt-row { grid-template-columns: 1fr; gap: 24px; }
-      .bolt-row:nth-child(even) .bolt-media { order: 0; }
-    }
-
-
-    /* ── Kroky jako karty (vzor: bolt.eu) ──────────────────────────────
-       Fotka vyplňuje celou kartu, text leží na ní v bílé. Aby byl čitelný
-       i na světlých fotkách (krok 1 a 3 mají horní třetinu jasnou), je pod
-       ním tmavý závoj, co se dolů rozplyne do ztracena.
-       Poměr 4:5 místo Boltových vysokých karet: naše fotky jsou na šířku
-       (1,56:1), takže užší výřez by z lidí uřízl půlku. */
-    #how-it-works .bolt-steps {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: clamp(14px, 1.8vw, 24px); align-items: stretch;
-      position: relative; z-index: 2;
-    }
-    #how-it-works .bolt-row {
-      position: relative; display: block; aspect-ratio: 4 / 5;
-      border-radius: 26px; overflow: hidden; background: #0a0d2e;
-      box-shadow: 0 30px 60px -34px rgba(10,13,46,.5);
-    }
-    #how-it-works .bolt-row:nth-child(2) { transition-delay: .1s; }
-    #how-it-works .bolt-row:nth-child(3) { transition-delay: .2s; }
-
-    /* fotka přes celou kartu */
-    #how-it-works .bolt-media {
-      /* aspect-ratio ze základního .bolt-media musí pryč: u absolutního prvku
-         si z šířky dopočítá výšku a fotka pak kartu nevyplní. */
-      position: absolute; inset: 0; aspect-ratio: auto; margin: 0; padding: 0;
-      background: none; border: 0; border-radius: 0; box-shadow: none;
-    }
-    #how-it-works .bolt-media img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
-      -webkit-mask-image: none; mask-image: none;
-    }
-    /* Výřez podle toho, kde na které fotce stojí člověk — na výšku se z nich
-       ukáže zhruba polovina šířky, takže střed by u krajních fotek uřízl hlavu. */
-    #how-it-works .bolt-row:nth-child(1) .bolt-media img { object-position: 46% center; }
-    #how-it-works .bolt-row:nth-child(2) .bolt-media img { object-position: 44% center; }
-    #how-it-works .bolt-row:nth-child(3) .bolt-media img { object-position: 55% center; }   /* ať se vejde celá pilulka s výplatou */
-
-    /* tmavý závoj pod textem */
-    #how-it-works .bolt-row::after {
-      content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-      background: linear-gradient(to bottom,
-        rgba(6,10,32,.88) 0%, rgba(6,10,32,.74) 20%, rgba(6,10,32,.44) 40%, rgba(6,10,32,0) 64%);
-    }
-
-    #how-it-works .bolt-text {
-      position: relative; z-index: 2; order: 0;
-      padding: clamp(22px, 2.4vw, 32px) clamp(20px, 2.2vw, 28px) 0;
-    }
-    #how-it-works .bolt-text h3 {
-      font-family: var(--font-heading); font-weight: 800; text-transform: uppercase;
-      font-size: clamp(1.05rem, 1.5vw, 1.35rem); letter-spacing: -.02em; line-height: 1.06;
-      color: #fff; margin: 0; text-shadow: 0 1px 14px rgba(6,10,32,.55);
-      /* „Matchni se s firmou" a „Pracuj a vydělávej" se na šířku karty nevejdou
-         na jeden řádek — rezerva na dva srovná začátky popisů do jedné linky. */
-      min-height: 2.12em;
-    }
-    #how-it-works .bolt-text p {
-      font-size: clamp(.88rem, 1vw, .95rem); line-height: 1.5;
-      color: rgba(255,255,255,.9); margin: 9px 0 0; max-width: none; text-wrap: pretty;
-      text-shadow: 0 1px 12px rgba(6,10,32,.5);
-    }
-
-    /* velké slovo v pozadí dávalo smysl u průhledného obsahu; mezi plnými
-       kartami z něj koukají jen útržky, tak ho tu vypínáme */
-    #how-it-works .hsp-gal-word { display: none; }
-
-
-    #how-it-works .hsp-gal-word { display: none; }
-
-    .hsp-gal-word {
-      position: absolute; left: 0; right: 0; top: 46%; transform: translateY(-50%); text-align: center;
-      font-family: var(--font-heading); font-weight: 900; text-transform: uppercase;
-      font-size: clamp(4rem, 15vw, 13rem); letter-spacing: -.04em; color: rgba(10,13,46,.05);
-      line-height: 1; z-index: 0; pointer-events: none; white-space: nowrap;
-    }
-    @media (max-width: 760px) {
-      #how-it-works .bolt-steps { grid-template-columns: 1fr; gap: 34px; }
-      #how-it-works .bolt-row:nth-child(2) { margin-top: 0; }
-      .hsp-gal-word { font-size: clamp(3rem, 22vw, 7rem); }
-    }
-
-
-    /* CTA pod kroky: bílé s modrým obrysem, zmodrá až doscrolluje na obrazovku
-       (stejné jako na /pro-zamestnavatele) */
-    .bolt-cta a.cta-morph {
-      background: #fff !important; color: #0020f6 !important;
-      box-shadow: inset 0 0 0 2px #0020f6 !important;
-      transition: background .5s cubic-bezier(.2,.8,.2,1), color .5s cubic-bezier(.2,.8,.2,1),
-                  box-shadow .5s cubic-bezier(.2,.8,.2,1), transform .35s cubic-bezier(.2,.8,.2,1);
-    }
-    .bolt-cta a.cta-morph.seen {
-      background: #0020f6 !important; color: #fff !important;
-      box-shadow: 0 16px 38px rgba(0,32,246,.30) !important;
-      animation: ctaMorphPop .6s cubic-bezier(.2,.8,.2,1) .12s both;
-    }
-    @keyframes ctaMorphPop { 0% { transform: scale(1); } 42% { transform: scale(1.07); } 100% { transform: scale(1); } }
-    @media (prefers-reduced-motion: reduce) {
-      .bolt-cta a.cta-morph { transition: none; }
-      .bolt-cta a.cta-morph.seen { animation: none; }
-    }
-
-    /* Kroky na bílé (jako employer) */
-    #how-it-works { background: #fff; }
-    /* Text karet je bílý na fotce (viz blok „Kroky jako karty" výš) — tenhle
-       tmavý zápis je z doby, kdy karty bílé pozadí měly, a přebíjel ho. */
-    #how-it-works .bolt-text-label { color: var(--primary); background: rgba(0,32,246,.07); border-color: rgba(0,32,246,.18); }
-
     /* Sekce „Proč si zvolíš Makej" — brandová modrá, na celou výšku obrazovky.
        Obsah zarovnaný nahoru (žádné vertikální centrování), aby po doskočení
        fontu nadpis nepřecentrovával celý blok = žádný skok při scrollu. */
@@ -252,6 +104,12 @@
     /* Pruh samotný (.proc-pruh / .proc-bod) žije ve style.css — sdílí ho
        i stránka pro zaměstnavatele. */
 
+    /* Podnadpis hera: dvě krátké věty pod sebou. Vyvážené řádky, aby se na
+       telefonu první věta nezlomila těsně před posledním slovem („místě."
+       samo na řádku). Nezlomitelné mezery drží konce vět pohromadě i tam,
+       kde prohlížeč `balance` neumí. */
+    .eh-sub--vyvazene { text-wrap: balance; }
+
     /* ═══════════ Modré hero s telefonem (jako employer) ═══════════ */
     .emp-hero-blue { background: #0b21f6; position: relative; overflow: hidden; padding: 134px 24px 0; text-align: center; }
     .eh-head { max-width: 950px; margin: 0 auto; position: relative; z-index: 2; }
@@ -259,7 +117,7 @@
     .eh-head h1 .eh-accent { color: #0020f6; }
     /* ── Vstupní animace hero (v duchu landing page) ── */
     .eh-line { display: block; overflow: hidden; padding-bottom: .3em; margin-bottom: -.3em; }
-    .eh-line-in { display: inline-block; transform: translateY(120%); animation: heroLineUp 1s cubic-bezier(.19,1,.22,1) both; will-change: transform; }
+    .eh-line-in { display: inline-block; transform: translateY(160%); animation: heroLineUp 1s cubic-bezier(.19,1,.22,1) both; will-change: transform; }
     .eh-line:nth-child(1) .eh-line-in { animation-delay: .1s; }
     .eh-line:nth-child(2) .eh-line-in { animation-delay: .26s; }
     .emp-hero-blue .eh-grad {
@@ -350,46 +208,6 @@
 
     @media (max-width: 600px) {
       .emp-hero-blue { padding-top: 112px; }
-    }
-
-    /* ── Modrý závěrečný pruh před FAQ — přenesené z /lide (tam .vx-sec.vx-close).
-       Tady je všechno zanořené pod .vx-close: stránka má z vx systému jen
-       .vx-nav a .vx-intro, globální .vx-sec / .vx-wrap / .vx-h2 by přebývaly. ── */
-    .vx-close { background: #0020f6;
-      padding: 96px 0; text-align: center; }
-    .vx-close .vx-wrap { width: min(1120px, 90vw); margin: 0 auto; }
-    .vx-close .vx-sec-head { max-width: 640px; margin: 0 auto; }
-    .vx-close .vx-h2 { font-family: var(--font-heading); font-weight: 900; text-transform: uppercase;
-      font-size: clamp(1.9rem, 4.4vw, 3rem); letter-spacing: -.02em; line-height: 1.02;
-      margin: 12px 0 0; color: #fff; text-wrap: balance; }
-    .vx-close .vx-sec-head p { color: rgba(255,255,255,.85); max-width: 640px;
-      margin: 16px auto 0; font-size: 1.08rem; line-height: 1.6; }
-    .vx-close .vx-btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 30px;
-      font-family: var(--font-heading); font-weight: 800; font-size: .92rem; letter-spacing: .01em;
-      padding: 14px 26px; border-radius: 999px; cursor: pointer;
-      background: #fff; color: #0020f6; box-shadow: 0 14px 30px -12px rgba(0,10,80,.5);
-      transition: background .25s ease, color .25s ease, transform .2s ease, box-shadow .25s ease; }
-    .vx-close .vx-btn:hover { background: #0020f6; color: #fff; transform: translateY(-2px);
-      box-shadow: 0 20px 40px -12px rgba(0,10,80,.6); }
-    @media (max-width: 700px) { .vx-close { padding: 68px 0; } }
-
-    /* ── Varianta se snímkem appky ──
-       Text vlevo, telefon vpravo. Snímek má průhledné pozadí, takže splývá
-       s modrou — proto kolem něj není rámeček ani stín navíc. */
-    .vx-close--foto { text-align: left; padding: 84px 0; }
-    .vx-close--foto .vx-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
-      align-items: center; gap: clamp(28px, 5vw, 64px); }
-    .vx-close--foto .vx-sec-head { max-width: 520px; margin: 0; }
-    .vx-close--foto .vx-sec-head p { margin-left: 0; margin-right: 0; }
-    .vx-close--foto .vxc-foto img { display: block; width: 100%; height: auto; }
-    /* Žádný přesah dolů: .vx-close má overflow:hidden kvůli světlu v pozadí,
-       takže by se telefon neprotáhl ven, ale uřízl v půlce těla. */
-    @media (max-width: 900px) {
-      .vx-close--foto { text-align: center; padding: 68px 0; }
-      .vx-close--foto .vx-wrap { grid-template-columns: 1fr; gap: 34px; }
-      .vx-close--foto .vx-sec-head { margin: 0 auto; }
-      .vx-close--foto .vx-sec-head p { margin-left: auto; margin-right: auto; }
-      .vx-close--foto .vxc-foto { margin-bottom: 0; }
     }
 
     /* ── FAQ (brigádníci) — světlá sekce ── */
@@ -554,10 +372,10 @@
       <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
       <div class="eh-head">
         <h1>
-          <span class="eh-line"><span class="eh-line-in">Najdi si brigádu</span></span>
+          <span class="eh-line"><span class="eh-line-in">Staň se Makačem</span></span>
           <span class="eh-line"><span class="eh-line-in eh-accent eh-grad">ještě dnes</span></span>
         </h1>
-        <p class="eh-sub">Žádné zdlouhavé projíždění portálů. Swajpni nabídku, matchni se s firmou a začni vydělávat.</p>
+        <p class="eh-sub eh-sub--vyvazene">Brigády, part-time i stálá práce na jednom&nbsp;místě.<br>Najdi si práci, která ti&nbsp;sedí.</p>
         <a href="#" class="eh-btn worker-cta-register">Vytvořit účet zdarma</a>
       </div>
 
@@ -581,55 +399,10 @@
     <!-- ═══════════ INTRO (styl Lidé) ═══════════ -->
     <section class="vx-intro">
       <div class="vx-wrap js-reveal-up">
-        <h2>Studentské brigády i přivýdělek za pár swajpů</h2>
-        <p>Konec posílání životopisů a čekání na odpověď. Swajpni nabídku, matchni se s firmou a domluv se přímo v chatu. Brigády, part-time i full-time — jen pár minut od tebe a bez zdlouhavého hledání po inzerátech.</p>
+        <h2>Práce i přivýdělek za pár swajpů</h2>
       </div>
     </section>
 
-    <!-- ═══════════ HOW IT WORKS ═══════════ -->
-    <section id="how-it-works" class="nav-light" style="padding-top:90px;">
-      <div class="container">
-        <div class="bolt-journey" id="boltWrap">
-          <div class="hsp-gal-word" aria-hidden="true">BRIGÁDA</div>
-          <div class="bolt-steps">
-          <div class="bolt-row js-reveal-up">
-            <div class="bolt-media">
-              <img src="/krok-1.jpg?v=1" alt="Brigádník v tričku Makej ukazuje nabídku brigády v appce" />
-            </div>
-            <div class="bolt-text">
-              <h3>Swajpni nabídky</h3>
-              <p>Prohlížej nabídky brigád jako na Tinderu. Doprava = chci, doleva = nechci. Rychlé, intuitivní a zábavné.</p>
-            </div>
-          </div>
-
-          <div class="bolt-row js-reveal-up">
-            <div class="bolt-media">
-              <img src="/krok-2.jpg?v=2" alt="Podání rukou — brigádník a firma se domluvili" />
-            </div>
-            <div class="bolt-text">
-              <h3>Matchni se s firmou</h3>
-              <p>Když tě firma přijme, vznikne match. Začněte si chatovat a domluvte se na detailech přímo v appce.</p>
-            </div>
-          </div>
-
-          <div class="bolt-row js-reveal-up">
-            <div class="bolt-media">
-              <img src="/krok-3.jpg?v=2" alt="Výplata v korunách putuje z telefonu do ruky" />
-            </div>
-            <div class="bolt-text">
-              <h3>Pracuj a vydělávej</h3>
-              <p>Přijď na směnu, odveď práci a vydělanej jdi domů. Žádné životopisy, žádné pohovory. Tak jednoduché to je.</p>
-            </div>
-          </div>
-          </div>
-          <div class="bolt-cta">
-            <a href="#" class="btn-primary btn-lg worker-cta-register cta-morph">
-              Vytvořit účet <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="flex-shrink:0"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12h16m0 0l-6-6m6 6l-6 6"/></svg>
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
     </div><!-- /.uvod -->
 
     <!-- ═══════════ FEATURES — galerie ve stylu /lide, všech šest funkcí naráz ═══════════ -->
@@ -645,6 +418,7 @@
              průhledné pozadí a stojí přímo na ploše sekce, takže sednou na
              jakoukoli barvu. Poslední položka je u kraje schválně useknutá,
              aby bylo poznat, že se dá jet dál. -->
+        <div class="proc-pas">
         <div class="proc-pruh" role="group" aria-label="Důvody, proč si zvolit Makej">
           <article class="proc-bod">
             <img src="/proc-zdarma.webp?v=1" alt="Cenovka s nápisem Zdarma" width="760" height="620" loading="lazy" />
@@ -677,22 +451,7 @@
             <p>Sbírej XP, leveluj a odemykej odměny za odpracované brigády.</p>
           </article>
         </div>
-      </div>
-    </section>
-
-    <!-- ═══════════ ZÁVĚR — modrý pruh (stejný jako na /lide) ═══════════ -->
-    <section class="vx-close vx-close--foto">
-      <div class="vx-wrap">
-        <div class="vx-sec-head">
-          <h2 class="vx-h2">Najdi si brigádu ještě dnes</h2>
-          <p>Žádné životopisy ani zdlouhavé formuláře. Vytvoř si profil, swajpni nabídku a zbytek doladíš s firmou přímo v chatu.</p>
-          <a href="#" class="vx-btn worker-cta-register">Vytvořit účet zdarma</a>
-        </div>
-        <!-- Snímek má vyříznuté pozadí, takže sedí přímo na modré bez hrany.
-             aria-hidden: obsah displeje je stejně napsaný v textu sekce. -->
-        <div class="vxc-foto js-reveal-up" aria-hidden="true">
-          <img src="/hsp-mockup.webp" alt="" width="1240" height="732" loading="lazy" decoding="async" />
-        </div>
+        </div><!-- /.proc-pas -->
       </div>
     </section>
 
@@ -701,20 +460,20 @@
       <div class="container">
         <div class="section-header reveal">
           <h2>Časté <span class="gradient-text">otázky</span></h2>
-          <p>Nenašel jsi odpověď? Napiš nám na <a href="mailto:admin@makej.eu">admin@makej.eu</a></p>
+          <p>Nenašel jsi odpověď? Napiš nám na <a href="mailto:podpora@makej.eu">podpora@makej.eu</a></p>
         </div>
         <div class="emp-faq">
           <div class="emp-faq-list">
             <div class="emp-faq-item">
               <div class="emp-faq-q" onclick="toggleFaq(this)">
-                <span>Kolik stojí Makej pro brigádníky?</span>
+                <span>Kolik stojí Makej pro makače?</span>
                 <span class="emp-faq-plus"></span>
               </div>
-              <div class="emp-faq-a">Makej je pro brigádníky úplně zdarma. Žádné poplatky ani provize z výdělku — stáhneš, zaregistruješ se a swajpuješ.</div>
+              <div class="emp-faq-a">Makej je pro makače úplně zdarma. Žádné poplatky ani provize z výdělku — stáhneš, zaregistruješ se a swajpuješ.</div>
             </div>
             <div class="emp-faq-item">
               <div class="emp-faq-q" onclick="toggleFaq(this)">
-                <span>Jak si najdu brigádu?</span>
+                <span>Jak si najdu práci?</span>
                 <span class="emp-faq-plus"></span>
               </div>
               <div class="emp-faq-a">Swajpuješ nabídky ve svém okolí jako na Tinderu: doprava „mám zájem", doleva „přeskočit". Když firma projeví zájem taky, vznikne match a otevře se chat.</div>
@@ -742,24 +501,24 @@
             </div>
             <div class="emp-faq-item">
               <div class="emp-faq-q" onclick="toggleFaq(this)">
-                <span>Jaké typy brigád na Makej najdu?</span>
+                <span>Jaké typy práce na Makej najdu?</span>
                 <span class="emp-faq-plus"></span>
               </div>
               <div class="emp-faq-a">Jednorázové i opakované brigády, víkendové a letní brigády, noční směny i práci na zkrácený úvazek. Vedle klasických studentských brigád najdeš i part-time a full-time pozice — filtruješ si je podle toho, co zrovna hledáš.</div>
             </div>
             <div class="emp-faq-item">
               <div class="emp-faq-q" onclick="toggleFaq(this)">
-                <span>Na jakou smlouvu se brigády dělají?</span>
+                <span>Na jakou smlouvu se práce dělají?</span>
                 <span class="emp-faq-plus"></span>
               </div>
-              <div class="emp-faq-a">Krátkodobé brigády bývají na dohodu o provedení práce (DPP), delší spolupráce na dohodu o pracovní činnosti (DPČ). Konkrétní formu si domluvíš přímo s firmou v chatu ještě před nástupem.</div>
+              <div class="emp-faq-a">Krátkodobá spolupráce bývá na dohodu o provedení práce (DPP), delší spolupráce na dohodu o pracovní činnosti (DPČ). Konkrétní formu si domluvíš přímo s firmou v chatu ještě před nástupem.</div>
             </div>
             <div class="emp-faq-item">
               <div class="emp-faq-q" onclick="toggleFaq(this)">
                 <span>Od kolika let a kde Makej funguje?</span>
                 <span class="emp-faq-plus"></span>
               </div>
-              <div class="emp-faq-a">Brigády jsou zpravidla od 15 let (u některých pozic může být podmínka 18 let — vždy je to uvedené u nabídky). Nabídky filtruješ podle lokace, ať máš práci pár minut od domova nebo školy.</div>
+              <div class="emp-faq-a">Práce jsou zpravidla od 15 let (u některých pozic může být podmínka 18 let — vždy je to uvedené u nabídky). Nabídky filtruješ podle lokace, ať máš práci pár minut od domova nebo školy.</div>
             </div>
           </div>
         </div>
@@ -767,25 +526,114 @@
     </section>
   </main>
 
-  <!-- ═══════════ DOWNLOAD CTA ═══════════ -->
-  <section id="download" class="pl-z-bile">
-    <div class="container">
-      <div class="dl-stage">
-        <div class="dl-card">
-          <h2 class="dl-title">Připraven <span>Makat?</span></h2>
-          <p class="dl-sub">Stáhni si aplikaci zdarma a prozkoumej pracovní příležitosti ve tvém okolí ještě dnes.</p>
-          <div class="dl-btns">
-            <a href="#" class="dl-btn" aria-disabled="true">
-              <svg class="dl-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 315" aria-hidden="true"><path d="M213.803 167.03c.442 47.58 41.74 63.413 42.197 63.615c-.35 1.116-6.599 22.563-21.757 44.716c-13.104 19.153-26.705 38.235-48.13 38.63c-21.05.388-27.82-12.483-51.888-12.483c-24.061 0-31.582 12.088-51.51 12.871c-20.68.783-36.428-20.71-49.64-39.793c-27-39.033-47.633-110.3-19.928-158.406c13.763-23.89 38.36-39.017 65.056-39.405c20.307-.387 39.475 13.662 51.889 13.662c12.406 0 35.699-16.895 60.186-14.414c10.25.427 39.026 4.14 57.503 31.186c-1.49.923-34.335 20.044-33.978 59.822M174.24 50.199c10.98-13.29 18.369-31.79 16.353-50.199c-15.826.636-34.962 10.546-46.314 23.828c-10.173 11.763-19.082 30.589-16.678 48.633c17.64 1.365 35.66-8.964 46.64-22.262"/></svg>
-              <span><small>Brzy dostupné na</small><strong>App Store</strong></span>
-            </a>
-            <a href="#" class="dl-btn" aria-disabled="true">
-              <svg class="dl-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 283" aria-hidden="true"><path fill="#ea4335" d="M119.553 134.916L1.06 259.061a32.14 32.14 0 0 0 47.062 19.071l133.327-75.934z"/><path fill="#fbbc04" d="M239.37 113.814L181.715 80.79l-64.898 56.95l65.162 64.28l57.216-32.67a31.345 31.345 0 0 0 0-55.537z"/><path fill="#4285f4" d="M1.06 23.487A30.6 30.6 0 0 0 0 31.61v219.327a32.3 32.3 0 0 0 1.06 8.124l122.555-120.966z"/><path fill="#34a853" d="m120.436 141.274l61.278-60.483L48.564 4.503A32.85 32.85 0 0 0 32.051 0C17.644-.028 4.978 9.534 1.06 23.399z"/></svg>
-              <span><small>Brzy dostupné na</small><strong>Google Play</strong></span>
-            </a>
+  <!-- ═══════════ ČEKACÍ LIST ═══════════ -->
+  <!-- Stejný kus jako na úvodce, včetně tří kroků, psacího stroje i nabídky
+       účtu — obsluhuje ho tentýž `cekaciList()` ve script.js, a protože je na
+       stránce jediný, sedí i stejná id. Chybí jen přilepování přes rozmazané
+       hero: to se na úvodce váže na výšku hera a tady by nemělo co rozmazávat.
+       Vzhled řeší .cl-sekce ve style.css. -->
+  <section id="download" class="cl-sekce cl-sekce--zbila">
+    <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="cl-slot">
+      <div class="wl-panel">
+
+          <!-- 1 · zápis -->
+          <div class="wl-krok" id="wl-1">
+            <h2 class="wl-mark"><b>Makáme</b> na tom.</h2>
+            <p class="wl-lead">Hned jak budeme hotoví, dáme ti vědět.</p>
+
+            <form class="wl-form" id="wl-form1" novalidate>
+              <div class="wl-row">
+                <input class="wl-in" id="wl-email" type="email" inputmode="email" autocomplete="email"
+                       placeholder="tvuj@email.cz" aria-label="Tvůj e-mail" aria-describedby="wl-e1">
+                <button class="wl-go" type="submit" id="wl-go">Chci být u toho</button>
+              </div>
+              <span class="wl-err" id="wl-e1" role="alert" hidden></span>
+            </form>
+
+            <!-- Zůstává schované, dokud server nevrátí skutečné číslo. -->
+            <div class="wl-foot" id="wl-foot" hidden>
+              <!-- Kreslené postavičky, ne fotky: kolečka stojí vedle věty o počtu
+                   zapsaných, takže konkrétní tváře by vydávaly cizí lidi za naše
+                   uživatele. Vektor navíc drží ostrost i na 34 px a nepřidává
+                   žádný soubor ke stažení. -->
+              <span class="wl-faces" aria-hidden="true">
+                <span class="wl-face"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="wl-face-t" d="M2.8 24c0-5 4.1-7.6 9.2-7.6s9.2 2.6 9.2 7.6Z"/><circle class="wl-face-v" cx="12" cy="8.9" r="5.4"/><circle class="wl-face-t" cx="12" cy="10" r="4.6"/></svg></span>
+                <span class="wl-face"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="wl-face-t" d="M2.8 24c0-5 4.1-7.6 9.2-7.6s9.2 2.6 9.2 7.6Z"/><path class="wl-face-v" d="M6.6 9.9a5.4 5.4 0 0 1 10.8 0v8.1h-2.6V9.9a2.8 2.8 0 0 0-5.6 0V18H6.6Z"/><circle class="wl-face-t" cx="12" cy="10" r="4.6"/></svg></span>
+                <span class="wl-face"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="wl-face-t" d="M2.8 24c0-5 4.1-7.6 9.2-7.6s9.2 2.6 9.2 7.6Z"/><circle class="wl-face-v" cx="12" cy="3.7" r="2.1"/><circle class="wl-face-v" cx="12" cy="9.1" r="5.3"/><circle class="wl-face-t" cx="12" cy="10" r="4.6"/></svg></span>
+              </span>
+              <span class="wl-foot-t"><b id="wl-pocet">—</b> lidí už u nás je</span>
+            </div>
           </div>
-          <p class="dl-note">Zdarma &middot; Bez reklam &middot; iOS &amp; Android &middot; Spuštění brzy</p>
-        </div>
+
+          <!-- 2 · díky + volitelný účet -->
+          <div class="wl-krok" id="wl-2" hidden>
+            <div class="wl-blok">
+              <h2 class="wl-h2"><span id="wl-typed"></span><span class="wl-cur" id="wl-cur2" aria-hidden="true"></span></h2>
+              <p class="wl-lead wl-rise" id="wl-lead2" style="animation-delay:1.5s">Dáme ti vědět, až appku spustíme.</p>
+            </div>
+
+            <div class="wl-or wl-rise" style="animation-delay:1.74s"><span class="wl-or-t">nebo</span></div>
+
+            <div class="wl-acc wl-rise" id="wl-acc" style="animation-delay:1.82s">
+              <button class="wl-prize" id="wl-acc-btn" type="button" aria-expanded="false" aria-controls="wl-acc-bd">
+                Založ si účet a získej odměnu
+              </button>
+              <div class="wl-acc-bd" id="wl-acc-bd" inert>
+                <div class="wl-acc-pd">
+                  <form class="wl-f" id="wl-form2" novalidate>
+                    <!-- E-mail je potvrzený z prvního kroku, proto má zelený obrys hned -->
+                    <span class="wl-mail" id="wl-mail2">—</span>
+                    <div class="wl-lb">
+                      <span class="wl-pole">
+                        <input class="wl-fi" id="wl-name" type="text" autocomplete="name"
+                               placeholder="Jméno a příjmení nebo název firmy" aria-label="Jméno a příjmení nebo název firmy" aria-describedby="wl-e2">
+                      </span>
+                      <span class="wl-err2" id="wl-e2" role="alert" hidden></span>
+                    </div>
+                    <div class="wl-lb">
+                      <span class="wl-pole">
+                        <input class="wl-fi wl-fi--pw" id="wl-pw" type="password" autocomplete="new-password"
+                               placeholder="Heslo" aria-label="Heslo" aria-describedby="wl-e3">
+                        <button class="wl-peek" type="button" data-peek="wl-pw" aria-controls="wl-pw">Zobrazit</button>
+                      </span>
+                      <span class="wl-err2" id="wl-e3" role="alert" hidden></span>
+                    </div>
+                    <div class="wl-lb">
+                      <span class="wl-pole">
+                        <input class="wl-fi wl-fi--pw" id="wl-pw2" type="password" autocomplete="new-password"
+                               placeholder="Heslo znovu" aria-label="Heslo znovu" aria-describedby="wl-e4">
+                        <button class="wl-peek" type="button" data-peek="wl-pw2" aria-controls="wl-pw2">Zobrazit</button>
+                      </span>
+                      <span class="wl-err2" id="wl-e4" role="alert" hidden></span>
+                    </div>
+                    <button class="wl-sub" type="submit" id="wl-sub">Založit účet</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- Únikovka pro překlep v adrese: bez ní by se člověk, který se zapsal
+                 s chybou, do formuláře už nikdy nedostal. -->
+            <button class="wl-jiny" id="wl-jiny" type="button" hidden>Zapsat jiný e-mail</button>
+          </div>
+
+          <!-- 3 · účet hotov -->
+          <div class="wl-krok" id="wl-3" hidden>
+            <span class="wl-ok" aria-hidden="true">
+              <span class="wl-ok-halo"></span>
+              <svg width="78" height="78" viewBox="0 0 78 78">
+                <circle class="wl-ok-fill" cx="39" cy="39" r="34.5"/>
+                <circle class="wl-ok-ring" cx="39" cy="39" r="34.5" fill="none" stroke-width="4" stroke-linecap="round"/>
+                <path class="wl-ok-chk" d="M24 40.4 34 50 55 28.4" fill="none" stroke="#fff" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <div class="wl-blok">
+              <h2 class="wl-h2"><span id="wl-typed3"></span><span class="wl-cur" id="wl-cur3" aria-hidden="true" hidden></span></h2>
+              <p class="wl-lead wl-rise" style="animation-delay:1.86s">Vítej, <b id="wl-hi">—</b>. Teď už máš všechno, víc se dozvíš v e-mailu.</p>
+              <span class="wl-pos wl-rise" style="animation-delay:1.98s"><span class="wl-pos-k">Zakládající člen</span></span>
+            </div>
+          </div>
       </div>
     </div>
   </section>
@@ -815,7 +663,7 @@
           <h4>Firma</h4>
           <a href="/blog">Blog</a>
           <a href="/podpora">Podpora</a>
-          <a href="mailto:admin@makej.eu">Kontakt</a>
+          <a href="/o-nas#kontakt">Kontakt</a>
           <a href="/o-nas">O nás</a>
         </div>
         <div class="footer-col">
@@ -828,6 +676,7 @@
       </div>
       <div class="footer-bottom">
         <span>© 2026 Makej Všechna práva vyhrazena.</span>
+        <span>Makej s náma s.r.o. &nbsp;·&nbsp; IČO 29900590</span>
       </div>
     </div>
   </footer>
@@ -977,7 +826,7 @@
   <!-- ═══════════ COOKIE BANNER ═══════════ -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="script.js?v=52"></script>
+  <script src="script.js?v=59"></script>
   <!-- Lazy-play ukázkového videa: stáhne a přehraje až ve viewportu (šetří data + LCP) -->
   <script>
   (function () {
@@ -1029,23 +878,6 @@
       window.addEventListener('resize', function () {
         if (window.innerWidth !== lastW) apply();
       }, { passive: true });
-    })();
-  </script>
-  <!-- CTA morph: „Vytvořit účet" zmodrá až doscrolluje na obrazovku -->
-  <script>
-    (function () {
-      var btn = document.querySelector('.bolt-cta a.cta-morph');
-      if (!btn) return;
-      if (!('IntersectionObserver' in window)) { btn.classList.add('seen'); return; }
-      var obs = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-          if (e.isIntersecting && e.intersectionRatio >= 0.6) {
-            btn.classList.add('seen');
-            obs.unobserve(btn);
-          }
-        });
-      }, { threshold: [0, 0.6, 1], rootMargin: '0px 0px -8% 0px' });
-      obs.observe(btn);
     })();
   </script>
   <!-- Scroll-reveal intro sekce + připnutý navbar -->

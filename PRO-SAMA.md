@@ -7,6 +7,122 @@
 
 ---
 
+## 2026-09-24 — čeká na nasazení
+
+> **Pro Samova Clauda:** náš web se od 11. 9. rozešel s tvým. V tomhle pushi je
+> **srovnaný s tvým stavem k 23. 9.** (tvé texty, ceník, o nás, blog, patička) a navrch
+> jsou naše nové změny. Níž je rozdělené na **co si vzít od nás** a **co jsme vzali od
+> tebe** (to zpátky nepřenášej). U každé položky jsou jména funkcí a tříd — hledej podle
+> nich, čísla řádků se u tebe liší. Web: `style.css?v=143`, `script.js?v=59`.
+
+### Web — vezmi si od nás
+
+**1. Úvodka: modrý pruh s telefonem místo celoobrazovkové scény `.uk`.**
+`index.html`: sekce `<section class="uk" id="ukazka">` („Brigáda na pár swajpů.")
+je pryč, na jejím místě `<section class="vx-close vx-close--foto">` (text vlevo,
+`hsp-mockup.webp` vpravo, tlačítko `.worker-cta-register`). Je to ten pruh, co máš
+na `/hledam-si-praci` — **tam ho smaž a přesuň na úvodku.** Styly pruhu jsou schválně
+v inline `<style>` úvodky, ne ve `style.css`: `/lide` má vlastní `.vx-close` a globální
+`.vx-close .vx-btn` by se mu přimíchalo. Ze `style.css` smazán celý blok „UKÁZKA
+APPKY — celoobrazovková modrá scéna" (`.uk`, `.uk-head`, `.uk-btn`, `.uk-foto`).
+Text pruhu je zatím tvůj („Staň se Makačem ještě dnes") — s Yasinem ho přepisujeme.
+
+**2. Bílé tlačítko v modrém pruhu na najetí zmodralo a zmizelo.**
+`.vx-close .vx-btn:hover` (úvodka, `/pro-zamestnavatele`): místo `background:#0020f6;
+color:#fff` je `background:#F4F6FF`, text zůstává modrý. Na `/lide` totéž přes nové
+`.vx-close .vx-btn-dark:hover` — v pruhu je bílé `.vx-btn-dark` a sdílený hover ho barvil.
+
+**3. `/hledam-si-praci`: pryč kroky s fotkami a opakující se odstavec.**
+Celá sekce `#how-it-works` (3 karty `.bolt-row` s `krok-1..3.jpg` + `.bolt-cta
+a.cta-morph`) smazaná i se styly (`.bolt-*`, `#how-it-works …`, `.hsp-gal-word`,
+`ctaMorphPop`), `<link rel="preload">` na `krok-*.jpg` a inline skriptem „CTA morph".
+V `.vx-intro` zůstal jen nadpis „Práce i přivýdělek za pár swajpů", odstavec „Konec
+zdlouhavého proklikávání…" pryč. **`script.js` → `setupNavDropdowns()`:** z menu
+`hledam-si-praci` vyndaná položka `Jak to funguje → #how-it-works` (vedla by do prázdna).
+Podnadpis hera `.eh-sub`: „Brigády, part-time i stálá práce na jednom místě.<br>Najdi si
+práci, která ti sedí." + třída `.eh-sub--vyvazene { text-wrap: balance }` a `&nbsp;`
+v „jednom&nbsp;místě" / „ti&nbsp;sedí" — na telefonu jinak zbylo „místě." samo na řádku.
+
+**4. `/lide`: nová fotka hera — pět lidí.** `lide-hero-tym.webp` (1536×1010, 192 kB,
+průhledné pozadí). Je **na šířku** (stará byla na výšku), takže `.vx-heroimg` má novou
+šířku počítanou na stejnou výšku postav: `min(842px, 92vw, calc(var(--hero-h)*.88))`,
+v `@media (max-width: 900px)` `min(842px, 96vw, …)`. Na telefonu je **samostatný**
+`@media (max-width: 600px) { .vx-heroimg { max-width:none; width: min(150vw, …*.74) } }` —
+krajní dva přesahují a `.vx-frame` je ořízne. ⚠️ Ten blok nevkládej doprostřed bloku
+900px, rozbiješ tím tablety. Na `/lide` je u nás i novější sekce „Dvě cesty" s telefony
+(náš commit `580d73f`) — tu jsi taky ještě nepřevzal.
+
+**5. Čárky pod nadpisem hera (je to i na živém webu).** `style.css` `@keyframes
+heroLineUp`: start `translateY(120%)` → **`160%`**, stejně výchozí `transform` u
+`.vx-line-in` a `.eh-line-in` (`/lide`, `/hledam-si-praci`, `/pro-zamestnavatele`).
+`.vx-line`/`.eh-line` má `padding-bottom:.3em` na ocásky j/p, okno bylo vyšší než posun
+a tučné písmo vystrkuje špičky (N, d, l, tečky) nad svůj box — během prodlevy před
+animací koukaly zpod masky jako řada čárek. Ověřeno zmrazením animace: 7–13 px zbytků → 0.
+
+**6. Aurora se hýbe, jen když je vidět.** `script.js` na konci `auroraJenVObraze()`
+(IntersectionObserver, přidává `.aurora--stoji`, sbírá znovu po `load`) + ve `style.css`
+`.aurora--stoji i { animation-play-state: paused; }`. Skvrny měly nekonečnou animaci
+i mimo obraz a mléčné sklo čekacího listu (`backdrop-filter`) nad nimi se přepočítávalo
+každý snímek.
+
+**7. „Vytvořit účet" na podstránkách.** `goToEmailSignup()` hledá `#brzy` **nebo**
+`#download.cl-sekce` — tvoje verze znala jen `#brzy`, takže z podstránek posílala
+člověka na úvodku, i když měl čekací list přímo pod sebou.
+
+### Web — vzali jsme od tebe (zpátky nepřenášej)
+- Textové úpravy z tvých `132c9b0`, `4d8d68d`, `90ea872`, `9e00e7d`, `df5e0fc`,
+  `97daae0` (podpora@makej.eu, „makač"/„práce", bez „bez životopisu", Makačky pryč,
+  odstoupení od smlouvy, tarify v `#pricing`) — jen kde u nás stál přesně stejný text.
+- Celé soubory: `cenik.html`, `o-nas.html`, `blog/*.html`, `sitemap.xml`;
+  `pruvodce.html` smazaná jako u tebe.
+- Patička na všech stránkách: „Kontakt" → `/o-nas#kontakt`, řádek s IČO.
+- Čekací list místo karty s obchody na podstránkách (`.cl-sekce`) + tvůj jezdící pruh
+  důvodů na `/hledam-si-praci` (`.proc-pas`, `pruhyJedou()` 1:1, zastaví se pod myší).
+- Kontrola: skript porovnal všechen viditelný text, `alt`, `title`, `meta` a `mailto`
+  na 12 stránkách s tvým webem — shoda, rozdíly jen záměrné (body výš).
+
+### Na rozhodnutí / k opravě u tebe
+- **Stripe:** na webu je Výhodný za **499 Kč** (správně), ve Stripu je produkt „Výhodný"
+  za **2 000 Kč** — to je cena Dynamického.
+- **Modály registrace:** na `/podpora` a `/pro-zamestnavatele` máš „Makač / Hledám
+  makače", jinde „Brigádník / Hledám brigádníky". Převzal jsem 1:1, sjednoť u sebe.
+- Na `/pro-zamestnavatele` máš jezdící pruh důvodů, u nás je tam pořád mřížka.
+- Tvoje novější fotky `krok-1..3.jpg` jsme nebrali — sekce kroků je u nás pryč (bod 3).
+
+### Appka (`makej-aplikace`, `www/`) — vezmi si od nás
+Verze: `app.jsx?v=35`, `worker-profile.jsx?v=54`, `worker-main.jsx?v=50`.
+
+**A. Věkový limit 15 let.** `app.jsx`: `W_MIN_VEK = 15`, `wVekZDatumu()`, `wVekStaci()`,
+roletka `WVekStop` („Omlouváme se, ještě si musíš počkat" + za kolik let se vrátit).
+Chytá se na dvou místech: po „Potvrdit" ve výběru data (`worker-profile.jsx`) a u „Mám
+zájem" (`worker-main.jsx`, `onChybiVek`: bez data → `WVekRoletka`, pod 15 → `WVekStop`;
+`_wZnameVek()` smazán). Proč 15: § 35 obč. zák. — 15 let **a** ukončená povinná
+docházka. Flexinovela od 6/2025 pouští 14+ jen o prázdninách se souhlasem rodiče, to
+appka neohlídá. Ukončenou docházku neřešíme (15letý v 9. třídě projde).
+
+**B. Datum narození je zákonná brána, ne průvodce.** Návod (`WNavod`) k datu má jen
+„Doplň datum narození / Vyber datum a klepni na Potvrdit." a „Zatím ne" (props
+`preskocitText`, `bezOtazky`) — žádné tečky ani „Přeskočit".
+
+**C. Klepnutí vedle nic nezavírá, dokud běží návod.** `WNavod` drží počítadlo
+`window.__wNavodBezi`; `WDatumPicker` a `WVyberPicker` ho čtou v posluchači klepnutí
+mimo. `WDatumPicker` má nové props `zamceno` (řádek výběr jen otevírá — `prepni()`)
+a `onPotvrdit(datum)`; `zmen()` vrací datum. Dřív výběr zavřelo i klepnutí vedle
+a s ním skončil celý návod.
+
+**D. Dobrovolný průvodce profilem** (zatím jeden krok: telefon). `worker-profile.jsx`:
+`tourBezi`, `tourKrok`, `spustTour()` (naváže po potvrzení data), `najedNa()`. `WNavod`
+umí `krok` / `kroku` (tečky, jen když je kroků víc) a `akce` (tlačítko „Hotovo",
+svítí až při 9+ číslicích — SMS ověření zatím neexistuje). „Přeskočit" se ptá podruhé
+v bublině („Opravdu chceš průvodce přeskočit?", stav `ptamSe`).
+
+**E. Klávesnice nepřekryje pole s telefonem.** `app.jsx`: `wDoZorneho()`,
+`wDrzVZornem()` — pole se srovná na střed `visualViewport` (plocha nad klávesnicí)
+a přepočítá se, jak klávesnice vyjíždí. `WNavod` překlápí bublinu podle viditelné
+plochy (`vidu`, `mistoNad` / `mistoPod`).
+
+**F.** Pod „Osobní údaje" v profilu pryč věta „Firmy vidí jméno a první písmeno příjmení…".
+
 ## 2026-09-13 — čeká na nasazení
 
 **Hero na `/lide`: skutečná fotka místo 3D kresby.**

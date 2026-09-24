@@ -14,22 +14,22 @@
   <script src="/consent.js?v=4" defer></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Brigády a práce ve tvém okolí — bez životopisu | Makej</title>
-  <meta name="description" content="Najdi brigádu, part-time i jednorázový přivýdělek ve svém okolí. Žádné životopisy ani pohovory — stačí aplikace Makej. Pro brigádníky zdarma." />
+  <title>Brigády a práce ve tvém okolí | Makej</title>
+  <meta name="description" content="Najdi brigádu, part-time i jednorázový přivýdělek ve svém okolí. Swajpni nabídku, matchni se s firmou a domluv se v chatu. Pro brigádníky zdarma." />
   <meta name="theme-color" content="#0020f6" />
   <link rel="canonical" href="https://makej.eu/" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://makej.eu/" />
-  <meta property="og:title" content="Brigády a práce ve tvém okolí — bez životopisu | Makej" />
-  <meta property="og:description" content="Najdi brigádu, part-time i jednorázový přivýdělek ve svém okolí. Žádné životopisy ani pohovory — stačí aplikace Makej. Pro brigádníky zdarma." />
+  <meta property="og:title" content="Brigády a práce ve tvém okolí | Makej" />
+  <meta property="og:description" content="Najdi brigádu, part-time i jednorázový přivýdělek ve svém okolí. Swajpni nabídku, matchni se s firmou a domluv se v chatu. Pro brigádníky zdarma." />
   <meta property="og:image" content="https://makej.eu/og-image.png" />
   <meta property="og:locale" content="cs_CZ" />
   <meta property="og:site_name" content="Makej" />
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Brigády a práce ve tvém okolí — bez životopisu | Makej" />
-  <meta name="twitter:description" content="Najdi brigádu, part-time i jednorázový přivýdělek ve svém okolí. Žádné životopisy ani pohovory — stačí aplikace Makej. Pro brigádníky zdarma." />
+  <meta name="twitter:title" content="Brigády a práce ve tvém okolí | Makej" />
+  <meta name="twitter:description" content="Najdi brigádu, part-time i jednorázový přivýdělek ve svém okolí. Swajpni nabídku, matchni se s firmou a domluv se v chatu. Pro brigádníky zdarma." />
   <meta name="twitter:image" content="https://makej.eu/og-image.png" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="/favicon.png?v=3" />
@@ -40,7 +40,7 @@
   <!-- lokálně a synchronně: přes CDN s async se komponenta upgradovala pozdě a ikony posouvaly layout -->
   <script src="/iconify-icon.min.js?v=3.0.0"></script>
   <link rel="preload" href="/fonts/LeagueSpartan-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v=136" />
+  <link rel="stylesheet" href="style.css?v=143" />
 
   <!-- ═══════════ ÚVODNÍ NAPSÁNÍ NADPISU ═══════════
        Místo modré plochy s logem se na čisté stránce po písmenech napíše
@@ -71,6 +71,50 @@
        prosvítalo jen při přetažení stránky na mobilu. */
     body { background: #fff; }
     body::before { display: none !important; }
+  
+    /* ── Modrý pruh s telefonem (dřív závěr na /hledam-si-praci) ──
+       Nahradil celoobrazovkovou scénu .uk. Pravidla schválně zůstávají tady
+       na stránce, ne ve style.css: /lide má vlastní .vx-close a globální
+       .vx-close .vx-wrap / .vx-btn by se mu přimíchaly. Měkké světlo shora
+       (.vx-close::before) je sdílené ve style.css. ── */
+    .vx-close { background: #0020f6;
+      padding: 96px 0; text-align: center; }
+    .vx-close .vx-wrap { width: min(1120px, 90vw); margin: 0 auto; }
+    .vx-close .vx-sec-head { max-width: 640px; margin: 0 auto; }
+    .vx-close .vx-h2 { font-family: var(--font-heading); font-weight: 900; text-transform: uppercase;
+      font-size: clamp(1.9rem, 4.4vw, 3rem); letter-spacing: -.02em; line-height: 1.02;
+      margin: 12px 0 0; color: #fff; text-wrap: balance; }
+    .vx-close .vx-sec-head p { color: rgba(255,255,255,.85); max-width: 640px;
+      margin: 16px auto 0; font-size: 1.08rem; line-height: 1.6; }
+    .vx-close .vx-btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 30px;
+      font-family: var(--font-heading); font-weight: 800; font-size: .92rem; letter-spacing: .01em;
+      padding: 14px 26px; border-radius: 999px; cursor: pointer;
+      background: #fff; color: #0020f6; box-shadow: 0 14px 30px -12px rgba(0,10,80,.5);
+      transition: background .25s ease, color .25s ease, transform .2s ease, box-shadow .25s ease; }
+    /* Na najetí jen lehce zesvětlá — dřív zmodralo a na modrém pruhu úplně zmizelo. */
+    .vx-close .vx-btn:hover { background: #F4F6FF; transform: translateY(-2px);
+      box-shadow: 0 20px 40px -12px rgba(0,10,80,.6); }
+    @media (max-width: 700px) { .vx-close { padding: 68px 0; } }
+
+    /* ── Varianta se snímkem appky ──
+       Text vlevo, telefon vpravo. Snímek má průhledné pozadí, takže splývá
+       s modrou — proto kolem něj není rámeček ani stín navíc. */
+    .vx-close--foto { text-align: left; padding: 84px 0; }
+    .vx-close--foto .vx-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
+      align-items: center; gap: clamp(28px, 5vw, 64px); }
+    .vx-close--foto .vx-sec-head { max-width: 520px; margin: 0; }
+    .vx-close--foto .vx-sec-head p { margin-left: 0; margin-right: 0; }
+    .vx-close--foto .vxc-foto img { display: block; width: 100%; height: auto; }
+    /* Žádný přesah dolů: .vx-close má overflow:hidden kvůli světlu v pozadí,
+       takže by se telefon neprotáhl ven, ale uřízl v půlce těla. */
+    @media (max-width: 900px) {
+      .vx-close--foto { text-align: center; padding: 68px 0; }
+      .vx-close--foto .vx-wrap { grid-template-columns: 1fr; gap: 34px; }
+      .vx-close--foto .vx-sec-head { margin: 0 auto; }
+      .vx-close--foto .vx-sec-head p { margin-left: auto; margin-right: auto; }
+      .vx-close--foto .vxc-foto { margin-bottom: 0; }
+    }
+
   </style>
   <script>
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
@@ -94,7 +138,7 @@
         "logo": "https://makej.eu/favicon.png",
         "image": "https://makej.eu/og-image.png",
         "description": "Makej je česká aplikace pro hledání brigád a práce. Swajpni nabídku, matchni se se zaměstnavatelem a začni vydělávat ještě dnes.",
-        "email": "admin@makej.eu",
+        "email": "podpora@makej.eu",
         "foundingDate": "2026-08-18",
    "areaServed": { "@type": "Country", "name": "Česko" },
    "knowsAbout": ["brigády", "studentské brigády", "přivýdělek", "nábor brigádníků", "inzerce brigád"],
@@ -225,7 +269,7 @@
         <a href="/hledam-si-praci">Hledám si práci</a>
         <a href="/pro-zamestnavatele">Pro zaměstnavatele</a>
         <a href="/lide">Lidé</a>
-        <a href="#download">Stáhnout</a>
+        <a href="#brzy">Stáhnout</a>
         <a href="/podpora">Podpora</a>
       </div>
       <!-- Jen přihlášení; registraci na téhle stránce obstarává „Vytvořit profil" v heru -->
@@ -241,7 +285,7 @@
       <a href="/hledam-si-praci">Hledám si práci</a>
       <a href="/pro-zamestnavatele">Pro zaměstnavatele</a>
       <a href="/lide">Lidé</a>
-      <a href="#download">Stáhnout</a>
+      <a href="#brzy">Stáhnout</a>
       <a href="/podpora">Podpora</a>
       <div class="mobile-menu-actions">
         <a href="javascript:void(0)" class="btn-ghost" id="mobile-login-btn">Přihlásit se</a>
@@ -262,7 +306,7 @@
 
       <!-- hero-cta-auth: odhlášený; hero-cta-loggedin přepíná script.js -->
       <div class="hero-cta" id="hero-cta-auth">
-        <a href="#download" class="hero-btn hero-btn-soft">Stáhnout si apku</a>
+        <a href="#brzy" class="hero-btn hero-btn-soft">Stáhnout si apku</a>
         <a href="javascript:void(0)" class="hero-btn hero-btn-primary" id="hero-register-btn">Vytvořit profil</a>
       </div>
       <div class="hero-cta" id="hero-cta-loggedin" style="display:none;">
@@ -391,40 +435,20 @@
   </section>
   </div><!-- /.uvod -->
 
-  <!-- ═══════════ UKÁZKA APPKY — celoobrazovková modrá scéna ═══════════
-       Telefon vyjíždí zespoda a je záměrně useknutý spodní hranou: působí,
-       že pokračuje za obrazovku. Snímek má vyříznuté pozadí, takže splývá
-       s modrou bez hrany (blíž viz hsp-mockup.webp). -->
-  <section class="uk" id="ukazka">
-    <div class="uk-head js-reveal-up">
-      <h2>Brigáda na pár swajpů.</h2>
-      <p>Projdi nabídky ve svém okolí, matchni se s firmou a zbytek doladíš přímo v chatu. Žádné životopisy, žádné čekání na odpověď.</p>
-      <a href="#brzy" class="uk-btn">Chci být u toho</a>
-    </div>
-    <div class="uk-foto" aria-hidden="true">
-      <img src="/hsp-mockup.webp" alt="" width="1240" height="732" loading="lazy" decoding="async" />
-    </div>
-  </section>
-
-  <!-- ═══════════ DOWNLOAD CTA ═══════════ -->
-  <section id="download">
-    <div class="container">
-      <div class="dl-stage">
-        <div class="dl-card">
-          <h2 class="dl-title">Připraven <span>Makat?</span></h2>
-          <p class="dl-sub">Stáhni si aplikaci zdarma a projdi si brigády i nabídky práce ve svém okolí ještě dnes.</p>
-          <div class="dl-btns">
-            <a href="#" class="dl-btn" aria-disabled="true">
-              <svg class="dl-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 315" aria-hidden="true"><path d="M213.803 167.03c.442 47.58 41.74 63.413 42.197 63.615c-.35 1.116-6.599 22.563-21.757 44.716c-13.104 19.153-26.705 38.235-48.13 38.63c-21.05.388-27.82-12.483-51.888-12.483c-24.061 0-31.582 12.088-51.51 12.871c-20.68.783-36.428-20.71-49.64-39.793c-27-39.033-47.633-110.3-19.928-158.406c13.763-23.89 38.36-39.017 65.056-39.405c20.307-.387 39.475 13.662 51.889 13.662c12.406 0 35.699-16.895 60.186-14.414c10.25.427 39.026 4.14 57.503 31.186c-1.49.923-34.335 20.044-33.978 59.822M174.24 50.199c10.98-13.29 18.369-31.79 16.353-50.199c-15.826.636-34.962 10.546-46.314 23.828c-10.173 11.763-19.082 30.589-16.678 48.633c17.64 1.365 35.66-8.964 46.64-22.262"/></svg>
-              <span><small>Brzy dostupné na</small><strong>App Store</strong></span>
-            </a>
-            <a href="#" class="dl-btn" aria-disabled="true">
-              <svg class="dl-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 283" aria-hidden="true"><path fill="#ea4335" d="M119.553 134.916L1.06 259.061a32.14 32.14 0 0 0 47.062 19.071l133.327-75.934z"/><path fill="#fbbc04" d="M239.37 113.814L181.715 80.79l-64.898 56.95l65.162 64.28l57.216-32.67a31.345 31.345 0 0 0 0-55.537z"/><path fill="#4285f4" d="M1.06 23.487A30.6 30.6 0 0 0 0 31.61v219.327a32.3 32.3 0 0 0 1.06 8.124l122.555-120.966z"/><path fill="#34a853" d="m120.436 141.274l61.278-60.483L48.564 4.503A32.85 32.85 0 0 0 32.051 0C17.644-.028 4.978 9.534 1.06 23.399z"/></svg>
-              <span><small>Brzy dostupné na</small><strong>Google Play</strong></span>
-            </a>
-          </div>
-          <p class="dl-note">Zdarma &middot; Bez reklam &middot; iOS &amp; Android &middot; Spuštění brzy</p>
-        </div>
+  <!-- ═══════════ MODRÝ PRUH S TELEFONEM ═══════════
+     Přestěhovaný z /hledam-si-praci, kde byl závěrem stránky. Nahradil
+     celoobrazovkovou scénu .uk — ta je smazaná úplně, i se styly. -->
+  <section class="vx-close vx-close--foto">
+    <div class="vx-wrap">
+      <div class="vx-sec-head">
+        <h2 class="vx-h2">Staň se Makačem ještě dnes</h2>
+        <p>Žádné zdlouhavé formuláře. Vytvoř si profil, swajpni nabídku a zbytek doladíš s firmou přímo v chatu.</p>
+        <a href="#" class="vx-btn worker-cta-register">Vytvořit účet zdarma</a>
+      </div>
+      <!-- Snímek má vyříznuté pozadí, takže sedí přímo na modré bez hrany.
+           aria-hidden: obsah displeje je stejně napsaný v textu sekce. -->
+      <div class="vxc-foto js-reveal-up" aria-hidden="true">
+        <img src="/hsp-mockup.webp" alt="" width="1240" height="732" loading="lazy" decoding="async" />
       </div>
     </div>
   </section>
@@ -449,13 +473,13 @@
           <a href="/pro-zamestnavatele">Pro zaměstnavatele</a>
           <a href="/lide">Lidé</a>
           <a href="/pro-zamestnavatele#pricing">Ceník</a>
-          <a href="#download">Stáhnout</a>
+          <a href="#brzy">Stáhnout</a>
         </div>
         <div class="footer-col">
           <h4>Firma</h4>
           <a href="/blog">Blog</a>
           <a href="/podpora">Podpora</a>
-          <a href="mailto:admin@makej.eu">Kontakt</a>
+          <a href="/o-nas#kontakt">Kontakt</a>
           <a href="/o-nas">O nás</a>
         </div>
         <div class="footer-col">
@@ -468,6 +492,7 @@
       </div>
       <div class="footer-bottom">
         <span>© 2026 Makej Všechna práva vyhrazena.</span>
+        <span>Makej s náma s.r.o. &nbsp;·&nbsp; IČO 29900590</span>
       </div>
     </div>
   </footer>
@@ -650,6 +675,6 @@
   <!-- ═══════════ COOKIE BANNER ═══════════ -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="script.js?v=52"></script>
+  <script src="script.js?v=59"></script>
 </body>
 </html>

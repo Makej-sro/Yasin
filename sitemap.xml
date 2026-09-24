@@ -31,7 +31,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://makej.eu/blog</loc>
+    <loc>https://makej.eu/blog/</loc>
     <lastmod>2026-08-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -43,10 +43,10 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://makej.eu/pruvodce</loc>
-    <lastmod>2026-08-25</lastmod>
+    <loc>https://makej.eu/blog/brigada-bez-smlouvy-zakon</loc>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://makej.eu/podpora</loc>
@@ -63,6 +63,12 @@
   <url>
     <loc>https://makej.eu/privacy</loc>
     <lastmod>2026-08-25</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://makej.eu/zasady-cookies</loc>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

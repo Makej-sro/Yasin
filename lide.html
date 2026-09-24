@@ -42,7 +42,7 @@
   <link rel="preload" as="image" href="/lide-krok-1.png" />
   <link rel="preload" as="image" href="/lide-krok-2.png" />
   <link rel="preload" href="/fonts/LeagueSpartan-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="style.css?v=136" />
+  <link rel="stylesheet" href="style.css?v=143" />
   <style>
     /* Bolt-style střídavé kroky (foto + text) */
     .bolt-head { text-align: center; max-width: 1080px; margin: 0 auto 56px; padding: 0 24px; }
@@ -184,7 +184,7 @@
     .eh-head h1 .eh-accent { color: #c3c8ff; }
     /* ── Vstupní animace hero (v duchu landing page) ── */
     .eh-line { display: block; overflow: hidden; padding-bottom: .3em; margin-bottom: -.3em; }
-    .eh-line-in { display: inline-block; transform: translateY(120%); animation: heroLineUp 1s cubic-bezier(.19,1,.22,1) both; will-change: transform; }
+    .eh-line-in { display: inline-block; transform: translateY(160%); animation: heroLineUp 1s cubic-bezier(.19,1,.22,1) both; will-change: transform; }
     .eh-line:nth-child(1) .eh-line-in { animation-delay: .1s; }
     .eh-line:nth-child(2) .eh-line-in { animation-delay: .26s; }
     .emp-hero-blue .eh-grad {
@@ -324,7 +324,7 @@
     .vx-h1, .vx-sub-btns { position: relative; z-index: 2; }
     .vx-h1 { font-family: var(--font-heading); font-weight: 800; letter-spacing: -.025em; line-height: 1.02; font-size: clamp(2.7rem, 7vw, 5.4rem); color: #0a0d2e; margin: 0; display: flex; flex-direction: column; align-items: center; }
     .vx-line { display: block; overflow: hidden; padding-bottom: .3em; margin-bottom: -.3em; }
-    .vx-line-in { display: inline-block; transform: translateY(120%); will-change: transform; }
+    .vx-line-in { display: inline-block; transform: translateY(160%); will-change: transform; }
     .vx-h1 .vx-glitch {
       font-family: inherit; font-weight: inherit; letter-spacing: inherit;
       color: var(--blue);   /* plná firemní modrá, žádný přejíždějící přechod */
@@ -351,7 +351,11 @@
     /* Strop 44 % výšky hera — na nízkém okně by fixních 422px vyjelo až do tlačítek.
        Počítá se ze zafixované --hero-h, ne z vh: na mobilu se vh při scrollu mění
        (schovává se lišta prohlížeče) a obrázek by rostl a zmenšoval se. */
-    .vx-heroimg { width: min(440px, 92vw, 46vh); width: min(440px, 92vw, calc(var(--hero-h, 100vh) * .46)); height: auto; display: block; filter: drop-shadow(0 40px 50px rgba(0,10,80,.28)); }
+    /* Fotka je na šířku (5 lidí, 1536×1010), ne na výšku jako ta předchozí se
+       třemi. Stejný strop šířky by lidi zmenšil skoro na polovinu, proto se
+       počítá tak, aby postavy vyšly stejně vysoké jako dřív: tehdy 440 px
+       šířky ≈ 554 px výšky, teď 554 px výšky ≈ 842 px šířky. */
+    .vx-heroimg { width: min(842px, 92vw, 88vh); width: min(842px, 92vw, calc(var(--hero-h, 100vh) * .88)); height: auto; display: block; filter: drop-shadow(0 40px 50px rgba(0,10,80,.28)); }
 
     /* spodní pás hero: avataři vlevo, preview karta vpravo — překrývá spodek obrázku */
     .vx-avstack { display:flex; }
@@ -548,6 +552,9 @@
     .vx-close .vx-h2 { color:#fff; }
     .vx-close .vx-sec-head p { color: rgba(255,255,255,.85); max-width:640px; margin: 16px auto 0; font-size:1.08rem; }
     .vx-close .vx-btn { margin-top: 30px; }
+    /* Bílé tlačítko na modrém pruhu: sdílené .vx-btn-dark:hover ho barví na
+       modrou, a tím by na pruhu zmizelo. Tady jen lehce zesvětlá. */
+    .vx-close .vx-btn-dark:hover { background: #F4F6FF; color: var(--blue); }
 
     /* ── GALERIE 3 KROKŮ (styl VEXO) ── */
     /* Plátno navazující na bílou sekci: skok z #fff na #F5F6FA je jen deset
@@ -609,7 +616,11 @@
       .vx-pv-cols { grid-template-columns:1fr; }
       .vx-fan { transform: scale(.86); margin-top:16px; }
       .vx-heroimg-wrap { bottom: -40px; }
-      .vx-heroimg { width: min(422px, 96vw, 44vh); width: min(422px, 96vw, calc(var(--hero-h, 100vh) * .44)); }
+      /* Pět lidí vedle sebe se do úzkého okna nevejde: na 96vw by byli vysocí
+         sotva 240 px a nad nimi by zela díra. Fotka je proto širší než okno,
+         krajní dva přesahují přes okraj a .vx-frame (overflow: hidden) je ořízne —
+         bez vodorovného posuvníku. Tři uprostřed zůstanou celí. */
+      .vx-heroimg { width: min(842px, 96vw); width: min(842px, 96vw, calc(var(--hero-h, 100vh) * .88)); }
       .vx-gal-cards { flex-direction:column; align-items:center; gap:34px; }
       .vx-gal-card.c1, .vx-gal-card.c2, .vx-gal-card.c3 { margin-top:0; }
       .vx-gal-card.c2 .vx-gal-ph, .vx-gal-card.c1 .vx-gal-ph, .vx-gal-card.c3 .vx-gal-ph { width: min(300px,80vw); }
@@ -618,6 +629,9 @@
       .vx-gal-word { font-size: 4.5rem; top: 30px; transform:none; }
       .vx-gal-txt.bl, .vx-gal-txt.tr { position:static; max-width:none; text-align:center; margin:0 auto; }
       .vx-gal-txt.tr { margin-top: 8px; }
+    }
+    @media (max-width: 600px) {
+      .vx-heroimg { max-width: none; width: 150vw; width: min(150vw, calc(var(--hero-h, 100vh) * .74)); }
     }
     @media (max-width: 560px) {
       .vx-fan { width: 100%; height: 380px; }
@@ -723,7 +737,7 @@
 
           <!-- 3D portrét lidí — hlavní centerpiece -->
           <div class="vx-heroimg-wrap">
-            <img class="vx-heroimg" src="/lide-hero-foto.webp?v=4" alt="Kadeřnice, malíř a fotografka — lidé nabízející své dovednosti" width="1080" height="1361" />
+            <img class="vx-heroimg" src="/lide-hero-tym.webp?v=1" alt="Zahradník, kadeřnice, malíř, fotografka a řemeslník — lidé nabízející své dovednosti" width="1536" height="1010" />
           </div>
 
 
@@ -796,7 +810,7 @@
       <div class="vx-wrap">
         <div class="vx-sec-head js-reveal-up">
           <h2 class="vx-h2">Představujeme funkci Lidé</h2>
-          <p>Umíš spravit kapající kohoutek, smontovat skříň, doučovat matiku nebo vyvenčit psa? Nová sekce Lidé mění Makej v osobní tržiště talentů a dovedností. Nemusíš čekat na vypsanou brigádu od firmy — teď můžeš jednoduše nabízet to, co tě baví a v čem jsi dobrý, přímo lidem ve tvém okolí.</p>
+          <p>Umíš spravit kapající kohoutek, smontovat skříň, doučovat matiku nebo tě baví venčení psů? Nová sekce Lidé mění Makej v osobní tržiště talentů a dovedností. Nemusíš čekat na vypsanou brigádu od firmy — teď můžeš jednoduše nabízet to, co tě baví a v čem jsi dobrý, přímo lidem ve tvém okolí.</p>
         </div>
       </div>
     </section>
@@ -846,7 +860,7 @@
       <div class="vx-wrap">
         <div class="vx-sec-head">
           <h2 class="vx-h2">Časté otázky</h2>
-          <p>Nenašel jsi odpověď? Napiš nám na <a href="mailto:admin@makej.eu" style="color:var(--blue);font-weight:700;">admin@makej.eu</a></p>
+          <p>Nenašel jsi odpověď? Napiš nám na <a href="mailto:podpora@makej.eu" style="color:var(--blue);font-weight:700;">podpora@makej.eu</a></p>
         </div>
         <div class="vx-faq-list">
           <details class="vx-faq-item"><summary>Co je záložka Lidé? <span class="vx-faq-plus"></span></summary><div class="vx-faq-a">Místo v appce, kde nabídneš své dovednosti nebo pomoc a najdeš lidi ve svém okolí. Není to jen o brigádách — klidně doučování, řemeslo, foto nebo chuť poznat lidi se stejným zájmem.</div></details>
@@ -861,25 +875,114 @@
   </main>
 
   
-  <!-- ═══════════ DOWNLOAD CTA ═══════════ -->
-  <section id="download">
-    <div class="container">
-      <div class="dl-stage">
-        <div class="dl-card">
-          <h2 class="dl-title">Připraven poznat lidi?</h2>
-          <p class="dl-sub">Stáhni si Makej zdarma, zapni si kartu a najdi lidi ve svém okolí ještě dnes.</p>
-          <div class="dl-btns">
-            <a href="#" class="dl-btn" aria-disabled="true">
-              <svg class="dl-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 315" aria-hidden="true"><path d="M213.803 167.03c.442 47.58 41.74 63.413 42.197 63.615c-.35 1.116-6.599 22.563-21.757 44.716c-13.104 19.153-26.705 38.235-48.13 38.63c-21.05.388-27.82-12.483-51.888-12.483c-24.061 0-31.582 12.088-51.51 12.871c-20.68.783-36.428-20.71-49.64-39.793c-27-39.033-47.633-110.3-19.928-158.406c13.763-23.89 38.36-39.017 65.056-39.405c20.307-.387 39.475 13.662 51.889 13.662c12.406 0 35.699-16.895 60.186-14.414c10.25.427 39.026 4.14 57.503 31.186c-1.49.923-34.335 20.044-33.978 59.822M174.24 50.199c10.98-13.29 18.369-31.79 16.353-50.199c-15.826.636-34.962 10.546-46.314 23.828c-10.173 11.763-19.082 30.589-16.678 48.633c17.64 1.365 35.66-8.964 46.64-22.262"/></svg>
-              <span><small>Brzy dostupné na</small><strong>App Store</strong></span>
-            </a>
-            <a href="#" class="dl-btn" aria-disabled="true">
-              <svg class="dl-ico" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 283" aria-hidden="true"><path fill="#ea4335" d="M119.553 134.916L1.06 259.061a32.14 32.14 0 0 0 47.062 19.071l133.327-75.934z"/><path fill="#fbbc04" d="M239.37 113.814L181.715 80.79l-64.898 56.95l65.162 64.28l57.216-32.67a31.345 31.345 0 0 0 0-55.537z"/><path fill="#4285f4" d="M1.06 23.487A30.6 30.6 0 0 0 0 31.61v219.327a32.3 32.3 0 0 0 1.06 8.124l122.555-120.966z"/><path fill="#34a853" d="m120.436 141.274l61.278-60.483L48.564 4.503A32.85 32.85 0 0 0 32.051 0C17.644-.028 4.978 9.534 1.06 23.399z"/></svg>
-              <span><small>Brzy dostupné na</small><strong>Google Play</strong></span>
-            </a>
+  <!-- ═══════════ ČEKACÍ LIST ═══════════ -->
+  <!-- Stejný kus jako na úvodce, včetně tří kroků, psacího stroje i nabídky
+       účtu — obsluhuje ho tentýž `cekaciList()` ve script.js, a protože je na
+       stránce jediný, sedí i stejná id. Chybí jen přilepování přes rozmazané
+       hero: to se na úvodce váže na výšku hera a tady by nemělo co rozmazávat.
+       Vzhled řeší .cl-sekce ve style.css. -->
+  <section id="download" class="cl-sekce">
+    <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="cl-slot">
+      <div class="wl-panel">
+
+          <!-- 1 · zápis -->
+          <div class="wl-krok" id="wl-1">
+            <h2 class="wl-mark"><b>Makáme</b> na tom.</h2>
+            <p class="wl-lead">Hned jak budeme hotoví, dáme ti vědět.</p>
+
+            <form class="wl-form" id="wl-form1" novalidate>
+              <div class="wl-row">
+                <input class="wl-in" id="wl-email" type="email" inputmode="email" autocomplete="email"
+                       placeholder="tvuj@email.cz" aria-label="Tvůj e-mail" aria-describedby="wl-e1">
+                <button class="wl-go" type="submit" id="wl-go">Chci být u toho</button>
+              </div>
+              <span class="wl-err" id="wl-e1" role="alert" hidden></span>
+            </form>
+
+            <!-- Zůstává schované, dokud server nevrátí skutečné číslo. -->
+            <div class="wl-foot" id="wl-foot" hidden>
+              <!-- Kreslené postavičky, ne fotky: kolečka stojí vedle věty o počtu
+                   zapsaných, takže konkrétní tváře by vydávaly cizí lidi za naše
+                   uživatele. Vektor navíc drží ostrost i na 34 px a nepřidává
+                   žádný soubor ke stažení. -->
+              <span class="wl-faces" aria-hidden="true">
+                <span class="wl-face"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="wl-face-t" d="M2.8 24c0-5 4.1-7.6 9.2-7.6s9.2 2.6 9.2 7.6Z"/><circle class="wl-face-v" cx="12" cy="8.9" r="5.4"/><circle class="wl-face-t" cx="12" cy="10" r="4.6"/></svg></span>
+                <span class="wl-face"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="wl-face-t" d="M2.8 24c0-5 4.1-7.6 9.2-7.6s9.2 2.6 9.2 7.6Z"/><path class="wl-face-v" d="M6.6 9.9a5.4 5.4 0 0 1 10.8 0v8.1h-2.6V9.9a2.8 2.8 0 0 0-5.6 0V18H6.6Z"/><circle class="wl-face-t" cx="12" cy="10" r="4.6"/></svg></span>
+                <span class="wl-face"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="wl-face-t" d="M2.8 24c0-5 4.1-7.6 9.2-7.6s9.2 2.6 9.2 7.6Z"/><circle class="wl-face-v" cx="12" cy="3.7" r="2.1"/><circle class="wl-face-v" cx="12" cy="9.1" r="5.3"/><circle class="wl-face-t" cx="12" cy="10" r="4.6"/></svg></span>
+              </span>
+              <span class="wl-foot-t"><b id="wl-pocet">—</b> lidí už u nás je</span>
+            </div>
           </div>
-          <p class="dl-note">Zdarma &middot; Bez reklam &middot; iOS &amp; Android &middot; Spuštění brzy</p>
-        </div>
+
+          <!-- 2 · díky + volitelný účet -->
+          <div class="wl-krok" id="wl-2" hidden>
+            <div class="wl-blok">
+              <h2 class="wl-h2"><span id="wl-typed"></span><span class="wl-cur" id="wl-cur2" aria-hidden="true"></span></h2>
+              <p class="wl-lead wl-rise" id="wl-lead2" style="animation-delay:1.5s">Dáme ti vědět, až appku spustíme.</p>
+            </div>
+
+            <div class="wl-or wl-rise" style="animation-delay:1.74s"><span class="wl-or-t">nebo</span></div>
+
+            <div class="wl-acc wl-rise" id="wl-acc" style="animation-delay:1.82s">
+              <button class="wl-prize" id="wl-acc-btn" type="button" aria-expanded="false" aria-controls="wl-acc-bd">
+                Založ si účet a získej odměnu
+              </button>
+              <div class="wl-acc-bd" id="wl-acc-bd" inert>
+                <div class="wl-acc-pd">
+                  <form class="wl-f" id="wl-form2" novalidate>
+                    <!-- E-mail je potvrzený z prvního kroku, proto má zelený obrys hned -->
+                    <span class="wl-mail" id="wl-mail2">—</span>
+                    <div class="wl-lb">
+                      <span class="wl-pole">
+                        <input class="wl-fi" id="wl-name" type="text" autocomplete="name"
+                               placeholder="Jméno a příjmení nebo název firmy" aria-label="Jméno a příjmení nebo název firmy" aria-describedby="wl-e2">
+                      </span>
+                      <span class="wl-err2" id="wl-e2" role="alert" hidden></span>
+                    </div>
+                    <div class="wl-lb">
+                      <span class="wl-pole">
+                        <input class="wl-fi wl-fi--pw" id="wl-pw" type="password" autocomplete="new-password"
+                               placeholder="Heslo" aria-label="Heslo" aria-describedby="wl-e3">
+                        <button class="wl-peek" type="button" data-peek="wl-pw" aria-controls="wl-pw">Zobrazit</button>
+                      </span>
+                      <span class="wl-err2" id="wl-e3" role="alert" hidden></span>
+                    </div>
+                    <div class="wl-lb">
+                      <span class="wl-pole">
+                        <input class="wl-fi wl-fi--pw" id="wl-pw2" type="password" autocomplete="new-password"
+                               placeholder="Heslo znovu" aria-label="Heslo znovu" aria-describedby="wl-e4">
+                        <button class="wl-peek" type="button" data-peek="wl-pw2" aria-controls="wl-pw2">Zobrazit</button>
+                      </span>
+                      <span class="wl-err2" id="wl-e4" role="alert" hidden></span>
+                    </div>
+                    <button class="wl-sub" type="submit" id="wl-sub">Založit účet</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- Únikovka pro překlep v adrese: bez ní by se člověk, který se zapsal
+                 s chybou, do formuláře už nikdy nedostal. -->
+            <button class="wl-jiny" id="wl-jiny" type="button" hidden>Zapsat jiný e-mail</button>
+          </div>
+
+          <!-- 3 · účet hotov -->
+          <div class="wl-krok" id="wl-3" hidden>
+            <span class="wl-ok" aria-hidden="true">
+              <span class="wl-ok-halo"></span>
+              <svg width="78" height="78" viewBox="0 0 78 78">
+                <circle class="wl-ok-fill" cx="39" cy="39" r="34.5"/>
+                <circle class="wl-ok-ring" cx="39" cy="39" r="34.5" fill="none" stroke-width="4" stroke-linecap="round"/>
+                <path class="wl-ok-chk" d="M24 40.4 34 50 55 28.4" fill="none" stroke="#fff" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <div class="wl-blok">
+              <h2 class="wl-h2"><span id="wl-typed3"></span><span class="wl-cur" id="wl-cur3" aria-hidden="true" hidden></span></h2>
+              <p class="wl-lead wl-rise" style="animation-delay:1.86s">Vítej, <b id="wl-hi">—</b>. Teď už máš všechno, víc se dozvíš v e-mailu.</p>
+              <span class="wl-pos wl-rise" style="animation-delay:1.98s"><span class="wl-pos-k">Zakládající člen</span></span>
+            </div>
+          </div>
       </div>
     </div>
   </section>
@@ -910,7 +1013,7 @@
           <h4>Firma</h4>
           <a href="/blog">Blog</a>
           <a href="/podpora">Podpora</a>
-          <a href="mailto:admin@makej.eu">Kontakt</a>
+          <a href="/o-nas#kontakt">Kontakt</a>
           <a href="/o-nas">O nás</a>
         </div>
         <div class="footer-col">
@@ -923,6 +1026,7 @@
       </div>
       <div class="footer-bottom">
         <span>© 2026 Makej Všechna práva vyhrazena.</span>
+        <span>Makej s náma s.r.o. &nbsp;·&nbsp; IČO 29900590</span>
       </div>
     </div>
   </footer>
@@ -1072,7 +1176,7 @@
   <!-- ═══════════ COOKIE BANNER ═══════════ -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="script.js?v=52"></script>
+  <script src="script.js?v=59"></script>
   <!-- Lazy-play ukázkového videa: stáhne a přehraje až ve viewportu (šetří data + LCP) -->
   <script>
   (function () {
