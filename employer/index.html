@@ -5,17 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Makej — dashboard pro zaměstnavatele</title>
   <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="stylesheet" href="/nahravani.css?v=6" />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/LeagueSpartan-Variable.woff2" crossorigin />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Playfair+Display:ital,wght@1,600;1,700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+  <!-- Písma nesmí zdržet první vykreslení: načtou se bokem a naskočí, až dorazí. -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Playfair+Display:ital,wght@1,600;1,700&family=Poppins:wght@700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Playfair+Display:ital,wght@1,600;1,700&family=Poppins:wght@700&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Playfair+Display:ital,wght@1,600;1,700&family=Poppins:wght@700&display=swap"></noscript>
 
-  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+  <!-- Orb se stahuje hned, souběžně se vším ostatním (spouští ho skript pod zámkem). -->
+  <link rel="modulepreload" href="/vendor/thinking-orbs/orb.js?v=3" />
+  <link rel="modulepreload" href="/vendor/thinking-orbs/engine.es.js" />
+  <link rel="modulepreload" href="/vendor/thinking-orbs/index-B8WsUNf5.js" />
 
   <style>
     :root { color-scheme: dark; }
@@ -51,38 +54,14 @@
       100% { stroke-dashoffset: 0; }     /* dojede */
     }
 
-    /* Auth gate */
-    #auth-gate {
-      position: fixed; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      /* Modrý brandový nádech shora do skoro černé navy — místo fialové */
-      background: radial-gradient(130% 90% at 50% -10%, #0a1e8a 0%, #060a24 55%, #05071a 100%);
-      z-index: 9999;
-    }
+    /* Zámek = modrá obrazovka „Nahráváme vaše údaje" (vzhled v /nahravani.css,
+       sdílený s webem — přechod z přihlášení sem pak není vidět). */
     #auth-gate.hidden { display: none; }
-    .gate-card {
-      background: #0a0d2e;
-      border: 1px solid #1a2050;
-      border-radius: 1.5rem;
-      padding: 2.5rem;
-      width: min(420px, calc(100vw - 40px));
-      text-align: center;
-      box-shadow: 0 30px 70px rgba(0,10,60,0.5);
-    }
-    .gate-logo {
-      font-family: Inter, sans-serif;
-      font-size: 2.2rem; font-weight: 900;
-      color: #ffffff; letter-spacing: -0.5px;
-      margin-bottom: 1.75rem;
-    }
-    .gate-logo b { color: #4d63ff; font-weight: 900; }
-    .gate-desc { color: #8a90b8; font-size: 0.9rem; margin-bottom: 1.5rem; }
-    .gate-spin {
-      width: 26px; height: 26px; margin: 0 auto;
-      border-radius: 999px;
-      border: 3px solid #1e2557; border-top-color: #0020f6;
-      animation: empSpin .7s linear infinite;
-    }
+    /* Dashboard se po odchodu modré jemně přiblíží dovnitř. `both` tu nevadí:
+       konečný snímek je transform:none, takže nic nezůstane zamčené. */
+    #root.nahr-dovnitr { animation: dashDovnitr .6s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes dashDovnitr { from { opacity: 0; transform: scale(.975); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { #root.nahr-dovnitr { animation: none; } }
 
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -197,15 +176,45 @@
 
   <!-- Zámek dashboardu. Přihlášení řeší web — jedno, s rozcestníkem firma/
        brigádník. Nepřihlášený se tu jen krátce zastaví, než ho JS pošle tam. -->
-  <div id="auth-gate">
-    <div class="gate-card">
-      <div class="gate-logo">makej</div>
-      <div class="gate-desc" id="gate-msg">Přesměrování na přihlášení…</div>
-      <div class="gate-spin"></div>
+  <div id="auth-gate" class="nahr-plocha" role="status">
+    <div class="nahr-obsah">
+      <canvas id="gate-orb" aria-hidden="true"></canvas>
+      <p class="nahr-text" id="gate-msg">Nahráváme vaše údaje</p>
     </div>
   </div>
+  <!-- Orb (thinking-orbs, MIT) bez Reactu — viz /vendor/thinking-orbs/orb.js.
+       Když se nenačte, zůstanou aspoň tečky za textem. -->
+  <script>
+    // Okamžik kliknutí na „Přihlásit se" (web ho uložil) — modrá od něj drží
+    // nejméně 5 s. Kdo sem přijde přímo, tomu se počítá od otevření stránky.
+    window.__nahrOd = (function () {
+      try {
+        const u = Number(sessionStorage.getItem('makej-nahr-od'));
+        if (u && Date.now() - u < 20000) return u;
+      } catch (e) {}
+      return Date.now();
+    })();
+  </script>
+  <!-- blocking="render": stránka se ukáže až s nakresleným orbem (první
+       snímek se kreslí hned při spuštění), takže orb naskočí spolu s textem
+       a nedopadne později. Do té doby prohlížeč drží modrou z webu. -->
+  <script type="module" async blocking="render">
+    import { spustOrb } from '/vendor/thinking-orbs/orb.js?v=3';
+    window.__zastavOrb = spustOrb(document.getElementById('gate-orb'), { state: 'connecting', size: 64 });
+  </script>
 
   <div id="root"></div>
+
+  <!-- Velké skripty až TADY, ne v <head>. Dokud je prohlížeč nestáhne
+       a nespustí (Babel má 3 MB), nesmí nic vykreslit — po přihlášení se
+       proto na vteřinu zasekl poslední obraz webu a pak stránka „problikla".
+       Modrá obrazovka výš se teď vykreslí dřív, než se na ně začne čekat. -->
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
 
   <script>
     // ── Auth gate ──
@@ -217,7 +226,57 @@
 
     const gate = document.getElementById('auth-gate');
     const gateMsg = document.getElementById('gate-msg');
-    function hideGate() { gate.classList.add('hidden'); }
+    // Modrá odejde, až je dashboard OPRAVDU vykreslený — ne ve chvíli, kdy se
+    // ověří přihlášení. Mezi tím se v prohlížeči ještě 2–4 s překládá 12
+    // souborů JSX; dřív se zámek schoval hned a člověk koukal na prázdnou
+    // tmavou plochu, která vypadala jako rozbitá stránka.
+    function hideGate() {
+      const root = document.getElementById('root');
+      let pojistka = 0;
+      // Modrá svítí nejméně 5 s od kliknutí na „Přihlásit se" (web to uloží do
+      // sessionStorage), bez ohledu na rychlost počítače. Dashboard se totiž
+      // vykreslí dřív, než do něj dotečou data z databáze — delší modrá to
+      // schová a dashboard naskočí rovnou naplněný. Kdo sem přijde přímo
+      // (záložka, obnovení), tomu se to počítá od otevření stránky.
+      const MIN_MODRA = 5000;
+      // window.__nahrOd nastavil skript hned pod zámkem: čerstvý čas kliknutí
+      // z webu, jinak otevření stránky. Záznam se nemaže — čte ho i orb a
+      // pořadí obou skriptů není zaručené; starý záznam odfiltruje 20s limit.
+      const od = window.__nahrOd || performance.timeOrigin || Date.now();
+      const hotovo = () => {
+        clearTimeout(pojistka);
+        const zbyva = Math.max(0, od + MIN_MODRA - Date.now());
+        setTimeout(odejdi, zbyva);
+      };
+      const odejdi = () => {
+        // Snímek navíc, ať se dashboard stihne pod modrou vykreslit celý.
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          gate.classList.add('odchazi');
+          root.classList.add('nahr-dovnitr');
+          setTimeout(() => {
+            gate.classList.add('hidden');
+            if (window.__zastavOrb) window.__zastavOrb();
+          }, 650);
+        }));
+      };
+      if (root.childElementCount) return hotovo();
+      const hlidac = new MutationObserver(() => {
+        if (root.childElementCount) { hlidac.disconnect(); hotovo(); }
+      });
+      hlidac.observe(root, { childList: true });
+      // Kdyby se dashboard nevykreslil vůbec (spadlý skript, výpadek sítě),
+      // nenechat člověka navždy na modré — říct to a nabídnout znovu.
+      pojistka = setTimeout(() => {
+        if (root.childElementCount) return;
+        gateMsg.textContent = 'Načítání trvá déle, než by mělo.';
+        const obsah = gate.querySelector('.nahr-obsah');
+        const p = document.createElement('p'); p.className = 'nahr-chyba';
+        p.textContent = 'Zkontrolujte připojení a zkuste to znovu.';
+        const b = document.createElement('button'); b.className = 'nahr-znovu'; b.type = 'button';
+        b.textContent = 'Zkusit znovu'; b.onclick = () => location.reload();
+        obsah.append(p, b);
+      }, 25000);
+    }
 
     // Přihlášení má na starost web — jedno, s rozcestníkem firma/brigádník.
     // Přihlášená firma jde rovnou do dashboardu; kdokoli jiný (nepřihlášený
@@ -231,6 +290,8 @@
       if (session && role !== 'employer') {
         // Přihlášený brigádník na adrese dashboardu → jasná hláška, pak pryč
         gateMsg.textContent = 'Tento dashboard je jen pro zaměstnavatele. Přesměrování…';
+      } else {
+        gateMsg.textContent = 'Přesměrování na přihlášení…';
       }
       window.location.replace('/?login=employer');
     });

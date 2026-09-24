@@ -13,7 +13,7 @@
 > **srovnaný s tvým stavem k 23. 9.** (tvé texty, ceník, o nás, blog, patička) a navrch
 > jsou naše nové změny. Níž je rozdělené na **co si vzít od nás** a **co jsme vzali od
 > tebe** (to zpátky nepřenášej). U každé položky jsou jména funkcí a tříd — hledej podle
-> nich, čísla řádků se u tebe liší. Web: `style.css?v=143`, `script.js?v=59`.
+> nich, čísla řádků se u tebe liší. Web: `style.css?v=143`, `script.js?v=66`.
 
 ### Web — vezmi si od nás
 
@@ -68,6 +68,46 @@ každý snímek.
 **7. „Vytvořit účet" na podstránkách.** `goToEmailSignup()` hledá `#brzy` **nebo**
 `#download.cl-sekce` — tvoje verze znala jen `#brzy`, takže z podstránek posílala
 člověka na úvodku, i když měl čekací list přímo pod sebou.
+
+**8. Přihlášení firmy → modrá obrazovka „Nahráváme vaše údaje" → dashboard.**
+Dřív po přihlášení firmy 2–4,5 s prázdná tmavá plocha: dashboard se v prohlížeči
+překládá (12 JSX, 784 kB) a `#auth-gate` se schoval hned po ověření session.
+Nově: web — modrá se rozlije `clip-path: circle()` od tlačítka „Přihlásit se",
+**jen modrá**, bez orbu a textu (`script.js` → `prechodDoDashboardu(cil)`, volá se
+místo přímého přesměrování u role employer i při kliku na `a[href="/employer/"]`,
+po 0,85 s `location.href`). Dashboard začíná na stejné modré, naskočí orb
+(thinking-orbs, stav `connecting`, 64 px) a „Nahráváme vaše údaje" (League Spartan
+700, bez teček). Modrá odejde, až je dashboard vykreslený, **nejdřív 5 s od kliknutí**
+(`sessionStorage['makej-nahr-od']`), a dashboard se jemně přiblíží (`#root.nahr-dovnitr`).
+- **Nové soubory:** `nahravani.css` (vzhled sdílený webem i dashboardem, z-index
+  2147483600 — nad cookie lištou), `vendor/thinking-orbs/` = balíček thinking-orbs
+  0.3.2, **licence MIT (© Jakub Antalik) — `LICENSE` musí zůstat vedle kódu**, jen
+  engine (`engine.es.js` + `index-B8WsUNf5.js`, bez závislostí) a naše `orb.js`
+  (`spustOrb(canvas, {state, size})`) + `orb-worker.js`. React komponenta
+  `<ThinkingOrb>` nejde — web ani zámek dashboardu React nemají.
+- **Proč worker a dvě plátna:** překlad dashboardu blokuje hlavní vlákno a orb by
+  zamrzl (změřeno při 2,5 s blokaci: hlavní vlákno 1 snímek / mezera 2 502 ms,
+  worker 150 snímků / max 18 ms). `orb.js` nakreslí první snímek hned na hlavním
+  vlákně, worker (OffscreenCanvas) startuje na druhém plátně a po prvním snímku
+  převezme (`{hotovo:true}`) — start workeru trvá 100–300 ms a orb by mezitím chyběl.
+  Bílé tečky: `paintFrame(ctx, frame, false, {r:255,g:255,b:255})` — originální
+  `dark:true` ztmavuje vzdálené tečky k černé a na modré vypadají šedě.
+- ⚠️ **`employer/index.html` — hlavní příčina „zasekne se a stránka jakoby problikne":**
+  v `<head>` bylo 5 blokujících skriptů z CDN (iconify, supabase-js, React, ReactDOM,
+  Babel 3 MB) + blokující Google Fonts, takže se nic nesmělo vykreslit, dokud se
+  nestáhly. Skripty jsou teď v `<body>` **až za `#auth-gate`** (pořadí zachované,
+  před skriptem přihlášení, který potřebuje `supabase`), Google Fonts `preload` +
+  `media="print" onload`, `modulepreload` na orb, orb `<script type="module" async
+  blocking="render">`, font League Spartan z `/fonts/` s `preload` a
+  `font-display: block`. První vykreslení 760 → 120 ms. `hideGate()` čeká přes
+  MutationObserver na obsah `#root`; pojistka 25 s → „Načítání trvá déle, než by
+  mělo." + „Zkusit znovu". Staré `.gate-card/.gate-logo/.gate-spin` smazané.
+- Ověřeno celou cestou (falešná session firmy, dotazy do DB vypnuté): 0,9 s dashboard
+  s orbem → 2,8 s dashboard hotový pod modrou → 5,1 s modrá odchází, 0 chyb JS.
+  Web: `script.js?v=66`, `nahravani.css?v=6`, `orb.js?v=3`, `orb-worker.js?v=2`.
+- Známé chyby dashboardu (zatím neopraveno, pokračujeme): na prázdném dashboardu bílý
+  nápis „Zatím žádné inzeráty" na světlém pozadí; rozbité ikony „Recenze" a
+  „Nastavení" v menu; úvodka nečte `/?login=employer` (přihlašovací okno se samo neotevře).
 
 ### Web — vzali jsme od tebe (zpátky nepřenášej)
 - Textové úpravy z tvých `132c9b0`, `4d8d68d`, `90ea872`, `9e00e7d`, `df5e0fc`,

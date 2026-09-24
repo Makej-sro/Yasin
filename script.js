@@ -586,6 +586,10 @@ function initAuth() {
 
     btn.disabled = true;
     btn.textContent = 'Přihlašování...';
+    // Odkud se po přihlášení firmy rozlije modrá (prechodDoDashboardu).
+    // Změřit teď: po úspěchu se okno zavře a tlačítko už nejde najít.
+    const rb = btn.getBoundingClientRect();
+    window.__prechodOd = { x: rb.left + rb.width / 2, y: rb.top + rb.height / 2 };
 
     const { error } = await sb.auth.signInWithPassword({ email, password });
 
@@ -781,7 +785,8 @@ function initAuth() {
           ov.querySelectorAll('.role-card').forEach(b => { b.disabled = false; b.style.opacity = 1; });
           return chyba('Nepovedlo se uložit. Zkus to prosím znovu.');
         }
-        window.location.href = role === 'employer' ? '/employer/' : '/worker/';
+        if (role === 'employer') prechodDoDashboardu('/employer/');
+        else window.location.href = '/worker/';
       });
     });
   }
@@ -798,7 +803,8 @@ function initAuth() {
       // Univerzální předregistrace roli neposílá — chybějící role je tedy signál
       // „ještě si nevybral". Nemusíme se kvůli tomu ptát databáze.
       if (!role) { ukazRozcestnik(session.user); return; }
-      window.location.href = role === 'employer' ? '/employer/' : '/worker/';
+      if (role === 'employer') prechodDoDashboardu('/employer/');
+      else window.location.href = '/worker/';
     }
   });
 
@@ -1684,3 +1690,56 @@ function showToast(msg) {
     })(minule);
   });
 })();
+
+/* ═══════════ PŘECHOD DO DASHBOARDU (modrá obrazovka) ═══════════
+   Po přihlášení firmy se modrá rozlije kruhem od tlačítka, v ní naskočí orb
+   a „Nahráváme vaše údaje" — a teprve pak se přejde na /employer/. Dashboard
+   začíná na úplně stejné modré (employer/index.html, #auth-gate), takže
+   přechod mezi stránkami není vidět. Vzhled obou je v nahravani.css.
+
+   Styl se přidá hned při načtení stránky, ne až při přihlášení — jinak by
+   se modrá první vteřinu vykreslila bez stylů. */
+(function () {
+  if (!document.querySelector('link[href^="/nahravani.css"]')) {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet'; l.href = '/nahravani.css?v=6';
+    document.head.appendChild(l);
+  }
+})();
+
+function prechodDoDashboardu(cil) {
+  if (document.querySelector('.nahr-plocha')) return;         // už běží
+  // Okamžik kliknutí — dashboard podle něj drží modrou nejméně 5 s od něj.
+  try { sessionStorage.setItem('makej-nahr-od', String(Date.now())); } catch (e) {}
+  // Kruh se rozlije od tlačítka, kterým se člověk přihlásil. Po přihlášení
+  // přes Google (návrat přesměrováním) žádné tlačítko není — pak od středu.
+  const tlacitko = window.__prechodOd;
+  const x = tlacitko ? tlacitko.x : innerWidth / 2;
+  const y = tlacitko ? tlacitko.y : innerHeight / 2;
+
+  // Jen modrá plocha, bez orbu a textu — ty naskočí až v dashboardu
+  // (Yasin). Orb na obou stránkách by se musel při přechodu navazovat
+  // a jakákoli mezera mezi nimi byla vidět jako probliknutí.
+  const plocha = document.createElement('div');
+  plocha.className = 'nahr-plocha nahr-plocha--prechod';
+  plocha.style.setProperty('--x', x + 'px');
+  plocha.style.setProperty('--y', y + 'px');
+  plocha.setAttribute('role', 'status');
+  plocha.setAttribute('aria-label', 'Nahráváme vaše údaje');
+  document.body.appendChild(plocha);
+
+  // Dva snímky: prohlížeč musí nejdřív vykreslit výchozí nulový kruh,
+  // jinak by přechod přeskočil rovnou na konec.
+  requestAnimationFrame(() => requestAnimationFrame(() => plocha.classList.add('je')));
+  // Přejde se, až modrá zaplní obrazovku (kruh jede 0,8 s).
+  const tiche = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(() => { window.location.href = cil; }, tiche ? 150 : 850);
+}
+
+// Přihlášená firma klikne v menu na „Dashboard" → stejný přechod.
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[href="/employer/"]');
+  if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+  e.preventDefault();
+  prechodDoDashboardu('/employer/');
+});
