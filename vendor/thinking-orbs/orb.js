@@ -4,7 +4,12 @@
 // plátno, vybere preset stavu a každý snímek ho překreslí přes engine.
 //
 //   import { spustOrb } from '/vendor/thinking-orbs/orb.js';
-//   const zastav = spustOrb(canvas, { state: 'connecting', size: 64, od });
+//   const zastav = spustOrb(canvas, { state: 'connecting', size: 64, zobrazit: 104, od });
+//
+// `size` = preset z balíčku — engine zná jen 20, 32 a 64, jiné číslo spadne.
+// `zobrazit` = skutečná velikost na obrazovce v px (výchozí = size). Orb se
+// kreslí podle presetu 64 a jen se zvětší měřítkem plátna — je to vektor,
+// takže zůstane ostrý.
 //
 // `od` = společný začátek animace (Date.now() v ms). Web při přihlášení i
 // dashboard po něm předají stejné číslo, takže orb po přechodu mezi stránkami
@@ -33,16 +38,17 @@ try {
   new Worker('data:,', { get type() { umiModulovyWorker = true; return 'module'; } }).terminate();
 } catch (e) { /* bez workeru */ }
 
-export function spustOrb(canvas, { state = 'connecting', size = 64, speed = 1, bila = true, od = Date.now() } = {}) {
+export function spustOrb(canvas, { state = 'connecting', size = 64, zobrazit = size, speed = 1, bila = true, od = Date.now() } = {}) {
   if (!canvas) return () => {};
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const tiche = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ── 1. hlavní vlákno: kreslí hned ──
-  canvas.width = Math.round(size * dpr);
-  canvas.height = Math.round(size * dpr);
-  canvas.style.width = size + 'px';
-  canvas.style.height = size + 'px';
+  const meritko = dpr * zobrazit / size;
+  canvas.width = Math.round(zobrazit * dpr);
+  canvas.height = Math.round(zobrazit * dpr);
+  canvas.style.width = zobrazit + 'px';
+  canvas.style.height = zobrazit + 'px';
   const ctx = canvas.getContext('2d');
   if (!ctx) return () => {};
   const { mode, speed: zaklad, opts } = resolvePreset(state, size);
@@ -50,7 +56,7 @@ export function spustOrb(canvas, { state = 'connecting', size = 64, speed = 1, b
   const tempo = zaklad * speed;
   const BILA = { r: 255, g: 255, b: 255 };
   const kresli = (t) => {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.setTransform(meritko, 0, 0, meritko, 0, 0);
     ctx.clearRect(0, 0, size, size);
     if (bila) paintFrame(ctx, snimek(size, t, opts), false, BILA);
     else paintFrame(ctx, snimek(size, t, opts), true);
@@ -74,15 +80,15 @@ export function spustOrb(canvas, { state = 'connecting', size = 64, speed = 1, b
   if (umiModulovyWorker && HTMLCanvasElement.prototype.transferControlToOffscreen) {
     try {
       const obal = document.createElement('span');
-      obal.style.cssText = `position:relative;display:block;width:${size}px;height:${size}px`;
+      obal.style.cssText = `position:relative;display:block;width:${zobrazit}px;height:${zobrazit}px`;
       canvas.replaceWith(obal);
       obal.appendChild(canvas);
       const druhe = document.createElement('canvas');
       druhe.setAttribute('aria-hidden', 'true');
-      druhe.style.cssText = `position:absolute;left:0;top:0;width:${size}px;height:${size}px;opacity:0`;
+      druhe.style.cssText = `position:absolute;left:0;top:0;width:${zobrazit}px;height:${zobrazit}px;opacity:0`;
       obal.appendChild(druhe);
 
-      worker = new Worker(new URL('./orb-worker.js?v=2', import.meta.url), { type: 'module' });
+      worker = new Worker(new URL('./orb-worker.js?v=3', import.meta.url), { type: 'module' });
       worker.onmessage = (e) => {
         if (!e.data || !e.data.hotovo) return;
         // Worker má první snímek — převezme animaci, hlavní vlákno končí.
@@ -91,7 +97,7 @@ export function spustOrb(canvas, { state = 'connecting', size = 64, speed = 1, b
         zastavHlavni();
       };
       const off = druhe.transferControlToOffscreen();
-      worker.postMessage({ canvas: off, state, size, speed, bila, od, dpr }, [off]);
+      worker.postMessage({ canvas: off, state, size, zobrazit, speed, bila, od, dpr }, [off]);
     } catch (e) { worker = null; /* zůstane kreslení na hlavním vlákně */ }
   }
 

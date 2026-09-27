@@ -183,9 +183,10 @@ async function fetchEmployerData(employerId) {
     const jobIds  = jobs.map(j => j.id);
 
     let matches = [], messages = [], reviews = [];
+    const viewsByJob = {};
 
     if (jobIds.length > 0) {
-      const [matchRes, reviewRes] = await Promise.all([
+      const [matchRes, reviewRes, viewRes] = await Promise.all([
         sb.from('matches')
           .select('*, worker:profiles!matches_worker_id_fkey(*), job:jobs(*)')
           .in('job_id', jobIds)
@@ -194,7 +195,12 @@ async function fetchEmployerData(employerId) {
           .select('*, reviewer:profiles!reviews_reviewer_id_fkey(name)')
           .eq('reviewed_id', employerId)
           .order('created_at', { ascending: false }),
+        // Zhlédnutí: appka zapisuje job_views 1× na brigádníka a inzerát, když mu
+        // karta vyjede ve feedu (logJobViewW v www/worker-supabase.jsx).
+        sb.from('job_views').select('job_id').in('job_id', jobIds),
       ]);
+      if (viewRes.error) console.warn('job_views:', viewRes.error.message);
+      (viewRes.data || []).forEach(v => { viewsByJob[v.job_id] = (viewsByJob[v.job_id] || 0) + 1; });
       matches = matchRes.data || [];
       reviews = reviewRes.data || [];
 
@@ -251,7 +257,7 @@ async function fetchEmployerData(employerId) {
         id: job.id, title: job.title,
         company: job.company || companyName,
         status, plan: 'Standard',
-        views: 0, swipes: jm.length, matches: jm.length, hired, pending, ctr: 0,
+        views: viewsByJob[job.id] || 0, swipes: jm.length, matches: jm.length, hired, pending, ctr: 0,
         daysLeft, pay: job.pay, payUnit: job.pay_unit || 'Kč/h',
         accent: _strColor(job.id),
         location: job.location, date: job.date,
@@ -280,6 +286,7 @@ async function fetchEmployerData(employerId) {
         tags: Array.isArray(w.skills) ? w.skills : [],
         lastSeen: _relTime(m.created_at), jobTitle: m.job?.title || '',
         status: m.status,
+        createdAt: m.created_at,   // Dashboard → „Čeká na vás" (řazení, „čeká X dní")
       };
     };
     const pending  = matches.filter(m => m.status === 'pending');
@@ -480,6 +487,18 @@ async function createJobE(employerId, fields) {
 }
 
 Object.assign(window, { fetchEmployerData, acceptCandidate, rejectCandidate, updateEmployerProfile, createJobE, _strColor, _relTime, _fmtTime });
+
+// Zapnout / pozastavit inzerát. DB zná jen stavy active | filled | expired
+// (schema.sql CHECK), appka ve feedu ukazuje jen 'active' — pozastavený je
+// proto 'expired' (dashboard ho čte jako „Neaktivní").
+async function setJobActiveE(jobId, zapnout) {
+  const { error } = await sb.from('jobs').update({ status: zapnout ? 'active' : 'expired' }).eq('id', jobId);
+  if (error) { console.error('setJobActiveE:', error); return false; }
+  const j = (typeof E_JOBS !== 'undefined' ? E_JOBS : []).find(x => x.id === jobId);
+  if (j) j.status = zapnout ? 'active' : 'paused';
+  return true;
+}
+Object.assign(window, { setJobActiveE });
 
 
 // ═══════════════════════════════════════════════════════════════

@@ -15,9 +15,11 @@
 // PRO GATE — zobrazí upgrade CTA pokud uživatel nemá Pro tarif
 // ─────────────────────────────────────────────────────────────
 
+// Odemčeno podle skutečných tarifů (employer-plans.jsx): analytika je od
+// Dynamického výš. Dřív se tu hledal tarif „Pro/Business", který v ceníku
+// není, takže by ji neviděla ani firma, která si Dynamický zaplatí.
 function _isPro() {
-  const plan = (EPROFILE.plan || '').toLowerCase();
-  if (['pro', 'business', 'premium'].includes(plan)) return true;
+  if (typeof can === 'function' && can('analytics')) return true;
   const until = EPROFILE.premium_until || EPROFILE.plan_expires_at;
   if (until && new Date(until) > new Date()) return true;
   return false;
@@ -27,86 +29,34 @@ function ProGate({ feature, children }) {
   if (_isPro()) return children;
   return (
     <div style={{ position: 'relative', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-
       {/* Rozmazaný náhled obsahu */}
-      <div style={{ filter: 'blur(6px)', pointerEvents: 'none', userSelect: 'none', opacity: 0.55 }}>
+      <div style={{ filter: 'blur(6px)', pointerEvents: 'none', userSelect: 'none', opacity: 0.5 }} aria-hidden="true">
         {children}
       </div>
 
-      {/* Overlay s CTA */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'linear-gradient(180deg, rgba(7,7,26,0.15) 0%, rgba(7,7,26,0.75) 40%, rgba(7,7,26,0.85) 100%)',
-      }}>
-        <div style={{
-          textAlign: 'center', maxWidth: 460, padding: '36px 32px',
-          background: 'rgba(16,16,48,0.92)',
-          border: '1px solid rgba(255,209,102,0.2)',
-          borderRadius: 20,
-          boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,209,102,0.08)',
-          backdropFilter: 'blur(12px)',
-        }}>
-          {/* Ikona */}
-          <div style={{
-            width: 68, height: 68, borderRadius: 18,
-            background: 'linear-gradient(135deg, rgba(255,209,102,0.18), rgba(255,209,102,0.06))',
-            border: '1px solid rgba(255,209,102,0.35)',
-            display: 'grid', placeItems: 'center', margin: '0 auto 20px',
-          }}>
-            <Icon name="crown-star-bold" size={32} color="#FFD166" />
+      {/* Světlá karta ve stylu dashboardu — co to je, v jakém tarifu, kam kliknout */}
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 150, background: 'linear-gradient(180deg, rgba(255,255,255,.35) 0%, rgba(255,255,255,.85) 45%)' }}>
+        <div style={{ width: 440, maxWidth: 'calc(100% - 32px)', background: '#fff', border: '1px solid #E6E9F5', borderRadius: 18, boxShadow: '0 24px 60px -20px rgba(16,24,64,.25)', padding: '28px 28px 24px' }}>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: '#7A82A6', marginBottom: 6 }}>Tarif Dynamický a vyšší</div>
+          <div style={{ fontSize: 21, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', lineHeight: 1.25, marginBottom: 8 }}>
+            {feature || 'Tato sekce'} není ve vašem tarifu
           </div>
-
-          {/* Titulek */}
-          <div style={{ fontSize: 21, fontWeight: 800, color: '#fff', fontFamily: T.fontHead, marginBottom: 8, lineHeight: 1.25 }}>
-            {feature || 'Tato sekce'} je dostupná v tarifu Pro
+          <div style={{ fontSize: 14, color: '#3A4266', lineHeight: 1.55, marginBottom: 18 }}>
+            Uvidíte, kolik lidí hledá práci ve vašem kraji, jaké hodinovky se platí a jak si stojí vaše inzeráty.
           </div>
-
-          {/* Popis */}
-          <div style={{ fontSize: 13, color: T.muted, fontFamily: T.fontUI, lineHeight: 1.7, marginBottom: 24 }}>
-            Odemkněte <strong style={{ color: '#d0d0ff' }}>pokročilé reporty</strong>,{' '}
-            demografii kandidátů, analýzu nákladů na nábor a retenci brigádníků.
-          </div>
-
-          {/* Feature list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 26, textAlign: 'left' }}>
-            {[
-              'Cohort analýza a konverzní funnel',
-              'Demografické přehledy kandidátů',
-              'Cost per hire vs. průměr trhu',
-              'Retence brigádníků + AI insights',
-            ].map((f, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: T.light, fontFamily: T.fontUI }}>
-                <Icon name="check-circle-bold" size={14} color="#FFD166" />
-                {f}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 22 }}>
+            {['Plné statistiky + CSV export', '5 aktivních inzerátů', 'Topování inzerátu 3×/měs', 'Prioritní řešení podpory'].map(f => (
+              <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13.5, fontWeight: 600, color: '#374151' }}>
+                <Icon name="check-circle-bold" size={15} color="#16a34a" />{f}
               </div>
             ))}
           </div>
-
-          {/* CTA tlačítko */}
-          <button style={{
-            width: '100%', padding: '13px',
-            borderRadius: 12,
-            background: 'linear-gradient(135deg, #292978, #3a3a99)',
-            border: '1px solid rgba(91,107,255,0.4)',
-            color: '#fff', fontFamily: T.fontUI, fontSize: 15, fontWeight: 800,
-            cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            boxShadow: '0 4px 24px rgba(41,41,120,0.55)',
-            transition: 'opacity .2s',
-          }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-          >
-            <Icon name="crown-star-bold" size={16} color="#FFD166" />
-            Upgradovat na Pro
-          </button>
-
-          <div style={{ marginTop: 12, fontSize: 12, color: T.mutedSoft, fontFamily: T.fontUI }}>
-            Otázky? <a href="mailto:support@makej.eu" style={{ color: '#8AB4FF', textDecoration: 'none' }}>support@makej.eu</a>
+          <EBtnHl onClick={() => window.empGoTab && window.empGoTab('pricing')}>Zobrazit tarify</EBtnHl>
+          <div style={{ marginTop: 12, fontSize: 12.5, color: '#7A82A6' }}>
+            Otázky? <a href="mailto:podpora@makej.eu" style={{ color: '#1B34F0', textDecoration: 'none', fontWeight: 600 }}>podpora@makej.eu</a>
           </div>
         </div>
       </div>
-
     </div>
   );
 }
@@ -1230,7 +1180,7 @@ function EAnalytics({ period = '30d', onNew, onTab, onPeriod } = {}) {
 
   return (
     <ProGate feature="Analytika">
-    <div style={{ width: '100%', maxWidth: 1180, margin: '0 auto', padding: '18px 20px 40px' }}>
+    <div className="e-ram" style={{ width: '100%', maxWidth: 1180, margin: '0 auto', padding: '18px 20px 40px' }}>
       <style>{`
         @keyframes anKrajPulse { 0%,100% { stroke-opacity:1; } 50% { stroke-opacity:.5; } }
         @keyframes anTipIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
@@ -1243,37 +1193,18 @@ function EAnalytics({ period = '30d', onNew, onTab, onPeriod } = {}) {
 
       <div style={{ background: '#F1F3FB', border: '1px solid #DDE1F0', borderRadius: 22, overflow: 'hidden' }}>
 
-        {/* Modrá hlavička */}
-        <div style={{ background: '#1B34F0', padding: '20px 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <span style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-.02em' }}>Analytika</span>
-            <span style={{ width: 1, height: 22, background: 'rgba(255,255,255,.28)' }} />
-            <span style={{ fontSize: 14, color: '#C7D0FF' }}>Trh práce podle krajů + výkon vašeho náboru</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <EPeriodPicker value={period} onChange={onPeriod} />
-            <button onClick={exportData} style={{ fontSize: 13, fontWeight: 700, color: '#fff', background: 'rgba(255,255,255,.14)', padding: '9px 14px', borderRadius: 9, border: 'none', cursor: 'pointer' }}>Export dat</button>
-            <button onClick={() => onNew && onNew()} style={{ fontSize: 14, fontWeight: 800, color: '#1B34F0', background: '#fff', padding: '11px 18px', borderRadius: 9, border: 'none', cursor: 'pointer' }}>+ Nový inzerát</button>
-          </div>
-        </div>
+        <ETabHlava title="Analytika">
+          <EPeriodPicker value={period} onChange={onPeriod} />
+          <EBtnSek onClick={exportData}>Export dat (CSV)</EBtnSek>
+        </ETabHlava>
 
-        {/* Pás metrik — reaguje na výběr kraje */}
-        <div style={{ background: '#1B34F0', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', paddingBottom: 6 }}>
-          {[
-            ['Aktivních uživatelů', _anNf(disp.users), none ? 'celá ČR' : label.toLowerCase()],
-            ['Pracovních příležitostí', _anNf(disp.jobs), 'otevřených dnes'],
-            ['Medián hodinovky', Math.round(disp.rate) + ' Kč', 'vy platíte 200 Kč'],
-            ['Zájemců na příležitost', _anDec(ratio), 'čím víc, tím snazší nábor'],
-          ].map((m, i) => (
-            <div key={i} style={{ padding: '6px 24px 20px', borderLeft: i ? '1px solid rgba(255,255,255,.2)' : 'none' }}>
-              <div style={{ ...(_AN_LBL), color: '#A9B7FF' }}>{m[0]}</div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10, marginTop: 8 }}>
-                <span style={{ fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: '-.02em', lineHeight: 1 }}>{m[1]}</span>
-                <span style={{ fontSize: 12, color: '#C7D0FF' }}>{m[2]}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Pás čísel — reaguje na výběr kraje */}
+        <EMetriky items={[
+          { l: 'Aktivních uživatelů', v: _anNf(disp.users), s: none ? 'celá ČR' : label },
+          { l: 'Pracovních příležitostí', v: _anNf(disp.jobs), s: 'otevřených dnes' },
+          { l: 'Medián hodinovky', v: Math.round(disp.rate) + ' Kč', s: 'v regionu' },
+          { l: 'Zájemců na příležitost', v: _anDec(ratio), s: 'čím víc, tím snazší nábor' },
+        ]} />
 
         <div style={{ padding: '22px 24px 26px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 

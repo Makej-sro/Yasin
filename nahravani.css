@@ -42,11 +42,21 @@
 }
 .nahr-obsah canvas { display: block; }
 .nahr-text {
-  margin: 0;
+  margin: 0; text-align: center;
   font-family: 'League Spartan', system-ui, sans-serif;
-  font-weight: 700; font-size: 1.12rem; letter-spacing: .01em;
-  color: rgba(255,255,255,.92);
+  font-weight: 700; font-size: 1.75rem; line-height: 1.1; letter-spacing: -.01em;
+  color: #fff;
 }
+/* Řádek pod nadpisem — převzatý 1:1 z načítání v appce
+   (www/index.html → #au-vitej .load__t2), ať se obě obrazovky neliší. */
+.nahr-pod {
+  margin: -10px 0 0; max-width: 26ch; text-align: center;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  font-size: 14px; font-weight: 500; line-height: 1.45;
+  color: rgba(255,255,255,.58);
+}
+.nahr-pod + .nahr-pod { margin-top: -16px; }
+.nahr-pod[hidden] { display: none; }
 
 /* ── Web: modrá se rozlije kruhem od tlačítka ── */
 .nahr-plocha--prechod {

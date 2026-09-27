@@ -13,7 +13,7 @@ function _planToTier(plan) {
   if (p.includes('business') || p.includes('premium') || p.includes('maximáln') || p.includes('maximalni')) return { tier: 'max', label: 'Maximální' };
   if (p.includes('dynamick'))                                                                       return { tier: 'dynamic', label: 'Dynamický' };
   if (p.includes('standard') || p.includes('výhodn') || p.includes('vyhodn'))                       return { tier: 'value',   label: 'Výhodný' };
-  return { tier: 'free', label: 'Zdarma' };
+  return { tier: 'free', label: 'Základní' };
 }
 
 function TierBadge({ plan }) {
@@ -45,7 +45,9 @@ function ELogo() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
       <div>
-        <div style={{ fontFamily: T.fontHead, fontWeight: 800, fontSize: 22, color: '#0020F6', letterSpacing: -0.5, lineHeight: 1 }}>
+        {/* Logo v League Spartan 900 jako na webu (.nav-logo) a v appce — třída
+            e-logo, protože #root * jinak všechno přepíná na Inter (index.html). */}
+        <div className="e-logo" style={{ fontWeight: 900, fontSize: 28, color: '#0020F6', lineHeight: 1 }}>
           Makej
         </div>
         <div style={{ fontFamily: T.fontUI, fontSize: 9, color: '#6B7280', letterSpacing: 1.5, textTransform: 'uppercase', marginTop: 3, fontWeight: 700 }}>
@@ -57,8 +59,173 @@ function ELogo() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// KOVOVÝ ODZNÁČEK TARIFU (návrh Yasin 26. 9., MakejTierEffects.tsx → metal badge)
+// Tekutý kov kreslí knihovna metal-fx (MIT, WebGL2) z /vendor/metal-fx/ —
+// načítá ji <script type="module"> v index.html → window.MetalFxLib.
+// Dokud není načtená, nebo když prohlížeč neumí WebGL2, kreslí se CSS verze
+// z návrhu (.mk-rim v index.html). Barva kovu = CSS filtr na plátně podle
+// data-tier (metal-fx má jeden preset na celou stránku).
+// ─────────────────────────────────────────────────────────────
+const _MK_ID = { free: 'zakladni', value: 'vyhodny', dynamic: 'dynamicky', max: 'maximalni', custom: 'vlastni' };
+// Tarify z nové verze návrhu (27. 9., MakejTierEffects.tsx → TIERS).
+// hex = hlavní barva, label = světlý odstín (na tmavé), sheen = kov v CSS náhradě.
+const _mkSh = (hi, a, main, b, lo) => `linear-gradient(180deg, ${hi} 0%, ${a} 36%, ${b} 49%, ${a} 60%, ${b} 100%)`;
+const _MK_TIER = {
+  zakladni:  { id: 'zakladni',  name: 'Základní',  hex: '#B7C1D6', label: '#B7C1D6', sheen: _mkSh('#F4F6FA', '#D5DBE7', '#8E98AE', '#B7C1D6', '#EEF1F7'), pillBg: '#B7C1D6', pillText: '#1F2430', core: 0.6 },
+  vyhodny:   { id: 'vyhodny',   name: 'Výhodný',   hex: '#2E33F0', label: '#9FA2FF', sheen: _mkSh('#E0E1FF', '#9FA2FF', '#2E33F0', '#6B70FF', '#D6D8FF'), pillBg: '#2E33F0', pillText: '#FFFFFF', core: 0.18 },
+  dynamicky: { id: 'dynamicky', name: 'Dynamický', hex: '#229B54', label: '#6FD69A', sheen: _mkSh('#DDF7E6', '#8FE3B1', '#229B54', '#5FD18D', '#C8F0D6'), pillBg: '#229B54', pillText: '#FFFFFF', core: 0.18 },
+  maximalni: { id: 'maximalni', name: 'Maximální', hex: '#BE5518', label: '#F5A06C', sheen: _mkSh('#FFE6D6', '#F5A06C', '#BE5518', '#E27A3C', '#FFD9C2'), pillBg: '#BE5518', pillText: '#FFFFFF', core: 0.18 },
+  vlastni:   { id: 'vlastni',   name: 'Vlastní',   hex: '#7A41C8', label: '#B994EE', sheen: _mkSh('#EFE5FC', '#B994EE', '#7A41C8', '#A77BE8', '#E3D3FA'), pillBg: '#7A41C8', pillText: '#FFFFFF', core: 0.18 },
+};
+
+// Knihovna, jakmile je načtená a prohlížeč umí WebGL2; jinak null.
+function useMetalFx() {
+  const [lib, setLib] = useStateE(() => window.MetalFxLib || null);
+  useEffectE(() => {
+    if (lib) return;
+    const hotovo = () => setLib(window.MetalFxLib || null);
+    window.addEventListener('metalfx-ready', hotovo);
+    return () => window.removeEventListener('metalfx-ready', hotovo);
+  }, [lib]);
+  if (!lib) return null;
+  try { return lib.isMetalFxSupported() ? lib : null; } catch (e) { return null; }
+}
+
+// Klon MetalBadge z metal-fx (originál má pevnou šířku 45 px) — šířka podle textu.
+// Hodnoty 1:1 z návrhu. mask/glowMode jsou vnitřní props metal-fx 2.0.11.
+function MkAutoBadge({ lib, t, name, id, reflectionTargets }) {
+  const D = lib.METAL_BADGE_DEFAULTS;
+  const rad = 55.556, H = 25, glow = D.glow, core = D.core;
+  const mask = React.useCallback((g, w, hh, b) => { g.beginPath(); g.roundRect(0, 0, w, hh, rad * b); g.fill(); }, []);
+  const abs = { position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: rad };
+  const shadow = `inset 0px 0px 8.333px 0px rgba(255,255,255,${glow}), inset 0px 0px 8.333px 0px rgba(255,255,255,${glow}), inset 0px 0px 0px 0.833px rgba(255,255,255,0.5), inset 0px 0.833px 0px 0px rgba(255,255,255,0.78)`;
+  const MetalFx = lib.MetalFx;
+  return (
+    <MetalFx preset="silver" strength={id === 'zakladni' ? D.metalOpacity : 0.45} shaderScale={D.shaderScale}
+      mask={mask} glowMode="ring" disableGlow reflectionTargets={reflectionTargets} borderRadius={rad}
+      style={{ background: t.pillBg, borderRadius: rad }}>
+      <div style={{ position: 'relative', height: H, minWidth: 45, borderRadius: rad }}>
+        <div aria-hidden="true" style={{ ...abs, opacity: t.core, background: `radial-gradient(ellipse ${core.size}% ${core.size}% at 50% 50%, rgba(255,255,255,1) ${core.r}%, rgba(255,255,255,0) ${Math.min(100, core.r + core.blur)}%)` }} />
+        <div aria-hidden="true" style={{ ...abs, background: `linear-gradient(to bottom, rgba(255,255,255,${D.gradient}), rgba(255,255,255,0))`, boxShadow: shadow }} />
+        <span style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', minWidth: 45, height: H, padding: '0 10px', fontSize: 12.222, fontWeight: 600, lineHeight: 1.4, color: t.pillText, whiteSpace: 'nowrap' }}>{name}</span>
+      </div>
+    </MetalFx>
+  );
+}
+
+function TierMetalBadge({ plan, label = 'Tarif', onClick }) {
+  const { tier, label: name } = _planToTier(plan);
+  const id = _MK_ID[tier] || 'zakladni';
+  const ref = useRefE(null);
+  const lib = useMetalFx();
+  return (
+    <span data-tier={id} onClick={onClick} title={onClick ? 'Změnit tarif' : undefined}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 9, cursor: onClick ? 'pointer' : 'default' }}>
+      {label && <span ref={ref} style={{ fontSize: 13, fontWeight: 500, color: '#8a8a8a' }}>{label}</span>}
+      <span data-cell="badge" style={{ display: 'inline-flex' }}>
+        {lib
+          ? <MkAutoBadge lib={lib} t={_MK_TIER[id]} name={name} id={id} reflectionTargets={label ? [{ ref, strength: 0.5 }] : undefined} />
+          : <span className="mk-rim"><span className="mk-rim-fill">{name}</span></span>}
+      </span>
+    </span>
+  );
+}
+
+
+// ── Kovový název tarifu (TierMetalText z návrhu) ──
+// Název tarifu jako tekutý kov (metal-fx MetalText). Návrh je na tmavé pozadí
+// se světlým odstínem (label); na bílém ceníku bereme hlavní barvu (hex),
+// jinak by byl třeba Základní skoro neviditelný. Bez WebGL2 CSS náhrada.
+function _MkMetalTextGL({ lib, t, prefix, font, color }) {
+  const ref = useRefE(null);
+  lib.useMetalTextReflection(ref);
+  const MetalText = lib.MetalText;
+  return (
+    <span data-tier={t.id}>
+      <span data-cell="text" style={{ display: 'inline-flex', gap: '0.25em', alignItems: 'baseline' }}>
+        {prefix && <span ref={ref} style={{ font, color: '#6b6b6b' }}>{prefix}</span>}
+        <MetalText font={font} color={color} strength={0.9} reflectionTargets={prefix ? [{ ref, strength: 0.64 }] : undefined}>{t.name}</MetalText>
+      </span>
+    </span>
+  );
+}
+function TierMetalText({ tier, prefix = null, size = 19, weight = 700, naSvetlem = true }) {
+  const t = _MK_TIER[tier] || _MK_TIER.zakladni;
+  const lib = useMetalFx();
+  const font = weight + ' ' + size + 'px/1.2 Inter, sans-serif';
+  const color = naSvetlem ? t.hex : t.label;
+  if (lib) return <_MkMetalTextGL lib={lib} t={t} prefix={prefix} font={font} color={color} />;
+  return (
+    <span data-tier={t.id} style={{ display: 'inline-flex', gap: '0.25em', alignItems: 'baseline', font }}>
+      {prefix && <span className="mk-sheen" style={{ backgroundImage: 'linear-gradient(100deg, transparent 38%, rgba(255,255,255,0.32) 50%, transparent 62%), linear-gradient(#6b6b6b, #6b6b6b)' }}>{prefix}</span>}
+      <span className="mk-sheen mk-liquid" style={{ backgroundImage: `linear-gradient(100deg, transparent 40%, rgba(255,255,255,0.95) 50%, transparent 60%), linear-gradient(165deg, transparent 35%, rgba(255,255,255,0.35) 48%, transparent 58%), ${naSvetlem ? 'linear-gradient(' + t.hex + ',' + t.hex + ')' : t.sheen}`, filter: `drop-shadow(0 0 6px ${t.label}40)`, animationDelay: '0.25s' }}>{t.name}</span>
+    </span>
+  );
+}
+
+// ── Přelévavý barevný text (TierGradientText, čisté CSS) ──
+function TierGradientText({ tier, children, style }) {
+  const t = _MK_TIER[tier] || _MK_TIER.zakladni;
+  return <span data-tier={t.id}><span className="mk-grad" style={style}>{children != null ? children : t.name}</span></span>;
+}
+
+// ── Kovové tlačítko (TierMetalButton z návrhu, bez vnější záře) ──
+// plna = přes celou šířku (tlačítka v kartách ceníku).
+function _MkMetalButtonGL({ lib, t, children, onClick, plna }) {
+  const D = lib.METAL_BADGE_DEFAULTS;
+  const rad = 999, glow = D.glow, core = D.core;
+  const mask = React.useCallback((g, w, hh, b) => { g.beginPath(); g.roundRect(0, 0, w, hh, Math.min(hh / 2, rad * b)); g.fill(); }, []);
+  const abs = { position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: rad };
+  const shadow = `inset 0px 0px 8.333px 0px rgba(255,255,255,${glow}), inset 0px 0px 8.333px 0px rgba(255,255,255,${glow}), inset 0px 0px 0px 0.833px rgba(255,255,255,0.5), inset 0px 0.833px 0px 0px rgba(255,255,255,0.78)`;
+  const MetalFx = lib.MetalFx;
+  return (
+    <MetalFx preset="silver" strength={t.id === 'zakladni' ? D.metalOpacity : 0.45} shaderScale={D.shaderScale}
+      mask={mask} glowMode="ring" disableGlow borderRadius={rad}
+      style={{ background: t.pillBg, borderRadius: rad, width: plna ? '100%' : undefined, display: plna ? 'block' : undefined }}>
+      <div style={{ position: 'relative', borderRadius: rad }}>
+        <div aria-hidden="true" style={{ ...abs, opacity: t.core, background: `radial-gradient(ellipse ${core.size}% ${core.size}% at 50% 50%, rgba(255,255,255,1) ${core.r}%, rgba(255,255,255,0) ${Math.min(100, core.r + core.blur)}%)` }} />
+        <div aria-hidden="true" style={{ ...abs, background: `linear-gradient(to bottom, rgba(255,255,255,${D.gradient}), rgba(255,255,255,0))`, boxShadow: shadow }} />
+        <button type="button" onClick={onClick} style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: plna ? '100%' : undefined, border: 0, borderRadius: rad, padding: '10px 20px', background: 'transparent', color: t.pillText, fontSize: 15, fontWeight: 600, lineHeight: 1.2, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          {children}
+        </button>
+      </div>
+    </MetalFx>
+  );
+}
+function TierMetalButton({ tier, children, onClick, plna = false }) {
+  const t = _MK_TIER[tier] || _MK_TIER.zakladni;
+  const lib = useMetalFx();
+  return (
+    <div data-tier={t.id} style={{ display: plna ? 'block' : 'inline-flex', width: plna ? '100%' : undefined }}>
+      <div data-cell="btn" style={{ display: plna ? 'block' : 'inline-flex', width: plna ? '100%' : undefined }}>
+        {lib
+          ? <_MkMetalButtonGL lib={lib} t={t} onClick={onClick} plna={plna}>{children}</_MkMetalButtonGL>
+          : <span className="mk-rim mk-rim--btn" style={plna ? { display: 'flex', width: '100%' } : undefined}>
+              <button type="button" className="mk-rim-fill" onClick={onClick} style={plna ? { width: '100%' } : undefined}>{children}</button>
+            </span>}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // SIDEBAR
 // ─────────────────────────────────────────────────────────────
+// Ikony levého menu ve stylu mobilní appky (Iconly Light-Outline, jako spodní
+// lišta). Inzeráty, Kandidáti, Zprávy, Plán směn jsou přímo z www/icons appky;
+// Dashboard (Home), Analytika (Chart), Recenze (Star), Nastavení (Setting)
+// dodal Yasin z Iconly Pro. Staré PNG (dashboard-icon.png…) už nepoužité.
+const _IKONY_APP = {
+  dash:       'ikony/dashboard.svg?v=1',   // Iconly Light-Outline / Home
+  analytics:  'ikony/analytika.svg?v=1',   // Iconly Light-Outline / Chart
+  jobs:       'ikony/inzeraty.svg?v=1',
+  candidates: 'ikony/kandidati.svg?v=1',
+  chat:       'ikony/zpravy.svg?v=1',
+  calendar:   'ikony/plan-smen.svg?v=1',
+  reviews:    'ikony/recenze.svg?v=1',     // Iconly Light-Outline / Star
+  settings:   'ikony/nastaveni.svg?v=1',   // Iconly Light-Outline / Setting
+};
+
 function ESidebar({ tab, onTab, onSignOut, mobile = false, open = false, onClose }) {
   // Reálné počty z živých globálů (0 → badge se skryje)
   const jobsBadge = (typeof E_JOBS !== 'undefined' ? E_JOBS.filter(j => j.status === 'active' || j.status === 'urgent').length : 0) || null;
@@ -71,7 +238,7 @@ function ESidebar({ tab, onTab, onSignOut, mobile = false, open = false, onClose
       label: 'Přehled',
       items: [
         { k: 'dash',      label: 'Dashboard', icon: 'chart-square-bold',  iconLine: 'chart-square-linear' },
-        { k: 'analytics', label: 'Analytika', icon: 'graph-up-bold',      iconLine: 'graph-up-linear',    badge: 'PRO' },
+        { k: 'analytics', label: 'Analytika', icon: 'graph-up-bold',      iconLine: 'graph-up-linear',    badge: (typeof can === 'function' && can('analytics')) ? null : 'od Dynamického' },
       ],
     },
     {
@@ -92,54 +259,125 @@ function ESidebar({ tab, onTab, onSignOut, mobile = false, open = false, onClose
     },
   ];
 
-  return (
-    <aside style={{
-      width: 256, flexShrink: 0,
+  // ── Menu: natrvalo otevřené, sbalit jde úchytem (27. 9.) ──
+  // Dřív se úzký pruh rozbaloval najetím myší a šel připnout — Yasin: „bude
+  // se to sekat / někomu to bude vadit". Teď je menu normálně otevřené
+  // (jako Stripe). Vedle něj uprostřed výšky je malá svislá čárka; při najetí
+  // se plynule zlomí do šipky a kousek „zatlačí" — kliknutím se menu sbalí do
+  // úzkého pruhu s ikonami, v pruhu šipka zase rozbalí. Volba se pamatuje
+  // v prohlížeči (stejný klíč jako dřív připnutí). Mobil má dál vysouvací panel.
+  const [otevrene, setOtevrene] = useStateE(() => {
+    try { const v = localStorage.getItem('emp-menu-pripnute'); return v === null ? true : v === '1'; } catch (e) { return true; }
+  });
+  const prepniMenu = () => {
+    const v = !otevrene; setOtevrene(v);
+    try { localStorage.setItem('emp-menu-pripnute', v ? '1' : '0'); } catch (e) {}
+  };
+
+  const UZKE = 72, SIROKE = 256;
+  const rozbaleno = mobile || otevrene;
+  const sbal = !rozbaleno;              // úzký pruh — jen ikony
+
+  // Text naskočí až s kouskem zpoždění, když už je menu dost široké; při
+  // zavírání zmizí hned, ať se neořezává o zužující se okraj.
+  const pismo = { opacity: sbal ? 0 : 1, transition: sbal ? 'opacity .1s ease' : 'opacity .2s ease .08s', whiteSpace: 'nowrap' };
+
+  const [kartaOtevrena, setKartaOtevrena] = useStateE(false);
+  const kartaRef = useRefE(null);
+  const kartaMenuRef = useRefE(null);                 // nabídka v úzkém pruhu je v portálu mimo kartu
+  const [kartaPoz, setKartaPoz] = useStateE(null);    // kde nabídku v úzkém pruhu ukázat (vedle loga)
+  useEffectE(() => {
+    if (!kartaOtevrena) return;
+    const mimo = e => {
+      if (kartaRef.current && kartaRef.current.contains(e.target)) return;
+      if (kartaMenuRef.current && kartaMenuRef.current.contains(e.target)) return;
+      setKartaOtevrena(false);
+    };
+    const esc = e => { if (e.key === 'Escape') setKartaOtevrena(false); };
+    document.addEventListener('mousedown', mimo); document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('mousedown', mimo); document.removeEventListener('keydown', esc); };
+  }, [kartaOtevrena]);
+  useEffectE(() => { if (sbal) setKartaOtevrena(false); }, [sbal]);
+  const P = (typeof EPROFILE !== 'undefined' ? EPROFILE : {});
+  const logoUrl = P.logo_url || '';
+  // Bez vyplněného názvu firmy bral dashboard jméno člověka („Samuel") —
+  // radši to říct na rovinu. P.id = data jsou opravdu načtená z databáze.
+  const bezNazvu = !!P.id && !P.company_name;
+  const firmaNazev = bezNazvu ? 'Doplňte název firmy' : ECOMPANY.name;
+
+  // Položky nabídky karty firmy (stejné v rozbaleném menu i v úzkém pruhu)
+  const kartaPolozky = (
+    <>
+      {[
+        { l: 'Profil firmy', ic: 'buildings-2-linear', go: () => onTab('company') },
+        { l: 'Tarif a platby', ic: 'card-linear', go: () => onTab('pricing') },
+      ].map(x => (
+        <button key={x.l} role="menuitem" onClick={() => { setKartaOtevrena(false); x.go(); if (mobile && onClose) onClose(); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 8, border: 'none', background: 'transparent', color: '#1F2433', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#F3F4F6'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+          <Icon name={x.ic} size={17} color="#6B7280" />{x.l}
+        </button>
+      ))}
+      <div style={{ height: 1, background: '#F0F2FA', margin: '4px 6px' }} />
+      <button role="menuitem" onClick={() => { setKartaOtevrena(false); onSignOut && onSignOut(); }}
+        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 8, border: 'none', background: 'transparent', color: '#6B7280', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
+        onMouseEnter={e => { e.currentTarget.style.background = '#F3F4F6'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+        <Icon name="logout-2-linear" size={17} color="#9CA3AF" />Odhlásit se
+      </button>
+    </>
+  );
+
+  const menu = (
+    <aside className="e-menu"
+      style={{
+      width: mobile ? 256 : (rozbaleno ? SIROKE : UZKE), flexShrink: 0,
       display: 'flex', flexDirection: 'column',
       padding: '20px 14px',
-      borderRight: '1px solid #E5E7EB',
+      // Bez svislé čáry vpravo (Yasin 26. 9.: „musí tam být ty 2 čáry?") —
+      // menu i obsah jsou bílé, oddělí je mezera.
       background: '#ffffff',
-      overflowY: 'auto',
-      // Desktop = pevný sloupec. Mobil = drawer vysunutý přes obsah.
+      overflowY: 'auto', overflowX: 'hidden',
+      // Desktop = pruh / vysunutý panel. Mobil = drawer vysunutý přes obsah.
       ...(mobile ? {
         position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 60,
         transform: open ? 'translateX(0)' : 'translateX(-100%)',
         transition: 'transform .28s cubic-bezier(.2,.8,.2,1)',
         boxShadow: open ? '0 0 60px rgba(10,13,46,.35)' : 'none',
-      } : { position: 'relative', zIndex: 1 }),
+      } : {
+        position: 'absolute', top: 0, left: 0, bottom: 0, zIndex: 40,
+        transition: 'width .22s cubic-bezier(.2,.8,.2,1)',
+      }),
     }}>
-      <div style={{ padding: '4px 8px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <ELogo />
-        <button
-          title="Přepnout světlý/tmavý režim"
-          onClick={() => window.toggleMakejTheme && window.toggleMakejTheme()}
-          style={{
-            width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-            background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)',
-            cursor: 'pointer',
-            display: 'grid', placeItems: 'center',
-            transition: 'background .15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.08)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; }}
-        >
-          <Icon name={window._makejIsDark ? 'sun-bold' : 'moon-stars-bold'} size={16} color="#6B7280" />
-        </button>
+      <div style={{ padding: '4px 8px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 58, boxSizing: 'content-box' }}>
+        {/* Při vysouvání se nic neposouvá: „M" stojí na místě, zbytek loga,
+            texty i připínáček se jen odkryjí (dřív se logo měnilo z „M" na
+            „Makej" a všechno poskočilo). */}
+        <div style={{ whiteSpace: 'nowrap' }}>
+          <div className="e-logo" style={{ fontWeight: 900, fontSize: 28, color: '#0020F6', lineHeight: 1 }}>M<span style={pismo}>akej</span></div>
+          <div style={{ fontFamily: T.fontUI, fontSize: 9, color: '#6B7280', letterSpacing: 1.5, textTransform: 'uppercase', marginTop: 3, fontWeight: 700, ...pismo }}>pro firmy</div>
+        </div>
+        {/* Přepínač světlý/tmavý režim tu byl — schovaný, dokud se tmavý režim
+            nedodělá (Yasin 25. 9.). Logika zůstává: window.toggleMakejTheme v app.jsx. */}
       </div>
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 18, flex: 1 }}>
         {sections.map((sec, i) => (
           <div key={i}>
             <div style={{
-              padding: '0 12px 6px',
+              padding: '0 12px 6px', height: 18, boxSizing: 'border-box', position: 'relative',
               fontSize: 10, color: '#9CA3AF', fontFamily: T.fontUI,
               fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
-            }}>{sec.label}</div>
+            }}>
+              <span style={pismo}>{sec.label}</span>
+              {/* V úzkém pruhu dřív místo nadpisu krátká šedá linka — pryč
+                  (Yasin 27. 9.), skupiny odděluje jen mezera. */}
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {sec.items.map(it => {
                 const active = tab === it.k;
                 return (
-                  <button key={it.k} onClick={() => { if (it.disabled) return; onTab(it.k); if (mobile && onClose) onClose(); }} style={{
+                  <button key={it.k} title={sbal ? it.label : undefined} onClick={() => { if (it.disabled) return; onTab(it.k); if (mobile && onClose) onClose(); }} style={{
+                    position: 'relative',
                     display: 'flex', alignItems: 'center', gap: 11,
                     padding: '9px 12px', borderRadius: 10,
                     background: active ? 'rgba(0,32,246,0.08)' : 'transparent',
@@ -147,31 +385,45 @@ function ESidebar({ tab, onTab, onSignOut, mobile = false, open = false, onClose
                     color: active ? '#0020F6' : it.disabled ? '#D1D5DB' : '#374151',
                     cursor: it.disabled ? 'not-allowed' : 'pointer', textAlign: 'left',
                     fontFamily: T.fontUI, fontWeight: active ? 700 : 500, fontSize: 13.5,
-                    transition: 'all .15s',
+                    transition: 'background .15s',
                     opacity: it.disabled ? 0.5 : 1,
                   }}
                   onMouseEnter={e => { if (!active && !it.disabled) e.currentTarget.style.background = '#F3F4F6'; }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
-                    {['dash', 'analytics', 'jobs', 'candidates', 'chat', 'calendar', 'reviews', 'settings'].includes(it.k)
+                    {_IKONY_APP[it.k]
+                      // Ikony z mobilní appky (Iconly Light-Outline, jako spodní lišta).
+                      // Maska místo <img>, aby šly obarvit: aktivní modrá, jinak šedá.
+                      ? <span aria-hidden="true" style={{ display: 'block', width: 20, height: 20, flexShrink: 0, background: active ? '#0020F6' : '#6B7280', WebkitMaskImage: 'url(' + _IKONY_APP[it.k] + ')', maskImage: 'url(' + _IKONY_APP[it.k] + ')', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskPosition: 'center', WebkitMaskSize: 'contain', maskSize: 'contain', transition: 'background .2s' }} />
+                      : ['dash', 'analytics', 'jobs', 'candidates', 'chat', 'calendar', 'reviews', 'settings'].includes(it.k)
                       ? (() => { const iconMap = { dash: 'dashboard-icon.png', analytics: 'analytics-icon.png', jobs: 'jobs-icon.png', candidates: 'candidates-icon.png', chat: 'messages-icon.png', calendar: 'calendar-icon.png', reviews: 'reviews-icon.png?v=2', settings: 'settings-icon.png' }; return <img src={iconMap[it.k]} style={{ width: 18, height: 18, flexShrink: 0, objectFit: 'contain', filter: active ? 'brightness(0) saturate(100%) invert(13%) sepia(100%) saturate(4000%) hue-rotate(228deg) brightness(103%)' : 'opacity(0.4)' }} />; })()
                       : <Icon name={active ? it.icon : it.iconLine} size={18} color={active ? '#0020F6' : it.disabled ? '#D1D5DB' : '#6B7280'} />
                     }
-                    <span style={{ flex: 1 }}>{it.label}</span>
+                    <span style={{ flex: 1, ...pismo }}>{it.label}</span>
                     {it.disabled && <span style={{ fontSize: 9, fontWeight: 700, fontFamily: T.fontUI, color: '#D1D5DB', letterSpacing: 0.5, textTransform: 'uppercase' }}>Brzy</span>}
                     {it.badge != null ? (
                       typeof it.badge === 'string' ? (
                         <span style={{
                           padding: '2px 6px', borderRadius: 4,
                           background: 'rgba(251,191,36,0.2)', color: '#92400E',
-                          fontSize: 9, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 0.5,
+                          fontSize: 9, fontWeight: 800, fontFamily: T.fontUI, letterSpacing: 0.5, ...pismo,
                         }}>{it.badge}</span>
                       ) : (
-                        <span style={{
-                          minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999,
-                          background: '#0020F6', color: '#fff',
-                          fontSize: 10, fontWeight: 800, fontFamily: T.fontUI,
-                          display: 'grid', placeItems: 'center',
-                        }}>{it.badge}</span>
+                        // Dvě čísla, každé na svém pevném místě: vpravo (rozbaleno)
+                        // a malé v rohu ikony (pruh). Jen se prolnou, nic neskáče.
+                        <>
+                          <span style={{
+                            minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999,
+                            background: '#0020F6', color: '#fff',
+                            fontSize: 10, fontWeight: 800, fontFamily: T.fontUI,
+                            display: 'grid', placeItems: 'center', boxSizing: 'border-box', ...pismo,
+                          }}>{it.badge}</span>
+                          <span style={{
+                            position: 'absolute', left: 25, top: 3, minWidth: 15, height: 15, padding: '0 4px', borderRadius: 999,
+                            background: '#0020F6', color: '#fff', fontSize: 9, fontWeight: 800, fontFamily: T.fontUI,
+                            display: 'grid', placeItems: 'center', boxSizing: 'border-box', boxShadow: '0 0 0 2px #fff',
+                            opacity: sbal ? 1 : 0, transition: 'opacity .16s ease', pointerEvents: 'none',
+                          }}>{it.badge}</span>
+                        </>
                       )
                     ) : null}
                   </button>
@@ -182,41 +434,83 @@ function ESidebar({ tab, onTab, onSignOut, mobile = false, open = false, onClose
         ))}
       </nav>
 
-      {/* Plan card */}
-      <div style={{ margin: '12px 0', padding: '0 8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
-          <span style={{ color: '#6B7280', fontFamily: T.fontUI, fontSize: 11.5, fontWeight: 600 }}>Tarif:</span>
-          <TierBadge plan={ECOMPANY.plan} />
-        </div>
-        <button style={{
-          width: '100%', padding: '9px 10px', borderRadius: 9,
-          background: '#0020F6', border: 'none',
-          color: '#fff', cursor: 'pointer',
-          fontFamily: T.fontUI, fontSize: 12.5, fontWeight: 700,
-        }} onClick={() => { onTab('pricing'); if (mobile && onClose) onClose(); }}>Spravovat tarif</button>
-      </div>
-
-      {/* Company footer */}
-      <div style={{
-        padding: '10px 8px', display: 'flex', alignItems: 'center', gap: 10,
-        borderTop: '1px solid #E5E7EB', marginTop: 6,
-      }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 10,
-          background: ECOMPANY.logoColor + '22',
-          border: '1px solid ' + ECOMPANY.logoColor + '55',
-          display: 'grid', placeItems: 'center',
-          color: ECOMPANY.logoColor, fontFamily: T.fontHead, fontWeight: 800, fontSize: 13,
-        }}>{ECOMPANY.logo}</div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: '#111827', fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ECOMPANY.name}</div>
-          <div style={{ color: '#6B7280', fontSize: 10.5, fontFamily: T.fontUI }}>{ECOMPANY.city}</div>
-        </div>
-        <button onClick={onSignOut} title="Odhlásit se" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-          <Icon name="logout-2-bold" size={16} color="#f87171" />
+      {/* ── Karta firmy (26. 9.) ──
+          Dřív tu byly tři nesouvisející kousky: odznáček tarifu, velké tlačítko
+          „Spravovat tarif" a firma s červenou ikonou odhlášení, na kterou se
+          nedalo kliknout. Teď jedna karta: logo, název, tarif. Klik otevře menu
+          Profil firmy / Tarif a platby / Odhlásit se. */}
+      <div ref={kartaRef} style={{ position: 'relative', marginTop: 10, paddingTop: 10, borderTop: '1px solid #E5E7EB' }}>
+        {kartaOtevrena && !sbal && (
+          <div role="menu" style={{
+            position: 'absolute', left: 0, right: 0, bottom: 'calc(100% + 6px)', zIndex: 5,
+            background: '#fff', border: '1px solid #E6E9F5', borderRadius: 12, padding: 6,
+            boxShadow: '0 18px 40px -14px rgba(20,22,40,.3)', animation: 'eKartaIn .16s cubic-bezier(.2,.8,.2,1) both',
+          }}>
+            {kartaPolozky}
+          </div>
+        )}
+        {/* Úzký pruh: menu se nerozbaluje — nabídka vyskočí vedle loga přes obsah
+            (portál do <body>, v pruhu by ji ořízl okraj). Zavře se výběrem
+            položky, klikem mimo nebo Esc. Nahoře název firmy a tarif, které
+            pruh neukazuje. */}
+        {kartaOtevrena && sbal && kartaPoz && ReactDOM.createPortal(
+          <div ref={kartaMenuRef} role="menu" style={{
+            position: 'fixed', left: kartaPoz.left, bottom: kartaPoz.bottom, zIndex: 300, width: 230,
+            background: '#fff', border: '1px solid #E6E9F5', borderRadius: 12, padding: 6,
+            boxShadow: '0 18px 40px -14px rgba(20,22,40,.3)', animation: 'eKartaIn .16s cubic-bezier(.2,.8,.2,1) both',
+          }}>
+            <div style={{ padding: '8px 10px 10px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6, borderBottom: '1px solid #F0F2FA', marginBottom: 4 }}>
+              <div style={{ maxWidth: '100%', fontSize: 13.5, fontWeight: 700, color: bezNazvu ? '#9CA3AF' : '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{firmaNazev}</div>
+              <TierMetalBadge plan={ECOMPANY.plan} label={null} />
+            </div>
+            {kartaPolozky}
+          </div>,
+          document.body
+        )}
+        <button onClick={e => { if (sbal) { const r = e.currentTarget.getBoundingClientRect(); setKartaPoz({ left: r.right + 10, bottom: window.innerHeight - r.bottom }); } setKartaOtevrena(o => !o); }} aria-haspopup="menu" aria-expanded={kartaOtevrena}
+          title={sbal ? firmaNazev : undefined}
+          // V úzkém pruhu jen logo přesně na středu, bez podkladu — dřív zabíral
+          // místo i neviditelný text, logo ujelo doleva a podklad za ním
+          // vypadal jako rozmazaný stín. Aktivní záložku tam ukazuje modrý rámeček.
+          // Logo sedí 3 px od okraje → v pruhu (72 px) je přesně na středu
+          // a při rozbalení zůstane na stejném místě; text vedle se jen odkryje.
+          style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '6px 8px 6px 3px', borderRadius: 12, border: 'none', cursor: 'pointer', textAlign: 'left', whiteSpace: 'nowrap',
+            background: sbal ? 'transparent' : ((kartaOtevrena || tab === 'company') ? (tab === 'company' ? 'rgba(0,32,246,0.08)' : '#F3F4F6') : 'transparent'), transition: 'background .15s' }}
+          onMouseEnter={e => { if (!sbal) e.currentTarget.style.background = '#F3F4F6'; }}
+          onMouseLeave={e => { if (!sbal && !kartaOtevrena) e.currentTarget.style.background = tab === 'company' ? 'rgba(0,32,246,0.08)' : 'transparent'; }}>
+          <div style={{
+            width: 38, height: 38, borderRadius: 10, flexShrink: 0, overflow: 'hidden',
+            background: logoUrl ? '#fff' : '#0020F6', border: logoUrl ? '1px solid #E5E7EB' : 'none',
+            boxShadow: (sbal && tab === 'company') ? '0 0 0 2px #fff, 0 0 0 4px #0020F6' : 'none',
+            display: 'grid', placeItems: 'center', color: '#fff', fontWeight: 800, fontSize: 13.5,
+          }}>{logoUrl ? <img src={logoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ECOMPANY.logo}</div>
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 5, ...pismo }}>
+            <div style={{ maxWidth: '100%', fontSize: 13.5, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              color: bezNazvu ? '#9CA3AF' : '#111827', fontWeight: bezNazvu ? 600 : 700 }}>{firmaNazev}</div>
+            <TierMetalBadge plan={ECOMPANY.plan} label={null} />
+          </div>
+          <span style={{ ...pismo, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+            <Icon name="alt-arrow-up-linear" size={15} color="#9CA3AF" />
+          </span>
         </button>
       </div>
     </aside>
+  );
+
+  if (mobile) return menu;
+  // Místo v řádku roste spolu s menu — obsah se při sbalení/rozbalení plynule odsune.
+  return (
+    <div style={{ position: 'relative', flexShrink: 0, width: rozbaleno ? SIROKE : UZKE, transition: 'width .22s cubic-bezier(.2,.8,.2,1)', zIndex: 40 }}>
+      {menu}
+      {/* Úchyt: dvě krátké čárky nad sebou = svislá linka; při najetí se
+          natočí do šipky (‹ sbalit / › rozbalit) a posunou o kousek. */}
+      <button type="button" className={'e-uchyt' + (rozbaleno ? '' : ' zavreno')} onClick={prepniMenu}
+        aria-label={rozbaleno ? 'Skrýt menu' : 'Vysunout menu'} aria-expanded={rozbaleno}>
+        <span className="e-uchyt-h" /><span className="e-uchyt-d" />
+        {/* Vlastní bublina místo title — ukáže se hned vedle šipky (jako Stripe) */}
+        <em className="e-uchyt-tip">{rozbaleno ? 'Skrýt' : 'Vysunout'}</em>
+      </button>
+    </div>
   );
 }
 
@@ -593,4 +887,65 @@ function SectionHeader({ title, subtitle, action }) {
   );
 }
 
-Object.assign(window, { ELogo, ESidebar, ETopbar, Sparkline, AreaChart, BarChart, Donut, ECard, SectionHeader });
+// ── Hlavička záložky a pás čísel (26. 9.) ──
+// Yasin: „pryč s modrým rámečkem, jen název záložky, profesionální dashboard,
+// hlavně jednoznačný". Proto všechny záložky kreslí hlavičku i čísla přes tyhle
+// komponenty — jeden vzhled, žádná modrá plocha. Modrá zůstává jen pro hlavní
+// akci (tlačítko) a odkazy. Číslo, které někam vede, je celé klikací a při
+// najetí zešedne (bez modrého odkazu).
+const _EH = { ink: '#0B1233', ink2: '#3A4266', muted: '#7A82A6', line: '#E6E9F5', line2: '#EEF0F6', blue: '#1B34F0' };
+
+function ETabHlava({ title, children }) {
+  return (
+    <div className="e-hlav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+      <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: _EH.ink, letterSpacing: '-.025em', lineHeight: 1.15 }}>{title}</h1>
+      {children ? <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>{children}</div> : null}
+    </div>
+  );
+}
+
+// Hlavní akce záložky (modrá) a vedlejší akce (bílá s linkou).
+function EBtnHl({ onClick, children, disabled }) {
+  return <button type="button" className="e-btn-hl" onClick={onClick} disabled={disabled}
+    style={{ fontSize: 14, fontWeight: 700, color: '#fff', background: _EH.blue, border: '1px solid ' + _EH.blue, padding: '9px 16px', borderRadius: 10, cursor: disabled ? 'default' : 'pointer', opacity: disabled ? .7 : 1, whiteSpace: 'nowrap' }}>{children}</button>;
+}
+function EBtnSek({ onClick, children, disabled }) {
+  return <button type="button" className="e-btn-sek" onClick={onClick} disabled={disabled}
+    style={{ fontSize: 13.5, fontWeight: 600, color: _EH.ink, background: '#fff', border: '1px solid ' + _EH.line, padding: '9px 14px', borderRadius: 10, cursor: 'pointer', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 7 }}>{children}</button>;
+}
+// Přepínač (Měsíc / Týden …)
+function ESegment({ value, options, onChange }) {
+  return (
+    <div style={{ display: 'inline-flex', background: '#F3F4F8', borderRadius: 10, padding: 3, gap: 2 }}>
+      {options.map(([k, l]) => (
+        <button key={k} type="button" onClick={() => onChange(k)} style={{ fontSize: 13, fontWeight: 600, padding: '6px 13px', borderRadius: 8, border: 'none', cursor: 'pointer', color: value === k ? _EH.ink : _EH.muted, background: value === k ? '#fff' : 'transparent', boxShadow: value === k ? '0 1px 2px rgba(16,24,64,.12)' : 'none' }}>{l}</button>
+      ))}
+    </div>
+  );
+}
+
+// Pás čísel: [{ l: 'Popisek', v: hodnota, s: 'podtext', kam: 'Text odkazu', onClick, varovani }]
+function EMetriky({ items }) {
+  return (
+    <div className="e-pruh-ram" style={{ padding: '0 24px' }}>
+    <div className="e-pruh" style={{ display: 'grid', gridTemplateColumns: 'repeat(' + items.length + ', minmax(0,1fr))', background: '#fff', border: '1px solid ' + _EH.line, borderRadius: 14, overflow: 'hidden' }}>
+      {items.map((m, i) => (
+        // Klikací políčko nemá modrý odkaz (Yasin 27. 9.) — pozná se podle toho,
+        // že při najetí zešedne; kam vede, řekne bublina (title).
+        <div key={i} className={m.onClick ? 'e-pruh-klik' : undefined} onClick={m.onClick} title={m.onClick && m.kam ? m.kam : undefined}
+          role={m.onClick ? 'button' : undefined} tabIndex={m.onClick ? 0 : undefined}
+          onKeyDown={m.onClick ? (e => { if (e.key === 'Enter') m.onClick(); }) : undefined}
+          style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 6, borderLeft: i ? '1px solid ' + _EH.line2 : 'none', cursor: m.onClick ? 'pointer' : 'default', minWidth: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: _EH.muted }}>{m.l}</span>
+          <span style={{ fontSize: 28, fontWeight: 800, color: m.varovani ? '#C2410C' : _EH.ink, letterSpacing: '-.02em', lineHeight: 1.05 }}>{m.v}</span>
+          <span style={{ fontSize: 12.5, color: _EH.muted, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 18 }}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.s}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+    </div>
+  );
+}
+
+Object.assign(window, { TierMetalBadge, TierMetalText, TierGradientText, TierMetalButton, ELogo, ESidebar, ETopbar, Sparkline, AreaChart, BarChart, Donut, ECard, SectionHeader, ETabHlava, EBtnHl, EBtnSek, ESegment, EMetriky });

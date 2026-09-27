@@ -545,6 +545,20 @@ function initAuth() {
   if (heroRegisterBtn) heroRegisterBtn.addEventListener('click', e => { e.preventDefault(); goToEmailSignup(); });
   if (heroLoginBtn)    heroLoginBtn.addEventListener('click',    e => { e.preventDefault(); openModal('login'); });
 
+  // Dashboard firem posílá nepřihlášeného sem s ?login=employer. Dřív tu
+  // parametr nikdo nečetl — člověk skončil na úvodce a musel si přihlášení
+  // hledat sám. Teď se okno otevře rovnou a parametr zmizí z adresy, ať se
+  // okno neotevírá znovu při každém obnovení stránky.
+  try {
+    const parametry = new URLSearchParams(location.search);
+    if (parametry.has('login')) {
+      openModal('login');
+      parametry.delete('login');
+      const zbytek = parametry.toString();
+      history.replaceState(null, '', location.pathname + (zbytek ? '?' + zbytek : '') + location.hash);
+    }
+  } catch (e) { /* staré prohlížeče bez URLSearchParams — okno se prostě neotevře */ }
+
   // Escape key zavře modál
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeModals();
@@ -1702,7 +1716,7 @@ function showToast(msg) {
 (function () {
   if (!document.querySelector('link[href^="/nahravani.css"]')) {
     const l = document.createElement('link');
-    l.rel = 'stylesheet'; l.href = '/nahravani.css?v=6';
+    l.rel = 'stylesheet'; l.href = '/nahravani.css?v=7';
     document.head.appendChild(l);
   }
 })();

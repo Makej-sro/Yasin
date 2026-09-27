@@ -17,8 +17,10 @@ self.onmessage = (e) => {
   if (d.stop) { bezi = false; return; }
 
   const { canvas, state, size, speed, bila, od, dpr } = d;
-  canvas.width = Math.round(size * dpr);
-  canvas.height = Math.round(size * dpr);
+  const zobrazit = d.zobrazit || size;
+  const meritko = dpr * zobrazit / size;   // preset 64, na obrazovce větší
+  canvas.width = Math.round(zobrazit * dpr);
+  canvas.height = Math.round(zobrazit * dpr);
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
@@ -35,7 +37,7 @@ self.onmessage = (e) => {
     // Čas od společného začátku (`od`) — orb pokračuje ve stejné fázi jako
     // na předchozí stránce i jako kopie na hlavním vlákně.
     const t = (Date.now() - od) / 1000 * tempo;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.setTransform(meritko, 0, 0, meritko, 0, 0);
     ctx.clearRect(0, 0, size, size);
     if (bila) paintFrame(ctx, snimek(size, t, opts), false, BILA);
     else paintFrame(ctx, snimek(size, t, opts), true);
