@@ -238,7 +238,8 @@ function ESidebar({ tab, onTab, onSignOut, mobile = false, open = false, onClose
       label: 'Přehled',
       items: [
         { k: 'dash',      label: 'Dashboard', icon: 'chart-square-bold',  iconLine: 'chart-square-linear' },
-        { k: 'analytics', label: 'Analytika', icon: 'graph-up-bold',      iconLine: 'graph-up-linear',    badge: (typeof can === 'function' && can('analytics')) ? null : 'od Dynamického' },
+        // Statistiky jsou pro všechny (základní); plné se odemknou od Dynamického přímo v záložce
+        { k: 'analytics', label: 'Statistiky', icon: 'graph-up-bold',      iconLine: 'graph-up-linear' },
       ],
     },
     {
@@ -924,6 +925,160 @@ function ESegment({ value, options, onChange }) {
   );
 }
 
+// Ikona z mobilní appky (employer/ikony/*.svg, Iconly Light-Outline) jako maska,
+// aby šla obarvit. Jedna sada všude — tlačítka i menu vypadají stejně.
+function EIkona({ src, size = 16, color = 'currentColor' }) {
+  const u = 'url(ikony/' + src + '?v=1)';
+  return <span aria-hidden="true" style={{ display: 'inline-block', width: size, height: size, flex: 'none', background: color, WebkitMaskImage: u, maskImage: u, WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat', WebkitMaskPosition: 'center', maskPosition: 'center', WebkitMaskSize: 'contain', maskSize: 'contain' }} />;
+}
+
+// ── Stupeň důvěry brigádníka — STEJNÝ jako v aplikaci (28. 9.) ──
+// Kopie W_TIERS + makejTrust z www/worker-supabase.jsx (repo appky). Když se
+// tam změní hranice, změnit i tady. Dřív tu byl „Level N" ze sloupce
+// profiles.level, který appka nikdy nezapisuje — u všech bylo „Level 1".
+const _E_TRUST_TIERS = [
+  { nazev: 'Nový',       blevel: 'new',      brigady: 0,  spolehlivost: 0,  hodnoceni: 0   },
+  { nazev: 'Spolehlivý', blevel: 'reliable', brigady: 3,  spolehlivost: 90, hodnoceni: 0   },
+  { nazev: 'Ověřený',    blevel: 'verified', brigady: 10, spolehlivost: 95, hodnoceni: 4.5 },
+  { nazev: 'Top',        blevel: 'top',      brigady: 30, spolehlivost: 98, hodnoceni: 4.8 },
+];
+// stats = { dokoncene, zrusene, hodnoceni } → { tier, spolehlivost }; null = nevíme
+function eTrust(stats) {
+  if (!stats) return null;
+  const dok = Math.max(0, Number(stats.dokoncene) || 0), zru = Math.max(0, Number(stats.zrusene) || 0);
+  const hod = Math.max(0, Number(stats.hodnoceni) || 0);
+  const spol = dok + zru === 0 ? null : Math.round(dok / (dok + zru) * 100);
+  let tier = _E_TRUST_TIERS[0];
+  _E_TRUST_TIERS.forEach(t => {
+    if (dok >= t.brigady && (t.spolehlivost === 0 || spol === null || spol >= t.spolehlivost) && (t.hodnoceni === 0 || hod >= t.hodnoceni)) tier = t;
+  });
+  return { tier, spolehlivost: spol, dokoncene: dok, zrusene: zru };
+}
+// Kovová pilulka stupně — styl .wlvl je v index.html (kopie z appky)
+function ETrustBadge({ stats, sm }) {
+  const t = eTrust(stats);
+  if (!t) return null;
+  return (
+    <span className={'wlvl' + (sm ? ' wlvl--sm' : '')} data-level={t.tier.blevel}
+      title={'Stupeň důvěry v aplikaci · dokončené směny: ' + t.dokoncene + (t.spolehlivost === null ? '' : ' · spolehlivost ' + t.spolehlivost + ' %')}>
+      {t.tier.blevel === 'top' && <span className="wlvl__aura" aria-hidden="true" />}
+      <span className="wlvl__pill">{t.tier.nazev}<span className="wlvl__sheen" aria-hidden="true" /></span>
+    </span>
+  );
+}
+
+// ── Filtrační lišta seznamů (28. 9.) — stejná na Inzerátech, Kandidátech
+// a Recenzích: vlevo přepínač skupin s počty, vpravo roletka řazení a hledání.
+// Lišta nemá vlastní rámeček, stojí přímo nad seznamem.
+// Když se celá lišta na jeden řádek nevejde (Kandidáti, Recenze — vedle je
+// boční panel), přepne se do úsporného režimu (třída „kompakt"): řazení
+// i hledání se zmenší na ikonky a hledání se rozbalí až po kliknutí.
+// Lišta tak zůstane na jednom řádku, nic nevisí samotné pod ní.
+// vzdyKompakt: ikonky i tam, kde by se plná podoba vešla (Inzeráty — Yasin 28. 9.)
+function EFiltrLista({ children, vzdyKompakt }) {
+  const ref = useRefE(null);
+  const plna = useRefE(0);              // šířka pravé části v plné podobě
+  const [kompakt, setKompakt] = useStateE(false);
+  useEffectE(() => {
+    const el = ref.current; if (!el) return;
+    const zmer = () => {
+      const [levy, pravy] = el.children; if (!levy || !pravy) return;
+      if (!el.classList.contains('kompakt')) plna.current = [...pravy.children].reduce((w, c) => w + c.offsetWidth, 0) + 10 * (pravy.children.length - 1);
+      setKompakt(levy.offsetWidth + 16 + plna.current > el.clientWidth);
+    };
+    zmer();
+    const ro = new ResizeObserver(zmer); ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return <div ref={ref} className={'e-filtr' + (kompakt || vzdyKompakt ? ' kompakt' : '')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>{children}</div>;
+}
+// Pravá část lišty (řazení + hledání). Kdyby se lišta i tak zalomila,
+// zůstane i na druhém řádku vpravo, ne nalepená vlevo.
+function EFiltrVpravo({ children }) {
+  return <div style={{ flex: '1 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>{children}</div>;
+}
+// options: [{ k, l, n }] — n = počet (nepovinný)
+function EFiltrPrepinac({ value, options, onChange }) {
+  return (
+    <div style={{ display: 'inline-flex', flexWrap: 'wrap', background: '#F3F4F8', borderRadius: 11, padding: 3, gap: 2 }}>
+      {options.map(o => {
+        const on = value === o.k;
+        return (
+          <button key={o.k} type="button" onClick={() => onChange(o.k)} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13.5, fontWeight: on ? 700 : 600, padding: '7px 14px', borderRadius: 9, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', color: on ? '#0B1233' : '#6B7280', background: on ? '#fff' : 'transparent', boxShadow: on ? '0 1px 2px rgba(16,24,64,.12)' : 'none' }}>
+            {o.l}{o.n != null && <span style={{ fontSize: 12, fontWeight: 700, color: on ? '#1B34F0' : '#A6ADCB' }}>{o.n}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+// Výběr jedné položky z delšího seznamu (např. inzerát u Kandidátů).
+// options: [{ k, l, n }] — l = název, n = počet (nepovinný). Zůstává textový
+// i v úsporném režimu lišty, jen se víc zkrátí.
+function EFiltrVyber({ value, options, onChange, popisek, maxSirka = 190 }) {
+  const [otevreno, setOtevreno] = React.useState(false);
+  const vybrana = options.find(o => o.k === value) || options[0] || { l: '' };
+  return (
+    <div style={{ position: 'relative', minWidth: 0 }}>
+      <button type="button" title={popisek + ' ' + vybrana.l} onClick={() => setOtevreno(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#3A4266', background: value !== options[0]?.k ? '#EEF1FF' : '#fff', border: '1px solid ' + (otevreno || value !== options[0]?.k ? '#1B34F0' : '#E6E9F5'), padding: '0 12px', height: 38, borderRadius: 10, cursor: 'pointer', whiteSpace: 'nowrap', maxWidth: maxSirka }}>
+        <span style={{ color: '#7A82A6' }}>{popisek}</span>
+        <b style={{ fontWeight: 700, color: '#0B1233', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{vybrana.l}</b>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7A82A6" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none', transform: otevreno ? 'rotate(180deg)' : 'none' }}><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      {otevreno && (
+        <>
+          <div onClick={() => setOtevreno(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+          <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 41, minWidth: 260, maxWidth: 340, maxHeight: 320, overflowY: 'auto', background: '#fff', border: '1px solid #E6E9F5', borderRadius: 12, boxShadow: '0 14px 34px -12px rgba(16,24,64,.25)', padding: 5 }}>
+            {options.map(o => (
+              <button key={o.k} type="button" className="e-stav-vol" onClick={() => { onChange(o.k); setOtevreno(false); }} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', fontSize: 13.5, fontWeight: value === o.k ? 700 : 500, color: '#0B1233', background: 'transparent', border: 'none', borderRadius: 8, padding: '9px 11px', cursor: 'pointer', textAlign: 'left' }}>
+                <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.l}</span>
+                {o.n != null && <span style={{ fontSize: 12, fontWeight: 600, color: '#A6ADCB', flex: 'none' }}>{o.n}</span>}
+                <span style={{ width: 14, flex: 'none', display: 'flex' }}>{value === o.k && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B34F0" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+// options: { klic: 'Popisek' }
+function EFiltrRazeni({ value, options, onChange }) {
+  const [otevreno, setOtevreno] = React.useState(false);
+  return (
+    <div className="e-filtr-razeni" style={{ position: 'relative' }}>
+      <button type="button" title={'Řadit: ' + options[value]} onClick={() => setOtevreno(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#3A4266', background: '#fff', border: '1px solid ' + (otevreno ? '#1B34F0' : '#E6E9F5'), padding: '0 12px', height: 38, borderRadius: 10, cursor: 'pointer', whiteSpace: 'nowrap', position: 'relative' }}>
+        <span className="e-filtr-txt" style={{ color: '#7A82A6' }}>Řadit:</span><b className="e-filtr-txt" style={{ fontWeight: 700, color: '#0B1233' }}>{options[value]}</b>
+        <svg className="e-filtr-txt" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7A82A6" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ transform: otevreno ? 'rotate(180deg)' : 'none' }}><path d="M6 9l6 6 6-6"/></svg>
+        {/* úsporný režim: jen ikonka řazení; modrá tečka = není výchozí řazení */}
+        <svg className="e-filtr-ikona" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3A4266" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>
+        {value !== Object.keys(options)[0] && <span className="e-filtr-ikona" style={{ position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: 9, background: '#1B34F0' }} />}
+      </button>
+      {otevreno && (
+        <>
+          <div onClick={() => setOtevreno(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+          <div className="e-filtr-menu" style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 41, minWidth: 'max(100%, 210px)', background: '#fff', border: '1px solid #E6E9F5', borderRadius: 12, boxShadow: '0 14px 34px -12px rgba(16,24,64,.25)', padding: 5 }}>
+            {Object.keys(options).map(k => (
+              <button key={k} type="button" className="e-stav-vol" onClick={() => { onChange(k); setOtevreno(false); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, width: '100%', fontSize: 13.5, fontWeight: value === k ? 700 : 500, color: '#0B1233', background: 'transparent', border: 'none', borderRadius: 8, padding: '9px 11px', cursor: 'pointer', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                {options[k]}
+                {value === k && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B34F0" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+function EFiltrHledat({ value, onChange, placeholder, width = 220 }) {
+  return (
+    <div className="e-filtr-hledat" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A6ADCB" strokeWidth="2.2" strokeLinecap="round" style={{ position: 'absolute', left: 11, pointerEvents: 'none', zIndex: 4 }}><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input title={placeholder} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ fontFamily: 'inherit', fontSize: 13, color: '#0B1233', background: '#F6F7FC', border: '1px solid #E6E9F5', outline: 'none', width, height: 38, boxSizing: 'border-box', padding: '0 12px 0 33px', borderRadius: 10 }} />
+    </div>
+  );
+}
+
 // Pás čísel: [{ l: 'Popisek', v: hodnota, s: 'podtext', kam: 'Text odkazu', onClick, varovani }]
 function EMetriky({ items }) {
   return (
@@ -935,11 +1090,14 @@ function EMetriky({ items }) {
         <div key={i} className={m.onClick ? 'e-pruh-klik' : undefined} onClick={m.onClick} title={m.onClick && m.kam ? m.kam : undefined}
           role={m.onClick ? 'button' : undefined} tabIndex={m.onClick ? 0 : undefined}
           onKeyDown={m.onClick ? (e => { if (e.key === 'Enter') m.onClick(); }) : undefined}
-          style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 6, borderLeft: i ? '1px solid ' + _EH.line2 : 'none', cursor: m.onClick ? 'pointer' : 'default', minWidth: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: _EH.muted }}>{m.l}</span>
-          <span style={{ fontSize: 28, fontWeight: 800, color: m.varovani ? '#C2410C' : _EH.ink, letterSpacing: '-.02em', lineHeight: 1.05 }}>{m.v}</span>
-          <span style={{ fontSize: 12.5, color: _EH.muted, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 18 }}>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.s}</span>
+          style={{ padding: '12px 18px', display: 'flex', flexDirection: 'column', gap: 3, borderLeft: i ? '1px solid ' + _EH.line2 : 'none', cursor: m.onClick ? 'pointer' : 'default', minWidth: 0 }}>
+          {/* Decentnější pás (28. 9.): číslo 20 px místo 28 a podtext vedle
+              něj na jednom řádku — pás je o třetinu nižší a malá čísla
+              (0, 1, 2) na začátku nepůsobí prázdně. */}
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: _EH.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.l}</span>
+          <span style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
+            <span className="e-pruh-v" style={{ fontSize: 20, fontWeight: 700, color: m.varovani ? '#C2410C' : _EH.ink, letterSpacing: '-.01em', lineHeight: 1.2, whiteSpace: 'nowrap', flex: 'none' }}>{m.v}</span>
+            <span style={{ fontSize: 12.5, color: _EH.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{m.s}</span>
           </span>
         </div>
       ))}
@@ -948,4 +1106,4 @@ function EMetriky({ items }) {
   );
 }
 
-Object.assign(window, { TierMetalBadge, TierMetalText, TierGradientText, TierMetalButton, ELogo, ESidebar, ETopbar, Sparkline, AreaChart, BarChart, Donut, ECard, SectionHeader, ETabHlava, EBtnHl, EBtnSek, ESegment, EMetriky });
+Object.assign(window, { TierMetalBadge, TierMetalText, TierGradientText, TierMetalButton, ELogo, ESidebar, ETopbar, Sparkline, AreaChart, BarChart, Donut, ECard, SectionHeader, ETabHlava, EBtnHl, EBtnSek, ESegment, EMetriky, EIkona, eTrust, ETrustBadge, EFiltrLista, EFiltrVpravo, EFiltrVyber, EFiltrPrepinac, EFiltrRazeni, EFiltrHledat });

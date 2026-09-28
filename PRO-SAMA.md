@@ -7,6 +7,34 @@
 
 ---
 
+## 2026-09-28 — firemní dashboard: inzeráty podle appky, statistiky, kandidáti — čeká na nasazení
+
+> **Pro Samova Clauda:** celý den na `employer/` (+ drobnosti v appce, ta je v repu
+> `makej-aplikace-yasin`). Platí výsledný stav níž. Nejsnáz převzít celou složku
+> `employer/` a nové soubory v `supabase/`. **Databáze:** tabulka „Čeká v Supabase" dole
+> (worker_trust_stats, jobs.positions/hours_per_week, ověřit job_views.created_at).
+> Edge Function `import-inzerat` je už nasazená (Yasin přes dashboard).
+
+### Výsledný stav — co si vzít
+
+- **Verze v `employer/index.html`:** shell v61, dashboard v40, pages3 v170, main v51, supabase v20, firma v5, `_premium/analytics` v40, **nový** `employer-demo.jsx` v4 (načítá se před pages3). Nové styly v `index.html`: pevné rozvržení (`.e-ram`, `.e-volne`), filtry (`.e-filtr*`), odezva tlačítek v okně inzerátu (`.nj-*`) a v detailu (`.e-det-tl`, `.e-det-boost`), odznáčky důvěry (`.wlvl*`, zkopírováno z appky).
+- **Pevné rozvržení:** všechny záložky (kromě Profilu firmy) drží na obrazovce, posouvá se jen vnitřek seznamů (≥ 821 px). Bez „odskakování" při přetažení (overscroll jen na posuvných částech).
+- **Filtry:** společné komponenty v shellu `EFiltrLista / EFiltrPrepinac / EFiltrRazeni / EFiltrHledat / EFiltrVyber`; řazení a hledání jako ikonky. Použité v Inzerátech, Kandidátech a Recenzích. Pás čísel (`EMetriky`) menší.
+- **Inzeráty — seznam:** karty 1:1 jako swipovací karta v appce (`EJobKartaApp`): štítek úvazku se počítá ze smlouvy jako `makej-badge.jsx` (DPP/DPČ → Brigáda, HPP → Plný/Zkrácený/Částečný úvazek, IČO → Na IČO, nic → Dle domluvy), iniciály firmy (appka logo nezobrazuje), pod kartou zobrazení / zájemci / čeká. **Ukázkové inzeráty** (`employer-demo.jsx`, `E_DEMO_INZERATY = true`) — jen v seznamu, do čísel se nepočítají, nic se neukládá. **PŘED RELEASEM vypnout** (`false`) nebo smazat soubor i `<script>`.
+- **Inzeráty — detail:** vlevo náhled karty, vpravo panel stejně vysoký: *Výkon* (čárový graf zhlédnutí po dnech od zveřejnění, max. 30 dní — z `job_views.created_at`; expirace + Prodloužit), *Průběh náboru* (Zveřejněno → Má zájem → Přijato „x z y míst" → Obsazeno), patička *Stav: Aktivní | Neaktivní* (přepínač, zelená/červená, pozastavení s potvrzením, zapnutí hlídá limit tarifu), Kandidáti (+ „X čeká"), Statistiky, Boostnout; Upravit vpravo nahoře. **Statistiky** přepnou panel na základní statistiky inzerátu (`EJobStatistiky`: věk, vzdělání, dny a hodiny zájmu) — starý `JobStatsDrawer` (vymyšlené pohlaví/věk) se už nevolá.
+- **Okno Nový / Upravit inzerát** (`ENewJobModal`) přestavěné podle detailu inzerátu v appce — jen pole, která appka ukazuje nebo filtruje. 4 kroky: *Pozice a odměna* (název, smlouva + úvazek u HPP, pravidelnost, výplata, odměna, počet lidí, **fotky** — nahrání do bucketu `uploads`, pořadí přetažením, první = karta), *Kdy a kde* (datum, čas, místo, kraj), *Náplň práce* (popis, Co od tebe čekáme / Co oceníme / Co ti nabídneme), *Benefity a štítky* (benefity, Co potřebuješ, vlastnosti). Vlevo náhled **Karta | Celý inzerát** (`EJobDetailApp` = kopie `WJobDetailModal`). Úprava otevře totéž předvyplněné, uloží `updateJobE`. Pryč pole, která se nikam neukládala (obory, platnost, kontaktní osoba…).
+- **Zápis inzerátu** (`createJobE` / `updateJobE` v `employer-supabase.jsx`): nově i `contract, recurrence, payout, duties, expectations, bonuses, offer, perks, photos, image_url` (sloupce z 2026-08-22) + `positions, hours_per_week` (zatím nejsou — `_jobsZapis` při chybě PGRST204 sloupec vynechá a uloží znovu). `job_type` se odvozuje ze smlouvy/pravidelnosti. **Oprava:** kraj se ukládá jako id (`jihomoravsky`), dřív se z okna ukládal název („Jihomoravský") a filtr krajů v appce ho nenašel — převod starých řádků je v `migration_jobs_pocet_a_hodiny.sql`.
+- **Vložit z odkazu:** v okně Nový inzerát tlačítko „Vložit z odkazu" (odkaz nebo text) → Edge Function `import-inzerat` → vyplní formulář; firma volí „Do stylu Makej" (Claude přepíše, tykání) nebo „Doslovně". Viz níž „Nasazeno".
+- **Kandidáti:** karty bez barev, odznak stupně důvěry jako v appce (Nový/Spolehlivý/Ověřený/Top — z `worker_trust_stats`, dokud funkce není, odznak se neukáže), klik na jméno/fotku = profil, filtr podle inzerátu, bez postranního panelu. **„Nabídnout směnu"** → výběr aktivního inzerátu → do chatu přijde karta inzerátu (`messages.type = 'job_offer'`, `metadata {job_id,title,pay,pay_unit,location,date}`, `sendJobOfferE`). Zprávy ji vykreslí jako kartu.
+- **Statistiky** (dřív Analytika): základní pro všechny tarify (věk, vzdělání, kdy lidé reagují — skutečná data), plné sekce od Dynamického rozmazané s oknem „od tarifu Dynamický"; CSV export jen s plnými. **Pozor:** plné sekce (mapa, kanály, doba odpovědi…) jsou pořád vymyšlená data.
+- **Profil brigádníka** (okno z Kandidátů/Zpráv): odznak důvěry + Hodnocení / Dokončené směny / Spolehlivost (pryč `profiles.level`/`jobs_done`, appka je nezapisuje).
+
+### Appka (repo makej-aplikace-yasin, stejný den)
+
+- `messages.type = 'job_offer'`: chat ukáže kartu nabídnutého inzerátu (`WJobOfferCard`), klik otevře detail, „Mám zájem" → `createMatchW`. `worker-messages.jsx?v=24`, `worker-supabase.jsx?v=15` (`fetchJobOfferW`, náhled vlákna „Nabídka brigády").
+- `jobToCard`: „Přidáno …" i u inzerátů z DB (z `created_at`); detail inzerátu ukáže pod smlouvou „Výplata týdně" apod. ze sloupce `payout`. `worker-swipe.jsx?v=116`.
+- Pokud má `messages.type` v DB CHECK s výčtem typů, přidat `'job_offer'` (zapsáno v DATABASE.md).
+
 ## 2026-09-25 až 27 — firemní dashboard (+ přihlášení na webu) — čeká na nasazení
 
 > **Pro Samova Clauda:** tři dny práce hlavně na firemním dashboardu (`employer/`),
@@ -409,9 +437,14 @@ nekreslí. `style.css?v=126`.
 
 | Od kdy | Co | Kde je SQL |
 |---|---|---|
+| 2026-09-28 | **Ověřit** `job_views.created_at` — detail inzerátu v dashboardu teď kreslí graf zhlédnutí po dnech (posledních 14 dní) z data zápisu. Když sloupec chybí, dashboard graf neukáže (jen celkový počet). Pokud chybí: `alter table public.job_views add column if not exists created_at timestamptz not null default now();` — pozor, starým řádkům se doplní dnešek, takže graf bude mít první den špičku. | — |
+| 2026-09-28 | Sloupce `jobs.positions` a `jobs.hours_per_week` (appka je umí ukázat: „N volných míst", štítek úvazku) + volitelný převod starých názvů krajů na id. Dashboard je posílá už teď, dokud chybí, uloží inzerát bez nich. | `makej-web-sam/supabase/migration_jobs_pocet_a_hodiny.sql` |
+| 2026-09-28 | Funkce `worker_trust_stats(uuid[])` — počty dokončených a zrušených směn brigádníka pro odznak stupně důvěry u kandidátů v dashboardu. Dokud chybí, odznak se nezobrazí. | `makej-web-sam/supabase/migration_worker_trust.sql` |
 | 2026-09-26 | Nové sloupce `profiles` pro Profil firmy (fotka pozadí, založeno, kariéra, telefon, kontaktní e-mail, otevírací doba). | `makej-web-sam/supabase/migration_profil_firmy.sql` |
 | 2026-09-06 | `launch_list_pocet()` — počet zapsaných na čekacím listu. Dokud neexistuje, web řádek s počtem a postavičkami vůbec nezobrazí (nechceme vymyšlené číslo). | `makej-web-sam/supabase/migration_launch_pocet.sql` |
 | 2026-09-05 | Tabulka `blocks` + trigger — blokování uživatelů v appce. UI hotové, DB chybí. | `makej-aplikace/supabase/migration_blocks.sql` |
+
+**Nasazeno 2026-09-28 (Yasin přes dashboard, ověřeno):** Edge Function `import-inzerat` + secret `ANTHROPIC_API_KEY` (vlastní klíč, s limitem útraty). Firma v okně Nový inzerát klikne „Vložit z odkazu" (nebo vloží text) → funkce stáhne stránku, rozebere ji (JSON-LD JobPosting + nadpisy) a přes Claude (`claude-sonnet-5`) ho buď přepíše do stylu appky, nebo převezme doslovně a jen roztřídí do sekcí — firma si vybere v okénku („Jak chcete text převzít?", parametr `styl: 'makej' | 'doslovne'`). Kód `makej-web-sam/supabase/functions/import-inzerat/index.ts` (jeden soubor). Při změně kódu nasadit znovu (dashboard → Edge Functions → import-inzerat → Code, nebo `supabase functions deploy import-inzerat --project-ref cxegfwfbgcgpwerfbvra`).
 
 ## Čeká na tobě jinde
 

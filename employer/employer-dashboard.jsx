@@ -217,11 +217,13 @@ function EDashboard({ period = '30d', onTab, onNew, onPeriod }) {
           <EMetriky items={cisla} />
         </div>
 
-        {/* Jedna bílá plocha, sekce oddělené linkou a mezerou */}
-        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '20px 24px' }}>
-          <div style={{ background: '#fff', border: '1px solid #E6E9F5', borderRadius: 18, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 340px' }}>
+        {/* Jedna bílá plocha, sekce oddělené linkou a mezerou.
+            Pevná obrazovka (28. 9.): plocha vyplní okno až dolů a každý
+            sloupec se posouvá sám, jen když se do něj obsah nevejde. */}
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '20px 24px 22px' }}>
+          <div style={{ background: '#fff', border: '1px solid #E6E9F5', borderRadius: 18, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 340px', gridTemplateRows: 'minmax(0,1fr)', height: '100%', minHeight: 360, boxSizing: 'border-box', overflow: 'hidden' }}>
 
-            <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 34, minWidth: 0 }}>
+            <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 34, minWidth: 0, minHeight: 0, overflowY: 'auto' }}>
               {/* Čeká na vás */}
               <div>
                 {nadpis('Čeká na vás', cekaji.length ? 'Všichni kandidáti' : null, 'candidates')}
@@ -278,7 +280,7 @@ function EDashboard({ period = '30d', onTab, onNew, onPeriod }) {
               </div>
             </div>
 
-            <div style={{ borderLeft: '1px solid #E6E9F5', padding: '24px 24px', display: 'flex', flexDirection: 'column', gap: 34 }}>
+            <div style={{ borderLeft: '1px solid #E6E9F5', padding: '24px 24px', display: 'flex', flexDirection: 'column', gap: 34, minHeight: 0, overflowY: 'auto' }}>
               {/* Poslední aktivita */}
               <div>
                 {nadpis('Poslední aktivita')}

@@ -161,7 +161,7 @@ function ECompanyProfile({ onTab, onSignOut } = {}) {
   const inp = { width: '100%', fontSize: 14, fontWeight: 600, color: '#0B1233', background: '#F6F7FC', border: '1px solid #E6E9F5', borderRadius: 10, padding: '11px 13px', outline: 'none' };
 
   return (
-    <div className="e-ram" style={{ padding: 20 }}>
+    <div className="e-ram e-volne" style={{ padding: 20 }}>
       <div style={{ background: '#F1F3FB', border: '1px solid #DDE1F0', borderRadius: 22, overflow: 'hidden' }}>
         <ETabHlava title="Profil firmy">
           {dirty ? (

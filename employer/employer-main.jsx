@@ -2,7 +2,7 @@
 
 const TITLES = {
   dash:       { title: 'Dashboard',   subtitle: 'Přehled výkonu náboru za 30 dní' },
-  analytics:  { title: 'Analytika',   subtitle: 'Pokročilé reporty a segmentace' },
+  analytics:  { title: 'Statistiky',  subtitle: 'Výkon inzerátů a zájem kandidátů' },
   jobs:       { title: 'Inzeráty',   subtitle: 'Správa a výkon vašich brigád' },
   candidates: { title: 'Kandidáti',  subtitle: '' },
   chat:       { title: 'Zprávy',     subtitle: 'Komunikace s kandidáty' },
@@ -444,6 +444,7 @@ function EWorkerProfileModal({ workerId, fallback, onClose }) {
   const [p, setP]       = useStateE(fallback || null);
   const [reviews, setR] = useStateE(null);   // null = načítá se
   const [loading, setL] = useStateE(true);
+  const [trust, setTrust] = useStateE((fallback && fallback.trust) || null);   // dokončené / zrušené směny
 
   useEffectE(() => {
     if (!workerId) return;
@@ -459,6 +460,10 @@ function EWorkerProfileModal({ workerId, fallback, onClose }) {
       if (!alive) return;
       if (profRes.data) setP(profRes.data);
       setR(revRes.data || []);
+      if (!(fallback && fallback.trust) && typeof workerTrustE === 'function') {
+        const t = await workerTrustE(workerId);
+        if (alive && t) setTrust(t);
+      }
       setL(false);
     })();
     return () => { alive = false; };
@@ -497,8 +502,10 @@ function EWorkerProfileModal({ workerId, fallback, onClose }) {
               {p?.verified && <Icon name="verified-check-bold" size={18} color="#5B6BFF" />}
             </div>
             <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 12.5, marginTop: 3 }}>
-              {[p?.address, p?.level ? 'Makač L' + p.level : null].filter(Boolean).join(' · ') || 'Brigádník'}
+              {p?.address || 'Brigádník'}
             </div>
+            {/* Stupeň důvěry jako v aplikaci (dřív „Makač L" z nevyplňovaného profiles.level) */}
+            {trust && <div style={{ marginTop: 7 }}><ETrustBadge stats={{ ...trust, hodnoceni: rating }} sm /></div>}
             {loading && <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 11, marginTop: 4 }}>Načítám profil…</div>}
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, background: T.cardSoft, border: '1px solid ' + T.cardBorder, color: T.cardMuted, cursor: 'pointer', display: 'grid', placeItems: 'center', flexShrink: 0, fontSize: 16 }}>✕</button>
@@ -507,19 +514,23 @@ function EWorkerProfileModal({ workerId, fallback, onClose }) {
         <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
 
           {/* ── Statistiky ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-            {[
+          {/* Jen skutečná čísla (28. 9.): dřív Brigád / Hodin / Vyděláno ze sloupců,
+              které appka neplní (a výdělek brigádníka firmě nepatří). */}
+          {(() => { const tt = trust ? eTrust({ ...trust, hodnoceni: rating }) : null; const polozky = [
               { l: 'Hodnocení', v: rating > 0 ? rating.toFixed(1) + '★' : '–', c: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
-              { l: 'Brigád',    v: p?.jobs_done || 0,                            c: '#4338CA', bg: '#EEF2FF', border: '#C7D2FE' },
-              { l: 'Hodin',     v: p?.hours_logged || 0,                         c: '#15803D', bg: '#F0FDF4', border: '#BBF7D0' },
-              { l: 'Vyděláno',  v: (Number(p?.total_earned || 0)).toLocaleString('cs-CZ') + ' Kč', c: '#0020F6', bg: 'rgba(0,32,246,0.05)', border: 'rgba(0,32,246,0.15)' },
-            ].map((s, i) => (
+            ].concat(tt ? [
+              { l: 'Dokončené směny', v: tt.dokoncene, c: '#4338CA', bg: '#EEF2FF', border: '#C7D2FE' },
+              { l: 'Spolehlivost', v: tt.spolehlivost === null ? '–' : tt.spolehlivost + ' %', c: '#15803D', bg: '#F0FDF4', border: '#BBF7D0' },
+            ] : []); return (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + polozky.length + ', 1fr)', gap: 8 }}>
+            {polozky.map((s, i) => (
               <div key={i} style={{ textAlign: 'center', padding: '12px 8px', borderRadius: 12, background: s.bg, border: '1px solid ' + s.border }}>
                 <div style={{ color: s.c, fontFamily: T.fontMono, fontSize: 17, fontWeight: 700, lineHeight: 1.2 }}>{s.v}</div>
                 <div style={{ color: T.cardMutedSoft, fontFamily: T.fontUI, fontSize: 9.5, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>{s.l}</div>
               </div>
             ))}
           </div>
+          ); })()}
 
           {/* ── O kandidátovi ── */}
           {p?.bio && (
@@ -634,12 +645,13 @@ function EPublishPill({ state }) {
 // Každé přepnutí záložky je krok v historii prohlížeče. Šipka Zpět tak
 // přepne na předchozí záložku (bez načítání celé stránky), refresh nechá
 // člověka na té, kde byl. Dashboard je čistá adresa bez #.
-const _TAB_HASH = { dash: '', analytics: 'analytika', jobs: 'inzeraty', candidates: 'kandidati', chat: 'zpravy', calendar: 'plan-smen', reviews: 'recenze', settings: 'nastaveni', company: 'profil-firmy', pricing: 'tarify' };
+const _TAB_HASH = { dash: '', analytics: 'statistiky', jobs: 'inzeraty', candidates: 'kandidati', chat: 'zpravy', calendar: 'plan-smen', reviews: 'recenze', settings: 'nastaveni', company: 'profil-firmy', pricing: 'tarify' };
 // '#access_token=…' apod. patří přihlášení (Supabase) — na to nesahat.
 const _hashJeNas = () => !location.hash.includes('=');
 const _hashNaTab = () => {
   if (!_hashJeNas()) return 'dash';
-  const h = decodeURIComponent(location.hash.slice(1)).split('/')[0];
+  let h = decodeURIComponent(location.hash.slice(1)).split('/')[0];
+  if (h === 'analytika') h = 'statistiky';   // stará adresa (do 28. 9.)
   return Object.keys(_TAB_HASH).find(k => _TAB_HASH[k] === h) || 'dash';
 };
 
@@ -681,6 +693,12 @@ function EmployerApp() {
   if (typeof window !== 'undefined') window.empToast = addToast;
 
   // Publikace inzerátu s „pill" feedbackem: načítání → zelené Hotovo
+  // Obnovit data po změně z jiné záložky (např. úprava inzerátu)
+  React.useEffect(() => {
+    window.empObnovData = async () => { if (empId.current) { await fetchEmployerData(empId.current); setTick(t => t + 1); } };
+    return () => { window.empObnovData = null; };
+  }, []);
+
   async function handlePublish(fields) {
     setShowNewJob(false);
     setPublish('loading');
@@ -910,7 +928,7 @@ function EmployerApp() {
         </button>
       )}
 
-      <main ref={mainRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', overflowY: tab === 'dash' ? 'hidden' : 'auto', background: '#fff' }}>
+      <main ref={mainRef} className="e-hlavni" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, position: 'relative', overflowY: tab === 'dash' ? 'hidden' : 'auto', background: '#fff' }}>
         {loaded && tab !== 'dash' && tab !== 'reviews' && tab !== 'calendar' && tab !== 'chat' && tab !== 'candidates' && tab !== 'jobs' && tab !== 'settings' && tab !== 'analytics' && tab !== 'pricing' && tab !== 'company' && <ETopbar title={meta.title} subtitle={meta.subtitle} onNew={() => setShowNewJob(true)} onSignOut={handleSignOut} period={period} onPeriod={setPeriod} />}
         {body}
       </main>

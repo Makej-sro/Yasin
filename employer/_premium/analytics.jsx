@@ -1133,7 +1133,119 @@ const _AN_SUB = { fontSize: 13, color: '#7A82A6' };
 const _AN_LBL = { fontSize: 11, fontWeight: 800, color: '#A6ADCB', letterSpacing: '.08em', textTransform: 'uppercase' };
 const _AN_NUM = { fontSize: 22, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', lineHeight: 1 };
 
+// ── Statistiky: základní pro všechny, plné od Dynamického (28. 9.) ──
+// Ceník: Základní + Výhodný = „Základní statistiky", Dynamický a výš =
+// „Plné statistiky + CSV export". Dřív byla celá záložka pro nižší tarify
+// zamčená, takže slíbené základní statistiky nebyly nikde.
+// Plná sekce u nižšího tarifu: rozmazaná, klik → okno „od Dynamického".
+function EPlnaSekce({ children, onZamceno }) {
+  if (_isPro()) return children;
+  return (
+    <div onClick={onZamceno} title="Plné statistiky — od tarifu Dynamický" style={{ position: 'relative', cursor: 'pointer', borderRadius: 16, overflow: 'hidden' }}>
+      <div style={{ filter: 'blur(5px)', opacity: .55, pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{children}</div>
+      <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: '#0B1233', background: '#fff', border: '1px solid #E6E9F5', borderRadius: 999, padding: '9px 15px', boxShadow: '0 10px 28px -12px rgba(16,24,64,.35)' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B34F0" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+          Od tarifu Dynamický
+        </span>
+      </div>
+    </div>
+  );
+}
+function EPlneOkno({ onClose }) {
+  React.useEffect(() => { const esc = e => { if (e.key === 'Escape') onClose(); }; window.addEventListener('keydown', esc); return () => window.removeEventListener('keydown', esc); }, []);
+  return ReactDOM.createPortal(
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(11,18,51,.18)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" style={{ width: 440, maxWidth: '100%', background: '#fff', borderRadius: 18, boxShadow: '0 30px 80px -20px rgba(11,18,51,.45)', padding: '26px 26px 22px' }}>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#7A82A6', marginBottom: 6 }}>Tarif Dynamický a vyšší</div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', marginBottom: 10 }}>Plné statistiky</div>
+        <div style={{ fontSize: 14, color: '#3A4266', lineHeight: 1.55, marginBottom: 16 }}>Ve vašem tarifu máte základní statistiky. Podrobné přehledy a export dat odemkne tarif Dynamický.</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
+          {['Trh práce po krajích a hodinovky na trhu', 'Jak rychle odpovídáte kandidátům', 'Kdo se k vám vrací a jak rychle přijde první zájem', 'Export dat do CSV'].map(t => (
+            <div key={t} style={{ display: 'grid', gridTemplateColumns: '8px 1fr', columnGap: 12, alignItems: 'start' }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#1B34F0', marginTop: 8 }} />
+              <span style={{ fontSize: 14, color: '#3A4266', lineHeight: 1.55 }}>{t}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+          <EBtnSek onClick={onClose}>Zavřít</EBtnSek>
+          <EBtnHl onClick={() => { onClose(); window.empGoTab && window.empGoTab('pricing'); }}>Zobrazit tarify</EBtnHl>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function EAnalytics({ period = '30d', onNew, onTab, onPeriod } = {}) {
+  const [plneOkno, setPlneOkno] = React.useState(false);
+  const zamceno = () => setPlneOkno(true);
+
+  // ── Základní statistiky ze skutečných dat (E_JOBS: zhlédnutí + zájemci s časem) ──
+  const _jobs = (typeof E_JOBS !== 'undefined' ? E_JOBS : []);
+  const _vlastni = period && typeof period === 'object';
+  const _od = _vlastni ? new Date(period.from).getTime() : Date.now() - ({ '7d': 7, '30d': 30, '90d': 90, rok: 365 }[period] || 30) * 86400000;
+  const _do = _vlastni ? new Date(period.to).getTime() + 86400000 : Date.now() + 1;
+  const _vObd = t => { const x = new Date(t).getTime(); return x >= _od && x < _do; };
+  const radky = _jobs.map(j => {
+    const c = (j.candidates || []).filter(k => _vObd(k.matched_at));
+    return { id: j.id, title: j.title, stav: j.status, views: j.views || 0, zajemci: c.length, najato: c.filter(k => k.status === 'accepted').length };
+  }).sort((a, b) => b.zajemci - a.zajemci || b.views - a.views);
+  const sZobr = radky.reduce((a, r) => a + r.views, 0);
+  const sZaj = radky.reduce((a, r) => a + r.zajemci, 0);
+  const sNaj = radky.reduce((a, r) => a + r.najato, 0);
+  const _pct = (a, b) => b ? Math.round(a / b * 1000) / 10 : null;
+  // Všechny zájmy v období (s inzerátem) — pro dny v týdnu a denní dobu
+  const zajmy = [];
+  _jobs.forEach(j => (j.candidates || []).forEach(k => { if (_vObd(k.matched_at)) zajmy.push({ t: new Date(k.matched_at), j }); }));
+  const _PAL = ['#1B34F0', '#5C71FF', '#0FA968', '#F5920B', '#8B5CF6', '#E5484D'];
+  // Dny v týdnu (Po–Ne); nejsilnější den zeleně
+  const dnyT = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'].map(l => [l, 0]);
+  zajmy.forEach(z => { dnyT[(z.t.getDay() + 6) % 7][1]++; });
+  const maxDen = Math.max(...dnyT.map(d => d[1]));
+  const dnyBars = dnyT.map(([l, v]) => [l, v, v && v === maxDen ? '#0FA968' : '#5C71FF']);
+  // Denní doba
+  // Hodinová okna (Yasin 28. 9.: čísla hodin místo „ráno/večer"); noc 0–6 h na konci
+  const doby = [[6, 9], [9, 12], [12, 15], [15, 18], [18, 21], [21, 24], [0, 6]];
+  const dobyV = doby.map(([a, b]) => [a + '–' + b, zajmy.filter(z => { const h = z.t.getHours(); return h >= a && h < b; }).length, a, b]);
+  const maxDoba = Math.max(1, ...dobyV.map(d => d[1]));
+  // Doba do prvního zájmu (zveřejnění inzerátu → první „Mám zájem") napříč inzeráty
+  const prvni = _jobs.map(j => {
+    const ts = (j.candidates || []).map(k => new Date(k.matched_at).getTime()).filter(x => !isNaN(x));
+    const zac = new Date(j.created_at).getTime();
+    return ts.length && !isNaN(zac) ? Math.max(0, Math.min(...ts) - zac) / 3600000 : null;
+  }).filter(x => x != null);
+  const prumPrvni = prvni.length ? prvni.reduce((a, x) => a + x, 0) / prvni.length : null;
+  const _hodTxt = h => h < 1 ? Math.max(1, Math.round(h * 60)) + ' min' : h < 48 ? (Math.floor(h) + ' h' + (Math.round((h % 1) * 60) ? ' ' + Math.round((h % 1) * 60) + ' min' : '')) : Math.round(h / 24) + ' dní';
+  const prvniBars = [['<1 h', 0, 1, '#0FA968'], ['1–6 h', 1, 6, '#0FA968'], ['6–24 h', 6, 24, '#5C71FF'], ['1–3 dny', 24, 72, '#5C71FF'], ['3+ dny', 72, 1e9, '#F5920B']]
+    .map(([l, a, b, c]) => [l, prvni.filter(h => h >= a && h < b).length, c]);
+  // Složení zájemců v období — každý člověk jednou, i když reagoval na víc inzerátů
+  const lide = {};
+  _jobs.forEach(j => (j.candidates || []).forEach(k => { if (_vObd(k.matched_at) && k.worker_id) lide[k.worker_id] = k; }));
+  const lideA = Object.values(lide);
+  const _vek = d => { const b = new Date(d); if (!d || isNaN(b)) return null; const n = new Date(); let v = n.getFullYear() - b.getFullYear(); if (n < new Date(n.getFullYear(), b.getMonth(), b.getDate())) v--; return v; };
+  const vekBars = [['15–17', 15, 18, '#5C71FF'], ['18–21', 18, 22, '#1B34F0'], ['22–25', 22, 26, '#1B34F0'], ['26–30', 26, 31, '#5C71FF'], ['30+', 31, 200, '#5C71FF']]
+    .map(([l, a, b, c]) => [l, lideA.filter(k => { const v = _vek(k.birth_date); return v != null && v >= a && v < b; }).length, c]);
+  const vekZnamy = vekBars.reduce((a, b) => a + b[1], 0);
+  // Vzdělání = první část pole education („Stupeň — Obor", viz _W_STUPNE v appce)
+  const _stupen = e => { const t = String(e || '').split(' — ')[0]; return /^Základní/.test(t) ? 'Základní' : /výuční/.test(t) ? 'Vyučen/a' : /maturitou/.test(t) ? 'Maturita' : /VOŠ/.test(t) ? 'Vyšší odborné' : /^Vysokoškolské/.test(t) ? 'Vysoká škola' : null; };
+  const vzdBars = ['Základní', 'Vyučen/a', 'Maturita', 'Vyšší odborné', 'Vysoká škola'].map((l, i) => [l, lideA.filter(k => _stupen(k.education) === l).length, _PAL[i % _PAL.length]]);
+  const vzdZnamo = vzdBars.reduce((a, b) => a + b[1], 0);
+  const obdobiTxt = _vlastni ? 'za vybrané období' : 'za ' + ({ '7d': '7 dní', '30d': '30 dní', '90d': '90 dní', rok: '12 měsíců' }[period] || '30 dní');
+
+  // CSV: výkon inzerátů za období (skutečná data), jen v plných statistikách
+  const exportCsv = () => {
+    if (!_isPro()) { zamceno(); return; }
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const csv = ['Inzerát;Zobrazení;Zájemci;Najato;Zájem ze zobrazení (%)']
+      .concat(radky.map(r => [q(r.title), r.views, r.zajemci, r.najato, _pct(r.zajemci, r.views) ?? ''].join(';'))).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'makej-statistiky.csv'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+
   const [hovered, setHovered] = React.useState(null);
   const [selected, setSelected] = React.useState([]);
   const [disp, setDisp] = React.useState({ ...(_AN_CR) });
@@ -1179,7 +1291,6 @@ function EAnalytics({ period = '30d', onNew, onTab, onPeriod } = {}) {
   const ordered = mapKeys.slice().sort((a, b) => rank(a) - rank(b) || mapKeys.indexOf(a) - mapKeys.indexOf(b));
 
   return (
-    <ProGate feature="Analytika">
     <div className="e-ram" style={{ width: '100%', maxWidth: 1180, margin: '0 auto', padding: '18px 20px 40px' }}>
       <style>{`
         @keyframes anKrajPulse { 0%,100% { stroke-opacity:1; } 50% { stroke-opacity:.5; } }
@@ -1193,22 +1304,81 @@ function EAnalytics({ period = '30d', onNew, onTab, onPeriod } = {}) {
 
       <div style={{ background: '#F1F3FB', border: '1px solid #DDE1F0', borderRadius: 22, overflow: 'hidden' }}>
 
-        <ETabHlava title="Analytika">
+        <ETabHlava title="Statistiky">
           <EPeriodPicker value={period} onChange={onPeriod} />
-          <EBtnSek onClick={exportData}>Export dat (CSV)</EBtnSek>
+          <EBtnSek onClick={exportCsv}>{!_isPro() && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7A82A6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>}Export dat (CSV)</EBtnSek>
         </ETabHlava>
 
-        {/* Pás čísel — reaguje na výběr kraje */}
-        <EMetriky items={[
-          { l: 'Aktivních uživatelů', v: _anNf(disp.users), s: none ? 'celá ČR' : label },
-          { l: 'Pracovních příležitostí', v: _anNf(disp.jobs), s: 'otevřených dnes' },
-          { l: 'Medián hodinovky', v: Math.round(disp.rate) + ' Kč', s: 'v regionu' },
-          { l: 'Zájemců na příležitost', v: _anDec(ratio), s: 'čím víc, tím snazší nábor' },
-        ]} />
+        {/* Pás čísel tu není (Yasin 28. 9.): zobrazení, zájemci a najatí jsou
+            na Dashboardu a v Inzerátech, tady by se jen opakovaly. */}
 
-        <div style={{ padding: '22px 24px 26px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Grid, ne flex: v pevném rozvržení (index.html) má tahle část omezenou
+            výšku a flex by karty s overflow:hidden smáčkl. */}
+        <div style={{ padding: '22px 24px 26px', display: 'grid', gridAutoRows: 'max-content', alignContent: 'start', gap: 16 }}>
+
+          {/* ── ZÁKLADNÍ STATISTIKY (všechny tarify, Yasin 28. 9.): kdo o vás
+              má zájem (věk, vzdělání) a kdy reaguje. Vše ze skutečných profilů
+              lidí, kteří v období dali „Mám zájem". ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'stretch' }}>
+            <div style={_AN_CARD}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <span style={_AN_H}>Věk</span>
+                <span style={_AN_SUB}>Lidé, kteří o vás projevili zájem {obdobiTxt}</span>
+              </div>
+              {vekZnamy === 0
+                ? <div style={{ padding: '40px 0', textAlign: 'center', fontSize: 14, color: '#7A82A6' }}>Zatím tu nikdo není.</div>
+                : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, alignItems: 'end', height: 170, marginTop: 18 }}><_AnBars data={vekBars} height={120} /></div>}
+            </div>
+            <div style={_AN_CARD}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <span style={_AN_H}>Vzdělání</span>
+                <span style={_AN_SUB}>Nejvyšší dosažené, jak si ho lidé vyplnili v profilu</span>
+              </div>
+              {vzdZnamo === 0
+                ? <div style={{ padding: '40px 0', textAlign: 'center', fontSize: 14, color: '#7A82A6' }}>Zatím to nikdo z vašich zájemců nevyplnil.</div>
+                : <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 18 }}>
+                    {vzdBars.map(([n, v, c]) => (
+                      <div key={n} style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: '#3A4266' }}>{n}</span>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: '#0B1233' }}>{Math.round(v / vzdZnamo * 100)} %</span>
+                        </div>
+                        <span style={{ display: 'block', height: 7, borderRadius: 999, background: '#F1F3FB', overflow: 'hidden' }}><span style={{ display: 'block', height: '100%', width: (v / vzdZnamo * 100) + '%', background: c, borderRadius: 999 }} /></span>
+                      </div>
+                    ))}
+                  </div>}
+            </div>
+          </div>
+
+            <div style={_AN_CARD}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 14 }}>
+                <span style={_AN_H}>Kdy lidé reagují</span>
+                <span style={_AN_SUB}>{maxDen ? 'Nejvíc zájmu přichází ' + ({ Po: 'v pondělí', Út: 'v úterý', St: 've středu', Čt: 've čtvrtek', Pá: 'v pátek', So: 'v sobotu', Ne: 'v neděli' })[dnyT.find(d => d[1] === maxDen)[0]] + ' — hodí se tehdy inzerát zveřejnit nebo topovat' : 'Dny v týdnu a denní doba, kdy chodí „Mám zájem"'}</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 28, alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 8, alignItems: 'end', height: 150 }}><_AnBars data={dnyBars} height={95} /></div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, borderLeft: '1px solid #F0F2FA', paddingLeft: 24 }}>
+                {dobyV.map(([l, v, od, doo]) => (
+                  <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {/* Časy jako na hodinkách (06:00–09:00) — všechny stejně dlouhé,
+                        se stejně širokými číslicemi, takže stojí přesně pod sebou */}
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#3A4266', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', flex: 'none' }}>{String(od).padStart(2, '0')}:00–{String(doo).padStart(2, '0')}:00</span>
+                    <span style={{ flex: 1, height: 7, borderRadius: 999, background: '#F1F3FB', overflow: 'hidden' }}><span style={{ display: 'block', height: '100%', width: (v / maxDoba * 100) + '%', background: v === maxDoba && v ? '#F5920B' : '#C7D0FF', borderRadius: 999 }} /></span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: '#0B1233', width: 24, textAlign: 'right', flex: 'none' }}>{v}</span>
+                  </div>
+                ))}
+              </div>
+              </div>
+            </div>
+
+          {/* ── PLNÉ STATISTIKY (od Dynamického; u nižších tarifů rozmazané) ── */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+            <span style={{ fontSize: 19, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em' }}>Plné statistiky</span>
+            {!_isPro() && <span onClick={zamceno} style={{ fontSize: 12, fontWeight: 700, color: '#1B34F0', background: '#EEF1FF', padding: '4px 10px', borderRadius: 999, cursor: 'pointer' }}>od tarifu Dynamický</span>}
+          </div>
 
           {/* Mapa + panel kraje */}
+          <EPlnaSekce onZamceno={zamceno}>
           <div style={_AN_CARD}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, marginBottom: 16 }}>
               <span style={_AN_H}>Vyberte kraj a uvidíte, jak vypadá trh práce</span>
@@ -1271,7 +1441,10 @@ function EAnalytics({ period = '30d', onNew, onTab, onPeriod } = {}) {
             </div>
           </div>
 
+          </EPlnaSekce>
+
           {/* Srovnání kanálů (na plnou šířku) */}
+          <EPlnaSekce onZamceno={zamceno}>
           <div style={_AN_CARD}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 16 }}>
               <span style={_AN_H}>Srovnání kanálů</span>
@@ -1297,7 +1470,10 @@ function EAnalytics({ period = '30d', onNew, onTab, onPeriod } = {}) {
             </div>
           </div>
 
+          </EPlnaSekce>
+
           {/* Insighty */}
+          <EPlnaSekce onZamceno={zamceno}>
           <div style={_AN_CARD}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, marginBottom: 16 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -1316,7 +1492,10 @@ function EAnalytics({ period = '30d', onNew, onTab, onPeriod } = {}) {
             </div>
           </div>
 
+          </EPlnaSekce>
+
           {/* Doba odpovědi + Hodinovka */}
+          <EPlnaSekce onZamceno={zamceno}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'stretch' }}>
             <div style={_AN_CARD}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 18 }}>
@@ -1348,19 +1527,22 @@ function EAnalytics({ period = '30d', onNew, onTab, onPeriod } = {}) {
             </div>
           </div>
 
-          {/* Doba do zájmu + Retence */}
+          </EPlnaSekce>
+
+          {/* Doba do prvního zájmu (skutečná, z časů zveřejnění a zájmu) + Retence */}
+          <EPlnaSekce onZamceno={zamceno}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'stretch' }}>
             <div style={_AN_CARD}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 14 }}>
                 <span style={_AN_H}>Doba do prvního zájmu</span>
-                <span style={_AN_SUB}>Jak rychle si lidé všimnou vašeho inzerátu</span>
+                <span style={_AN_SUB}>Jak rychle si lidé všimnou nového inzerátu</span>
               </div>
-              <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 14 }}>
                 <div style={_AN_LBL}>Průměrně</div>
-                <div style={{ fontSize: 34, fontWeight: 800, color: '#0B1233', letterSpacing: '-.03em', lineHeight: 1, marginTop: 6 }}>4 h 9 min</div>
+                <div style={{ fontSize: 30, fontWeight: 800, color: '#0B1233', letterSpacing: '-.03em', lineHeight: 1, marginTop: 6 }}>{prumPrvni == null ? '—' : _hodTxt(prumPrvni)}</div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10, alignItems: 'end', height: 150 }}><_AnBars data={_AN_INTEREST} height={95} /></div>
-              <div style={{ ..._AN_SUB, fontSize: 11, borderTop: '1px solid #F0F2FA', marginTop: 16, paddingTop: 12 }}>Napříč 34 inzeráty za dané období · medián 1 h 33 min</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, alignItems: 'end', height: 140 }}><_AnBars data={prvniBars} height={85} /></div>
+              <div style={{ ..._AN_SUB, fontSize: 11, borderTop: '1px solid #F0F2FA', marginTop: 14, paddingTop: 10 }}>{prvni.length ? 'Napříč ' + prvni.length + ' ' + (prvni.length === 1 ? 'inzerátem' : 'inzeráty') + ', na které někdo reagoval' : 'Zatím žádný inzerát nemá zájemce'}</div>
             </div>
             <div style={{ ..._AN_CARD, display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 16 }}>
@@ -1384,56 +1566,14 @@ function EAnalytics({ period = '30d', onNew, onTab, onPeriod } = {}) {
             </div>
           </div>
 
-          {/* Demografie */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, alignItems: 'stretch' }}>
-            <div style={_AN_CARD}>
-              <span style={_AN_H}>Věk</span>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10, alignItems: 'end', height: 170, marginTop: 18 }}><_AnBars data={_AN_AGE} height={120} /></div>
-            </div>
-            <div style={_AN_CARD}>
-              <span style={_AN_H}>Pohlaví</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 18 }}>
-                <div style={{ width: 132, height: 132, borderRadius: '50%', flex: 'none', background: 'conic-gradient(#1B34F0 0 58%,#F5920B 58% 99%,#C7A6F5 99% 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ width: 78, height: 78, borderRadius: '50%', background: '#fff' }} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1, minWidth: 0 }}>
-                  {_AN_GENDER.map(([n, pct, cnt, color], i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                        <span style={{ width: 9, height: 9, borderRadius: 3, background: color, flex: 'none' }} />
-                        <span style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: 13, fontWeight: 800, color: '#0B1233' }}>{n}</span>
-                          <span style={{ ..._AN_SUB, fontSize: 11 }}>{cnt} kandidátů</span>
-                        </span>
-                      </span>
-                      <span style={{ fontSize: 15, fontWeight: 800, color: '#0B1233' }}>{pct} %</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div style={_AN_CARD}>
-              <span style={_AN_H}>Zaměstnanecký status</span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 18 }}>
-                {_AN_STATUS.map(([n, pct], i) => (
-                  <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#3A4266' }}>{n}</span>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: '#0B1233' }}>{pct} %</span>
-                    </div>
-                    <span style={{ display: 'block', height: 7, borderRadius: 999, background: '#F1F3FB', overflow: 'hidden' }}><span style={{ display: 'block', height: '100%', width: pct + '%', background: '#5C71FF', borderRadius: 999 }} /></span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          </EPlnaSekce>
 
           <div style={{ ..._AN_SUB, fontSize: 11, padding: '0 2px' }}>Krajská data jsou ukázková — v produkci je dodá agregace z profilů a inzerátů. Ostatní metriky vychází z vašeho účtu za zvolené období.</div>
         </div>
       </div>
+      {plneOkno && <EPlneOkno onClose={() => setPlneOkno(false)} />}
     </div>
-    </ProGate>
   );
 }
 
-Object.assign(window, { EAnalytics, ECalendar });
+Object.assign(window, { EAnalytics, ECalendar, EPlnaSekce, EPlneOkno });
