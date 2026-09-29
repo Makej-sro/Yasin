@@ -975,6 +975,29 @@ function ETrustBadge({ stats, sm }) {
 // i hledání se zmenší na ikonky a hledání se rozbalí až po kliknutí.
 // Lišta tak zůstane na jednom řádku, nic nevisí samotné pod ní.
 // vzdyKompakt: ikonky i tam, kde by se plná podoba vešla (Inzeráty — Yasin 28. 9.)
+// Po změně skupiny, řazení nebo hledání skočí seznam na začátek (Yasin 29. 9.: „vždycky
+// to musí přesunout toho člověka podle toho, kam vybere"). Dřív zůstal posunutý tam, kde byl
+// v předchozím výběru — u kratšího seznamu tak člověk viděl jen jeho konec.
+// Posouvaný seznam pod lištou (cokoli za ní, co je odscrollované) nahoru; a když lišta
+// sama odjela z pohledu (posouvá se celá karta / <main> na mobilu), vrátí ji do pohledu.
+// Boční panel vedle seznamu (Kandidáti) za lištou není, ten zůstane, jak je.
+function _eSeznamNaZacatek(el, plynule = true) {
+  const lista = el && el.closest && el.closest('.e-filtr');
+  if (!lista) return;
+  requestAnimationFrame(() => {
+    const jak = plynule ? 'smooth' : 'auto';
+    for (let sb = lista.nextElementSibling; sb; sb = sb.nextElementSibling) {
+      [sb, ...sb.querySelectorAll('*')].forEach(m => {
+        if (m.scrollTop > 0 && /(auto|scroll)/.test(getComputedStyle(m).overflowY)) m.scrollTo({ top: 0, behavior: jak });
+      });
+    }
+    for (let m = lista.parentElement; m && m !== document.body; m = m.parentElement) {
+      if (!/(auto|scroll)/.test(getComputedStyle(m).overflowY)) continue;
+      const o = m.getBoundingClientRect().top, t = lista.getBoundingClientRect().top;
+      if (t < o) m.scrollBy({ top: t - o - 8, behavior: jak });
+    }
+  });
+}
 function EFiltrLista({ children, vzdyKompakt }) {
   const ref = useRefE(null);
   const plna = useRefE(0);              // šířka pravé části v plné podobě
@@ -1004,7 +1027,7 @@ function EFiltrPrepinac({ value, options, onChange }) {
       {options.map(o => {
         const on = value === o.k;
         return (
-          <button key={o.k} type="button" onClick={() => onChange(o.k)} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13.5, fontWeight: on ? 700 : 600, padding: '7px 14px', borderRadius: 9, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', color: on ? '#0B1233' : '#6B7280', background: on ? '#fff' : 'transparent', boxShadow: on ? '0 1px 2px rgba(16,24,64,.12)' : 'none' }}>
+          <button key={o.k} type="button" onClick={e => { onChange(o.k); _eSeznamNaZacatek(e.currentTarget); }} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13.5, fontWeight: on ? 700 : 600, padding: '7px 14px', borderRadius: 9, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', color: on ? '#0B1233' : '#6B7280', background: on ? '#fff' : 'transparent', boxShadow: on ? '0 1px 2px rgba(16,24,64,.12)' : 'none' }}>
             {o.l}{o.n != null && <span style={{ fontSize: 12, fontWeight: 700, color: on ? '#1B34F0' : '#A6ADCB' }}>{o.n}</span>}
           </button>
         );
@@ -1030,7 +1053,7 @@ function EFiltrVyber({ value, options, onChange, popisek, maxSirka = 190 }) {
           <div onClick={() => setOtevreno(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
           <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 41, minWidth: 260, maxWidth: 340, maxHeight: 320, overflowY: 'auto', background: '#fff', border: '1px solid #E6E9F5', borderRadius: 12, boxShadow: '0 14px 34px -12px rgba(16,24,64,.25)', padding: 5 }}>
             {options.map(o => (
-              <button key={o.k} type="button" className="e-stav-vol" onClick={() => { onChange(o.k); setOtevreno(false); }} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', fontSize: 13.5, fontWeight: value === o.k ? 700 : 500, color: '#0B1233', background: 'transparent', border: 'none', borderRadius: 8, padding: '9px 11px', cursor: 'pointer', textAlign: 'left' }}>
+              <button key={o.k} type="button" className="e-stav-vol" onClick={e => { onChange(o.k); setOtevreno(false); _eSeznamNaZacatek(e.currentTarget); }} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', fontSize: 13.5, fontWeight: value === o.k ? 700 : 500, color: '#0B1233', background: 'transparent', border: 'none', borderRadius: 8, padding: '9px 11px', cursor: 'pointer', textAlign: 'left' }}>
                 <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.l}</span>
                 {o.n != null && <span style={{ fontSize: 12, fontWeight: 600, color: '#A6ADCB', flex: 'none' }}>{o.n}</span>}
                 <span style={{ width: 14, flex: 'none', display: 'flex' }}>{value === o.k && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B34F0" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>}</span>
@@ -1059,7 +1082,7 @@ function EFiltrRazeni({ value, options, onChange }) {
           <div onClick={() => setOtevreno(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
           <div className="e-filtr-menu" style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 41, minWidth: 'max(100%, 210px)', background: '#fff', border: '1px solid #E6E9F5', borderRadius: 12, boxShadow: '0 14px 34px -12px rgba(16,24,64,.25)', padding: 5 }}>
             {Object.keys(options).map(k => (
-              <button key={k} type="button" className="e-stav-vol" onClick={() => { onChange(k); setOtevreno(false); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, width: '100%', fontSize: 13.5, fontWeight: value === k ? 700 : 500, color: '#0B1233', background: 'transparent', border: 'none', borderRadius: 8, padding: '9px 11px', cursor: 'pointer', textAlign: 'left', whiteSpace: 'nowrap' }}>
+              <button key={k} type="button" className="e-stav-vol" onClick={e => { onChange(k); setOtevreno(false); _eSeznamNaZacatek(e.currentTarget); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, width: '100%', fontSize: 13.5, fontWeight: value === k ? 700 : 500, color: '#0B1233', background: 'transparent', border: 'none', borderRadius: 8, padding: '9px 11px', cursor: 'pointer', textAlign: 'left', whiteSpace: 'nowrap' }}>
                 {options[k]}
                 {value === k && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B34F0" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>}
               </button>
@@ -1074,15 +1097,23 @@ function EFiltrHledat({ value, onChange, placeholder, width = 220 }) {
   return (
     <div className="e-filtr-hledat" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A6ADCB" strokeWidth="2.2" strokeLinecap="round" style={{ position: 'absolute', left: 11, pointerEvents: 'none', zIndex: 4 }}><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      <input title={placeholder} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ fontFamily: 'inherit', fontSize: 13, color: '#0B1233', background: '#F6F7FC', border: '1px solid #E6E9F5', outline: 'none', width, height: 38, boxSizing: 'border-box', padding: '0 12px 0 33px', borderRadius: 10 }} />
+      <input title={placeholder} value={value} onChange={e => { onChange(e.target.value); _eSeznamNaZacatek(e.currentTarget, false); }} placeholder={placeholder} style={{ fontFamily: 'inherit', fontSize: 13, color: '#0B1233', background: '#F6F7FC', border: '1px solid #E6E9F5', outline: 'none', width, height: 38, boxSizing: 'border-box', padding: '0 12px 0 33px', borderRadius: 10 }} />
     </div>
   );
 }
 
 // Pás čísel: [{ l: 'Popisek', v: hodnota, s: 'podtext', kam: 'Text odkazu', onClick, varovani }]
+// Pás jde schovat (Yasin 29. 9.: „ta horní lajna mi zavazela") úchytem pod ním —
+// stejným jako u levého menu, jen naležato: v klidu šedá čárka, při najetí šipka
+// ^ (skrýt) / v (ukázat). Volba platí pro všechny záložky a pamatuje se v prohlížeči.
+// Čekající kandidáti se neztratí — počet má i položka Kandidáti v menu.
 function EMetriky({ items }) {
+  const [skryte, setSkryte] = useStateE(() => { try { return localStorage.getItem('emp-cisla-skryte') === '1'; } catch (e) { return false; } });
+  const prepni = () => { const v = !skryte; setSkryte(v); try { localStorage.setItem('emp-cisla-skryte', v ? '1' : '0'); } catch (e) {} };
   return (
-    <div className="e-pruh-ram" style={{ padding: '0 24px' }}>
+    <div className="e-pruh-ram" style={{ padding: '0 24px', position: 'relative' }}>
+    <div style={{ display: 'grid', gridTemplateRows: skryte ? '0fr' : '1fr', opacity: skryte ? 0 : 1, transition: 'grid-template-rows .24s cubic-bezier(.2,.8,.2,1), opacity .18s ease' }}>
+    <div style={{ minHeight: 0, overflow: 'hidden' }}>
     <div className="e-pruh" style={{ display: 'grid', gridTemplateColumns: 'repeat(' + items.length + ', minmax(0,1fr))', background: '#fff', border: '1px solid ' + _EH.line, borderRadius: 14, overflow: 'hidden' }}>
       {items.map((m, i) => (
         // Klikací políčko nemá modrý odkaz (Yasin 27. 9.) — pozná se podle toho,
@@ -1102,6 +1133,13 @@ function EMetriky({ items }) {
         </div>
       ))}
     </div>
+    </div>
+    </div>
+    <button type="button" className={'e-uchyt-v' + (skryte ? ' zavreno' : '')} onClick={prepni}
+      aria-label={skryte ? 'Ukázat čísla' : 'Skrýt čísla'} aria-expanded={!skryte}>
+      <span className="e-uchyt-l" /><span className="e-uchyt-p" />
+      <em className="e-uchyt-tip">{skryte ? 'Ukázat čísla' : 'Skrýt čísla'}</em>
+    </button>
     </div>
   );
 }

@@ -447,7 +447,8 @@ function EWorkerProfileModal({ workerId, fallback, onClose }) {
   const [trust, setTrust] = useStateE((fallback && fallback.trust) || null);   // dokončené / zrušené směny
 
   useEffectE(() => {
-    if (!workerId) return;
+    // Bez id (ukázkový kandidát) jen to, co přišlo s kartou — nic se nenačítá
+    if (!workerId) { setR([]); setL(false); return; }
     let alive = true;
     (async () => {
       const [profRes, revRes] = await Promise.all([

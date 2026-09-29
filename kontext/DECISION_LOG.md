@@ -5,6 +5,27 @@ argumentem — jinak se točíme dokola.*
 
 ---
 
+**29. 9. 2026 — Topování = 72 hodin mezi prvními kartami, počet podle tarifu.**
+Firma u inzerátu klikne „Topovat" a inzerát je tři dny první v tom, co si brigádník
+vyfiltruje, se zlatou pilulkou TOP. Kolikrát za měsíc smí, určuje tarif (Základní 0,
+Výhodný 1, Dynamický 3, Maximální 5). Před potvrzením se appka zeptá a ukáže, kolik
+topování zbývá.
+*Proč:* na portálech topování znamená vyšší pozici ve výpisu — u nás je výpis
+balíček karet, takže „výš" znamená dřív. Tři dny stačí, aby to viděli lidé, kteří
+appku otevírají obden, a limit drží topování vzácné, jinak by nic neznamenalo.
+
+**29. 9. 2026 — Urgentní inzeráty jsou fialové, ne červené.**
+*Proč:* červená působí jako chyba nebo problém. Urgentní inzerát je naopak příležitost
+(směna do dvou dnů), tak má výraznou, ale ne poplašnou barvu.
+
+**29. 9. 2026 — Firma nepíše vlastní smlouvu, jen vybírá z roletky (s volbou „Dohodou").**
+*Proč:* volný text by rozbil filtry v appce — brigádník filtruje podle přesných
+hodnot. Kdo smlouvu uvádět nechce, zvolí „Dohodou" a na kartě je „Dle domluvy".
+
+**29. 9. 2026 — Filtr „Kdy" v appce je den (všední / víkend) a denní doba, bez „Dnes".**
+*Proč:* brigádu si nikdo nehledá na dnešek, spíš podle toho, kdy má volno. Příliš
+jemné filtry by zabily překvapení ze swipování, proto jen pár hrubých voleb.
+
 **11. 9. 2026 — Sekce „Proč" jsou pruh ilustrací, ne seznam textů.**
 Šest důvodů pro brigádníky a čtyři pro firmy má každý svou 3D ilustraci,
 pod ní nadpis a jednu větu. Žádné kartičky ani rámečky.

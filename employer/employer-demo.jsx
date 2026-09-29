@@ -62,7 +62,7 @@ function eDemoInzeraty() {
       bonuses: ['Angličtina pro zahraniční návštěvníky', 'Zkušenost z eventů'],
       offer: ['Zázemí a občerstvení po celou akci', 'Parta lidí a festivalová atmosféra', 'Reference na další eventy'],
       perks: ['Vstup na koncerty po směně', 'Festivalové tričko'], requirements: ['Čeština', 'Angličtina'],
-      pay: 220, location: 'Brno — Výstaviště', date: den(2), timeText: '12:00 – 24:00', contract: 'DPP', recurrence: 'Jednorázová', created_at: pred(9), boosted: true,
+      pay: 220, location: 'Brno — Výstaviště', date: den(2), timeText: '12:00 – 24:00', contract: 'DPP', recurrence: 'Jednorázová', created_at: pred(9), boosted: true, topUntil: new Date(Date.now() + 41 * 3600000).toISOString(),
       tags: ['Eventy', 'Víkend', 'Tým', 'Pro studenty'], photos: [U('1470229722913-7c0e2dbbafd3'), U('1533174072545-7a4b6ad7a6c3')],
       description: 'Vítání hostů, kontrola vstupenek a pásek, informace o programu. Dostaneš tričko festivalu a vstup na koncerty po směně.' },
     { ...zaklad, id: 'demo-3', title: 'Skladník na rampě — Po–Pá', status: 'active', views: 96, viewsByDay: poDnech(96, 2, 3), matches: 5, candidates: zajemci(5, 2, 3), swipes: 5, pending: 2, hired: 0, daysLeft: 20,
@@ -95,4 +95,40 @@ function eDemoInzeraty() {
   ];
 }
 
-Object.assign(window, { E_DEMO_INZERATY, eDemoInzeraty });
+// ── Ukázkoví kandidáti (29. 9.) — ať je v záložce Kandidáti vidět, jak vypadají
+// mini profily s fotkou. Jména a profilovky jsou z ukázkových lidí v appce
+// (www/worker-people.jsx → www/demo-lide/p1–p13.jpg, zkopírováno do demo-kandidati/),
+// popisy jsou napsané pro brigády. Reagují na ukázkové inzeráty výš (demo-1 až demo-5).
+// Stejný vypínač jako ukázkové inzeráty. Do čísel nahoře se nepočítají, zprávu
+// ani nabídku jim poslat nejde (dashboard to u _demo slušně odmítne).
+function eDemoKandidati() {
+  if (!E_DEMO_INZERATY) return [];
+  const pred = h => new Date(Date.now() - h * 3600000).toISOString();
+  const relTime = h => h < 1 ? 'před chvílí' : h < 24 ? 'před ' + Math.round(h) + ' h' : h < 48 ? 'včera' : 'před ' + Math.round(h / 24) + ' dny';
+  const JOBY = { 'demo-1': 'Barista do specialty kavárny', 'demo-2': 'Hosteska na hudební festival', 'demo-3': 'Skladník na rampě — Po–Pá', 'demo-4': 'Foto asistent na svatbu', 'demo-5': 'Promotér energetického nápoje' };
+  const L = [
+    ['Petr Hlaváč', 24, 'Brno', 4.9, 34, 0, 'hired', 'demo-3', 330, 'Při studiu na VUT dělám brigády ve skladu i na akcích. Mám průkaz na vysokozdvižný vozík, nevadí mi ranní směny ani víkendy a na čas chodím vždycky.'],
+    ['Tereza Nová', 21, 'Brno', 4.8, 16, 0, 'new', 'demo-1', 2, 'Studuju pedagogiku a třetím rokem dělám baristku v kavárně na Údolní. Latte art zvládám, s lidmi mě to baví a ranní směny mi sedí.'],
+    ['Martin Kraus', 26, 'Brno', 5.0, 12, 0, 'new', 'demo-4', 20, 'Fotím pátým rokem, mám vlastní světla i objektivy. Na svatbách jsem asistoval už několikrát — vím, kdy být vidět a kdy ne.'],
+    ['Adéla Pokorná', 19, 'Brno', 4.7, 6, 0, 'new', 'demo-2', 5, 'Hostesku jsem dělala na veletrhu na Výstavišti a na dvou festivalech. Jsem komunikativní, mluvím anglicky a německy a vydržím na nohou celý den.'],
+    ['Jakub Souček', 22, 'Brno', 4.6, 9, 1, 'new', 'demo-3', 30, 'Studuju IT na VUT a přes léto jsem dělal ve skladu v Modřicích. Vychystávání přes čtečku znám, mám řidičák B.'],
+    ['Klára Veselá', 23, 'Brno', 4.9, 28, 0, 'hired', 'demo-1', 260, 'V gastru dělám čtyři roky, zvládnu bar i obsluhu na place. Káva je moje srdcovka a nováčky ráda zaučím.'],
+    ['Filip Marek', 18, 'Brno', 0, 0, 0, 'new', 'demo-3', 1, 'Jsem vyučený elektrikář a hledám brigády na víkendy. Nebojím se fyzické práce a rád se naučím něco nového.'],
+    ['Nikol Urbanová', 17, 'Brno', 0, 1, 0, 'new', 'demo-2', 9, 'Chodím na gympl a hledám další brigádu na léto i víkendy. Jsem spolehlivá, usměvavá a ráda poznávám nové lidi.'],
+    ['Lucie Horáková', 25, 'Brno', 4.9, 41, 0, 'hired', 'demo-2', 400, 'Na akcích a festivalech dělám šestou sezónu — hosteska, šatna, vstupy. Když je potřeba, vezmu na sebe i koordinaci ostatních.'],
+    ['Jarda Beneš', 20, 'Blansko', 4.7, 7, 0, 'new', 'demo-5', 50, 'Rád jsem mezi lidmi a nebojím se je oslovit. Promo akce jsem dělal pro dvě značky, umím i s ochutnávkovým stánkem.'],
+    ['Bára Němcová', 20, 'Brno', 5.0, 14, 0, 'new', 'demo-1', 12, 'Studuju a o víkendech pracuju v kavárně. Mám ráda pořádek za barem a kávu dělám s láskou. Volno mám hlavně odpoledne.'],
+    ['Tomáš Král', 24, 'Kuřim', 4.8, 19, 1, 'new', 'demo-3', 70, 'Pracuju na směny a ve volných dnech beru brigády. Ve skladu jsem dělal dva roky, s paletovým vozíkem umím a nevadí mi ani noční.'],
+    ['Denisa Fialová', 22, 'Brno', 4.9, 31, 0, 'new', 'demo-2', 26, 'Mám za sebou desítky akcí jako hosteska i promotérka. Působím reprezentativně, mluvím anglicky a na čase si dávám záležet.'],
+  ];
+  return L.map(([name, age, city, rating, dok, zru, stage, job_id, hod, bio], i) => ({
+    id: 'demo-k-' + (i + 1), match_id: null, worker_id: null, _demo: true,
+    name, age, city, bio, photo: 'demo-kandidati/p' + (i + 1) + '.jpg',
+    rating: rating ? rating.toFixed(1) : '0.0',
+    trust: { dokoncene: dok, zrusene: zru, hodnoceni: rating },
+    stage, job_id, jobTitle: JOBY[job_id],
+    createdAt: pred(hod), lastSeen: relTime(hod),
+  }));
+}
+
+Object.assign(window, { E_DEMO_INZERATY, eDemoInzeraty, eDemoKandidati });

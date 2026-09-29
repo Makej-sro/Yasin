@@ -7,6 +7,41 @@
 
 ---
 
+## 2026-09-29 — dashboard: topování, urgentní, roletky v okně inzerátu, nové Kandidáti — čeká na nasazení
+
+> **Pro Samova Clauda:** celý den na `employer/` + filtr „Kdy" a pilulka TOP v appce
+> (repo `makej-aplikace-yasin`). Nejsnáz převzít celou složku `employer/` (včetně nové
+> `employer/demo-kandidati/`) a `supabase/migration_topovani.sql`. **Databáze:** spustit
+> `migration_topovani.sql` (tabulka `job_topovani`) — bez ní vše funguje, jen se limit
+> topování počítá odhadem. Jinak žádná změna schématu.
+
+### Výsledný stav — co si vzít
+
+- **Verze v `employer/index.html`:** shell v63, pages v77, demo v6, pages3 v188, supabase v22, main v52 (ostatní beze změny). Nové styly v `index.html`: `.e-zlato` + `.e-zlato__lesk` (zlatý kov, `@keyframes eGoldFlow / eGoldSheen`), `.e-jb-karta[data-stav=…]`, `.e-uchyt-v` (úchyt pásu čísel), `.e-kand-radek`, `.e-ram.e-ram-dolu`, `@keyframes njRolIn`.
+- **Okno Nový / Upravit inzerát** (`ENewJobModal`, pages3): Smlouva, Výplata a Kraj jsou roletky (`_NjRoletka` — seznam se vykreslí do `body` přes portal, otevře se nahoru, když dole není místo, ovládá se i klávesnicí). Smlouva má novou volbu **„Dohodou"** (`_NJ_SMLOUVY`, `_njSmlouvaZ` převede i staré „dle domluvy") = firma smlouvu neuvádí; do `jobs.contract` se uloží text `Dohodou`, appka ukáže štítek „Dle domluvy". Výplata má „Neuvádět". Pravidelnost zůstala přepínač o dvou volbách. Žádné pole „Vlastní" s volným textem (rozbíjelo by filtry v appce).
+- **Inzeráty — seznam** (`EJobs`): stav „ASAP" přejmenovaný na **„Urgentní"** a **fialový** (`_JB_STATES.asap` #6A1FD1 / #F1E8FF), červená zmizela (i v Nastavení → `SettingsProfile`). Pořadí: urgentní první, pak aktivní, neaktivní, naplněné; na záložce Vše nadpisy skupin s barevnými štítky (`_SKUP`), urgentní jsou součástí skupiny Aktivní (+ fialový čip „N urgentní · směna do 2 dnů"). Karty mají `data-stav`: urgentní fialový rámeček, neaktivní šedé, naplněné ztlumené.
+- **Topování** (dřív „Boostnout"): pod kartou inzerátu zlaté tlačítko **Topovat** (`className="e-zlato"`) → okno „Opravdu chcete inzerát topovat?" (co to udělá, kolik topování zbývá tento měsíc, kdy přibudou nová) → `topovatJobE(jobId)` v `employer-supabase.jsx`: `jobs.top_until = now() + 72 h` (`E_TOP_HODIN`) + řádek do `job_topovani`. Limit podle tarifu `EMPLOYER_TOP_MESICNE` v `employer-pages.jsx` (Základní 0, Výhodný 1, Dynamický 3, Maximální 5, Vlastní 5); tarif je zatím napevno „Standard" → Výhodný. Topovaný inzerát má místo tlačítka „TOP · ještě 1 d 17 h" a na kartě i v náhledu detailu zlatou pilulku **TOP** (`_JbTop`) — 1:1 zlatý odznáček „Byl jsem u toho" z waitlistu, bez ikonky. Neaktivní inzerát topovat nejde (hláška). Limit zatím hlídá jen dashboard — až bude tarif firmy v DB, patří kontrola do RPC.
+- **Filtry přesunou na začátek:** přepnutí záložky / výběru / řazení / hledání odroluje seznam nahoru (`_eSeznamNaZacatek` v shellu, volá se z `EFiltrPrepinac`, `EFiltrVyber`, `EFiltrRazeni`, `EFiltrHledat`).
+- **Pás čísel jde sbalit** (`EMetriky`): úchyt `.e-uchyt-v` pod pásem (stejný princip jako úchyt levého menu), stav v `localStorage` `emp-cisla-skryte`.
+- **Kandidáti — přestavěné** (`ECandidates`, pages3): bez hlavičky a čísel, jen seznam až ke spodnímu kraji (`e-ram e-ram-dolu`). Tři řádky mini profilů pod sebou — *Nejlépe hodnocení*, *Čekají na vaši odpověď*, *Už pro vás pracovali* — každý se posouvá do strany (`_EcRadek`). Karta `_EcKarta`: fotka (bez fotky modrý podklad s iniciálami), stav (Nová shoda / Najato…), odznak důvěry, jméno + věk, hodnocení · město, 3 řádky „o mně", na co reagoval, Napsat / Nabídnout směnu; klik = profil. Řádek jako Airbnb: do šířky se vejde celý počet karet (šířka se dopočítá, min. 190 px, počítá se z šířky při rozbaleném menu — sbalení menu počet nezmění), posun se vždy dorovná na začátek karty (`scroll-snap x mandatory`). Filtry jsou schované v ikonce trychtýře vlevo nahoře (`_EcFiltr`): klik rozbalí průsvitnou rozmazanou lištu zleva doprava (clip-path přes Web Animations), po výběru zajede zpátky do ikonky. Řazení a čísla nahoře zmizely.
+- **Nová data kandidáta** (`toCandidate` v `employer-supabase.jsx`): `age` (z `birth_date`), `photo` (`avatar_url`), `bio`, `city`.
+- **Ukázkoví kandidáti** (`eDemoKandidati()` v `employer-demo.jsx`, fotky `employer/demo-kandidati/p1–p13.jpg` = ukázkoví lidé z appky): 13 lidí k ukázkovým inzerátům, jen v Kandidátech, do čísel se nepočítají, zpráva/nabídka jim jen ukáže hlášku. Profil ukázkového kandidáta se otevře bez načítání (`EWorkerProfileModal` v main: bez `workerId` nic nenačítá). **PŘED RELEASEM:** `E_DEMO_INZERATY = false` vypne ukázkové inzeráty i kandidáty (nebo smazat `employer-demo.jsx`, jeho `<script>` a složku `demo-kandidati/`).
+
+### Databáze (Supabase) — co je potřeba u tebe
+
+- **Spustit** `supabase/migration_topovani.sql` — tabulka `job_topovani` (`job_id`, `employer_id default auth.uid()`, `started_at`, `ends_at`) + RLS: firma čte a zapisuje jen svoje, jen k vlastním inzerátům; mazat/upravovat nesmí. Zapsáno i v `DATABASE.md` (repo appky). Dokud není, dashboard počítá limit z `jobs.top_until` (každý inzerát pak nejvýš jednou za měsíc).
+- `jobs.contract` může nově obsahovat `Dohodou` — bez změny schématu (sloupec je volný text).
+
+### Appka (repo makej-aplikace-yasin, stejný den) — `worker-swipe.jsx?v=122`
+
+- **Filtr „Kdy"** (`W_FILTERS` klíč `kdy`, `W_FILTER_EMPTY.kdy`): skupina *Den* (Ve všední dny / O víkendu) a *Denní doba* (Ranní do 11:00 / Odpolední 11–16 / Večerní a noční od 16:00). Logika `_wJobMatchesKdy` — z `jobs.date` a `time_start` (u ukázek z textu `when`/`time`) a ze štítků („Víkendy", „Ranní směna"…); uvnitř skupiny „nebo", mezi skupinami „a zároveň". Počty u voleb `_wKdyJen`. Volby mají šedou poznámku a nadpis skupiny (`genericBody`). „Dnes/Zítra" záměrně ne.
+- **Topované první:** `_wComputeFeed` po filtrech řadí `job.boosted` (top_until v budoucnu) na začátek; RPC `get_feed_jobs` už řadí taky, tohle platí i pro stránky dotažené později.
+- **Pilulka TOP** (`WTopBadge`) na kartě vedle štítku úvazku a v detailu nad názvem — stejná jako `_JbTop` v dashboardu (při změně upravit obě).
+- Dlaždice Smlouva v detailu ukáže neznámý text z `job.contract`, jak je (hlavně „Dohodou"), místo „Brigáda".
+- Oprava: tlačítko ve filtru psalo „Ukázat brigád" bez čísla → „Ukázat 12 brigád".
+
+---
+
 ## 2026-09-28 — firemní dashboard: inzeráty podle appky, statistiky, kandidáti — čeká na nasazení
 
 > **Pro Samova Clauda:** celý den na `employer/` (+ drobnosti v appce, ta je v repu

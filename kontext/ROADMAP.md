@@ -24,6 +24,7 @@ Bez toho se nedá vydat nic, ani otestovat přihlášení přes Apple.
 | `launch_list_pocet` | Skutečný počet zapsaných na čekacím listu. Dokud není, web to číslo vůbec neukazuje. |
 | `shifts` | Opakované směny a jejich potvrzování v chatu. Navrženo, nepostaveno. |
 | `last_seen` | Zelená tečka „online". Dnes jen naoko v demu. |
+| `job_topovani` | Počítání topování inzerátů do měsíčního limitu tarifu. Bez ní dashboard jen odhaduje. |
 
 ## 3. Rozdělané funkce
 

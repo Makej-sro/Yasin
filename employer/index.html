@@ -111,6 +111,10 @@
       .e-ram > div { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
       .e-ram > div > * { flex: none; }
       .e-ram > div > :last-child { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: none; }
+      /* Kandidáti (29. 9.): rám bez okrajů — seznam až ke spodnímu kraji okna a řádky
+         karet do stran (vlevo až k čárce menu); odsazení obsahu drží komponenta */
+      .e-ram.e-ram-dolu { padding: 0 !important; max-width: none !important; }
+      .e-ram.e-ram-dolu > div { border-radius: 0 !important; }
       /* Výjimka: Profil firmy se posouvá celý jako dřív (i s nadpisem) —
          je to jeden dlouhý dokument, ne seznam. Třída e-volne na kořeni. */
       main.e-hlavni:has(.e-ram.e-volne) { overflow-y: auto !important; scrollbar-gutter: stable; }
@@ -171,6 +175,19 @@
     .e-uchyt.zavreno:hover .e-uchyt-h, .e-uchyt.zavreno:focus-visible .e-uchyt-h { transform: translateX(2px) rotate(-22deg); }
     .e-uchyt.zavreno:hover .e-uchyt-d, .e-uchyt.zavreno:focus-visible .e-uchyt-d { transform: translateX(2px) rotate(22deg); }
     #root .e-uchyt:focus-visible { outline: none; }
+    /* Úchyt pásu čísel (EMetriky, 29. 9.) — jako úchyt menu, jen naležato: dvě čárky vedle
+       sebe = vodorovná linka pod pásem; při najetí šipka ^ (skrýt) / v (ukázat) */
+    .e-uchyt-v { position: absolute; left: 50%; bottom: -21px; width: 44px; height: 22px; margin-left: -22px; padding: 0; border: none; background: transparent; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; }
+    .e-uchyt-v > span { display: block; width: 12px; height: 4px; border-radius: 4px; background: #C9CEDD; transition: transform .22s cubic-bezier(.2,.8,.2,1), background .18s; }
+    .e-uchyt-v:hover > span, .e-uchyt-v:focus-visible > span { background: #0020F6; }
+    .e-uchyt-v .e-uchyt-l { transform-origin: 100% 50%; margin-right: -1px; }
+    .e-uchyt-v .e-uchyt-p { transform-origin: 0% 50%; margin-left: -1px; }
+    .e-uchyt-v:hover .e-uchyt-l, .e-uchyt-v:focus-visible .e-uchyt-l { transform: translateY(-2px) rotate(-22deg); }
+    .e-uchyt-v:hover .e-uchyt-p, .e-uchyt-v:focus-visible .e-uchyt-p { transform: translateY(-2px) rotate(22deg); }
+    .e-uchyt-v.zavreno:hover .e-uchyt-l, .e-uchyt-v.zavreno:focus-visible .e-uchyt-l { transform: translateY(2px) rotate(22deg); }
+    .e-uchyt-v.zavreno:hover .e-uchyt-p, .e-uchyt-v.zavreno:focus-visible .e-uchyt-p { transform: translateY(2px) rotate(-22deg); }
+    .e-uchyt-v:hover .e-uchyt-tip, .e-uchyt-v:focus-visible .e-uchyt-tip { opacity: 1; transform: translate(0, -50%); transition-delay: .12s; }
+    #root .e-uchyt-v:focus-visible { outline: none; }
     .e-cal-den:not(:disabled):not(.kraj):hover { background: #EEF1FF !important; }
     /* Položky roletky Období: při najetí ztmavnou (vybraná je modrá, při najetí o stupeň sytější) */
     .e-obd-vol:hover { background: #F1F3F8 !important; }
@@ -178,6 +195,20 @@
     .e-stav-vol:hover { background: #F6F7FC !important; }
     .e-jb-karta { transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease; }
     .e-jb-karta:hover { box-shadow: 0 16px 36px -18px rgba(16,24,64,.35); transform: translateY(-2px); border-color: #D5DAF0 !important; }
+    /* Stav karty v seznamu inzerátů (29. 9.) — barvou jako štítek skupiny: urgentní fialový
+       rámeček, naplněné modrý rámeček a lehce ztlumené, neaktivní šedé (fotka i modrý podklad
+       bez barev). Při najetí se vrátí do plných barev, ať nepůsobí jako vypnuté tlačítko. */
+    .e-jb-karta[data-stav="asap"] { border-color: #C6A2FF !important; box-shadow: 0 0 0 3px rgba(139,61,255,.13); }
+    .e-jb-karta[data-stav="asap"]:hover { border-color: #A874FF !important; box-shadow: 0 0 0 3px rgba(139,61,255,.16), 0 16px 36px -18px rgba(16,24,64,.35); }
+    .e-jb-karta[data-stav="filled"] { border-color: #C3CBF6 !important; }
+    .e-jb-karta[data-stav="inactive"], .e-jb-karta[data-stav="filled"] { transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease, opacity .18s ease; }
+    .e-jb-karta[data-stav="inactive"] { opacity: .72; }
+    .e-jb-karta[data-stav="filled"] { opacity: .86; }
+    .e-jb-karta[data-stav="inactive"] > div:first-child { filter: grayscale(1); transition: filter .25s ease; }
+    .e-jb-karta[data-stav="inactive"]:hover, .e-jb-karta[data-stav="filled"]:hover { opacity: 1; }
+    .e-jb-karta[data-stav="inactive"]:hover > div:first-child { filter: none; }
+    /* Řádky mini profilů u Kandidátů — posouvají se do strany, posuvník schovaný */
+    .e-kand-radek::-webkit-scrollbar { display: none; }
     .e-kand-jmeno:hover { color: #1B34F0 !important; text-decoration: underline; text-underline-offset: 3px; }
     /* ── Odznáček stupně důvěry brigádníka — 1:1 z appky (www/index.html .wlvl). Při změně v appce zkopírovat znovu. */
     .wlvl { position: relative; display: inline-flex; align-items: center; justify-content: center; font-family: inherit; vertical-align: middle; }
@@ -322,6 +353,8 @@
     /* Nový / upravit inzerát — najetí okna, přechod kroků, roztřesení kroku s chybou */
     @keyframes njModalIn { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: none; } }
     @keyframes njFadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    /* Roletka v okně inzerátu (_NjRoletka) — seznam se rozbalí od pole */
+    @keyframes njRolIn { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
     @keyframes njShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
     /* Odezva ovládacích prvků v okně inzerátu (28. 9.) — najetí změní barvu,
        hlavní tlačítko se lehce zvedne, stisk prvek krátce zmáčkne (jako na webu).
@@ -339,10 +372,28 @@
     .nj-x:hover { background: #EEF1FF !important; color: #1B34F0 !important; }
     .nj-plus:hover { border-color: #B9C2F2 !important; color: #1B34F0 !important; }
     .nj-krok:not([data-on]):hover > span:last-child { color: #0B1233 !important; }
-    /* Tlačítka v detailu inzerátu (Kandidáti, Statistiky, Upravit, Boostnout) — při najetí zmodrají / ztmavnou */
+    /* Zlatý kov s tekoucím leskem — pilulka TOP, tlačítko Topovat a okno topování. 1:1 se zlatým
+       odznáčkem „Byl jsem u toho" z waitlistu (makej-web 6.7/style.css → .gold-badge; v appce
+       WGoldBadge / WTopBadge). Prvek potřebuje uvnitř <span class="e-zlato__lesk">. */
+    @keyframes eGoldFlow { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    @keyframes eGoldSheen { 0%, 8% { transform: translateX(-160%) skewX(-22deg); } 46%, 100% { transform: translateX(420%) skewX(-22deg); } }
+    .e-zlato { position: relative; overflow: hidden; color: #221A05 !important; border: 1px solid #A5780C !important;
+      background: linear-gradient(105deg, #B8860B 0%, #E8C56A 22%, #FDF3C8 42%, #D9A93C 62%, #A9770A 82%, #E4C069 100%) !important;
+      background-size: 260% 100% !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.65), inset 0 -1px 0 rgba(90,60,0,.35), 0 2px 6px -2px rgba(140,96,10,.5);
+      animation: eGoldFlow 7s ease-in-out infinite; }
+    .e-zlato__lesk { position: absolute; top: -40%; left: 0; width: 34px; height: 180%; pointer-events: none;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.9) 50%, rgba(255,255,255,0) 100%);
+      animation: eGoldSheen 4.5s ease-in-out infinite; }
+    button.e-zlato { transition: transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .18s ease, filter .18s ease; }
+    button.e-zlato:hover { transform: translateY(-1px); filter: brightness(1.06) saturate(1.08);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 -1px 0 rgba(90,60,0,.35), 0 10px 20px -10px rgba(140,96,10,.75); }
+    button.e-zlato:active { transform: scale(.97); transition-duration: .08s; }
+    @media (prefers-reduced-motion: reduce) { .e-zlato, .e-zlato__lesk { animation: none; } button.e-zlato:hover { transform: none; } }
+    /* Tlačítka v detailu inzerátu (Kandidáti, Statistiky, Upravit) — při najetí zmodrají */
     .e-det-tl, .e-det-boost { transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease; }
     .e-det-tl:hover { color: #1B34F0 !important; background: #EEF1FF !important; border-color: #B9C2F2 !important; }
-    .e-det-boost:hover { background: #FFE8C7 !important; border-color: #F5C98A !important; }
+    .e-det-boost:hover { background: #F5B820 !important; border-color: #E0A50C !important; }
     .e-det-tl:active, .e-det-boost:active { transform: scale(.97); }
     .nj-odkaz { transition: color .16s; }
     /* Fotky inzerátu: ovládání (✕, ‹ ›) až při najetí na fotku */
@@ -685,15 +736,15 @@
   <script type="text/babel" src="employer-theme.jsx?v=5"></script>
   <script type="text/babel" src="employer-data.jsx?v=2"></script>
   <script type="text/babel" src="employer-plans.jsx?v=4"></script>
-  <script type="text/babel" src="employer-shell.jsx?v=61"></script>
+  <script type="text/babel" src="employer-shell.jsx?v=63"></script>
   <script type="text/babel" src="employer-dashboard.jsx?v=40"></script>
-  <script type="text/babel" src="employer-pages.jsx?v=76"></script>
-  <script type="text/babel" src="employer-demo.jsx?v=4"></script>   <!-- ukázkové inzeráty — PŘED RELEASEM smazat -->
-  <script type="text/babel" src="employer-pages3.jsx?v=170"></script>
+  <script type="text/babel" src="employer-pages.jsx?v=77"></script>
+  <script type="text/babel" src="employer-demo.jsx?v=6"></script>   <!-- ukázkové inzeráty — PŘED RELEASEM smazat -->
+  <script type="text/babel" src="employer-pages3.jsx?v=188"></script>
   <script type="text/babel" src="_premium/kraje-map.jsx?v=19"></script>
   <script type="text/babel" src="_premium/analytics.jsx?v=40"></script>
   <script type="text/babel" src="employer-firma.jsx?v=5"></script>
-  <script type="text/babel" src="employer-supabase.jsx?v=20"></script>
-  <script type="text/babel" src="employer-main.jsx?v=51"></script>
+  <script type="text/babel" src="employer-supabase.jsx?v=22"></script>
+  <script type="text/babel" src="employer-main.jsx?v=52"></script>
 </body>
 </html>
