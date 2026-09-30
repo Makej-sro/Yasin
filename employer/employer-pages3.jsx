@@ -157,6 +157,14 @@ function EMessages({ initialThreadId, onNew, period, onPeriod } = {}) {
     window.dispatchEvent(new CustomEvent('emp-thread-read', { detail: { matchId: active } }));  // ztlum zvoneček
   }, [active, userReady]);
 
+  // Odeslané (i přijaté) zprávy zapsat zpátky do globálního E_THREADS. Jinak by je
+  // po přepnutí záložky neviděl Dashboard („čeká na vaši odpověď" by svítilo dál)
+  // a Zprávy by po návratu ukázaly stav z posledního načtení dat.
+  useEffectE(() => {
+    if (typeof E_THREADS === 'undefined') return;
+    threads.forEach(t => { const g = E_THREADS.find(x => x.id === t.id); if (g) { g.msgs = t.msgs; g.last = t.last; g.unread = t.unread; } });
+  }, [threads]);
+
   // Global subscription: update thread sidebar previews for ALL incoming messages
   // (active thread messages are handled separately by the per-thread subscription)
   useEffectE(() => {
@@ -376,9 +384,6 @@ function EMessages({ initialThreadId, onNew, period, onPeriod } = {}) {
     if (_q && !((t.name + ' ' + (t.role || '') + ' ' + (t.last || '')).toLowerCase().includes(_q))) return false;
     return true;
   });
-  const _unreadCount  = threads.filter(t => t.unread > 0).length;
-  const _waitingCount = threads.filter(t => { const m = t.msgs && t.msgs[t.msgs.length - 1]; return m && m.from === 'them'; }).length;
-  const _totalCount   = threads.length;
 
   if (!thread) return (
     <div className="e-ram" style={{ padding: 20 }}>
@@ -400,15 +405,9 @@ function EMessages({ initialThreadId, onNew, period, onPeriod } = {}) {
 
         <ETabHlava title="Zprávy">
           <EBtnSek onClick={() => window.empGoTab && window.empGoTab('settings')}>Šablony zpráv</EBtnSek>
-          <EBtnHl onClick={onNew}>+ Nový inzerát</EBtnHl>
         </ETabHlava>
 
-        {/* Pás čísel — jen skutečná (dřív tu byla vymyšlená „Průměrná odezva 4 h") */}
-        <EMetriky items={[
-          { l: 'Nepřečtené', v: _unreadCount, s: 'konverzace', kam: _unreadCount ? 'Ukázat' : null, onClick: _unreadCount ? () => setFilter('unread') : undefined, varovani: _unreadCount > 0 },
-          { l: 'Čeká na vaši odpověď', v: _waitingCount, s: 'poslední zpráva je od kandidáta' },
-          { l: 'Konverzace celkem', v: _totalCount, s: 'se všemi kandidáty' },
-        ]} />
+        {/* Pás čísel pryč (Yasin 30. 9.) — kdo čeká na odpověď, ukazuje Dashboard */}
 
         {/* Tělo: 3 sloupce */}
         <div style={_erS('padding:22px 24px 22px;display:grid;grid-template-columns:332px 1fr;grid-template-rows:minmax(420px,1fr);gap:16px')}>
@@ -1062,7 +1061,6 @@ function EReviews({ onNew, period, onPeriod }) {
   const unanswered = reviews.filter(r => !r.reply).length;
   const answered = total - unanswered;
   const avg = total ? (reviews.reduce((a, r) => a + r.rating, 0) / total).toFixed(1).replace('.', ',') : '—';
-  const fiveShare = total ? Math.round(reviews.filter(r => r.rating === 5).length / total * 100) + ' %' : '—';
 
   const q = query.trim().toLowerCase();
   const list = reviews
@@ -1098,12 +1096,8 @@ function EReviews({ onNew, period, onPeriod }) {
 
         <ETabHlava title="Recenze" />
 
-        {/* Pás čísel — jen skutečná (dřív tu byla vymyšlená „reakční doba 1,4 dne") */}
-        <EMetriky items={[
-          { l: 'Průměrné hodnocení', v: avg === '—' ? '—' : avg + ' ★', s: total + ' hodnocení' },
-          { l: 'Bez vaší odpovědi', v: unanswered, s: 'recenze', kam: unanswered ? 'Odpovědět' : null, onClick: unanswered ? () => setFilter('unanswered') : undefined, varovani: unanswered > 0 },
-          { l: 'Podíl 5 ★', v: fiveShare, s: 'ze všech hodnocení' },
-        ]} />
+        {/* Pás čísel pryč (Yasin 30. 9.) — průměr je v kartě Rozložení hvězd,
+            recenze bez odpovědi ve filtru „Bez reakce" */}
 
         {/* Pevná obrazovka (28. 9.): lišta nahoře stojí, posouvá se jen seznam;
             pravý sloupec má vlastní posuvník, jen když se nevejde. */}
@@ -1141,7 +1135,10 @@ function EReviews({ onNew, period, onPeriod }) {
           {/* Pravý sloupec */}
           <div style={_erS('display:grid;align-content:start;grid-auto-rows:max-content;gap:16px;min-height:0;overflow-y:auto')}>
             <div style={_erS(`background:#fff;border:1px solid ${_erC.line};border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:16px`)}>
-              <span style={_erS(`font-size:15px;font-weight:800;color:${_erC.ink}`)}>Rozložení hvězd</span>
+              <div style={_erS('display:flex;flex-direction:column;gap:3px')}>
+                <span style={_erS(`font-size:15px;font-weight:800;color:${_erC.ink}`)}>Rozložení hvězd</span>
+                {total > 0 && <span style={_erS(`font-size:13px;color:${_erC.muted}`)}>Průměr <b style={_erS(`color:${_erC.ink}`)}>{avg} ★</b> · {total} hodnocení</span>}
+              </div>
               <div style={_erS('display:flex;flex-direction:column;gap:9px')}>
                 {counts.map(({ n, count }) => (
                   <div key={n} onClick={() => setFilter(n === 5 ? '5' : 'low')} style={_erS('display:flex;align-items:center;gap:10px;cursor:pointer')}>
@@ -1909,13 +1906,7 @@ function EShifts({ onTab, onNew, period, onPeriod }) {
 
   const shiftsFor = day => _SH_SHIFTS.filter(s => s.day === day).filter(s => role === 'all' || s.role === role).filter(s => !openOnly || s.people.length < s.need);
   const visible = _SH_SHIFTS.filter(s => role === 'all' || s.role === role).filter(s => !openOnly || s.people.length < s.need);
-  const totalShifts = visible.length;
-  const openCount = visible.filter(s => s.people.length < s.need).length;
-  const slots = visible.reduce((a, s) => a + s.need, 0);
-  const filled = visible.reduce((a, s) => a + Math.min(s.people.length, s.need), 0);
-  const fillRate = slots ? Math.round(filled / slots * 100) + ' %' : '0 %';
-  const peopleSet = new Set(); visible.forEach(s => s.people.forEach(p => peopleSet.add(p.name)));
-  const totalHours = visible.reduce((a, s) => a + 8 * s.need, 0);
+  const openCount = _SH_SHIFTS.filter(s => (role === 'all' || s.role === role) && s.people.length < s.need).length;
   const vM = view === 'month', vW = view === 'week';
 
   const cells = [];
@@ -1995,12 +1986,7 @@ function EShifts({ onTab, onNew, period, onPeriod }) {
           <EBtnHl onClick={onNew}>+ Nová směna</EBtnHl>
         </ETabHlava>
 
-        <EMetriky items={[
-          { l: 'Směny v srpnu', v: totalShifts, s: totalHours + ' hodin' },
-          { l: 'Neobsazené', v: openCount, s: openOnly ? 'filtr zapnutý' : 'směny bez lidí', kam: openCount ? (openOnly ? 'Zrušit filtr' : 'Ukázat') : null, onClick: openCount ? () => setOpen(o => !o) : undefined, varovani: openCount > 0 },
-          { l: 'Obsazenost', v: fillRate, s: 'obsazených směn' },
-          { l: 'Brigádníci', v: peopleSet.size, s: 'v tomto měsíci' },
-        ]} />
+        {/* Pás čísel pryč (Yasin 30. 9.); filtr neobsazených směn je teď v řadě filtrů u kalendáře */}
 
         {/* Pevná obrazovka (28. 9.): ovládání kalendáře a dny v týdnu stojí,
             posouvá se jen mřížka dnů; pravý sloupec zvlášť. */}
@@ -2020,6 +2006,13 @@ function EShifts({ onTab, onNew, period, onPeriod }) {
                     <span style={{ width: 8, height: 8, borderRadius: 3, background: rf.dot }} />{rf.label}
                   </button>
                 ))}
+                {/* Jen neobsazené směny (dřív klik na „Neobsazené" v pásu čísel) */}
+                {openCount > 0 && <>
+                  <span style={{ width: 1, height: 20, background: '#E6E9F5', margin: '0 2px' }} />
+                  <button onClick={() => setOpen(o => !o)} style={{ ...(_erS(`display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;cursor:pointer`)), color: openOnly ? '#fff' : '#3A4266', background: openOnly ? '#1B34F0' : '#fff', border: '1px solid ' + (openOnly ? '#1B34F0' : '#E6E9F5') }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 3, background: openOnly ? '#fff' : '#F5920B' }} />Neobsazené {openCount}
+                  </button>
+                </>}
               </div>
             </div>
 
@@ -2491,7 +2484,6 @@ const _JB_STATES = {
   // červená by vypadala jako chyba a zlatá patří topování.
   asap:     { label: 'Urgentní',  color: '#6A1FD1', bg: '#F1E8FF', dot: '#8B3DFF' },
   inactive: { label: 'Neaktivní', color: '#7A82A6', bg: '#F1F3FB', dot: '#DDE1F0' },
-  filled:   { label: 'Naplněno',  color: '#1B34F0', bg: '#EEF1FF', dot: '#1B34F0' },
 };
 // Průběh náboru v detailu inzerátu (28. 9. přepsáno — „Nabírá 3" nikomu nic neřeklo):
 // Zveřejněno → Má zájem (kolik lidí dalo v appce „Mám zájem") → Přijato (kolik z nich
@@ -2503,7 +2495,7 @@ const _jbMist = n => n + ' ' + (n === 1 ? 'místa' : 'míst');                 /
 const _jbMista = n => n + ' ' + (n === 1 ? 'místo' : n >= 2 && n <= 4 ? 'místa' : 'míst');   // „zbývá 2 místa"
 function _jbNabor(l) {
   const zajem = l.matches || 0, prijato = l.hired || 0, mist = l.positions > 0 ? l.positions : 0;
-  const obsazeno = l._state === 'filled' || (mist > 0 && prijato >= mist);
+  const obsazeno = mist > 0 && prijato >= mist;
   const krok = obsazeno ? 3 : prijato > 0 ? 2 : zajem > 0 ? 1 : 0;
   const pod = [
     _jbShort(l.created_at),
@@ -2515,10 +2507,8 @@ function _jbNabor(l) {
   const plneni = [1, zajem > 0 ? 1 : 0, obsazeno ? 1 : mist ? Math.min(1, prijato / mist) : (prijato > 0 ? 1 : 0), obsazeno ? 1 : 0];
   return { krok, pod, plneni, obsazeno };
 }
-// Řazení seznamu inzerátů — roletka „Řadit" (28. 9.; dřív tlačítko, které
-// při každém kliknutí přeskočilo na další řazení, nešlo poznat, co přijde).
-const _JB_SORTS = { new: 'Nejnovější', views: 'Nejvíc zobrazení', interest: 'Nejvíc zájemců', rate: 'Nejvyšší sazba' };
-const _jbStatusMap = s => s === 'urgent' ? 'asap' : s === 'paused' ? 'inactive' : s === 'filled' ? 'filled' : 'active';
+// Jen Aktivní / Urgentní / Neaktivní — stav Naplněno zrušený (30. 9.), 'filled' = Neaktivní
+const _jbStatusMap = s => s === 'urgent' ? 'asap' : (s === 'paused' || s === 'filled') ? 'inactive' : 'active';
 const _jbPlural = (n, one, few, many) => n + ' ' + (n === 1 ? one : (n >= 2 && n <= 4) ? few : many);
 const _jbAge = v => { const d = new Date(v); return isNaN(d) ? 1 : Math.max(1, Math.round((Date.now() - d.getTime()) / 86400000)); };
 const _jbShort = v => { const d = new Date(v); return isNaN(d) ? '' : d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' }); };
@@ -2654,6 +2644,65 @@ function EJobKartaApp({ l, onOpen, nahled }) {
         {ceka > 0 && <span style={{ marginLeft: 'auto', fontWeight: 700, color: '#B96F06', background: '#FFF3E0', padding: '3px 8px', borderRadius: 999 }}>{ceka} čeká</span>}
       </div>}
     </div>
+  );
+}
+
+// ── Řada karet inzerátů do strany (30. 9.) — jako řádky v Kandidátech ──
+// Vejde se vždy celý počet karet (šířka se dopočítá, min. 290 px), posun se
+// dorovná na začátek karty. Bez šipek (Yasin 30. 9.) — posouvá se jako Kandidáti.
+// Záložka Inzeráty (Topované / Urgentní / Aktivní / Neaktivní) i Dashboard
+// (stavNad = nad kartou štítek stavu — tam řada míchá stavy).
+// Karty musí mít _state (_jbStatusMap).
+// Přesah jen 4 px (na fialový rámeček urgentní karty): při 24 px koukal na krajích
+// kousek sousední karty a řada vypadala useknutě (Yasin 30. 9.). Takhle je po
+// zastavení vidět vždy jen celý počet karet.
+const _JR_MIN = 290, _JR_MEZERA = 16, _JR_PRESAH = 4;
+function EJobRada({ nazev, pozn, extra, jobs, onOpen, stavNad }) {
+  const pasRef = React.useRef(null);
+  const [sirka, setSirka] = React.useState(_JR_MIN);
+  React.useLayoutEffect(() => {
+    const el = pasRef.current; if (!el) return;
+    const spocti = () => {
+      const w = el.clientWidth - 2 * _JR_PRESAH;
+      if (w <= 0) return;
+      const n = Math.max(1, Math.floor((w + _JR_MEZERA) / (_JR_MIN + _JR_MEZERA)));
+      setSirka(Math.floor(((w - (n - 1) * _JR_MEZERA) / n) * 100) / 100);
+    };
+    spocti();
+    if (!window.ResizeObserver) return;
+    const ro = new ResizeObserver(spocti); ro.observe(el);
+    return () => ro.disconnect();
+  }, [jobs.length]);
+  return (
+    <section style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 34 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 9, rowGap: 2, minWidth: 0 }}>
+          <span style={{ fontSize: 17, fontWeight: 800, color: '#0B1233', letterSpacing: '-.01em', whiteSpace: 'nowrap' }}>{nazev}</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#A6ADCB' }}>{jobs.length}</span>
+          {pozn && <span style={{ fontSize: 12.5, color: '#7A82A6' }}>{pozn}</span>}
+          {extra}
+        </div>
+      </div>
+      <div ref={pasRef} className="e-kand-radek"
+        style={{ display: 'flex', gap: _JR_MEZERA, overflowX: 'auto', scrollSnapType: 'x mandatory', scrollPaddingLeft: _JR_PRESAH, scrollPaddingRight: _JR_PRESAH, scrollbarWidth: 'none',
+          padding: '4px ' + _JR_PRESAH + 'px 30px', margin: '-4px -' + _JR_PRESAH + 'px -30px' }}>
+        {jobs.map(j => {
+          const st = stavNad ? (_JB_STATES[j._state] || _JB_STATES.active) : null;
+          const termin = stavNad && j._state === 'asap' && j.daysLeft ? 'termín ' + (j.daysLeft === 1 ? 'zítra' : 'za ' + j.daysLeft + ' dny') : '';
+          return (
+            <div key={j.id} style={{ flex: 'none', width: sirka, scrollSnapAlign: 'start', display: 'flex', flexDirection: 'column', gap: 9 }}>
+              {st && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, color: st.color, paddingLeft: 4 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 99, background: st.dot }} />{st.label}
+                  {termin && <span style={{ fontWeight: 600, color: '#7A82A6' }}>· {termin}</span>}
+                </span>
+              )}
+              <EJobKartaApp l={j} onOpen={() => onOpen(j)} />
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -2949,9 +2998,6 @@ function EJobStatistiky({ l, onZpet }) {
 }
 
 function EJobs({ onTab, onNew, period, onPeriod } = {}) {
-  const [tab, setTab] = React.useState('all');
-  const [query, setQuery] = React.useState('');
-  const [sort, setSort] = React.useState('new');
   const [overrides, setOverrides] = React.useState({});
   const [statsJob, setStatsJob] = React.useState(null);
   const [detailStat, setDetailStat] = React.useState(false);   // panel vpravo: přehled ↔ statistiky
@@ -2999,44 +3045,21 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
   const skutecne = jobs.filter(j => !j._demo);
   const cand = (typeof E_CANDIDATES !== 'undefined' ? E_CANDIDATES : {});
 
-  // Filtry = stejné skupiny jako v seznamu (Aktivní / Neaktivní / Naplněné) a stejná slova jako štítek stavu.
-  // Urgentní je jen příznak běžícího inzerátu, vlastní filtr nepotřebuje (v seznamu má svou skupinu).
-  const _vSkupine = { bezi: j => j._state === 'active' || j._state === 'asap', vyp: j => j._state === 'inactive', napl: j => j._state === 'filled' };
-  const counts = {
-    all: jobs.length,
-    bezi: jobs.filter(_vSkupine.bezi).length,
-    vyp: jobs.filter(_vSkupine.vyp).length,
-    napl: jobs.filter(_vSkupine.napl).length,
-  };
   const activeCount = skutecne.filter(j => j._state === 'active' || j._state === 'asap').length;
 
-  const q = query.trim().toLowerCase();
-  let list = jobs.filter(j => {
-    if (tab !== 'all' && !_vSkupine[tab](j)) return false;
-    if (q && !(j.title || '').toLowerCase().includes(q)) return false;
-    return true;
-  });
-  list = list.slice().sort((a, b) =>
-    sort === 'rate' ? (b.pay || 0) - (a.pay || 0) :
-    sort === 'views' ? (b.views || 0) - (a.views || 0) :
-    sort === 'interest' ? (b.matches || 0) - (a.matches || 0) :
-    new Date(b.created_at || 0) - new Date(a.created_at || 0));
-  // Skupiny (Yasin 29. 9.): Aktivní → Neaktivní → Naplněné, každá s barevným štítkem.
-  // Urgentní (směna do 2 dnů) jsou první karty v Aktivních, ne vlastní řádek — samotná
-  // karta v řádku nechávala vedle sebe prázdno. Poznají se podle fialového rámečku
-  // a u štítku Aktivní je „● 1 urgentní · směna do 2 dnů". Neaktivní a naplněné karty
-  // jsou ztlumené (CSS .e-jb-karta[data-stav] v index.html).
-  list = list.slice().sort((a, b) => (b._state === 'asap' ? 1 : 0) - (a._state === 'asap' ? 1 : 0));
-  const urgentnich = list.filter(j => j._state === 'asap').length;
-  const _SKUP = [
-    { k: 'bezi', l: 'Aktivní',   m: j => j._state === 'active' || j._state === 'asap', b: { c: '#0B7B4B', bg: '#E6F7EF', dot: '#0FA968' } },
-    { k: 'vyp',  l: 'Neaktivní', m: j => j._state === 'inactive', b: { c: '#5B6488', bg: '#F1F3FB', dot: '#A6ADCB' } },
-    { k: 'napl', l: 'Naplněné',  m: j => j._state === 'filled',   b: { c: '#1B34F0', bg: '#EEF1FF', dot: '#1B34F0' } },
-  ];
-  const skupiny = (tab === 'all' ? _SKUP : _SKUP.filter(g => g.k === tab))
-    .map(g => ({ g, polozky: list.filter(g.m) })).filter(x => x.polozky.length);
-  // Ve „Vše" štítky skupin; ve vybrané záložce jen když je co říct o urgentních
-  const nadpisySkupin = tab === 'all' || (tab === 'bezi' && urgentnich > 0);
+  // Řady pod sebou jako v Kandidátech (Yasin 30. 9.: filtry pryč): Topované →
+  // Urgentní → Aktivní, každá do strany, dole Neaktivní. Inzerát je jen v jedné
+  // řadě (topovaný urgentní patří do Topovaných); v řadě od nejnovějšího.
+  const _novejsi = (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0);
+  const _bezi = j => j._state === 'active' || j._state === 'asap';
+  const _topnuty = j => _bezi(j) && j.boosted;
+  // Bez vysvětlivek u nadpisů řad (Yasin 30. 9.)
+  const rady = [
+    { k: 'top',  nazev: 'Topované',  m: _topnuty },
+    { k: 'asap', nazev: 'Urgentní',  m: j => j._state === 'asap' && !_topnuty(j) },
+    { k: 'bezi', nazev: 'Aktivní',   m: j => j._state === 'active' && !_topnuty(j) },
+    { k: 'vyp',  nazev: 'Neaktivní', m: j => j._state === 'inactive' },
+  ].map(r => ({ ...r, jobs: jobs.filter(r.m).sort(_novejsi) })).filter(r => r.jobs.length);
   const detail = detailId ? jobs.find(j => j.id === detailId) : null;
   // Otevření / zavření detailu začne nahoře, ne uprostřed dlouhého seznamu.
   // Nahoru: na počítači se posouvá obsah karty (pevná obrazovka), na mobilu <main>
@@ -3044,13 +3067,10 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
 
   const planTier = (typeof _employerPlanTier !== 'undefined') ? _employerPlanTier() : 'zakladni';
   const limit = (typeof EMPLOYER_MAX_ACTIVE !== 'undefined' && EMPLOYER_MAX_ACTIVE[planTier] != null) ? EMPLOYER_MAX_ACTIVE[planTier] : Infinity;
-  const showDots = limit !== Infinity && limit <= 10;
-  const overLimit = activeCount > limit;
   const maxViews = Math.max.apply(null, jobs.map(j => j.views || 0).concat([1]));
   const maxPerDay = Math.max.apply(null, jobs.map(j => (j.views || 0) / _jbAge(j.created_at)).concat([1]));
   const totalViews = jobs.reduce((a, j) => a + (j.views || 0), 0);
   const avgCtr = jobs.length ? (jobs.reduce((a, j) => a + (j.ctr || 0), 0) / jobs.length) : 0;
-  const hiredTotal = skutecne.reduce((a, j) => a + (j.hired || 0), 0);
 
   // Zapnutí / pozastavení inzerátu — uloží se do DB (setJobActiveE), ne jen na obrazovku.
   // Pozastavení se nejdřív zeptá (inzerát zmizí lidem z appky), zapnutí hlídá limit tarifu.
@@ -3108,9 +3128,6 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
   const chip = on => on
     ? { color: '#fff', bg: '#1B34F0', border: '#1B34F0', cc: '#A9B7FF' }
     : { color: '#3A4266', bg: '#fff', border: '#E6E9F5', cc: '#A6ADCB' };
-  const tabs = [
-    { k: 'all', l: 'Vše' }, { k: 'bezi', l: 'Aktivní' }, { k: 'vyp', l: 'Neaktivní' }, { k: 'napl', l: 'Naplněné' },
-  ];
   const inputSt = { fontSize: 13, color: '#0B1233', background: '#F6F7FC', border: '1px solid #E6E9F5', borderRadius: 9, padding: '9px 12px', outline: 'none' };
 
   // Plná karta inzerátu — otevře se po kliknutí na řádek v seznamu.
@@ -3196,9 +3213,7 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     {/* Stav: přepínač Aktivní / Neaktivní (Yasin 28. 9.) — pozastavení se ještě potvrzuje (dotaz) */}
                     <span style={{ fontSize: 12.5, fontWeight: 700, color: '#7A82A6' }}>Stav:</span>
-                    {l._state === 'filled'
-                      ? <span style={{ fontSize: 12.5, fontWeight: 800, color: st.color, background: st.bg, padding: '8px 12px', borderRadius: 9, marginRight: 6 }}>{st.label}</span>
-                      : <span style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1fr', background: '#F3F4F8', borderRadius: 10, padding: 3, marginRight: 6 }}>
+                    <span style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1fr', background: '#F3F4F8', borderRadius: 10, padding: 3, marginRight: 6 }}>
                           {/* Jezdec: zelený u Aktivní, červený u Neaktivní (bez teček — Yasin 28. 9.) */}
                           <span aria-hidden="true" style={{ position: 'absolute', top: 3, bottom: 3, left: 3, width: 'calc((100% - 6px) / 2)', borderRadius: 8, background: live ? '#0FA968' : '#E5484D', boxShadow: '0 1px 3px rgba(11,18,51,.15)', transform: live ? 'none' : 'translateX(100%)', transition: 'transform .3s cubic-bezier(.2,.8,.2,1), background-color .3s ease' }} />
                           {[[true, 'Aktivní'], [false, 'Neaktivní']].map(([zap, t]) => {
@@ -3209,7 +3224,7 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
                               </button>
                             );
                           })}
-                        </span>}
+                        </span>
                     <button className="e-det-tl" onClick={() => { window.__empCandJob = l.id; onTab && onTab('candidates'); }} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, color: '#3A4266', background: '#fff', border: '1px solid #E6E9F5', padding: '9px 12px', borderRadius: 9, cursor: 'pointer' }}><EIkona src="kandidati.svg" size={16} />Kandidáti{waiting > 0 && <span title="Čekají na vaši odpověď" style={{ fontSize: 11.5, fontWeight: 700, color: '#B96F06', background: '#FFF3E0', padding: '2px 8px', borderRadius: 999, marginLeft: 2 }}>{waiting} čeká</span>}</button>
                     <button className="e-det-tl" onClick={() => setDetailStat(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, color: '#3A4266', background: '#fff', border: '1px solid #E6E9F5', padding: '9px 12px', borderRadius: 9, cursor: 'pointer' }}><EIkona src="analytika.svg" size={16} />Statistiky</button>
                     {/* Topovat (dřív „Boostnout" — Yasin 29. 9.) zlatě jako pilulka TOP, kterou topovaný inzerát dostane.
@@ -3228,25 +3243,13 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
     <div className="e-ram" style={{ width: '100%', maxWidth: 1180, margin: '0 auto', padding: '18px 20px 40px' }}>
       <div style={{ background: '#F1F3FB', border: '1px solid #DDE1F0', borderRadius: 22, overflow: 'hidden' }}>
 
+        {/* „+ Nový inzerát" je i nahoře v levém menu (30. 9.); v hlavičce zůstal jen tady v Inzerátech */}
         <ETabHlava title="Inzeráty">
           <EBtnHl onClick={() => onNew && onNew()}>+ Nový inzerát</EBtnHl>
         </ETabHlava>
 
-        {/* Pás čísel — skutečná data z matches. Dřív tu byly „zhlédnutí" a „CTR",
-            které DB neměří (vždy 0). */}
-        <EMetriky items={[
-          // Odkaz na tarify jen když je limit plný — jinak nemá firma důvod
-          // tam chodit a nebylo jasné, proč tu je.
-          (() => {
-            const plno = limit !== Infinity && activeCount >= limit;
-            return { l: 'Aktivní inzeráty', v: activeCount + (limit === Infinity ? '' : ' / ' + limit),
-              s: overLimit ? 'nad limitem tarifu' : plno ? 'limit tarifu je plný' : limit === Infinity ? 'bez limitu' : 'můžete zapnout ještě ' + (limit - activeCount),
-              varovani: overLimit, kam: plno ? 'Navýšit limit' : null, onClick: plno ? () => onTab && onTab('pricing') : undefined };
-          })(),
-          { l: 'Zájemci', v: skutecne.reduce((a, j) => a + (j.matches || 0), 0), s: 'o všechny inzeráty', kam: 'Kandidáti', onClick: () => onTab && onTab('candidates') },
-          { l: 'Čeká na vaši reakci', v: skutecne.reduce((a, j) => a + (j.pending || 0), 0), s: 'noví zájemci', kam: 'Kandidáti', onClick: () => onTab && onTab('candidates') },
-          { l: 'Najato', v: hiredTotal, s: 'za celou historii' },
-        ]} />
+        {/* Pás čísel pryč (Yasin 30. 9.) — limit tarifu, zájemce a čekající ukazuje Dashboard;
+            při zapnutí inzerátu nad limit se firma dozví v okně (dotaz 'limit') */}
 
         {detail ? (
           <div style={{ padding: '18px 24px 26px', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -3261,60 +3264,16 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
             </div>
           </div>
         ) : (
-        // Tělo: filtry + seznam
-        <div style={{ padding: '22px 24px 22px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-          {/* Filtrační lišta (28. 9.) — společná komponenta (employer-shell.jsx):
-              vlevo skupiny jako v seznamu, vpravo řazení a hledání. */}
-          <EFiltrLista vzdyKompakt>
-            <EFiltrPrepinac value={tab} onChange={setTab} options={tabs.map(t => ({ k: t.k, l: t.l, n: counts[t.k] }))} />
-            <EFiltrVpravo>
-              <EFiltrRazeni value={sort} options={_JB_SORTS} onChange={setSort} />
-              <EFiltrHledat value={query} onChange={setQuery} placeholder="Hledat inzerát" />
-            </EFiltrVpravo>
-          </EFiltrLista>
-
-          {/* Inzeráty jako karty z appky (Yasin 28. 9.): firma vidí, jak inzerát
-              vypadá u brigádníků; klik otevře detail s fází náboru a čísly. */}
-          {list.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <div className="e-jb-scroll" style={{ display: 'grid', gridAutoRows: 'max-content', gap: 14, paddingBottom: 4 }}>
-              {skupiny.map(({ g, polozky }, i) => {
-                return (
-                  <React.Fragment key={g.k}>
-                    {nadpisySkupin && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: i ? 12 : 0 }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 800, color: g.b.c, background: g.b.bg, padding: '5px 12px 5px 10px', borderRadius: 999 }}>
-                          <span style={{ width: 7, height: 7, borderRadius: '50%', background: g.b.dot, flex: 'none' }} />
-                          {g.l}<span style={{ fontWeight: 700, opacity: .65 }}>{polozky.length}</span>
-                        </span>
-                        {g.k === 'bezi' && urgentnich > 0 && (
-                          <>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 800, color: _JB_STATES.asap.color, background: _JB_STATES.asap.bg, padding: '5px 12px 5px 10px', borderRadius: 999 }}>
-                              <span style={{ width: 7, height: 7, borderRadius: '50%', background: _JB_STATES.asap.dot, flex: 'none' }} />
-                              {urgentnich} urgentní
-                            </span>
-                            <span style={{ fontSize: 12.5, color: '#7A82A6' }}>směna do 2 dnů</span>
-                          </>
-                        )}
-                      </div>
-                    )}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
-                      {polozky.map(l => <EJobKartaApp key={l.id} l={l} onOpen={() => setDetailId(l.id)} />)}
-                    </div>
-                  </React.Fragment>
-                );
-              })}
-            </div>
-            </div>
-          )}
+        // Tělo: řady karet pod sebou (bez filtrů, 30. 9.)
+        <div style={{ padding: '14px 24px 26px', display: 'flex', flexDirection: 'column', gap: 30, overflowX: 'hidden' }}>
+          {rady.map(r => <EJobRada key={r.k} nazev={r.nazev} jobs={r.jobs} onOpen={l => setDetailId(l.id)} />)}
 
           {/* Prázdný stav */}
-          {list.length === 0 && (
-            <div style={{ background: '#fff', border: '1px solid #E6E9F5', borderRadius: 16, padding: '56px 22px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 16, fontWeight: 800, color: '#0B1233' }}>Žádný inzerát neodpovídá filtru</span>
-              <span style={{ fontSize: 14, color: '#7A82A6' }}>Zkuste jiný stav nebo hledaný výraz.</span>
-              <span onClick={() => { setTab('all'); setQuery(''); }} style={{ fontSize: 13, fontWeight: 800, color: '#1B34F0', border: '1px solid #D5DAF0', padding: '9px 15px', borderRadius: 9, cursor: 'pointer', marginTop: 6 }}>Zrušit filtry</span>
+          {jobs.length === 0 && (
+            <div style={{ background: '#fff', border: '1px solid #E6E9F5', borderRadius: 16, padding: '56px 22px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center' }}>
+              <span style={{ fontSize: 16, fontWeight: 800, color: '#0B1233' }}>Zatím žádný inzerát</span>
+              <span style={{ fontSize: 14, color: '#7A82A6' }}>Až ho přidáte, uvidíte ho tady tak, jak ho vidí brigádníci v aplikaci.</span>
+              <div style={{ marginTop: 6 }}><EBtnHl onClick={() => onNew && onNew()}>+ Nový inzerát</EBtnHl></div>
             </div>
           )}
         </div>
@@ -3411,7 +3370,7 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
     </div>
   );
 }
-Object.assign(window, { EJobKartaApp, EJobDetailApp, EJobs });
+Object.assign(window, { EJobKartaApp, EJobRada, EJobDetailApp, EJobs });
 
 
 /* ============================================================

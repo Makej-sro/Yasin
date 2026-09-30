@@ -5,6 +5,35 @@ argumentem — jinak se točíme dokola.*
 
 ---
 
+**30. 9. 2026 — Firemní dashboard: všechno důležité na jedné záložce, ostatní bez čísel.**
+Pás s čísly nahoře zmizel ze všech záložek. Dashboard je teď přehled: „Co je potřeba
+udělat" (kdo čeká na odpověď, noví zájemci, inzeráty, nedoplněný profil — každá
+položka jedním klikem vede tam, kde se vyřídí), karty inzerátů tak, jak je vidí
+brigádník, tarif (kolik inzerátů ještě jde zapnout) a výsledky náboru.
+*Proč:* stejná čísla na každé záložce mátla — nebylo jasné, kde co hledat. Firma má
+mít jedno místo, kde uvidí, co ji čeká.
+
+**30. 9. 2026 — Inzerát nemá stav „Naplněno", jen aktivní a neaktivní.**
+*Proč:* nepoznáme spolehlivě, kdy je brigáda opravdu obsazená, a firma stejný inzerát
+za pár měsíců zapne znovu. Kdo nechce, aby ho brigádníci viděli, přepne ho na neaktivní.
+
+**30. 9. 2026 — „Nový inzerát" je nahoře v levém menu.**
+Tlačítko je trvale na jednom místě (a navíc v záložce Inzeráty), z hlaviček ostatních
+záložek zmizelo. *Proč:* lidé si jedno místo zapamatují a nahoře je víc prostoru.
+
+**30. 9. 2026 — Inzeráty v řadách do strany, bez filtrů.**
+Topované → Urgentní → Aktivní → Neaktivní, každá řada se posouvá do strany jako
+Kandidáti. *Proč:* firma má pár inzerátů, filtry a řazení byly zbytečné.
+
+**30. 9. 2026 — Úvodní fotka profilu firmy se upravuje jako na Facebooku.**
+Po nahrání se fotka posouvá a přibližuje přímo na profilu, Zrušit / Uložit. Fotky
+(úvodní i logo) se ukládají hned, ne až tlačítkem „Uložit změny".
+*Proč:* firma si má fotku sama vycentrovat; výřez se uloží přesně tak, jak ho nastavila.
+
+**30. 9. 2026 — V rozhraní žádné vysvětlivky.**
+Žádné nápovědy typu „přetažením posunete", podtitulky ani šedé poznámky u nadpisů.
+*Proč:* zahlcuje to obrazovku; ovládání má být jasné samo.
+
 **29. 9. 2026 — Topování = 72 hodin mezi prvními kartami, počet podle tarifu.**
 Firma u inzerátu klikne „Topovat" a inzerát je tři dny první v tom, co si brigádník
 vyfiltruje, se zlatou pilulkou TOP. Kolikrát za měsíc smí, určuje tarif (Základní 0,

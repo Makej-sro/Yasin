@@ -226,7 +226,7 @@ const _IKONY_APP = {
   settings:   'ikony/nastaveni.svg?v=1',   // Iconly Light-Outline / Setting
 };
 
-function ESidebar({ tab, onTab, onSignOut, mobile = false, open = false, onClose }) {
+function ESidebar({ tab, onTab, onSignOut, onNew, mobile = false, open = false, onClose }) {
   // Reálné počty z živých globálů (0 → badge se skryje)
   const jobsBadge = (typeof E_JOBS !== 'undefined' ? E_JOBS.filter(j => j.status === 'active' || j.status === 'urgent').length : 0) || null;
   const candBadge = (typeof E_CANDIDATES !== 'undefined' ? (E_CANDIDATES.new || []).length : 0) || null;
@@ -360,6 +360,21 @@ function ESidebar({ tab, onTab, onSignOut, mobile = false, open = false, onClose
         {/* Přepínač světlý/tmavý režim tu byl — schovaný, dokud se tmavý režim
             nedodělá (Yasin 25. 9.). Logika zůstává: window.toggleMakejTheme v app.jsx. */}
       </div>
+
+      {/* Nový inzerát nahoře v menu (Yasin 30. 9.): na jednom místě, které si
+          lidi zapamatují, místo tlačítka v hlavičce každé záložky. Stejná stavba
+          jako položky menu (ikona na stejném místě), jen modrá; v úzkém pruhu
+          zůstane modrý čtvereček s plusem. */}
+      <button type="button" className="e-btn-hl" title={sbal ? 'Nový inzerát' : undefined}
+        onClick={() => { onNew && onNew(); if (mobile && onClose) onClose(); }}
+        style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', margin: '0 0 22px', borderRadius: 10,
+          background: '#0020F6', border: 'none', color: '#fff', cursor: 'pointer', textAlign: 'left',
+          fontFamily: T.fontUI, fontWeight: 700, fontSize: 13.5, boxShadow: '0 6px 16px -8px rgba(0,32,246,.55)' }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+          <path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
+        </svg>
+        <span style={pismo}>Nový inzerát</span>
+      </button>
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 18, flex: 1 }}>
         {sections.map((sec, i) => (
@@ -888,12 +903,11 @@ function SectionHeader({ title, subtitle, action }) {
   );
 }
 
-// ── Hlavička záložky a pás čísel (26. 9.) ──
+// ── Hlavička záložky (26. 9.; pás čísel EMetriky zrušen 30. 9. — přehled je jen na Dashboardu) ──
 // Yasin: „pryč s modrým rámečkem, jen název záložky, profesionální dashboard,
-// hlavně jednoznačný". Proto všechny záložky kreslí hlavičku i čísla přes tyhle
+// hlavně jednoznačný". Proto všechny záložky kreslí hlavičku přes tyhle
 // komponenty — jeden vzhled, žádná modrá plocha. Modrá zůstává jen pro hlavní
-// akci (tlačítko) a odkazy. Číslo, které někam vede, je celé klikací a při
-// najetí zešedne (bez modrého odkazu).
+// akci (tlačítko) a odkazy.
 const _EH = { ink: '#0B1233', ink2: '#3A4266', muted: '#7A82A6', line: '#E6E9F5', line2: '#EEF0F6', blue: '#1B34F0' };
 
 function ETabHlava({ title, children }) {
@@ -1102,46 +1116,4 @@ function EFiltrHledat({ value, onChange, placeholder, width = 220 }) {
   );
 }
 
-// Pás čísel: [{ l: 'Popisek', v: hodnota, s: 'podtext', kam: 'Text odkazu', onClick, varovani }]
-// Pás jde schovat (Yasin 29. 9.: „ta horní lajna mi zavazela") úchytem pod ním —
-// stejným jako u levého menu, jen naležato: v klidu šedá čárka, při najetí šipka
-// ^ (skrýt) / v (ukázat). Volba platí pro všechny záložky a pamatuje se v prohlížeči.
-// Čekající kandidáti se neztratí — počet má i položka Kandidáti v menu.
-function EMetriky({ items }) {
-  const [skryte, setSkryte] = useStateE(() => { try { return localStorage.getItem('emp-cisla-skryte') === '1'; } catch (e) { return false; } });
-  const prepni = () => { const v = !skryte; setSkryte(v); try { localStorage.setItem('emp-cisla-skryte', v ? '1' : '0'); } catch (e) {} };
-  return (
-    <div className="e-pruh-ram" style={{ padding: '0 24px', position: 'relative' }}>
-    <div style={{ display: 'grid', gridTemplateRows: skryte ? '0fr' : '1fr', opacity: skryte ? 0 : 1, transition: 'grid-template-rows .24s cubic-bezier(.2,.8,.2,1), opacity .18s ease' }}>
-    <div style={{ minHeight: 0, overflow: 'hidden' }}>
-    <div className="e-pruh" style={{ display: 'grid', gridTemplateColumns: 'repeat(' + items.length + ', minmax(0,1fr))', background: '#fff', border: '1px solid ' + _EH.line, borderRadius: 14, overflow: 'hidden' }}>
-      {items.map((m, i) => (
-        // Klikací políčko nemá modrý odkaz (Yasin 27. 9.) — pozná se podle toho,
-        // že při najetí zešedne; kam vede, řekne bublina (title).
-        <div key={i} className={m.onClick ? 'e-pruh-klik' : undefined} onClick={m.onClick} title={m.onClick && m.kam ? m.kam : undefined}
-          role={m.onClick ? 'button' : undefined} tabIndex={m.onClick ? 0 : undefined}
-          onKeyDown={m.onClick ? (e => { if (e.key === 'Enter') m.onClick(); }) : undefined}
-          style={{ padding: '12px 18px', display: 'flex', flexDirection: 'column', gap: 3, borderLeft: i ? '1px solid ' + _EH.line2 : 'none', cursor: m.onClick ? 'pointer' : 'default', minWidth: 0 }}>
-          {/* Decentnější pás (28. 9.): číslo 20 px místo 28 a podtext vedle
-              něj na jednom řádku — pás je o třetinu nižší a malá čísla
-              (0, 1, 2) na začátku nepůsobí prázdně. */}
-          <span style={{ fontSize: 12.5, fontWeight: 600, color: _EH.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.l}</span>
-          <span style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
-            <span className="e-pruh-v" style={{ fontSize: 20, fontWeight: 700, color: m.varovani ? '#C2410C' : _EH.ink, letterSpacing: '-.01em', lineHeight: 1.2, whiteSpace: 'nowrap', flex: 'none' }}>{m.v}</span>
-            <span style={{ fontSize: 12.5, color: _EH.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{m.s}</span>
-          </span>
-        </div>
-      ))}
-    </div>
-    </div>
-    </div>
-    <button type="button" className={'e-uchyt-v' + (skryte ? ' zavreno' : '')} onClick={prepni}
-      aria-label={skryte ? 'Ukázat čísla' : 'Skrýt čísla'} aria-expanded={!skryte}>
-      <span className="e-uchyt-l" /><span className="e-uchyt-p" />
-      <em className="e-uchyt-tip">{skryte ? 'Ukázat čísla' : 'Skrýt čísla'}</em>
-    </button>
-    </div>
-  );
-}
-
-Object.assign(window, { TierMetalBadge, TierMetalText, TierGradientText, TierMetalButton, ELogo, ESidebar, ETopbar, Sparkline, AreaChart, BarChart, Donut, ECard, SectionHeader, ETabHlava, EBtnHl, EBtnSek, ESegment, EMetriky, EIkona, eTrust, ETrustBadge, EFiltrLista, EFiltrVpravo, EFiltrVyber, EFiltrPrepinac, EFiltrRazeni, EFiltrHledat });
+Object.assign(window, { TierMetalBadge, TierMetalText, TierGradientText, TierMetalButton, ELogo, ESidebar, ETopbar, Sparkline, AreaChart, BarChart, Donut, ECard, SectionHeader, ETabHlava, EBtnHl, EBtnSek, ESegment, EIkona, eTrust, ETrustBadge, EFiltrLista, EFiltrVpravo, EFiltrVyber, EFiltrPrepinac, EFiltrRazeni, EFiltrHledat });

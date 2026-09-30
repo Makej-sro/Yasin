@@ -319,7 +319,10 @@ async function fetchEmployerData(employerId) {
         }
         if (!isNaN(d.getTime())) daysLeft = Math.max(0, Math.ceil((d - today) / 86400000));
       }
-      let status = job.status === 'filled' ? 'filled' : (job.status === 'expired' ? 'paused' : 'active');
+      // Stav „Naplněno" není (Yasin 30. 9.): neumíme poznat, kdy je brigáda opravdu
+      // obsazená, a firma ji za pár měsíců zase zapne. Inzerát je jen aktivní nebo
+      // neaktivní — starý 'filled' v DB se ukáže jako Neaktivní a jde znovu zapnout.
+      let status = job.status === 'active' ? 'active' : 'paused';
       if (status === 'active' && daysLeft > 0 && daysLeft <= 2) status = 'urgent';
 
       return {
@@ -436,6 +439,7 @@ async function fetchEmployerData(employerId) {
         name: wName,
         avatar: wName.split(' ').map(p => p[0] || '').join('').slice(0,2).toUpperCase() || '??',
         color: _strColor(match.worker_id || match.id),
+        photo: w.avatar_url || null,   // profilovka — Dashboard ji ukazuje u „čeká na odpověď"
         role: match.job?.title || '',
         city: w.address || '', rating: Number(w.rating || 0).toFixed(1),
         trust: trustBy[match.worker_id] ? { ...trustBy[match.worker_id], hodnoceni: Number(w.rating) || 0 } : null, cvUrl: w.cv_url || '',
@@ -443,6 +447,8 @@ async function fetchEmployerData(employerId) {
         skills: Array.isArray(w.skills) ? w.skills : [],
         last: lastMsg ? (lastMsg.kind === 'shift' ? '📅 Nabídka směny' : lastMsg.kind === 'job' ? 'Nabídka brigády: ' + (lastMsg.job.title || '') : lastMsg.kind === 'interview' ? '🗓️ Pozvánka na pohovor' : lastMsg.kind === 'file' ? (lastMsg.file.typ === 'image' ? '📷 Fotka' : '📎 ' + lastMsg.file.nazev) : lastMsg.text) || 'Nová shoda' : 'Nová shoda',
         time: _relTime(match.created_at),
+        // Kdy přišla poslední zpráva (ISO) — Dashboard z toho počítá, jak dlouho kandidát čeká na odpověď
+        lastAt: (messages.find(m => m.match_id === match.id) || {}).created_at || null,
         unread, online: false, msgs: threadMsgs,
       };
     });
@@ -508,7 +514,6 @@ async function fetchEmployerData(employerId) {
   }
 }
 
-// Accept a candidate: mark match as accepted + mark job as filled
 // Nabídka brigády do chatu (28. 9.): firma vybere jeden ze svých aktivních
 // inzerátů a brigádníkovi přijde do zpráv jako karta (type 'job_offer').
 // V appce na ni klepne, otevře se detail a může rovnou dát „Mám zájem".
@@ -544,13 +549,12 @@ async function workerTrustE(workerId) {
   } catch (e) { return null; }
 }
 
-async function acceptCandidate(matchId, jobId) {
+// Přijetí kandidáta: jen match → accepted. Inzerát zůstává, jak je — dřív se
+// po prvním přijatém přepnul na 'filled' a zmizel z appky (Yasin 30. 9.: stav
+// Naplněno není, vypnout si ho firma může sama).
+async function acceptCandidate(matchId) {
   const { error: mErr } = await sb.from('matches').update({ status: 'accepted' }).eq('id', matchId);
   if (mErr) { console.error('acceptCandidate match error:', mErr); return false; }
-
-  const { error: jErr } = await sb.from('jobs').update({ status: 'filled' }).eq('id', jobId);
-  if (jErr) { console.error('acceptCandidate job error:', jErr); return false; }
-
   return true;
 }
 
@@ -637,7 +641,7 @@ Object.assign(window, { fetchEmployerData, acceptCandidate, rejectCandidate, upd
 
 // Zapnout / pozastavit inzerát. DB zná jen stavy active | filled | expired
 // (schema.sql CHECK), appka ve feedu ukazuje jen 'active' — pozastavený je
-// proto 'expired' (dashboard ho čte jako „Neaktivní").
+// proto 'expired' (dashboard ho čte jako „Neaktivní"). 'filled' se nepoužívá.
 // Úprava inzerátu z okna „Upravit inzerát" (stejná pole jako createJobE, bez stavu)
 async function updateJobE(jobId, fields) {
   const ts = fields.time_start || null, te = fields.time_end || null;

@@ -25,6 +25,7 @@ Bez toho se nedá vydat nic, ani otestovat přihlášení přes Apple.
 | `shifts` | Opakované směny a jejich potvrzování v chatu. Navrženo, nepostaveno. |
 | `last_seen` | Zelená tečka „online". Dnes jen naoko v demu. |
 | `job_topovani` | Počítání topování inzerátů do měsíčního limitu tarifu. Bez ní dashboard jen odhaduje. |
+| `migration_profil_firmy` | Úvodní fotka, kontakty a otevírací doba v profilu firmy. Bez ní se úvodní fotka neuloží (ověřeno 30. 9.). |
 
 ## 3. Rozdělané funkce
 

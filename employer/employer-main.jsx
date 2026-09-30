@@ -751,12 +751,15 @@ function EmployerApp() {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
-  // Theme toggle re-render (+ po uložení profilu firmy — levé menu ukazuje logo a název)
+  // Theme toggle re-render. Po uložení profilu firmy jen překreslit (levé menu ukazuje
+  // logo a název) — NE přemountovat záložku: tick zahodil hlášku o uložení a formulář
+  // se načetl znovu z EPROFILE, takže fotka pozadí, která se neuložila, hned zmizela.
   useEffectE(() => {
     const handler = () => setTick(t => t + 1);
+    const profil = () => setUnreadNudge(n => n + 1);
     window.addEventListener('makej-theme-toggle', handler);
-    window.addEventListener('emp-profil-ulozen', handler);
-    return () => { window.removeEventListener('makej-theme-toggle', handler); window.removeEventListener('emp-profil-ulozen', handler); };
+    window.addEventListener('emp-profil-ulozen', profil);
+    return () => { window.removeEventListener('makej-theme-toggle', handler); window.removeEventListener('emp-profil-ulozen', profil); };
   }, []);
 
   // Initial data fetch on mount
@@ -847,6 +850,7 @@ function EmployerApp() {
               : { from: 'them', text: msg.text, t: _fmtTime(msg.created_at), id: msg.id };
             t.msgs = [...t.msgs, bubble];
           }
+          t.lastAt = msg.created_at || new Date().toISOString();
           if (msg.match_id === open) { try { localStorage.setItem('emp-lastread-' + msg.match_id, Date.now()); } catch (e) {} }
           else { t.unread = (t.unread || 0) + 1; addToast(t.name || 'Nová zpráva', preview, '💬', 'info', { initials: t.avatar, color: t.color }); }
           setUnreadNudge(n => n + 1);
@@ -871,7 +875,7 @@ function EmployerApp() {
     body = <ELoadingSpinner />;
   // Období není v key: změna období jen překreslí (data se počítají z props),
   // nepřipojí záložku znovu — jinak by se při výběru Od/Do zavřela roletka.
-  } else if (tab === 'dash')        body = <EDashboard key={tick} period={period} onTab={setTab} onNew={() => setShowNewJob(true)} onPeriod={setPeriod} />;
+  } else if (tab === 'dash')        body = <EDashboard key={tick} period={period} onTab={setTab} onNew={() => setShowNewJob(true)} onPeriod={setPeriod} onOpenChat={openChat} />;
   else if (tab === 'analytics')     body = <EAnalytics key={tick} period={period} onNew={() => setShowNewJob(true)} onTab={setTab} onPeriod={setPeriod} />;
   else if (tab === 'jobs')          body = <EJobs key={tick} onTab={setTab} onNew={() => setShowNewJob(true)} period={period} onPeriod={setPeriod} />;
   else if (tab === 'candidates')    body = <ECandidates key={tick} onOpenChat={openChat} onNew={() => setShowNewJob(true)} period={period} onPeriod={setPeriod} />;
@@ -905,7 +909,7 @@ function EmployerApp() {
         filter: 'blur(80px)', pointerEvents: 'none',
       }} />
 
-      {loaded && <ESidebar tab={tab} onTab={setTab} onSignOut={handleSignOut}
+      {loaded && <ESidebar tab={tab} onTab={setTab} onSignOut={handleSignOut} onNew={() => setShowNewJob(true)}
         mobile={isMobile} open={navOpen} onClose={() => setNavOpen(false)} />}
 
       {/* Ztmavení obsahu pod vysunutým drawerem */}

@@ -130,15 +130,23 @@
       /* Inzeráty: seznam vyplní zbytek karty pod filtry (místo odhadu 100vh − 358 px) */
       main .e-jb-scroll { max-height: none; flex: 0 1 auto; min-height: 0; }
     }
-    /* Klikací čísla v pásu: celé políčko je odkaz, při najetí se podbarví */
-    /* Klikací políčko v pásu čísel: při najetí zmodrá (barva Makej), text
-       zbělá — popisek a podtext jen lehce průhledné, číslo plně bílé. */
-    /* Bez přechodu (transition): barva pozadí a textu se prolínaly každá
-       zvlášť, takže uprostřed byl chvilku bílý text na bílém / šedý na
-       modrém — vypadalo to jako probliknutí. Teď se přepne naráz. */
-    .e-pruh-klik:hover { background: #0020F6; }
-    .e-pruh-klik:hover span { color: rgba(255,255,255,.78) !important; }
-    .e-pruh-klik:hover .e-pruh-v { color: #fff !important; }
+    /* Dashboard (30. 9.): řádky „Co je potřeba udělat" jsou celé klikací — při
+       najetí se podbarví. Pod 1200 px jeden sloupec. */
+    .e-db-rad { transition: background .12s; }
+    .e-db-rad:hover { background: #F6F7FC; }
+    .e-db-rad:focus-visible { outline: 2px solid #0020F6; outline-offset: -2px; }
+    @media (max-width: 1200px) {
+      .e-db-mriz { grid-template-columns: minmax(0,1fr) !important; }
+      .e-db-mriz > :nth-child(2) { grid-template-columns: repeat(2, minmax(0,1fr)); align-items: start; }
+    }
+    @media (max-width: 820px) {
+      .e-db-telo { padding: 2px 16px 20px !important; }
+      .e-db-mriz > :nth-child(2) { grid-template-columns: minmax(0,1fr); }
+      /* Úkol: text přes celou šířku, „čeká …" pod ním, akce vpravo */
+      .e-db-ukol { grid-template-columns: 56px minmax(0,1fr) auto !important; row-gap: 6px !important; }
+      .e-db-ukol > :nth-child(3) { grid-column: 2; grid-row: 2; justify-self: start; }
+      .e-db-ukol > :nth-child(4) { grid-column: 3; grid-row: 1 / span 2; }
+    }
     /* Inzeráty: kompaktní seznam (řádek = jeden inzerát, klik otevře kartu) */
     .e-jb-rad { display: grid; grid-template-columns: minmax(0,1fr) 104px 96px 96px 150px 20px; align-items: center; gap: 14px; padding: 12px 20px; border-top: 1px solid #F0F2FA; }
     .e-jb-scroll { max-height: max(300px, calc(100vh - 358px)); overflow-y: auto; overscroll-behavior: contain; }
@@ -175,19 +183,6 @@
     .e-uchyt.zavreno:hover .e-uchyt-h, .e-uchyt.zavreno:focus-visible .e-uchyt-h { transform: translateX(2px) rotate(-22deg); }
     .e-uchyt.zavreno:hover .e-uchyt-d, .e-uchyt.zavreno:focus-visible .e-uchyt-d { transform: translateX(2px) rotate(22deg); }
     #root .e-uchyt:focus-visible { outline: none; }
-    /* Úchyt pásu čísel (EMetriky, 29. 9.) — jako úchyt menu, jen naležato: dvě čárky vedle
-       sebe = vodorovná linka pod pásem; při najetí šipka ^ (skrýt) / v (ukázat) */
-    .e-uchyt-v { position: absolute; left: 50%; bottom: -21px; width: 44px; height: 22px; margin-left: -22px; padding: 0; border: none; background: transparent; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; }
-    .e-uchyt-v > span { display: block; width: 12px; height: 4px; border-radius: 4px; background: #C9CEDD; transition: transform .22s cubic-bezier(.2,.8,.2,1), background .18s; }
-    .e-uchyt-v:hover > span, .e-uchyt-v:focus-visible > span { background: #0020F6; }
-    .e-uchyt-v .e-uchyt-l { transform-origin: 100% 50%; margin-right: -1px; }
-    .e-uchyt-v .e-uchyt-p { transform-origin: 0% 50%; margin-left: -1px; }
-    .e-uchyt-v:hover .e-uchyt-l, .e-uchyt-v:focus-visible .e-uchyt-l { transform: translateY(-2px) rotate(-22deg); }
-    .e-uchyt-v:hover .e-uchyt-p, .e-uchyt-v:focus-visible .e-uchyt-p { transform: translateY(-2px) rotate(22deg); }
-    .e-uchyt-v.zavreno:hover .e-uchyt-l, .e-uchyt-v.zavreno:focus-visible .e-uchyt-l { transform: translateY(2px) rotate(22deg); }
-    .e-uchyt-v.zavreno:hover .e-uchyt-p, .e-uchyt-v.zavreno:focus-visible .e-uchyt-p { transform: translateY(2px) rotate(-22deg); }
-    .e-uchyt-v:hover .e-uchyt-tip, .e-uchyt-v:focus-visible .e-uchyt-tip { opacity: 1; transform: translate(0, -50%); transition-delay: .12s; }
-    #root .e-uchyt-v:focus-visible { outline: none; }
     .e-cal-den:not(:disabled):not(.kraj):hover { background: #EEF1FF !important; }
     /* Položky roletky Období: při najetí ztmavnou (vybraná je modrá, při najetí o stupeň sytější) */
     .e-obd-vol:hover { background: #F1F3F8 !important; }
@@ -196,16 +191,14 @@
     .e-jb-karta { transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease; }
     .e-jb-karta:hover { box-shadow: 0 16px 36px -18px rgba(16,24,64,.35); transform: translateY(-2px); border-color: #D5DAF0 !important; }
     /* Stav karty v seznamu inzerátů (29. 9.) — barvou jako štítek skupiny: urgentní fialový
-       rámeček, naplněné modrý rámeček a lehce ztlumené, neaktivní šedé (fotka i modrý podklad
-       bez barev). Při najetí se vrátí do plných barev, ať nepůsobí jako vypnuté tlačítko. */
+       rámeček, neaktivní šedé (fotka i modrý podklad bez barev). Při najetí se vrátí do plných
+       barev, ať nepůsobí jako vypnuté tlačítko. Stav Naplněno zrušený 30. 9. */
     .e-jb-karta[data-stav="asap"] { border-color: #C6A2FF !important; box-shadow: 0 0 0 3px rgba(139,61,255,.13); }
     .e-jb-karta[data-stav="asap"]:hover { border-color: #A874FF !important; box-shadow: 0 0 0 3px rgba(139,61,255,.16), 0 16px 36px -18px rgba(16,24,64,.35); }
-    .e-jb-karta[data-stav="filled"] { border-color: #C3CBF6 !important; }
-    .e-jb-karta[data-stav="inactive"], .e-jb-karta[data-stav="filled"] { transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease, opacity .18s ease; }
+    .e-jb-karta[data-stav="inactive"] { transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease, opacity .18s ease; }
     .e-jb-karta[data-stav="inactive"] { opacity: .72; }
-    .e-jb-karta[data-stav="filled"] { opacity: .86; }
     .e-jb-karta[data-stav="inactive"] > div:first-child { filter: grayscale(1); transition: filter .25s ease; }
-    .e-jb-karta[data-stav="inactive"]:hover, .e-jb-karta[data-stav="filled"]:hover { opacity: 1; }
+    .e-jb-karta[data-stav="inactive"]:hover { opacity: 1; }
     .e-jb-karta[data-stav="inactive"]:hover > div:first-child { filter: none; }
     /* Řádky mini profilů u Kandidátů — posouvají se do strany, posuvník schovaný */
     .e-kand-radek::-webkit-scrollbar { display: none; }
@@ -295,36 +288,39 @@
     .e-btn-hl:hover:not(:disabled) { background: #0F27D9 !important; }
     .e-btn-sek:hover:not(:disabled) { background: #F6F7FC !important; }
     @media (max-width: 820px) {
-      .e-pruh { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
       .e-hlav { padding: 8px 16px 14px; }
-      .e-pruh-ram { padding: 0 16px !important; }
     }
 
     /* ── Přechod mezi záložkami ──
        Data jsou načtená předem, takže se nic nenačítá — jde jen o to, aby
        přepnutí nevypadalo jako tvrdé probliknutí. Rám a modrá hlavička stojí
        (je na stejném místě na všech záložkách), obsah pod ní najede zdola
-       po částech: pás čísel → levý sloupec → pravý sloupec. Stejně na všech
-       záložkách. `backwards`, ne `both` — po doběhnutí nesmí zůstat transform
-       (rozbil by position:fixed u oken otevřených uvnitř záložky). */
+       po sloupcích. Stejně na všech záložkách. `backwards`, ne `both` — po
+       doběhnutí nesmí zůstat transform (rozbil by position:fixed u oken
+       otevřených uvnitř záložky). */
     @keyframes eObsahIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-    /* Pás čísel (2. část) najede jako celek, tělo (3. část) po sloupcích.
-       Hlavička s názvem stojí. */
-    .e-ram > div > :nth-child(2):not(.e-hlav) > * { animation: eObsahIn .34s cubic-bezier(.2,.8,.2,1) .02s backwards; }
-    .e-ram > div > :nth-child(n+4):not(.e-hlav) { animation: eObsahIn .34s cubic-bezier(.2,.8,.2,1) .2s backwards; }
-    /* Sloupce těla (mřížka pod pásem čísel) jeden po druhém */
-    .e-ram > div > :nth-child(3) > * { animation: eObsahIn .34s cubic-bezier(.2,.8,.2,1) backwards; }
-    .e-ram > div > :nth-child(3) > :nth-child(1) { animation-delay: .07s; }
-    .e-ram > div > :nth-child(3) > :nth-child(2) { animation-delay: .13s; }
-    .e-ram > div > :nth-child(3) > :nth-child(n+3) { animation-delay: .18s; }
+    /* Tělo (2. část hned pod hlavičkou; pás čísel mezi nimi zmizel 30. 9.)
+       najede po sloupcích, jeden po druhém. Hlavička s názvem stojí. */
+    .e-ram > div > :nth-child(2):not(.e-hlav) > * { animation: eObsahIn .34s cubic-bezier(.2,.8,.2,1) backwards; }
+    .e-ram > div > :nth-child(2):not(.e-hlav) > :nth-child(1) { animation-delay: .04s; }
+    .e-ram > div > :nth-child(2):not(.e-hlav) > :nth-child(2) { animation-delay: .1s; }
+    .e-ram > div > :nth-child(2):not(.e-hlav) > :nth-child(n+3) { animation-delay: .16s; }
+    .e-ram > div > :nth-child(n+3):not(.e-hlav) { animation: eObsahIn .34s cubic-bezier(.2,.8,.2,1) .2s backwards; }
     @media (prefers-reduced-motion: reduce) {
-      .e-ram > div > *, .e-ram > div > :nth-child(2) > *, .e-ram > div > :nth-child(3) > * { animation: none !important; }
+      .e-ram > div > *, .e-ram > div > :nth-child(2) > * { animation: none !important; }
     }
 
     /* Profil firmy — řádky údajů upravované na místě (employer-firma.jsx) */
     .e-pf-inp { width: 100%; font-size: 14px; font-weight: 600; color: #0B1233; background: transparent;
       border: 1px solid transparent; border-radius: 9px; padding: 8px 10px; outline: none; transition: background .15s, border-color .15s; }
     .e-pf-inp:hover { background: #F6F7FC; }
+    /* Profil firmy bez fotky pozadí: světlá plocha, při najetí zešedne (klik = nahrát) */
+    .e-pf-cover-prazdne { background: #F2F8FC; transition: background .15s ease; }
+    .e-pf-cover-prazdne:hover { background: #E3EAF0; }
+    /* Výběr úvodní fotky z Fotek firmy — při najetí modrý rámeček */
+    .e-pf-radek-loga > * { pointer-events: auto; }
+    .e-pf-vyber { transition: box-shadow .15s ease; }
+    .e-pf-vyber:hover, .e-pf-vyber:focus-visible { box-shadow: 0 0 0 3px #1B34F0; outline: none; }
     .e-pf-inp:focus { background: #fff; border-color: #1B34F0; }
     .e-pf-inp::placeholder { color: #1B34F0; opacity: .75; font-weight: 700; }
     select.e-pf-inp { cursor: pointer; }
@@ -734,17 +730,17 @@
 
   <script type="text/babel" src="app.jsx?v=3"></script>
   <script type="text/babel" src="employer-theme.jsx?v=5"></script>
-  <script type="text/babel" src="employer-data.jsx?v=2"></script>
+  <script type="text/babel" src="employer-data.jsx?v=3"></script>
   <script type="text/babel" src="employer-plans.jsx?v=4"></script>
-  <script type="text/babel" src="employer-shell.jsx?v=63"></script>
-  <script type="text/babel" src="employer-dashboard.jsx?v=40"></script>
+  <script type="text/babel" src="employer-shell.jsx?v=65"></script>
+  <script type="text/babel" src="employer-dashboard.jsx?v=46"></script>
   <script type="text/babel" src="employer-pages.jsx?v=77"></script>
-  <script type="text/babel" src="employer-demo.jsx?v=6"></script>   <!-- ukázkové inzeráty — PŘED RELEASEM smazat -->
-  <script type="text/babel" src="employer-pages3.jsx?v=188"></script>
+  <script type="text/babel" src="employer-demo.jsx?v=7"></script>   <!-- ukázkové inzeráty — PŘED RELEASEM smazat -->
+  <script type="text/babel" src="employer-pages3.jsx?v=196"></script>
   <script type="text/babel" src="_premium/kraje-map.jsx?v=19"></script>
   <script type="text/babel" src="_premium/analytics.jsx?v=40"></script>
-  <script type="text/babel" src="employer-firma.jsx?v=5"></script>
-  <script type="text/babel" src="employer-supabase.jsx?v=22"></script>
-  <script type="text/babel" src="employer-main.jsx?v=52"></script>
+  <script type="text/babel" src="employer-firma.jsx?v=14"></script>
+  <script type="text/babel" src="employer-supabase.jsx?v=25"></script>
+  <script type="text/babel" src="employer-main.jsx?v=55"></script>
 </body>
 </html>

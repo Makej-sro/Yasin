@@ -83,7 +83,7 @@ function eDemoInzeraty() {
       pay: 350, location: 'Slavkov u Brna', date: den(14), timeText: '10:00 – 18:00', contract: 'DPP', recurrence: 'Jednorázová', created_at: pred(16),
       tags: ['Foto', 'Víkend', 'Kreativní'], photos: [U('1519741497674-611481863552'), U('1519225421980-715cb0215aed')],
       description: 'Pomůžeš fotografce s technikou, světly a aranžováním skupinových fotek. Zkušenost s foťákem výhodou.' },
-    { ...zaklad, id: 'demo-5', title: 'Promotér energetického nápoje', status: 'filled', views: 205, viewsByDay: poDnech(205, 21, 5), matches: 12, candidates: zajemci(12, 21, 5), swipes: 12, pending: 0, hired: 4, daysLeft: 0,
+    { ...zaklad, id: 'demo-5', title: 'Promotér energetického nápoje', status: 'paused', views: 205, viewsByDay: poDnech(205, 21, 5), matches: 12, candidates: zajemci(12, 21, 5), swipes: 12, pending: 0, hired: 4, daysLeft: 0,
       kraj: 'jihomoravsky', payout: 'Týdně', positions: 4,
       expectations: ['Nebojíš se oslovit lidi', 'Spolehlivost a dochvilnost'],
       bonuses: ['Zkušenost s promo akcemi'],
