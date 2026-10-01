@@ -10,6 +10,7 @@ Bez toho se nedá vydat nic, ani otestovat přihlášení přes Apple.
 **Co musí být hotové v kódu, než to půjde ven:**
 - Vypnout přístupový klíč u přihlášení (na třech místech).
 - Vypnout demo profil s ukázkovými brigádami a výdělky.
+- V dashboardu vypnout ukázkové inzeráty a testovací obnovu topování při přihlášení.
 - Smazat vývojářské automatické načítání změn.
 - V Supabase zapnout přihlášení přes Google a ověřování e-mailu.
 - Na úložišti příloh povolit jen obrázky a PDF, s limitem velikosti na serveru.
@@ -34,6 +35,11 @@ Bez toho se nedá vydat nic, ani otestovat přihlášení přes Apple.
 - **Editor ceny v sekci Lidé** — částka plus jednotka (hodina, úkol, kus, den).
 - **Ukazatel spolehlivosti** na kartě člověka.
 - **Galerie fotek u inzerátu** — appka to umí zobrazit, dashboard neumí nahrát.
+- **Urgentní podle tarifu** — teď je inzerát urgentní sám (směna do 2 dnů). „Notifikace
+  Urgent" z ceníku (Dynamický 1×, Maximální 2×, Vlastní 3×), kterou by firma zapínala,
+  není postavená a potřebuje sloupec v databázi.
+- **Platba za tarif** — ve Stripu má Výhodný 2 000 Kč, správně je 990. Dashboard zatím
+  jen předstírá zaplacení.
 
 ## 4. Po spuštění
 

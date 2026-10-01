@@ -373,12 +373,12 @@ function EDashboard({ period = '30d', onTab, onNew, onPeriod, onOpenChat }) {
                 </div>
                 <div style={{ borderTop: '1px solid ' + line, marginTop: 14, paddingTop: 14 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: ink2 }}>Topování tento měsíc</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: ink2 }}>{typeof E_LIMITY_OD_PRIHLASENI !== 'undefined' && E_LIMITY_OD_PRIHLASENI ? 'Topování' : 'Topování tento měsíc'}</span>
                     {topLimit > 0 && <span style={{ fontSize: 15, fontWeight: 800, color: ink }}>{topPouzito}<span style={{ fontWeight: 600, color: muted }}> z {topLimit}</span></span>}
                   </div>
                   <div style={{ fontSize: 13, color: muted, marginTop: 5, lineHeight: 1.45 }}>
                     {topLimit === 0 ? 'Váš tarif topování nezahrnuje.'
-                      : topPouzito >= topLimit ? 'Tento měsíc máte vyčerpané.'
+                      : topPouzito >= topLimit ? (typeof E_LIMITY_OD_PRIHLASENI !== 'undefined' && E_LIMITY_OD_PRIHLASENI ? 'Máte vyčerpané, obnoví se při dalším přihlášení.' : 'Tento měsíc máte vyčerpané.')
                       : 'Můžete topovat ještě ' + (topLimit - topPouzito) + '×.'}
                   </div>
                 </div>

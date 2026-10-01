@@ -716,6 +716,13 @@ function EmployerApp() {
     }
     await fetchEmployerData(empId.current);
     setTick(t => t + 1);
+    // Plný tarif → createJobE ho uložil jako neaktivní; po „Hotovo" říct proč.
+    if (result.status === 'paused') {
+      const tier = typeof _employerPlanTier === 'function' ? _employerPlanTier() : 'zakladni';
+      const lim = (typeof EMPLOYER_MAX_ACTIVE !== 'undefined' && EMPLOYER_MAX_ACTIVE[tier]) || 1;
+      const naz = (typeof EMPLOYER_TARIF_NAZEV !== 'undefined' && EMPLOYER_TARIF_NAZEV[tier]) || '';
+      setTimeout(() => addToast('Uloženo jako neaktivní', 'Tarif ' + naz + ' dovoluje ' + lim + ' aktivní ' + (lim === 1 ? 'inzerát' : lim < 5 ? 'inzeráty' : 'inzerátů') + '. Vypněte jiný, nebo navyšte tarif.', 'ℹ️', 'info'), 2700);
+    }
     // Načítání ukaž aspoň chvíli, ať to nepřeskočí (i když se uloží hned)
     const MIN_LOADING = 2600;
     setTimeout(() => {
@@ -861,8 +868,38 @@ function EmployerApp() {
     return () => { if (chan) { try { sb.removeChannel(chan); } catch (e) {} } };
   }, [loaded]);
 
+  // Odhlášení jako „vypnutí proudu" (Yasin 1. 10.): dashboard ztmavne shora
+  // dolů, uprostřed se po znacích dopíše „Neplecha ukončena" s blikajícím
+  // kurzorem (jako „Je hotovo." v appce) a za ~2,2 s je člověk na webu.
+  // Odhlášení běží souběžně s animací. Prvky se staví mimo React — stránka
+  // stejně hned odchází. Styly .e-tma* jsou v index.html.
+  // scope 'local' = odhlásit jen tohle zařízení; výchozí 'global' by firmu
+  // odhlásil všude naráz (i v appce na mobilu).
   async function handleSignOut() {
-    await sb.auth.signOut();
+    if (document.querySelector('.e-tma')) return;
+    const odhlaseni = sb.auth.signOut({ scope: 'local' }).catch(() => {});
+    const VETA = 'Neplecha ukončena';
+    const tma = document.createElement('div');
+    tma.className = 'e-tma';
+    tma.innerHTML = '<div class="e-tma-clona"></div>'
+      + '<div class="e-tma-veta" aria-live="polite"><div><span></span><i aria-hidden="true"></i></div></div>';
+    document.body.appendChild(tma);
+    const cil = tma.querySelector('span');
+    const bezPohybu = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const animace = new Promise(hotovo => {
+      if (bezPohybu) { cil.textContent = VETA; setTimeout(hotovo, 700); return; }
+      // Psát se začne, až je tma dole (clona dojede za ~.65 s).
+      setTimeout(() => {
+        let i = 0;
+        (function krok() {
+          cil.textContent = VETA.slice(0, ++i);
+          if (i < VETA.length) setTimeout(krok, 50);
+          else setTimeout(hotovo, 720);   // chvíle na přečtení — na webu za ~2,2 s
+        })();
+      }, 620);
+    });
+    // Na web hned po dopsání; kdyby odhlášení vázlo, nejpozději za 3 s.
+    await Promise.race([Promise.all([animace, odhlaseni]), new Promise(r => setTimeout(r, 3000))]);
     window.location.href = '/';
   }
 

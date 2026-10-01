@@ -180,7 +180,20 @@ async function markThreadReadE(userId, matchId) {
 const E_TOP_HODIN = 72;
 const E_TOPOVANI  = [];        // topování v tomto měsíci: { job_id, started_at, ends_at }
 let _eTopTabulka  = null;      // null = nevíme, false = tabulka v DB zatím není
-const _eZacatekMesice = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); };
+// TESTOVÁNÍ (Yasin 1. 10.): limit topování se nepočítá za kalendářní měsíc,
+// ale od posledního přihlášení — každé přihlášení dá znovu plný počet podle
+// tarifu. Čas přihlášení zapisuje web (script.js, 'makej-prihlaseni-od').
+// PŘED SPUŠTĚNÍM přepnout na false → zase kalendářní měsíc.
+const E_LIMITY_OD_PRIHLASENI = true;
+const _eZacatekMesice = () => {
+  if (E_LIMITY_OD_PRIHLASENI) {
+    let od = 0;
+    try { od = Number(localStorage.getItem('makej-prihlaseni-od')) || 0; } catch (e) {}
+    if (!od) { od = Date.now(); try { localStorage.setItem('makej-prihlaseni-od', String(od)); } catch (e) {} }
+    return new Date(od);
+  }
+  const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1);
+};
 const _eBezTabulky = e => /job_topovani|does not exist|could not find|PGRST205|42P01/i.test(((e && e.code) || '') + ' ' + ((e && e.message) || ''));
 
 async function topovatJobE(jobId) {
@@ -603,6 +616,12 @@ async function _jobsZapis(payload, provest) {
   return provest(p);
 }
 
+function _eTarifPlny() {
+  const tier = typeof _employerPlanTier === 'function' ? _employerPlanTier() : 'zakladni';
+  const lim = (typeof EMPLOYER_MAX_ACTIVE !== 'undefined' && EMPLOYER_MAX_ACTIVE[tier] != null) ? EMPLOYER_MAX_ACTIVE[tier] : Infinity;
+  return E_JOBS.filter(j => j.status === 'active' || j.status === 'urgent').length >= lim;
+}
+
 async function createJobE(employerId, fields) {
   const ts = fields.time_start || '00:00';
   const te = fields.time_end   || '00:00';
@@ -629,7 +648,10 @@ async function createJobE(employerId, fields) {
     tags:        Array.isArray(fields.tags) ? fields.tags : [],
     requirements: Array.isArray(fields.requirements) ? fields.requirements : [],
     job_type:    fields.job_type || 'brigada',
-    status:      'active',
+    // Tarif hlídá počet aktivních (Yasin 1. 10.): dřív šel každý nový inzerát
+    // rovnou do aktivních, i když byl tarif plný. Teď se při plném tarifu
+    // uloží jako neaktivní — firma ho zapne, až uvolní místo.
+    status:      _eTarifPlny() ? 'paused' : 'active',
     ..._jobObsah(fields),
   };
   const { data, error } = await _jobsZapis(payload, p => sb.from('jobs').insert(p).select().single());
@@ -637,7 +659,7 @@ async function createJobE(employerId, fields) {
   return data;
 }
 
-Object.assign(window, { fetchEmployerData, acceptCandidate, rejectCandidate, updateEmployerProfile, createJobE, _strColor, _relTime, _fmtTime });
+Object.assign(window, { fetchEmployerData, acceptCandidate, rejectCandidate, updateEmployerProfile, createJobE, _strColor, _relTime, _fmtTime, E_LIMITY_OD_PRIHLASENI });
 
 // Zapnout / pozastavit inzerát. DB zná jen stavy active | filled | expired
 // (schema.sql CHECK), appka ve feedu ukazuje jen 'active' — pozastavený je

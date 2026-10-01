@@ -10,7 +10,7 @@
     gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', functionality_storage: 'denied', personalization_storage: 'denied', security_storage: 'granted', wait_for_update: 500 });
     gtag('set', 'ads_data_redaction', true);
   </script>
-  <link rel="stylesheet" href="/consent.css?v=2" />
+  <link rel="stylesheet" href="/consent.css?v=3" />
   <script src="/consent.js?v=4" defer></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,28 +23,28 @@
   <meta property="og:url" content="https://makej.eu/podpora" />
   <meta property="og:title" content="Podpora a nápověda k aplikaci | Makej" />
   <meta property="og:description" content="Časté dotazy k Makej — registrace, brigády, výplaty a hodnocení. Nenašel jsi odpověď? Napiš nám na podpora@makej.eu." />
-  <meta property="og:image" content="https://makej.eu/og-image.png" />
+  <meta property="og:image" content="https://makej.eu/og-image.png?v=6" />
   <meta property="og:locale" content="cs_CZ" />
   <meta property="og:site_name" content="Makej" />
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Podpora a nápověda k aplikaci | Makej" />
   <meta name="twitter:description" content="Časté dotazy k Makej — registrace, brigády, výplaty a hodnocení. Nenašel jsi odpověď? Napiš nám na podpora@makej.eu." />
-  <meta name="twitter:image" content="https://makej.eu/og-image.png" />
+  <meta name="twitter:image" content="https://makej.eu/og-image.png?v=6" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="/favicon.png?v=3" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="/iconify-icons.js"></script>
+  <script src="/iconify-icons.js?v=3"></script>
   <!-- lokálně a synchronně: přes CDN s async se komponenta upgradovala pozdě a ikony posouvaly layout -->
   <script src="/iconify-icon.min.js?v=3.0.0"></script>
   <link rel="preload" href="/fonts/LeagueSpartan-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="/style.css?v=144" />
+  <link rel="stylesheet" href="/style.css?v=178" />
   <style>
     /* ── Podpora sekce ── */
     .sup-page { padding: 0; }
-    .sup-white-zone { min-height: 100vh; padding: 100px 0 80px; box-sizing: border-box; position: relative; }
+    .sup-white-zone { min-height: calc(100vh / var(--z, 1)); padding: 100px 0 80px; box-sizing: border-box; position: relative; }
     .sup-hero {
       position: relative; z-index: 1;
       text-align: center;
@@ -54,7 +54,7 @@
     }
     .sup-hero h1 {
       font-family: var(--font-heading);
-      font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+      font-size: clamp(2.4rem, calc(5.5vw / var(--z, 1)), 3.8rem);
       font-weight: 800;
       line-height: 1.1;
       margin: 16px 0 20px;
@@ -87,7 +87,7 @@
     .sup-card a:hover { border-color: rgba(91,107,255,.5); background: rgba(91,107,255,.12); color: #fff; }
     .faq-section { max-width: 720px; margin: 0 auto; padding: 0 24px; }
     .faq-heading { text-align: center; margin-bottom: 48px; }
-    .faq-heading h2 { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800; margin-bottom: 12px; }
+    .faq-heading h2 { font-family: var(--font-heading); font-size: clamp(1.8rem, calc(3.5vw / var(--z, 1)), 2.5rem); font-weight: 800; margin-bottom: 12px; }
     .faq-heading p { color: var(--muted-fg); font-size: .95rem; }
     .faq-heading a { color: #a78bfa; text-decoration: none; }
     .faq-heading a:hover { text-decoration: underline; }
@@ -253,7 +253,7 @@
       "name": "Jak funguje výplata pro makače pod 18 let?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Brigádníci mladší 18 let mohou pracovat s omezením hodin dle zákoníku práce. Výplata probíhá stejně jako u ostatních — přímo od zaměstnavatele. Doporučujeme mít písemnou dohodu."
+        "text": "Makači mladší 18 let mohou pracovat s omezením hodin dle zákoníku práce. Výplata probíhá stejně jako u ostatních — přímo od zaměstnavatele. Doporučujeme mít písemnou dohodu."
       }
     },
     {
@@ -527,7 +527,7 @@
         <a href="javascript:void(0)" class="btn-primary" id="nav-register-btn">Vytvořit účet</a>
       </div>
       <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu" aria-expanded="false">
-        <span></span><span></span>
+        <span></span><span></span><span></span>
       </button>
     </div>
     <!-- Mobile Menu -->
@@ -571,11 +571,10 @@
           <button class="faq-nav" data-cat="vyplaty">Výplaty</button>
           <button class="faq-nav" data-cat="smeny">Směny</button>
           <button class="faq-nav" data-cat="ucet">Účet</button>
-
         </div>
         <div class="faq-panel">
           <div class="faq-list" id="faq-list">
-            <div class="faq-no-results" id="faq-no-results">Žádné výsledky pro tuto frázi 🙁</div>
+            <div class="faq-no-results" id="faq-no-results">Žádné výsledky pro tuto frázi.</div>
 
             <!-- VÝPLATY -->
             <div class="faq-item" data-cat="vyplaty popular">
@@ -704,37 +703,36 @@
             </div>
 
             <!-- MAKAČKY -->
-
             </div>
             <div class="faq-item" data-cat="makacky popular">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Jak funguje hodnocení po práci?</span></div>
               <div class="faq-a">Po dokončení práce můžeš ohodnotit zaměstnavatele a on tebe. Hodnocení jsou viditelná ostatním a pomáhají budovat důvěru v komunitě. Dobré hodnocení ti otevírá dveře k lepším příležitostem.</div>
             </div>
-            <div class="faq-item" data-cat="makacky">
+            <div class="faq-item" data-cat="ucet">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Jak zvýším své hodnocení na Makej?</span></div>
               <div class="faq-a">Choď na domluvené směny, komunikuj včas, pracuj poctivě a žádej o hodnocení po každé práci. Vyplněný profil s fotkou a popisem také přispívá k celkovému dojmu.</div>
             </div>
-            <div class="faq-item" data-cat="makacky">
+            <div class="faq-item" data-cat="ucet">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Jak funguje swipování inzerátů?</span></div>
               <div class="faq-a">Přejedeš prstem doprava = zájem o práci (match request), doleva = přeskočení. Zaměstnavatel pak může tvůj zájem přijmout nebo odmítnout. Po oboustranném přijetí se otevře chat.</div>
             </div>
-            <div class="faq-item" data-cat="makacky">
+            <div class="faq-item" data-cat="ucet">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Co se stane po matchi?</span></div>
               <div class="faq-a">Po matchi se oběma stranám otevře chatovací okno. Tam si domluvíte vše potřebné — datum, čas, místo, odměnu a další podmínky. Chat zůstane aktivní po celou dobu spolupráce.</div>
             </div>
-            <div class="faq-item" data-cat="makacky">
+            <div class="faq-item" data-cat="ucet">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Mohu odmítnout match od zaměstnavatele?</span></div>
               <div class="faq-a">Ano, match je vždy dobrovolný. Pokud se situace změní, můžeš konverzaci ukončit. Odmítnutí nebude mít vliv na tvé hodnocení — jen se ujisti, že zaměstnavatele informuješ slušně.</div>
             </div>
-            <div class="faq-item" data-cat="makacky">
+            <div class="faq-item" data-cat="ucet">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Jak fungují notifikace v aplikaci?</span></div>
               <div class="faq-a">Notifikace dostaneš při novém matchi, nové zprávě v chatu nebo při přijetí/odmítnutí tvé žádosti. Nastavení notifikací si přizpůsobíš v Nastavení → Oznámení.</div>
             </div>
-            <div class="faq-item" data-cat="makacky">
+            <div class="faq-item" data-cat="ucet">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Jak dlouho mi match zůstane aktivní?</span></div>
               <div class="faq-a">Match zůstane aktivní, dokud ho jedna ze stran neukončí nebo dokud se inzerát nezaplní jiným makačem. Aktivní matche vidíš v sekci Zprávy.</div>
             </div>
-            <div class="faq-item" data-cat="makacky">
+            <div class="faq-item" data-cat="ucet">
               <div class="faq-q" onclick="toggleFaq(this)"><span>Mohu si stáhnout Makej teď?</span></div>
               <div class="faq-a">Aplikace je aktuálně ve vývoji a brzy dorazí do App Store a Google Play. Registruj se předem na makej.eu a dostaneš notifikaci hned při spuštění — plus první práce bez fronty.</div>
             </div>
@@ -746,7 +744,7 @@
       <!-- Contact cards -->
       <div class="sup-cards-wrap" data-nav-blue>
       <div style="text-align:center;margin-bottom:44px;">
-        <h2 style="font-family:var(--font-heading);font-size:clamp(2rem,4.5vw,3.2rem);font-weight:800;line-height:1.25;color:#fff;margin:0;">Nenašel jsi svou odpověď?<br><span style="opacity:.75;">Zkus to tady</span></h2>
+        <h2 style="font-family:var(--font-heading);font-size:clamp(2rem,calc(4.5vw / var(--z, 1)),3.2rem);font-weight:800;line-height:1.25;color:#fff;margin:0;">Nenašel jsi svou odpověď?<br><span style="opacity:.75;">Zkus to tady</span></h2>
         <p style="color:rgba(255,255,255,.8);font-size:1.05rem;line-height:1.65;margin:20px auto 0;max-width:480px;">Pokud je tvůj dotaz složitější, neváhej nás kontaktovat emailem. Uděláme vše proto, abys dostal svou odpověď ještě ten stejný den.</p>
         <a href="mailto:podpora@makej.eu" style="display:inline-block;margin-top:20px;padding:12px 28px;border-radius:100px;border:2px solid rgba(255,255,255,.45);color:#fff;font-size:1rem;font-weight:700;font-family:var(--font-body);text-decoration:none;letter-spacing:.01em;transition:background .18s,border-color .18s,transform .18s;" onmouseover="this.style.background='rgba(255,255,255,.15)';this.style.borderColor='#fff';this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,.45)';this.style.transform='translateY(0)';">podpora@makej.eu</a>
       </div>
@@ -759,7 +757,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="/" class="footer-logo">Makej</a>
-          <p>Aplikace na práce a práci ve tvém okolí. Swajpuj, matchuj a pracuj.</p>
+          <p>Vytváříme místo, kde najde práci každý.</p>
           <div class="footer-social">
             <a href="https://www.instagram.com/makej.eu" aria-label="Instagram" target="_blank" rel="noopener"><iconify-icon icon="mdi:instagram" width="22"></iconify-icon></a>
             <a href="https://www.facebook.com/share/19Kq5N1R2u/?mibextid=wwXIfr" aria-label="Facebook" target="_blank" rel="noopener"><iconify-icon icon="mdi:facebook" width="22"></iconify-icon></a>
@@ -771,6 +769,7 @@
           <h4>Produkt</h4>
           <a href="#features">Funkce</a>
           <a href="/hledam-si-praci">Jak to funguje</a>
+          <a href="/pro-zamestnavatele#pricing">Ceník</a>
           <a href="/#brzy">Stáhnout</a>
         </div>
         <div class="footer-col">
@@ -819,6 +818,7 @@
             <input class="form-input" type="text" id="login-key" placeholder="Zadej klíč" inputmode="numeric" autocomplete="off" />
             <p class="form-hint">Pouze pro oficiální testovací a vývojářské účty.</p>
           </div>
+          <label class="login-pamatovat" for="login-pamatovat"><input type="checkbox" id="login-pamatovat" checked /><span>Zůstat přihlášen</span></label>
           <button type="submit" class="btn-primary btn-full btn-lg" id="login-submit">Přihlásit se</button>
       </form>
       <div class="modal-divider"><span>nebo</span></div>
@@ -917,7 +917,8 @@
   <!-- ═══════════ COOKIE BANNER ═══════════ -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="/script.js?v=67"></script>
+  <script src="/pamet-prihlaseni.js?v=2"></script>
+  <script src="/script.js?v=77"></script>
 
   <!-- ── Podpora: FAQ + typewriter ── -->
   <script>

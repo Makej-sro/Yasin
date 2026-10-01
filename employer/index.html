@@ -327,6 +327,31 @@
 
     /* Menu karty firmy v levém menu */
     @keyframes eKartaIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @keyframes eRozmazIn { from { opacity: 0; } to { opacity: 1; } }
+    /* Volné místo v řadě Aktivních (EJobRada) — při najetí zmodrá, klik = nový inzerát */
+    .e-jr-volno { transition: border-color .15s, background .15s, color .15s; }
+    .e-jr-volno:hover { border-color: #0020F6 !important; background: #F4F6FF !important; color: #0020F6 !important; }
+    /* Odhlášení „vypnutím proudu" (employer-main.jsx → handleSignOut).
+       Nejdřív obrazovka dvakrát krátce pohasne jako při výpadku, pak se
+       shora stáhne tma s měkkou hranou a uprostřed se dopíše věta. */
+    .e-tma { position: fixed; inset: 0; z-index: 1000; overflow: hidden; cursor: default;
+             animation: eTmaBlik .22s steps(1) both; }
+    @keyframes eTmaBlik { 0% { background: rgba(5,7,26,.28); } 30% { background: transparent; }
+                          55% { background: rgba(5,7,26,.18); } 80%, 100% { background: transparent; } }
+    .e-tma-clona { position: absolute; left: 0; right: 0; top: 0; height: 135%;
+                   background: linear-gradient(180deg, #05071A 0%, #05071A 74%, rgba(5,7,26,0) 100%);
+                   transform: translateY(-100%); animation: eTmaDolu .44s cubic-bezier(.5,0,.75,0) .2s forwards; }
+    @keyframes eTmaDolu { to { transform: translateY(0); } }
+    .e-tma-veta { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+                  font-family: 'League Spartan', Inter, sans-serif; font-size: clamp(38px, 6.2vw, 64px); font-weight: 700;
+                  color: #fff; letter-spacing: -.03em; line-height: 1; white-space: nowrap; }
+    .e-tma-veta i { display: inline-block; width: .055em; height: .74em; margin-left: .05em; background: #fff;
+                    vertical-align: -.06em; opacity: 0; animation: eTmaKurzor 1.06s steps(1) .62s infinite; }
+    @keyframes eTmaKurzor { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .e-tma, .e-tma-clona { animation: none; } .e-tma-clona { transform: none; }
+      .e-tma-veta i { animation: none; opacity: 1; }
+    }
     /* Obrys po kliknutí myší (černý rámeček na připínáčku) — jen pro klávesnici */
     #root button:focus:not(:focus-visible) { outline: none; }
     #root button:focus-visible { outline: 2px solid #0020F6; outline-offset: 2px; }
@@ -622,6 +647,7 @@
        Modrá obrazovka výš se teď vykreslí dřív, než se na ně začne čekat. -->
   <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/pamet-prihlaseni.js?v=2"></script>
 
   <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
@@ -641,7 +667,7 @@
     const SUPABASE_URL = 'https://cxegfwfbgcgpwerfbvra.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_N_BIwMCTD6ZOTrtBl3juyw_CGIQ_lvh';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, storageKey: 'makej-auth' }
+      auth: { persistSession: true, storageKey: 'makej-auth', storage: window.mkAuthUloziste }
     });
 
     const gate = document.getElementById('auth-gate');
@@ -732,15 +758,15 @@
   <script type="text/babel" src="employer-theme.jsx?v=5"></script>
   <script type="text/babel" src="employer-data.jsx?v=3"></script>
   <script type="text/babel" src="employer-plans.jsx?v=4"></script>
-  <script type="text/babel" src="employer-shell.jsx?v=65"></script>
-  <script type="text/babel" src="employer-dashboard.jsx?v=46"></script>
+  <script type="text/babel" src="employer-shell.jsx?v=70"></script>
+  <script type="text/babel" src="employer-dashboard.jsx?v=47"></script>
   <script type="text/babel" src="employer-pages.jsx?v=77"></script>
   <script type="text/babel" src="employer-demo.jsx?v=7"></script>   <!-- ukázkové inzeráty — PŘED RELEASEM smazat -->
-  <script type="text/babel" src="employer-pages3.jsx?v=196"></script>
+  <script type="text/babel" src="employer-pages3.jsx?v=206"></script>
   <script type="text/babel" src="_premium/kraje-map.jsx?v=19"></script>
   <script type="text/babel" src="_premium/analytics.jsx?v=40"></script>
   <script type="text/babel" src="employer-firma.jsx?v=14"></script>
-  <script type="text/babel" src="employer-supabase.jsx?v=25"></script>
-  <script type="text/babel" src="employer-main.jsx?v=55"></script>
+  <script type="text/babel" src="employer-supabase.jsx?v=26"></script>
+  <script type="text/babel" src="employer-main.jsx?v=60"></script>
 </body>
 </html>

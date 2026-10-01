@@ -681,7 +681,7 @@ function ESettingsOld() {
         {/* Odhlásit se */}
         <div style={{ marginTop: 'auto', paddingTop: 12, borderTop: '1px solid ' + T.border }}>
           <button onClick={async () => {
-            await sb.auth.signOut();
+            await sb.auth.signOut({ scope: 'local' });
             window.location.href = '/';
           }} style={{
             display: 'flex', alignItems: 'center', gap: 9,
@@ -1298,21 +1298,21 @@ const PLANS = [
     cta: 'Začít zdarma',
   },
   {
-    id: 'vyhodny', name: 'Výhodný', price: 499, annualPrice: 424, save: 900, period: 'za měsíc',
+    id: 'vyhodny', name: 'Výhodný', price: 990, annualPrice: 990, save: 0, period: 'za měsíc',   // roční slevu nemá
     kdo: 'Občasný nábor', popis: 'Když jednou za čas hledáte nového kolegu.', uvod: 'Vše ze Základní, a navíc:',
     color: '#5B6BFF', rgb: '91,107,255',
     feats: [['2 aktivní inzeráty', true], ['Topování inzerátu 1×/měs', true], ['Oslovování kandidátů 3×/měs', true], ['Ověřená firma', true]],
     cta: 'Vybrat Výhodný',
   },
   {
-    id: 'dynamicky', name: 'Dynamický', price: 2000, annualPrice: 1700, save: 3600, period: 'za měsíc',
+    id: 'dynamicky', name: 'Dynamický', price: 3990, annualPrice: 3390, save: 7200, period: 'za měsíc',
     kdo: 'Aktivně hledám', popis: 'Pro firmy, které nabírají průběžně na více pozic.', uvod: 'Vše z Výhodný, a navíc:',
     color: '#5BD68A', rgb: '91,214,138', popular: true,
     feats: [['5 aktivních inzerátů', true], ['Topování inzerátu 3×/měs', true], ['Plné statistiky + CSV export', true], ['Prioritní řešení podpory', true]],
     cta: 'Vybrat Dynamický',
   },
   {
-    id: 'maximalni', name: 'Maximální', price: 4999, annualPrice: 4249, save: 9000, period: 'za měsíc',
+    id: 'maximalni', name: 'Maximální', price: 9990, annualPrice: 8490, save: 18000, period: 'za měsíc',
     kdo: 'Rostoucí tým', popis: 'Když potřebujete obsadit hodně míst rychle.', uvod: 'Vše z Dynamický, a navíc:',
     color: '#FFD166', rgb: '255,209,102',
     feats: [['10 aktivních inzerátů', true], ['Topování inzerátu 5×/měs', true], ['Prémiový badge + Urgent 2×', true]],
@@ -1320,7 +1320,7 @@ const PLANS = [
   },
   {
     id: 'vlastni', name: 'Vlastní', calc: true, period: 'za měsíc',
-    kdo: 'Pro velké firmy', popis: 'Desítky až tisíce pozic a podmínky na míru. Vše z Maximální.',
+    kdo: 'Pro velké firmy', popis: 'Desítky pozic a podmínky na míru. Vše z Maximální.',
     color: '#E0B0FF', rgb: '224,176,255',
     feats: [['Vše z Maximální', true]],
     cta: 'Nezávazná poptávka', contact: true,
@@ -1331,8 +1331,8 @@ const PLANS = [
 // Hodnota buňky: true/false (má/nemá) nebo text (konkrétní limit).
 const FEATURE_ROWS = [
   { section: 'Inzeráty' },
-  { label: 'Aktivní inzeráty',                 cells: { zakladni: '1',      vyhodny: '2',      dynamicky: '5',       maximalni: '10',      vlastni: '20–5 000' } },
-  { label: 'Topování inzerátu',                cells: { zakladni: false,    vyhodny: '1×/měs', dynamicky: '3×/měs',  maximalni: '5×/měs',  vlastni: '5×/měs' } },
+  { label: 'Aktivní inzeráty',                 cells: { zakladni: '1',      vyhodny: '2',      dynamicky: '5',       maximalni: '10',      vlastni: '20–100' } },
+  { label: 'Topování inzerátu',                cells: { zakladni: false,    vyhodny: '1×/měs', dynamicky: '3×/měs',  maximalni: '5×/měs',  vlastni: '5×/měs+' } },
   { label: 'Plánování inzerátu',               cells: { zakladni: false,    vyhodny: false,    dynamicky: true,      maximalni: true,      vlastni: true } },
   { label: 'Custom šablona inzerátů (pozadí)', cells: { zakladni: false,    vyhodny: false,    dynamicky: true,      maximalni: true,      vlastni: true } },
   { section: 'Nábor a viditelnost' },
@@ -1340,7 +1340,7 @@ const FEATURE_ROWS = [
   { label: 'Ověřená firma',                    cells: { zakladni: false,    vyhodny: true,     dynamicky: true,      maximalni: true,      vlastni: true } },
   { label: 'Video na profilu',                 cells: { zakladni: false,    vyhodny: true,     dynamicky: true,      maximalni: true,      vlastni: true } },
   { label: 'Prémiový badge',                   cells: { zakladni: false,    vyhodny: false,    dynamicky: true,      maximalni: true,      vlastni: true } },
-  { label: 'Notifikace Urgent',                cells: { zakladni: false,    vyhodny: false,    dynamicky: '1×',      maximalni: '2×',      vlastni: '3×' } },
+  { label: 'Notifikace Urgent',                cells: { zakladni: false,    vyhodny: false,    dynamicky: '1×',      maximalni: '2×',      vlastni: '3×+' } },
   { label: 'Zmínka na FB + IG Makej',          cells: { zakladni: false,    vyhodny: false,    dynamicky: true,      maximalni: true,      vlastni: true } },
   { label: 'Branding',                         cells: { zakladni: false,    vyhodny: false,    dynamicky: true,      maximalni: true,      vlastni: true } },
   { section: 'Data a reporting' },
@@ -1416,18 +1416,14 @@ const _CENIK_CSS = `
 .e-cenik .yp-cell-txt{font-weight:700;color:#111827;font-size:12px;font-variant-numeric:tabular-nums;}
 `;
 
-// Kalkulačka tarifu Vlastní — stejný sazebník jako na webu (kalkulackaVlastni()).
-// Základ 10 000 Kč za 20 inzerátů, každý další podle pásma; výsledek se
-// zaokrouhlí na tisíce a sníží o korunu (ceny končí na 999).
-const _KALK_ZAKLAD = 10000, _KALK_OD = 20;
-const _KALK_PASMA = [[50,450],[100,350],[250,250],[500,180],[1000,120],[2500,80],[5000,50]];
-const _KALK_KROKY = (() => {
-  const k = []; let v;
-  for (v = 20;  v <= 100;  v += 10)  k.push(v);
-  for (v = 150; v <= 500;  v += 50)  k.push(v);
-  for (v = 600; v <= 5000; v += 100) k.push(v);
-  return k;
-})();
+// Kalkulačka tarifu Vlastní — stejný sazebník jako na webu (kalkulackaVlastni()
+// v pro-zamestnavatele.html, Samova verze z 30. 9.). Základ 18 000 Kč za 20
+// inzerátů, každý další podle pásma; výsledek se zaokrouhlí na tisíce a sníží
+// o 10 Kč (ceny končí na 990 jako zbytek ceníku). Strop 100 inzerátů, kroky po 5.
+// Sleva se počítá proti 900 Kč za inzerát (tolik vychází vstupní 17 990 za 20).
+const _KALK_ZAKLAD = 18000, _KALK_OD = 20;
+const _KALK_PASMA = [[50,810],[100,630]];
+const _KALK_KROKY = (() => { const k = []; for (let v = 20; v <= 100; v += 5) k.push(v); return k; })();
 function _kalkCena(n) {
   let p = _KALK_ZAKLAD, spodek = _KALK_OD;
   for (const [do_, sazba] of _KALK_PASMA) {
@@ -1435,7 +1431,7 @@ function _kalkCena(n) {
     p += (Math.min(n, do_) - spodek) * sazba;
     spodek = do_;
   }
-  return Math.round(p / 1000) * 1000 - 1;
+  return Math.round(p / 1000) * 1000 - 10;
 }
 
 // Číslo ceny se k nové hodnotě dopočítá (jako na webu), neskočí.
@@ -1538,6 +1534,7 @@ const _C2_NE  = <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="tru
 function CenikVlastni({ plan, onPocet }) {
   const [i, setI] = useStateE(0);
   const n = _KALK_KROKY[i], c = _kalkCena(n);
+  const sleva = Math.round((1 - c / (n * 900)) * 100);
   useEffectE(() => { onPocet && onPocet(n); }, [n]);
   return (
     <div className="e-c2-vl">
@@ -1552,7 +1549,7 @@ function CenikVlastni({ plan, onPocet }) {
           <span style={{ fontSize: 18, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{n.toLocaleString('cs-CZ')}</span>
         </div>
         <input type="range" min="0" max={_KALK_KROKY.length - 1} step="1" value={i} onChange={e => setI(+e.target.value)} aria-label="Počet aktivních inzerátů" />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#8990AD' }}><span>20</span><span>5 000</span></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#8990AD' }}><span>20</span><span>100</span></div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -1561,7 +1558,7 @@ function CenikVlastni({ plan, onPocet }) {
             <CenikCislo value={c} className="e-c2-num" style={{ fontSize: 30 }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#B7BCD0' }}>Kč</span>
           </div>
-          <div style={{ fontSize: 12.5, color: '#B7BCD0', whiteSpace: 'nowrap' }}>za měsíc</div>
+          <div style={{ fontSize: 12.5, color: '#B7BCD0', whiteSpace: 'nowrap' }}>za měsíc{sleva > 0 ? ' · sleva ' + sleva + ' %' : ''}</div>
         </div>
         <a className="e-c2-vl-btn" href={'mailto:podpora@makej.eu?subject=' + encodeURIComponent('Poptávka tarifu Vlastní — ' + n.toLocaleString('cs-CZ') + ' inzerátů')}>Nezávazná poptávka</a>
       </div>
@@ -1590,6 +1587,13 @@ function EPricing({ onTab, onPlanChange }) {
     if (planId === currentPlanId) return;
     setSelected(planId);
   }
+  // Příchod z okna „Limit překročen" (EJobs → „Chci Dynamický"): tarif vybrat
+  // rovnou, jako by na něj firma klikla. Vlastní se jen poptává — tam nic.
+  useEffectE(() => {
+    const t = window.__empVybratTarif; window.__empVybratTarif = null;
+    const p = t && PLANS.find(x => x.id === t);
+    if (p && !p.contact) handleSelect(t);
+  }, []);
 
   function handlePay() {
     const plan = PLANS.find(p => p.id === selected);
@@ -1735,7 +1739,7 @@ function EPricing({ onTab, onPlanChange }) {
                     </div>
                     <div style={{ fontSize: 13.5, color: '#5B6178', lineHeight: 1.5 }}>
                       {annual
-                        ? <>Zaplatíte <b style={{ color: '#0B1033' }}>{f(mes * 12)} Kč</b> jednou za rok · <span style={{ color: '#15803D', fontWeight: 600 }}>ušetříte {f(p.save)} Kč</span></>
+                        ? <>Zaplatíte <b style={{ color: '#0B1033' }}>{f(mes * 12)} Kč</b> jednou za rok{p.save ? <> · <span style={{ color: '#15803D', fontWeight: 600 }}>ušetříte {f(p.save)} Kč</span></> : null}</>
                         : <>Platí se každý měsíc, zrušit jde kdykoli.</>}
                     </div>
                   </div>
@@ -2650,14 +2654,18 @@ function EJobKartaApp({ l, onOpen, nahled }) {
 // ── Řada karet inzerátů do strany (30. 9.) — jako řádky v Kandidátech ──
 // Vejde se vždy celý počet karet (šířka se dopočítá, min. 290 px), posun se
 // dorovná na začátek karty. Bez šipek (Yasin 30. 9.) — posouvá se jako Kandidáti.
-// Záložka Inzeráty (Topované / Urgentní / Aktivní / Neaktivní) i Dashboard
+// Záložka Inzeráty (Aktivní / Neaktivní) i Dashboard
 // (stavNad = nad kartou štítek stavu — tam řada míchá stavy).
 // Karty musí mít _state (_jbStatusMap).
 // Přesah jen 4 px (na fialový rámeček urgentní karty): při 24 px koukal na krajích
 // kousek sousední karty a řada vypadala useknutě (Yasin 30. 9.). Takhle je po
 // zastavení vidět vždy jen celý počet karet.
 const _JR_MIN = 290, _JR_MEZERA = 16, _JR_PRESAH = 4;
-function EJobRada({ nazev, pozn, extra, jobs, onOpen, stavNad }) {
+// volnych = kolik inzerátů ještě tarif dovolí zapnout — na konci řady tolik
+// prázdných míst „Nevyužito" (Yasin 1. 10.: firma na první pohled nevěděla,
+// jestli má tarif vyčerpaný). Klik na prázdné místo = nový inzerát.
+// pocet = co ukázat vedle nadpisu místo počtu karet (např. „3 z 5").
+function EJobRada({ nazev, pozn, extra, jobs, onOpen, stavNad, volnych = 0, onVolny, pocet }) {
   const pasRef = React.useRef(null);
   const [sirka, setSirka] = React.useState(_JR_MIN);
   React.useLayoutEffect(() => {
@@ -2672,13 +2680,13 @@ function EJobRada({ nazev, pozn, extra, jobs, onOpen, stavNad }) {
     if (!window.ResizeObserver) return;
     const ro = new ResizeObserver(spocti); ro.observe(el);
     return () => ro.disconnect();
-  }, [jobs.length]);
+  }, [jobs.length, volnych]);
   return (
     <section style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 34 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 9, rowGap: 2, minWidth: 0 }}>
           <span style={{ fontSize: 17, fontWeight: 800, color: '#0B1233', letterSpacing: '-.01em', whiteSpace: 'nowrap' }}>{nazev}</span>
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#A6ADCB' }}>{jobs.length}</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#A6ADCB' }}>{pocet != null ? pocet : jobs.length}</span>
           {pozn && <span style={{ fontSize: 12.5, color: '#7A82A6' }}>{pozn}</span>}
           {extra}
         </div>
@@ -2701,6 +2709,12 @@ function EJobRada({ nazev, pozn, extra, jobs, onOpen, stavNad }) {
             </div>
           );
         })}
+        {Array.from({ length: volnych }, (_, i) => (
+          <button key={'volno' + i} type="button" className="e-jr-volno" onClick={onVolny}
+            style={{ flex: 'none', width: sirka, height: 500, scrollSnapAlign: 'start', borderRadius: 22, border: '2px dashed #D5DAEA', background: '#FAFBFE', color: '#A6ADCB', fontSize: 15, fontWeight: 700, fontFamily: 'inherit', cursor: onVolny ? 'pointer' : 'default', display: 'grid', placeItems: 'center' }}>
+            Nevyužito
+          </button>
+        ))}
       </div>
     </section>
   );
@@ -3038,35 +3052,45 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
 
   // Ukázkové inzeráty (employer-demo.jsx) jen do seznamu — do limitu tarifu a čísel ne
   const raw = (typeof E_JOBS !== 'undefined' ? E_JOBS : []).concat(typeof eDemoInzeraty === 'function' ? eDemoInzeraty() : []);
-  const jobs = raw.map(j => {
+  const planTier = (typeof _employerPlanTier !== 'undefined') ? _employerPlanTier() : 'zakladni';
+  const limit = (typeof EMPLOYER_MAX_ACTIVE !== 'undefined' && EMPLOYER_MAX_ACTIVE[planTier] != null) ? EMPLOYER_MAX_ACTIVE[planTier] : Infinity;
+  const vsechny = raw.map(j => {
     const topDo = topy[j.id] || j.topUntil || null;
     return { ...j, _state: _jbStatusMap(overrides[j.id] || j.status), topUntil: topDo, boosted: !!j.boosted || !!(topDo && new Date(topDo) > new Date()) };
   });
+  // Ukázkové inzeráty taky drží tarif (Yasin 1. 10.: „Výhodný a 4 aktivní?"):
+  // aktivní ukázky jen do volných míst, vlastní inzeráty mají přednost.
+  // Vypnuté ukázky zůstávají všechny.
+  const _bezi0 = j => j._state === 'active' || j._state === 'asap';
+  let _ukazekVolno = Math.max(0, limit - vsechny.filter(j => !j._demo && _bezi0(j)).length);
+  const _ukazkyNapred = vsechny.filter(j => j._demo && _bezi0(j))
+    .sort((a, b) => ((a._state === 'asap' ? 0 : 2) + (a.boosted ? 0 : 1)) - ((b._state === 'asap' ? 0 : 2) + (b.boosted ? 0 : 1)));
+  const _ukazkyVidet = new Set(_ukazkyNapred.filter(() => _ukazekVolno-- > 0).map(j => j.id));
+  const jobs = vsechny.filter(j => !(j._demo && _bezi0(j)) || _ukazkyVidet.has(j.id));
   const skutecne = jobs.filter(j => !j._demo);
   const cand = (typeof E_CANDIDATES !== 'undefined' ? E_CANDIDATES : {});
 
   const activeCount = skutecne.filter(j => j._state === 'active' || j._state === 'asap').length;
 
-  // Řady pod sebou jako v Kandidátech (Yasin 30. 9.: filtry pryč): Topované →
-  // Urgentní → Aktivní, každá do strany, dole Neaktivní. Inzerát je jen v jedné
-  // řadě (topovaný urgentní patří do Topovaných); v řadě od nejnovějšího.
+  // Jen dvě řady (Yasin 1. 10.: čtyři řady s jedním inzerátem vypadaly
+  // prázdně): Aktivní do strany, pod ní Neaktivní (zašedlé). V Aktivních jde
+  // na začátek, co firma zvýraznila — urgentní má přednost před topovaným:
+  // urgentní + topovaný → urgentní → topovaný → ostatní; ve skupině od
+  // nejnovějšího.
   const _novejsi = (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0);
   const _bezi = j => j._state === 'active' || j._state === 'asap';
-  const _topnuty = j => _bezi(j) && j.boosted;
+  const _poradi = j => (j._state === 'asap' ? 0 : 2) + (j.boosted ? 0 : 1);
+  const _aktivniNapred = (a, b) => (_poradi(a) - _poradi(b)) || _novejsi(a, b);
   // Bez vysvětlivek u nadpisů řad (Yasin 30. 9.)
   const rady = [
-    { k: 'top',  nazev: 'Topované',  m: _topnuty },
-    { k: 'asap', nazev: 'Urgentní',  m: j => j._state === 'asap' && !_topnuty(j) },
-    { k: 'bezi', nazev: 'Aktivní',   m: j => j._state === 'active' && !_topnuty(j) },
-    { k: 'vyp',  nazev: 'Neaktivní', m: j => j._state === 'inactive' },
-  ].map(r => ({ ...r, jobs: jobs.filter(r.m).sort(_novejsi) })).filter(r => r.jobs.length);
+    { k: 'bezi', nazev: 'Aktivní',   m: _bezi, sort: _aktivniNapred },
+    { k: 'vyp',  nazev: 'Neaktivní', m: j => j._state === 'inactive', sort: _novejsi },
+  ].map(r => ({ ...r, jobs: jobs.filter(r.m).sort(r.sort) }));
   const detail = detailId ? jobs.find(j => j.id === detailId) : null;
   // Otevření / zavření detailu začne nahoře, ne uprostřed dlouhého seznamu.
   // Nahoru: na počítači se posouvá obsah karty (pevná obrazovka), na mobilu <main>
   React.useEffect(() => { document.querySelectorAll('main, .e-ram > div > :last-child').forEach(m => { m.scrollTop = 0; }); setDetailStat(false); }, [detailId]);
 
-  const planTier = (typeof _employerPlanTier !== 'undefined') ? _employerPlanTier() : 'zakladni';
-  const limit = (typeof EMPLOYER_MAX_ACTIVE !== 'undefined' && EMPLOYER_MAX_ACTIVE[planTier] != null) ? EMPLOYER_MAX_ACTIVE[planTier] : Infinity;
   const maxViews = Math.max.apply(null, jobs.map(j => j.views || 0).concat([1]));
   const maxPerDay = Math.max.apply(null, jobs.map(j => (j.views || 0) / _jbAge(j.created_at)).concat([1]));
   const totalViews = jobs.reduce((a, j) => a + (j.views || 0), 0);
@@ -3080,7 +3104,7 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
     setUkladam(false); setDotaz(null);
     if (ok) {
       setOverrides(o => ({ ...o, [l.id]: zapnout ? 'active' : 'paused' }));
-      window.empToast && window.empToast(zapnout ? 'Inzerát je aktivní' : 'Inzerát je pozastavený', zapnout ? l.title + ' — lidé ho znovu uvidí v aplikaci.' : l.title + ' — v aplikaci už ho nikdo neuvidí.', zapnout ? '✅' : '⏸️', 'info');
+      window.empToast && window.empToast(zapnout ? 'Inzerát je aktivní' : 'Inzerát je pozastavený', zapnout ? 'Inzerát „' + l.title + '“ lidé znovu uvidí v aplikaci.' : 'Inzerát „' + l.title + '“ už v aplikaci nikdo neuvidí.', zapnout ? '✅' : '⏸️', 'info');
     } else {
       window.empToast && window.empToast('Nepovedlo se', 'Stav inzerátu se nepodařilo uložit. Zkuste to prosím znovu.', '⚠️', 'error');
     }
@@ -3102,22 +3126,24 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
   const topPouzito = (typeof E_TOPOVANI !== 'undefined' ? E_TOPOVANI : []).length;
   const topZbyva = Math.max(0, topLimit - topPouzito);
   const tarifNazev = (typeof EMPLOYER_TARIF_NAZEV !== 'undefined' && EMPLOYER_TARIF_NAZEV[planTier]) || '';
-  const dalsiMesic = (() => { const d = new Date(); return '1. ' + (d.getMonth() === 11 ? 1 : d.getMonth() + 2) + '.'; })();
+  // V testovacím režimu (E_LIMITY_OD_PRIHLASENI) se topování obnoví při přihlášení, ne 1. v měsíci.
+  const testLimity = typeof E_LIMITY_OD_PRIHLASENI !== 'undefined' && E_LIMITY_OD_PRIHLASENI;
+  const dalsiMesic = testLimity ? 'při dalším přihlášení' : (() => { const d = new Date(); return '1. ' + (d.getMonth() === 11 ? 1 : d.getMonth() + 2) + '.'; })();
   const vyberTop = l => {
     if (!(l._state === 'active' || l._state === 'asap')) {
-      window.empToast && window.empToast('Inzerát je vypnutý', 'Topovat jde jen aktivní inzerát — nejdřív ho zapněte.', 'ℹ️', 'info');
+      window.empToast && window.empToast('Inzerát je vypnutý', 'Topovat jde jen aktivní inzerát. Nejdřív ho zapněte.', 'ℹ️', 'info');
       return;
     }
     setDotaz({ job: l, druh: 'top' });
   };
   const potvrdTop = async l => {
-    if (l._demo) { setDotaz(null); window.empToast && window.empToast('Ukázkový inzerát', 'Topování si vyzkoušíte na vlastním inzerátu — ukázka se netopuje.', 'ℹ️', 'info'); return; }
+    if (l._demo) { setDotaz(null); window.empToast && window.empToast('Ukázkový inzerát', 'Ukázka se netopuje. Topování si vyzkoušíte na vlastním inzerátu.', 'ℹ️', 'info'); return; }
     setUkladam(true);
     const doKdy = typeof topovatJobE === 'function' ? await topovatJobE(l.id) : null;
     setUkladam(false); setDotaz(null);
     if (doKdy) {
       setTopy(t => ({ ...t, [l.id]: doKdy }));
-      window.empToast && window.empToast('Inzerát je topovaný', l.title + ' — do ' + _jbKdyDo(doKdy) + ' ho brigádníci uvidí mezi prvními kartami.', '✅', 'info');
+      window.empToast && window.empToast('Inzerát je topovaný', 'Inzerát „' + l.title + '“ uvidí brigádníci do ' + _jbKdyDo(doKdy) + ' mezi prvními kartami.', '✅', 'info');
     } else {
       window.empToast && window.empToast('Nepovedlo se', 'Topování se nepodařilo uložit. Zkuste to prosím znovu.', '⚠️', 'error');
     }
@@ -3266,7 +3292,16 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
         ) : (
         // Tělo: řady karet pod sebou (bez filtrů, 30. 9.)
         <div style={{ padding: '14px 24px 26px', display: 'flex', flexDirection: 'column', gap: 30, overflowX: 'hidden' }}>
-          {rady.map(r => <EJobRada key={r.k} nazev={r.nazev} jobs={r.jobs} onOpen={l => setDetailId(l.id)} />)}
+          {rady.map(r => {
+            // Volná místa jen v Aktivních a jen s omezeným tarifem. Počítá se
+            // to, co je v řadě vidět (i ukázkové inzeráty, dokud jsou zapnuté —
+            // jinak by se karty a „Nevyužito" nesčítaly do tarifu).
+            const volno = r.k === 'bezi' && jobs.length && isFinite(limit) ? Math.max(0, limit - r.jobs.length) : 0;
+            if (!r.jobs.length && !volno) return null;
+            return <EJobRada key={r.k} nazev={r.nazev} jobs={r.jobs} onOpen={l => setDetailId(l.id)}
+              volnych={volno} onVolny={onNew}
+              pocet={r.k === 'bezi' && isFinite(limit) ? r.jobs.length + ' z ' + limit : undefined} />;
+          })}
 
           {/* Prázdný stav */}
           {jobs.length === 0 && (
@@ -3293,11 +3328,11 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
               // Topování (Yasin 29. 9.): zeptat se, vysvětlit, co to udělá, a kolik jich zbývá
               topLimit === 0 || topZbyva === 0 ? (
                 <>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', marginBottom: 10 }}>{topLimit === 0 ? 'Topování není ve vašem tarifu' : 'Topování na tento měsíc došla'}</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', marginBottom: 10 }}>{topLimit === 0 ? 'Topování není ve vašem tarifu' : testLimity ? 'Topování došla' : 'Topování na tento měsíc došla'}</div>
                   <div style={{ fontSize: 14, color: '#3A4266', lineHeight: 1.55, marginBottom: 22 }}>
                     {topLimit === 0
                       ? 'Topovaný inzerát je ' + topHodin + ' hodin v aplikaci mezi prvními kartami. Topování máte od tarifu Výhodný (1× měsíčně).'
-                      : 'Tarif ' + tarifNazev + ' má ' + topLimit + '× topování měsíčně a tento měsíc jste je už využili. Nová přibudou ' + dalsiMesic + ', víc jich mají vyšší tarify.'}
+                      : 'Tarif ' + tarifNazev + ' má ' + topLimit + (testLimity ? '× topování a už jste je využili. Nová přibudou ' : '× topování měsíčně a tento měsíc jste je už využili. Nová přibudou ') + dalsiMesic + ', víc jich mají vyšší tarify.'}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
                     <EBtnSek onClick={() => setDotaz(null)}>Zavřít</EBtnSek>
@@ -3310,7 +3345,7 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
                   <div style={{ fontSize: 13.5, fontWeight: 700, color: '#7A82A6', marginBottom: 14 }}>{dotaz.job.title}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
                     {[
-                      'Na ' + topHodin + ' hodin ho brigádníci uvidí mezi prvními kartami — v každém filtru, do kterého inzerát spadá.',
+                      'Na ' + topHodin + ' hodin ho brigádníci uvidí mezi prvními kartami, a to v každém filtru, do kterého inzerát spadá.',
                       'Dostane zlatou pilulku TOP, takže se odliší i od ostatních karet.',
                       'Po ' + topHodin + ' hodinách se sám vrátí mezi ostatní inzeráty.',
                     ].map(t => (
@@ -3321,7 +3356,7 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
                     ))}
                   </div>
                   <div style={{ background: '#FFF8E1', border: '1px solid #F6E3A1', borderRadius: 12, padding: '11px 14px', marginBottom: 22, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span style={{ fontSize: 14, color: '#3A4266' }}>Tento měsíc vám zbývá <b style={{ color: '#0B1233' }}>{topZbyva} z {topLimit}</b> topování{topZbyva === 1 ? ' — tohle bude poslední' : ''}</span>
+                    <span style={{ fontSize: 14, color: '#3A4266' }}>{testLimity ? 'Zbývá vám' : 'Tento měsíc vám zbývá'} <b style={{ color: '#0B1233' }}>{topZbyva} z {topLimit}</b> topování{topZbyva === 1 ? ', tohle bude poslední' : ''}</span>
                     <span style={{ fontSize: 12.5, color: '#7A82A6' }}>{tarifNazev ? 'Tarif ' + tarifNazev + ' · ' : ''}nová přibudou {dalsiMesic}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
@@ -3352,16 +3387,41 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
                 </div>
               </>
             ) : (
-              <>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', marginBottom: 10 }}>Limit aktivních inzerátů je plný</div>
-                <div style={{ fontSize: 14, color: '#3A4266', lineHeight: 1.55, marginBottom: 22 }}>
-                  Váš tarif dovoluje {limit} {limit === 1 ? 'aktivní inzerát' : limit <= 4 ? 'aktivní inzeráty' : 'aktivních inzerátů'} najednou a všechny jsou obsazené. Pozastavte jiný inzerát, nebo si zvyšte tarif.
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                  <EBtnSek onClick={() => setDotaz(null)}>Zavřít</EBtnSek>
-                  <EBtnHl onClick={() => { setDotaz(null); onTab && onTab('pricing'); }}>Navýšit limit</EBtnHl>
-                </div>
-              </>
+              // Plný tarif (Yasin 1. 10.): nadpis, věta, „Řešení" se dvěma body.
+              // U prvního tlačítko jako na kartě tarifu, vždy o tarif výš
+              // (Výhodný → „Chci Dynamický"); klik přepne na Tarify a ten tarif
+              // rovnou vybere, jako by na něj firma klikla. Dole jen Vrátit se.
+              (() => {
+                const PORADI = ['zakladni', 'vyhodny', 'dynamicky', 'maximalni', 'vlastni'];
+                const vyssi = PORADI[PORADI.indexOf(planTier) + 1];
+                const vyssiNazev = (typeof EMPLOYER_TARIF_NAZEV !== 'undefined' && EMPLOYER_TARIF_NAZEV[vyssi]) || '';
+                // Dvě rovnocenné možnosti, ne kroky (Yasin 1. 10.: s tečkami to
+                // vypadalo, že nejdřív musí koupit vyšší tarif) — proto „nebo"
+                // mezi nimi jako u přihlášení na webu.
+                const text = { fontSize: 14, color: '#3A4266', lineHeight: 1.55 };
+                return (
+                  <>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', marginBottom: 6 }}>Limit překročen</div>
+                    <div style={{ ...text, marginBottom: 16 }}>Překročili jste limit aktivních inzerátů v aktuálním tarifu.</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 800, color: '#7A82A6', marginBottom: 10 }}>{vyssi ? 'Máte dvě možnosti' : 'Co s tím'}</div>
+                    {vyssi && (
+                      <>
+                        <div style={text}>Přejděte na vyšší tarif. Můžete v něm mít víc aktivních inzerátů najednou a k tomu spoustu dalších výhod.</div>
+                        <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
+                          <TierMetalButton tier={vyssi} onClick={() => { setDotaz(null); window.__empVybratTarif = vyssi; onTab && onTab('pricing'); }}>Chci {vyssiNazev}</TierMetalButton>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '16px 0', fontSize: 12.5, fontWeight: 700, color: '#A6ADCB' }}>
+                          <span style={{ flex: 1, height: 1, background: '#E6E9F5' }} />nebo<span style={{ flex: 1, height: 1, background: '#E6E9F5' }} />
+                        </div>
+                      </>
+                    )}
+                    <div style={{ ...text, marginBottom: 22 }}>Vyměňte inzerát za jiný. Jeden z aktivních inzerátů přepněte na neaktivní a tento zapněte místo něj.</div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <EBtnSek onClick={() => setDotaz(null)}>Vrátit se</EBtnSek>
+                    </div>
+                  </>
+                );
+              })()
             )}
           </div>
         </div>,
@@ -3523,7 +3583,7 @@ function ESettings({ onTab, onNew, onSignOut } = {}) {
     window.location.href = '/';
   }
   const toggleNotif = key => { setNotifs(ns => ns.map(n => n.key === key ? { ...n, on: !n.on } : n)); setDirty(true); };
-  const logout = () => { if (onSignOut) onSignOut(); else if (typeof sb !== 'undefined') { sb.auth.signOut().then(() => { window.location.href = '/'; }); } };
+  const logout = () => { if (onSignOut) onSignOut(); else if (typeof sb !== 'undefined') { sb.auth.signOut({ scope: 'local' }).then(() => { window.location.href = '/'; }); } };
   const rmPhoto = i => { setForm(f => ({ ...f, photos: f.photos.filter((_, j) => j !== i) })); setDirty(true); };
 
   const fBorder = key => flash === key ? '#F5920B' : '#E6E9F5';

@@ -10,7 +10,7 @@
     gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', functionality_storage: 'denied', personalization_storage: 'denied', security_storage: 'granted', wait_for_update: 500 });
     gtag('set', 'ads_data_redaction', true);
   </script>
-  <link rel="stylesheet" href="/consent.css?v=2" />
+  <link rel="stylesheet" href="/consent.css?v=3" />
   <script src="/consent.js?v=4" defer></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -37,11 +37,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="/iconify-icons.js"></script>
+  <script src="/iconify-icons.js?v=3"></script>
   <!-- lokálně a synchronně: přes CDN s async se komponenta upgradovala pozdě a ikony posouvaly layout -->
   <script src="/iconify-icon.min.js?v=3.0.0"></script>
   <link rel="preload" href="/fonts/LeagueSpartan-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="/style.css?v=144" />
+  <link rel="stylesheet" href="/style.css?v=178" />
   <style>
     /* ═══════════ ČLÁNEK — světlá stránka ═══════════ */
     body { background: #ffffff; }
@@ -107,7 +107,7 @@
         <a href="javascript:void(0)" class="btn-primary" id="nav-register-btn">Vytvořit účet</a>
       </div>
       <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu" aria-expanded="false">
-        <span></span><span></span>
+        <span></span><span></span><span></span>
       </button>
     </div>
     <div class="mobile-menu" id="mobile-menu">
@@ -185,7 +185,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="/" class="footer-logo">Makej</a>
-          <p>Aplikace na brigády a práci ve tvém okolí. Swajpuj, matchuj a pracuj.</p>
+          <p>Vytváříme místo, kde najde práci každý.</p>
           <div class="footer-social">
             <a href="https://www.instagram.com/makej.eu" aria-label="Instagram" target="_blank" rel="noopener"><iconify-icon icon="mdi:instagram" width="22"></iconify-icon></a>
             <a href="https://www.facebook.com/share/19Kq5N1R2u/?mibextid=wwXIfr" aria-label="Facebook" target="_blank" rel="noopener"><iconify-icon icon="mdi:facebook" width="22"></iconify-icon></a>
@@ -247,6 +247,7 @@
             <input class="form-input" type="text" id="login-key" placeholder="Zadej klíč" inputmode="numeric" autocomplete="off" />
             <p class="form-hint">Pouze pro oficiální testovací a vývojářské účty.</p>
           </div>
+          <label class="login-pamatovat" for="login-pamatovat"><input type="checkbox" id="login-pamatovat" checked /><span>Zůstat přihlášen</span></label>
           <button type="submit" class="btn-primary btn-full btn-lg" id="login-submit">Přihlásit se</button>
       </form>
       <div class="modal-divider"><span>nebo</span></div>
@@ -360,6 +361,7 @@
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="/script.js?v=67"></script>
+  <script src="/pamet-prihlaseni.js?v=2"></script>
+  <script src="/script.js?v=77"></script>
 </body>
 </html>

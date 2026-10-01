@@ -5,6 +5,33 @@ argumentem — jinak se točíme dokola.*
 
 ---
 
+**1. 10. 2026 — Tarif hlídá počet aktivních inzerátů i u nového inzerátu.**
+Při plném tarifu se nový inzerát uloží jako neaktivní. Okno „Limit překročen" nabízí
+dvě rovnocenné možnosti: tarif o stupeň výš, kde tlačítko rovnou otevře platbu, nebo
+vyměnit inzerát za jiný aktivní. Ukázkové inzeráty zabírají jen volná místa.
+*Proč:* firma s Výhodným (2) měla 4 aktivní. Tarif, který nic nehlídá, nemá cenu
+a hned u limitu je nejlepší chvíle nabídnout vyšší.
+
+**1. 10. 2026 — Ceny v dashboardu podle webu.** Výhodný 990, Dynamický 3 990 (ročně
+3 390), Maximální 9 990 (ročně 8 490), Vlastní od 17 990 Kč za 20–100 inzerátů.
+*Proč:* zdroj pravdy o cenách je ceník na webu, dashboard měl staré.
+
+**1. 10. 2026 — Inzeráty jen ve dvou řadách: Aktivní a Neaktivní.** V Aktivních jdou
+dopředu urgentní a topované (urgentní má přednost) a na konci jsou volná místa tarifu
+„Nevyužito". *Proč:* čtyři řady s jedním inzerátem vypadaly prázdně a firma nevěděla,
+jestli má tarif vyčerpaný.
+
+**1. 10. 2026 — Přihlášení si pamatuje 30 dní, odhlašuje se v dashboardu.**
+„Zůstat přihlášen" (výchozí zaškrtnuté): 30 dní od poslední návštěvy, jinak do zavření
+prohlížeče. V dashboardu je Zavřít (zpět na web, přihlášení zůstane) a Odhlásit se na
+dva kliky. Odhlašuje se jen tohle zařízení. Na webu tlačítko Odhlásit se není.
+*Proč:* firma nemá zadávat heslo pokaždé a odhlášení jedním omylem je nepříjemné.
+Odhlášení na webu působilo divně.
+
+**1. 10. 2026 — Web na velkém monitoru zvětšený jako na notebooku, na mobilu bez
+zastavení.** *Proč:* na 27" monitoru byl web malý uprostřed bílé plochy a na telefonu
+se úvodka u čekacího listu zasekávala.
+
 **30. 9. 2026 — Firemní dashboard: všechno důležité na jedné záložce, ostatní bez čísel.**
 Pás s čísly nahoře zmizel ze všech záložek. Dashboard je teď přehled: „Co je potřeba
 udělat" (kdo čeká na odpověď, noví zájemci, inzeráty, nedoplněný profil — každá

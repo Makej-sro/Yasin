@@ -299,6 +299,12 @@ function ESidebar({ tab, onTab, onSignOut, onNew, mobile = false, open = false, 
     return () => { document.removeEventListener('mousedown', mimo); document.removeEventListener('keydown', esc); };
   }, [kartaOtevrena]);
   useEffectE(() => { if (sbal) setKartaOtevrena(false); }, [sbal]);
+  // Odhlášení na dva kliky na stejném místě: první přepne tlačítko na
+  // potvrzení (nad ním otázka, vlevo Zrušit), druhý odhlásí. Kdo to myslí
+  // vážně, udělá rychlý dvojklik bez hýbání myší (Yasin 1. 10.). Nabídka je
+  // přichycená spodkem, takže otázka ji natáhne nahoru a tlačítko stojí.
+  const [potvrdOdhlaseni, setPotvrdOdhlaseni] = useStateE(false);
+  useEffectE(() => { if (!kartaOtevrena) setPotvrdOdhlaseni(false); }, [kartaOtevrena]);
   const P = (typeof EPROFILE !== 'undefined' ? EPROFILE : {});
   const logoUrl = P.logo_url || '';
   // Bez vyplněného názvu firmy bral dashboard jméno člověka („Samuel") —
@@ -320,11 +326,35 @@ function ESidebar({ tab, onTab, onSignOut, onNew, mobile = false, open = false, 
         </button>
       ))}
       <div style={{ height: 1, background: '#F0F2FA', margin: '4px 6px' }} />
-      <button role="menuitem" onClick={() => { setKartaOtevrena(false); onSignOut && onSignOut(); }}
-        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 8, border: 'none', background: 'transparent', color: '#6B7280', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
-        onMouseEnter={e => { e.currentTarget.style.background = '#F3F4F6'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
-        <Icon name="logout-2-linear" size={17} color="#9CA3AF" />Odhlásit se
-      </button>
+      {/* Zavřít (křížek) = zpátky na web, přihlášení zůstane (na webu je pak
+          v liště „Dashboard"). Odhlásit se = přihlášení z tohoto zařízení
+          zmizí. Odhlásit je pořád červené s bílými dveřmi, křížek bílý
+          a zčervená až při najetí (Yasin 1. 10.). Křížek je znak ✕ jako
+          u ostatních zavíracích tlačítek v dashboardu. */}
+      {potvrdOdhlaseni && (
+        <div style={{ padding: '6px 8px 4px', fontSize: 13, fontWeight: 700, color: '#1F2433' }}>Opravdu se chcete odhlásit?</div>
+      )}
+      <div style={{ display: 'flex', gap: 6, padding: '4px 4px 2px' }}>
+        {potvrdOdhlaseni
+          ? <button role="menuitem" onClick={() => setPotvrdOdhlaseni(false)}
+              style={{ flexShrink: 0, padding: '9px 12px', borderRadius: 8, border: '1px solid #E6E9F5', background: '#fff', color: '#374151', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', transition: 'background .15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#F3F4F6'; }} onMouseLeave={e => { e.currentTarget.style.background = '#fff'; }}>Zrušit</button>
+          : <button role="menuitem" title="Zavřít" aria-label="Zavřít"
+              onClick={() => { setKartaOtevrena(false); window.location.href = '/'; }}
+              style={{ width: 38, flexShrink: 0, borderRadius: 8, border: '1px solid #E6E9F5', background: '#fff', color: '#6B7280', fontSize: 15, lineHeight: 1, cursor: 'pointer', display: 'grid', placeItems: 'center', transition: 'background .15s, color .15s, border-color .15s' }}
+              onMouseEnter={e => { const b = e.currentTarget; b.style.background = '#f43f5e'; b.style.borderColor = '#f43f5e'; b.style.color = '#fff'; }}
+              onMouseLeave={e => { const b = e.currentTarget; b.style.background = '#fff'; b.style.borderColor = '#E6E9F5'; b.style.color = '#6B7280'; }}>✕</button>}
+        <button role="menuitem"
+          onClick={() => {
+            if (!potvrdOdhlaseni) { setPotvrdOdhlaseni(true); return; }
+            // Nabídka i rozmazání zůstanou — přes ně se stáhne tma (handleSignOut).
+            onSignOut && onSignOut();
+          }}
+          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '9px 8px', borderRadius: 8, border: 'none', background: potvrdOdhlaseni ? '#e11d48' : '#f43f5e', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background .15s' }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#e11d48'; }} onMouseLeave={e => { e.currentTarget.style.background = potvrdOdhlaseni ? '#e11d48' : '#f43f5e'; }}>
+          <Icon name="logout-2-linear" size={17} color="#fff" />{potvrdOdhlaseni ? 'Odhlásit' : 'Odhlásit se'}
+        </button>
+      </div>
     </>
   );
 
@@ -456,7 +486,30 @@ function ESidebar({ tab, onTab, onSignOut, onNew, mobile = false, open = false, 
           nedalo kliknout. Teď jedna karta: logo, název, tarif. Klik otevře menu
           Profil firmy / Tarif a platby / Odhlásit se. */}
       <div ref={kartaRef} style={{ position: 'relative', marginTop: 10, paddingTop: 10, borderTop: '1px solid #E5E7EB' }}>
-        {kartaOtevrena && !sbal && (
+        {/* Potvrzení odhlášení: všechno okolo se rozmaže, ať si toho člověk
+            všimne (Yasin 1. 10.). Rozmazání je přes celé okno (portál), takže
+            nabídka musí ven z menu nad něj — <aside> má vlastní zIndex 40.
+            Stojí přesně tam, kde byla (spodek 6 px nad kartou), a bez
+            animace, aby se tlačítko pod kurzorem nehnulo. Klik do rozmazaného
+            místa nabídku zavře (posluchač „mimo" výš). */}
+        {kartaOtevrena && potvrdOdhlaseni && ReactDOM.createPortal(
+          <div aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 250, background: 'rgba(10,13,46,.14)', backdropFilter: 'blur(7px)', WebkitBackdropFilter: 'blur(7px)', animation: 'eRozmazIn .22s ease both' }} />,
+          document.body
+        )}
+        {kartaOtevrena && !sbal && potvrdOdhlaseni && kartaRef.current && (() => {
+          const kr = kartaRef.current.getBoundingClientRect();
+          return ReactDOM.createPortal(
+            <div ref={kartaMenuRef} role="menu" style={{
+              position: 'fixed', left: kr.left, width: kr.width, bottom: window.innerHeight - kr.top - 1 + 6, zIndex: 300,
+              background: '#fff', border: '1px solid #E6E9F5', borderRadius: 12, padding: 6, boxSizing: 'border-box',
+              boxShadow: '0 18px 40px -14px rgba(20,22,40,.3)',
+            }}>
+              {kartaPolozky}
+            </div>,
+            document.body
+          );
+        })()}
+        {kartaOtevrena && !sbal && !potvrdOdhlaseni && (
           <div role="menu" style={{
             position: 'absolute', left: 0, right: 0, bottom: 'calc(100% + 6px)', zIndex: 5,
             background: '#fff', border: '1px solid #E6E9F5', borderRadius: 12, padding: 6,

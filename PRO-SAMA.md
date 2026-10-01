@@ -7,6 +7,299 @@
 
 ---
 
+## 2026-10-01 — seznam opravených chyb na webu (co se dělo, kdy, v jakém commitu)
+
+> **Pro Sama:** chyby, které jsme u nás opravili a které jsou nejspíš pořád na živém
+> makej.eu. U každé: co přesně uživatel viděl, kdy se to dělo, ve kterém našem commitu
+> (repo `Makej-sro/Yasin`) je oprava a co v kódu hledat.
+
+> **Srovnáno s tvým webem 1. 10.:** web (bez dashboardu) u nás odpovídá tvému `bd689ff`
+> (1. 10.) — ceny, sdílený ceník, OG obrázek, kotva Kontakt, kroky na /hledam-si-praci,
+> tvoje /lide. Navíc oproti tobě máme **jen body 1–17 níž** — nic dalšího.
+> Dashboard (`employer/`) jsme od tebe nebrali — ceny v něm jsou zatím staré.
+
+**1. Nad velkým nadpisem byla před animací vidět řada čárek (kousky písmen)**
+- **Co uživatel viděl:** nadpis na začátku stránky (např. „Staň se Makačem / ještě dnes")
+  vyjíždí zespodu. Ještě než se rozjel, koukaly nad místem, kde se objeví, useknuté
+  špičky písmen (háčky Ň, Č, ě, tečka nad j, vršky N, d, l) — vypadalo to jako řada
+  čárek nebo kousky textu, které tam „už jsou" dřív než samotný text.
+- **Kdy a kde:** při každém otevření nebo prokliknutí na stránku, v prodlevě před
+  animací (zhruba první 0,1–1 s). Stránky `/hledam-si-praci`, `/lide`,
+  `/pro-zamestnavatele` a nadpis v modrém pruhu na úvodní stránce. Je to i na živém webu.
+- **Proč:** text vyjíždí zpod neviditelné masky (`overflow:hidden`). Start byl jen
+  o 120 % výšky řádku níž, jenže okno masky je kvůli ocáskům (j, p, y) o .3em vyšší
+  a tučné písmo vystrkuje špičky nad svůj box — 120 % nestačilo, 7–13 px písmen zůstalo vidět.
+- **Oprava:** commit **`680edf7`** z **24. 9. 2026** „Web srovnán se Samem + úvodka
+  s modrým pruhem, nová fotka na /lide". Start animace `translateY(120%)` → **`160%`**:
+  `style.css` (`@keyframes heroLineUp`, `.vx-line-in`) a vložené styly `.eh-line-in`
+  v `hledam-si-praci.html`, `lide.html`, `pro-zamestnavatele.html`.
+  Hledat: `translateY(160%)`, `heroLineUp`. Podrobněji blok 2026-09-24 níž, bod 5.
+
+**2. Přihlašovací okno se na menší obrazovce nedá posunout — spodek je useknutý**
+- **Co uživatel viděl:** po kliknutí na „Přihlásit se" je okno vyšší než obrazovka.
+  Spodní část (tlačítko „Přihlásit se", přihlášení přes Google, odkazy pod tím) je pod
+  okrajem a okno ani stránka se posunout nedají — přihlásit se nejde.
+- **Kdy a kde:** na všech stránkách webu, jakmile je okno prohlížeče nižší než zhruba
+  720 px (menší notebook, zvětšená stránka, telefon na šířku). Ověřeno 1. 10. na tvé
+  verzi: při výšce 540 px má okno 508 px a obsah 705 px, posunout nejde.
+- **Proč:** nový vzhled okna (blok „PŘIHLÁŠENÍ A REGISTRACE — ve stylu appky" ve
+  `style.css`) dává oknu `max-height` a `overflow-y: auto`. Jenže v HTML zůstalo na
+  `#login-modal` vložené `style="overflow:visible;"` (bylo tam kvůli kukajícímu
+  Makačovi nad oknem) a to posouvání přebíjí.
+- **Oprava:** commit **`8cd5e6d`** z **27. 9. 2026** „Firemní dashboard: nový vzhled,
+  Profil firmy, inzeráty, ceník v2" (část „web: přihlašovací okno ve stylu appky").
+  Na všech 9 stránkách s oknem `<div class="modal" id="login-modal" style="overflow:visible;">`
+  → `<div class="modal" id="login-modal">`. Hledat: `id="login-modal"`.
+
+**3. Na blogu nad přihlašovacím oknem pořád kouká kreslený Makač**
+- **Co uživatel viděl:** na blogu se po kliknutí na „Přihlásit se" nad modrým oknem
+  objeví kreslená hlavička s očima (Makač), na ostatních stránkách už ne — působí to
+  jako zbytek starého vzhledu.
+- **Kdy a kde:** `/blog/` a oba články (`/blog/brigada-bez-smlouvy-zakon`,
+  `/blog/proc-jsme-zalozili-makej`), vždy po otevření přihlášení. Ověřeno 1. 10.
+- **Proč:** při přechodu na nový vzhled okna se Makač (`#main-peeker`) smazal ze
+  stránek, ale na třech stránkách blogu zůstal.
+- **Oprava:** stejný commit **`8cd5e6d`** z **27. 9. 2026**. Ze tří stránek blogu smazat
+  celý blok `<!-- Makač peeker -->` / `<div id="main-peeker" …>` (styly i skript
+  peekeru už jsou pryč). Hledat: `main-peeker`.
+
+**4. Bílé tlačítko v modrém pruhu na /pro-zamestnavatele při najetí myší zmizí**
+- **Co uživatel viděl:** dole na stránce pro zaměstnavatele je modrý pruh s bílým
+  tlačítkem. Když na něj najede myší, tlačítko zmodrá do stejné barvy jako pruh —
+  zůstane jen bílý text a tlačítko jako by zmizelo.
+- **Kdy a kde:** `/pro-zamestnavatele`, modrý pruh na konci stránky, při najetí myší
+  (na počítači). Na úvodní stránce už to máš opravené, tady ne.
+- **Oprava:** commit **`680edf7`** z **24. 9. 2026** „Web srovnán se Samem + úvodka
+  s modrým pruhem, nová fotka na /lide". `.vx-close .vx-btn:hover` → `background:
+  #F4F6FF` (jen lehce zesvětlá), místo `#0020f6` + bílého textu. Hledat:
+  `.vx-close .vx-btn:hover` v `pro-zamestnavatele.html`.
+
+**5. Barevné skvrny v pozadí (aurora) se animují i mimo obraz — zbytečně to zatěžuje**
+- **Co uživatel viděl:** nic přímo vidět není, ale skvrny v pozadí herů běží
+  v nekonečné animaci i ve chvíli, kdy jsou dávno odscrollované, a mléčné sklo
+  čekacího listu nad nimi se kvůli tomu přepočítává každý snímek. Na slabších
+  telefonech a noteboocích to bere výkon (posouvání, baterie).
+- **Kdy a kde:** na všech stránkách s aurorou, celou dobu, co je stránka otevřená.
+- **Oprava:** commit **`680edf7`** z **24. 9. 2026**. Na konec `script.js` funkce
+  `auroraJenVObraze()` (IntersectionObserver přidá `.aurora--stoji`, když skvrny nejsou
+  vidět) + do `style.css` `.aurora--stoji i { animation-play-state: paused; }`.
+  Hledat: `auroraJenVObraze`, `aurora--stoji`.
+
+**6. (Úprava vzhledu, ne chyba) Stránka bez posuvníku vpravo**
+- **Co je jinak:** u nás se vpravo nekreslí posuvník stránky (Yasin ho tam nechce).
+  Stránka se dál posouvá kolečkem, trackpadem i klávesami; vnitřní posuvné části
+  (nastavení cookies, FAQ na /podpora) mají posuvník dál.
+- **Od kdy:** commit **`7dcec87`** z **10. 9. 2026** „Čekací list bez fyzická/právnická,
+  oprava cache skriptu, skrytý posuvník". Ve `style.css` blok „BEZ POSUVNÍKU STRÁNKY"
+  (`html { scrollbar-width: none }` + `html::-webkit-scrollbar { display: none }`).
+
+**7. Na Windows notebooku telefon v heru /hledam-si-praci zajede za tlačítko „Vytvořit účet zdarma"**
+- **Co uživatel viděl:** po úvodní animaci dosedne telefon vrškem pod tlačítko — tlačítko
+  překrývá horní část telefonu (displej s nabídkou), vypadá to jako chyba v rozložení.
+- **Kdy a kde:** `/hledam-si-praci` na nízkých oknech — typicky Windows notebook se
+  zvětšením 125–150 % (okno 1280 × 590–720, 1366 × 768, 1536 × 730). Na 1280 × 720 byl
+  vršek telefonu 52 px nad spodkem tlačítka, na 1280 × 590 dokonce 107 px. Na MacBooku
+  (1440 × 900) to bylo v pořádku. Je to i na živém webu.
+- **Oprava:** 1. 10. 2026 (commit doplníme po pushi). Telefon se na nízkých oknech posadí
+  níž: v `hledam-si-praci.html` stupně `.mkj-visual` (CSS `@media (min-height: …)` i
+  tabulka `STUPNE` ve skriptu pod herem) — `--dy` pro výšky pod 650 / 650 / 710 / 770 /
+  830 px = 436 / 416 / 392 / 370 / 370 px (dřív 258 / 275 / 295 / 320 / 345) a nový stupeň
+  870 px se starou hodnotou 345, takže notebooky 900+ zůstaly beze změny. Mezera mezi
+  tlačítkem a telefonem je teď všude 15–45 px. Hledat: `STUPNE`, `.mkj-visual`.
+
+**8. Na nízkém okně na /lide lezou lidé z fotky hlavami do tlačítek**
+- **Co uživatel viděl:** fotka pěti lidí v heru je tak velká, že jejich hlavy zasahují
+  do tlačítek „Vytvořit účet" / „Jak to funguje".
+- **Kdy a kde:** `/lide` na počítači s oknem nižším než ~650 px (Windows notebook se
+  zvětšením 150 %, 1280 × 590 — překryv 29 px). Je to i na živém webu.
+- **Oprava:** 1. 10. 2026 (commit doplníme po pushi). V `lide.html` nové pravidlo
+  `@media (min-width: 601px) and (max-height: 700px)` — `.vx-heroimg` má šířku z `.74`
+  výšky okna místo `.88`. Hledat: `vx-heroimg`, „Nízké okno na počítači".
+
+**9. (Úprava, ne chyba) Na velkém monitoru se celý web zvětší — vypadá jako na notebooku**
+- **Co je jinak:** web je navržený na notebook (~1440 × 900). Na iMacu, Studio Displayi
+  nebo 27" monitoru dřív zůstal malý uprostřed velké bílé plochy. Teď se celá stránka
+  zvětší (CSS `zoom`) tak, aby „virtuální" okno mělo zhruba 1600 × 900: okno
+  1920 × 1080 → ×1,15, 2240 × 1140 → ×1,25, 2560 × 1310 → ×1,45, 2880 × 1490 → ×1,6.
+  Notebooky, Windows s oknem do 1920 × 950 a mobily se nemění. Ověřeno v Chrome i v jádře
+  Safari (WebKit) na všech stránkách — nic nepřetéká, žádná chyba skriptu.
+- **Od kdy:** 1. 10. 2026 (commit doplníme po pushi).
+- **⚠️ Pro Samova Clauda — pravidla, jinak se to rozbije:**
+  - `style.css` nahoře blok „VELKÉ OBRAZOVKY": `--z` podle `@media (min-width) and
+    (min-height)` uvnitř `@supports (zoom: 1)` a `html { zoom: var(--z); }`.
+  - `zoom` zvětšuje i `vh` / `vw` (100vh by bylo 1,45× výšky okna). Proto **všechny**
+    `vh` / `svh` / `dvh` / `vw` ve `style.css`, `consent.css`, `cenik.css` a ve stylech
+    stránek jsou přepsané na `calc(Xvh / var(--z, 1))`. **Nové jednotky psát stejně** —
+    holé `100vh` na velkém monitoru zvětší sekci o 45 %.
+  - Skripty: `innerHeight`, `scrollY` a `getBoundingClientRect()` jsou v px okna, ale px
+    zapsané do stylu se zoomem ještě zvětší → dělit zoomem. Ve `script.js` je na to
+    `mkZoom()` (posun na kotvu, šířka typeru, `--uvod-presah`, kruh přechodu do dashboardu);
+    `--hero-h` na `/hledam-si-praci`, `/lide`, `/pro-zamestnavatele`, `--wm-shift` na `/o-nas`
+    a výška pro `STUPNE` počítají s `getComputedStyle(html).zoom`.
+  - Verze: `style.css?v=160`, `script.js?v=70`, `consent.css?v=3`, `cenik.css?v=7`.
+
+**10. Na mobilu se úvodka dole u modrého pruhu s telefonem sekala a skákala**
+- **Co uživatel viděl:** při scrollu dolů se obraz skoro celou obrazovku nehýbal a pak
+  modrý pruh s telefonem najednou vyletěl. Rozmazaná tlačítka v pozadí poskakovala,
+  logo nad modrým pruhem zmizelo (modré na modré) a nad bílou patičkou naskočil modrý pás.
+  Obrázek telefonu se občas dotáhl pozdě.
+- **Kdy a kde:** `/` na telefonu, hlavně iPhone. Je to i na živém webu.
+- **Proč:** (a) `#brzy` má `min-height: 185vh`, takže karta čekacího listu po vyjetí
+  stála ~85 % obrazovky, (b) slovo v nadpisu se měnilo i rozmazané za kartou a telefon pokaždé
+  znovu rozmazával celé hero, (c) `data-nav-blue` bylo na patičce, která je na úvodce bílá,
+  a ne na modrém pruhu, (d) obrázek měl `loading="lazy"`.
+- **Oprava:** 1. 10. 2026 (commit doplníme po pushi). `style.css`: `@media (max-width: 700px)
+  { #brzy { min-height: 100svh } }` (desktop dál stojí). `script.js` heroTyper: `stoji()` —
+  slovo se nemění, dokud má `.uvod` `data-vzadu` nebo je karta prohlížeče na pozadí.
+  `index.html`: `data-nav-blue` přesunuto z `#footer` na `.vx-close--foto`; u `hsp-mockup.webp`
+  místo `loading="lazy"` je `fetchpriority="low"`. Hledat: `stoji()`, „Telefon: bez zastavení".
+
+**11. Na úzkém telefonu nadpis „Práce na jeden swajp." přeskakoval na tři řádky**
+- **Co uživatel viděl:** při každé výměně slova (swajp / klik / dotek) nadpis poskočil na tři
+  řádky a tlačítka pod ním o ~30 px.
+- **Kdy a kde:** `/` na telefonech užších než ~375 px. Na 375 px se slovo vešlo jen o 3 px,
+  takže v Safari to klidně mohlo skákat i tam.
+- **Oprava:** 1. 10. 2026. `style.css` v `@media (max-width: 680px)`: `.hero-h1` font-size
+  `clamp(40px, min(16vw, (100vw − 96px) / 4.85), 96px)`. Druhý řádek zabírá ~4,7 em, takže
+  se vejde vždycky. Od ~420 px šířky je to beze změny.
+
+**12. Písmena odlétajícího slova v nadpisu se uřízla o neviditelný obdélník**
+- **Co uživatel viděl:** při výměně slova písmena odlétají nahoru a rozmazávají se, ale
+  narazila na rovnou hranu a byla useknutá.
+- **Kdy a kde:** `/`, všechna zařízení. Je to i na živém webu.
+- **Proč:** `.hero-h1 span` má animaci `mkMask` s `fill-mode: both`. Ta se vypínala jen na
+  přímém potomkovi (`.mk-hotovo > span`), takže `clip-path: inset(0 0 -22% 0)` zůstal na
+  `.hero-konec` a `.hero-slovo`. Hodnotu z animace samotné `clip-path: none` nepřebije.
+- **Oprava:** 1. 10. 2026. `style.css`: `.hero-h1.mk-hotovo span { animation: none;
+  clip-path: none; }`.
+
+**13. (Úpravy vzhledu od Yasina, ne chyby)**
+- **Hamburger:** tři modré čárky (#0020F6, 24 × 3 px) bez prosklené pilulky. Bílé jsou nad
+  modrou a v otevřeném menu, otevřené se překlopí do křížku (prostřední zmizí). Box 44 × 44
+  zůstal kvůli palci. Platí pro všechny stránky (`#navbar` i `.vx-burger`), takže 3. `<span>`
+  je v HTML všech 12 tlačítek. Varianty s pozadím a rámečkem jsou ze `style.css` pryč.
+- **Tlačítka v heru úvodky:** „Stáhnout si apku" je tmavé (#191919) s bílým textem,
+  „Vytvořit profil" značkově modré, hover #0014A3. Dřív světle šedé + černé.
+- **Jen telefon:** větší mezera mezi nadpisem a tlačítky — `.hero-cta { margin-top:
+  clamp(56px, 9vh, 84px) }` v `@media (max-width: 680px)` za pravidlem pro nízké displeje.
+- **Bez ligatur:** `html { font-variant-ligatures: no-common-ligatures; }`. Plus Jakarta Sans
+  slévala „fi" / „fl" (profil) do jednoho znaku.
+- **Rozbalovací menu na mobilu (panel pod hamburgerem):** bez čar mezi odkazy, spodek se
+  místo rovné hrany rozplyne (`mask-image` s křivkou, spodní padding 68 px). „Přihlásit se"
+  (bílé, modrý text) a „Vytvořit účet" (modré) jsou vedle sebe, písmo 16 px, bez stínu.
+  Přihlášený: „Ahoj, jméno!" nad nimi přes celou šířku.
+- **Chyba: menu se po „Přihlásit se" / „Vytvořit účet" nezavřelo.** Ty odkazy `updateNavAuth`
+  přepisuje přes `innerHTML`, takže posluchač z načtení neměly. Teď je zavírání delegované
+  na panel `#mobile-menu` ve fázi zachycení (zavře se dřív, než tlačítko otevře okno —
+  jinak by `setMenu(false)` okno odemklo pro scroll).
+
+**14. (Nová funkce) „Zůstat přihlášen", Zavřít v dashboardu, odhlášení jen tohoto zařízení**
+- **Co je nového:** v přihlašovacím okně zaškrtávátko „Zůstat přihlášen" (výchozí zaškrtnuté).
+  - Zaškrtnuté: přihlášení se pamatuje 30 dní od poslední návštěvy webu nebo dashboardu.
+  - Odškrtnuté: jen do zavření karty nebo prohlížeče.
+  - V dashboardu v menu karty firmy (vlevo dole) je místo šedého „Odhlásit se" řádek:
+    **✕ Zavřít** (bílé, při najetí červené; zpět na web, přihlášení zůstane, v liště je
+    „Dashboard") a **Odhlásit se** (pořád červené, bílá ikonka dveří `logout-2-linear`).
+    Odhlášení je na dva kliky na stejném místě: první přepne tlačítko na „Odhlásit"
+    (nad ním „Opravdu se chcete odhlásit?", místo ✕ je „Zrušit"), druhý odhlásí. Nabídka
+    je přichycená spodkem, takže tlačítko zůstane pod kurzorem a jde to i rychlým
+    dvojklikem. Stav `potvrdOdhlaseni` v `ESidebar`. Během potvrzení se celé okno rozmaže
+    (portál s `backdrop-filter: blur(7px)`, zIndex 250) a nabídka jde portálem nad něj
+    na stejné místo (zIndex 300). `<aside>` má vlastní zIndex 40, uvnitř by ji rozmazání
+    překrylo. Klik do rozmazaného místa nabídku zavře.
+    Po potvrzení (`handleSignOut` v `employer-main.jsx`, tedy každé odhlášení z dashboardu)
+    obrazovka dvakrát krátce pohasne jako při výpadku proudu a shora se stáhne tma
+    (`.e-tma*` v `employer/index.html`). Uprostřed se po znacích dopíše „Neplecha ukončena"
+    s blikajícím kurzorem, stejně jako „Je hotovo." v appce (League Spartan 64 px, 50 ms na znak).
+    Odhlášení běží souběžně, na webu je člověk za ~2,2 s (dopsaná věta zůstane ~0,7 s na přečtení), nejpozději za 3 s.
+  - Na webu po přihlášení **„Odhlásit se" není** (Yasin: na webu je divné, odhlašuje se
+    v dashboardu). V liště je místo modrého tlačítka jen modrý text „Dashboard" s ikonkou
+    Statistiky z levého menu dashboardu: `employer/ikony/analytika.svg` (Iconly Light-Outline
+    / Chart) jako CSS maska `.ik-statistiky`, takže bere barvu textu. Odkaz `.nav-do-dash`
+    nad modrou zbělá. Pro brigádníka „Moje brigády" s `solar:case-round-linear` (přidaná do
+    `iconify-icons.js`, `?v=3` na stránkách). V menu na mobilu je „Ahoj, jméno!" a modré
+    tlačítko se stejnou ikonkou. Hero CTA na úvodce má stejné ikonky.
+- **Jak to funguje:** nový sdílený soubor `pamet-prihlaseni.js` (načítá se hned za
+  supabase-js na 9 stránkách webu, v `employer/index.html` i `worker/index.html`). Dává
+  `window.mkAuthUloziste`, vlastní `storage` pro `createClient` (localStorage, nebo
+  sessionStorage podle `makej-pamatovat`). Hlídá taky lhůtu: `makej-naposledy` starší než
+  30 dní → klíče `makej-auth*` se smažou dřív, než je klient načte. Přihlášení heslem
+  i přes Google volá před přihlášením `mkNastavPamatovani(zaškrtnuto)`. Kdo byl přihlášený
+  před touhle změnou, zůstane přihlášený a lhůta se mu začne počítat od první návštěvy.
+- **Chyba, kterou to odhalilo — je i na živém webu:** přihlášená firma, která otevřela web,
+  byla hned přehozená zpátky do dashboardu. Supabase-js posílá `SIGNED_IN` i při obnově
+  uloženého přihlášení (`_recoverAndRefresh`) a po návratu do karty, ne jen po přihlášení.
+  Komentář v `onAuthStateChange` počítal jen s `INITIAL_SESSION`. Teď se přesměruje jen po
+  přihlášení na té stránce: proměnná `prihlasujeSe` (formulář) a pro Google značka
+  `makej-po-prihlaseni` v sessionStorage, protože Google přihlašuje přes přesměrování.
+- **Odhlášení:** všude `signOut({ scope: 'local' })` (web, dashboard, /worker/). Výchozí
+  `global` odhlásil firmu ze všech zařízení naráz, i z appky. Smazání účtu nechává `global`.
+- **Bezpečnost:** heslo se neukládá, jen token Supabase (access 1 h, sám se obnovuje).
+  Po odhlášení ho Supabase zneplatní. Bez Pro tarifu Supabase délku přihlášení neomezuje,
+  proto si 30 dní hlídáme sami v prohlížeči.
+- **Od kdy:** 1. 10. 2026 (commit doplníme po pushi). Verze: `employer-shell.jsx?v=70`,
+  `employer-main.jsx?v=59`, `employer-pages3.jsx?v=197`, `worker-main.jsx?v=11`,
+  `worker-profile.jsx?v=13`, `pamet-prihlaseni.js?v=2`.
+**15. (Dashboard, úprava) Záložka Inzeráty jen ve dvou řadách: Aktivní a Neaktivní**
+- **Co je jinak:** dřív čtyři řady (Topované / Urgentní / Aktivní / Neaktivní), které při
+  pár inzerátech vypadaly prázdně. Teď jsou všechny běžící inzeráty v řadě Aktivní do strany.
+  Na začátek jde, co firma zvýraznila, a urgentní má přednost před topovaným:
+  urgentní + topovaný → urgentní → topovaný → ostatní. Ve skupině jsou od nejnovějšího.
+  Neaktivní (zašedlé) beze změny.
+- **Volná místa:** na konci řady Aktivní je tolik prázdných karet „Nevyužito" (čárkovaný
+  rámeček, při najetí zmodrá), kolik inzerátů ještě tarif dovolí zapnout
+  (`EMPLOYER_MAX_ACTIVE`). Klik na ně otevře Nový inzerát. U nadpisu je místo počtu
+  „3 z 5". Tarif Vlastní (bez limitu) prázdná místa nemá. Počítá se to, co je v řadě vidět,
+  takže dokud běží `E_DEMO_INZERATY`, počítají se i ukázkové inzeráty.
+- **Kde:** `employer-pages3.jsx` v `EJobs`: `rady` a `_poradi`. V `EJobRada` jsou nové props
+  `volnych`, `onVolny` a `pocet`, styl `.e-jr-volno` je v `employer/index.html`.
+  `employer-pages3.jsx?v=200`.
+
+**16. (Dashboard, chyba) Limity tarifu: nový inzerát šel do aktivních i přes plný tarif**
+- **Co se dělo:** `createJobE` ukládal každý nový inzerát se `status: 'active'` a limit
+  `EMPLOYER_MAX_ACTIVE` hlídalo jen ruční zapnutí. Firma s Výhodným (2) tak mohla mít aktivních
+  víc. K tomu se do řady Aktivní přidávaly všechny ukázkové inzeráty (`E_DEMO_INZERATY`), takže
+  to vypadalo na 4 aktivní u Výhodného.
+- **Oprava (1. 10.):**
+  - `createJobE` při plném tarifu uloží inzerát jako `paused` (`_eTarifPlny()`).
+    `handlePublish` pak ukáže „Uloženo jako neaktivní — Tarif X dovoluje N aktivní…".
+  - V `EJobs` ukázkové aktivní inzeráty zabírají jen volná místa tarifu, vlastní mají přednost.
+  - Okno při zapnutí inzerátu nad limit (`dotaz.druh === 'limit'` v `EJobs`) je předělané:
+    „Limit překročen", věta a „Řešení" se dvěma body. U prvního je kovové tlačítko tarifu
+    o stupeň výš (`TierMetalButton`, třeba „Chci Dynamický"). Přes `window.__empVybratTarif`
+    přepne na Tarify a `EPricing` ten tarif hned vybere (otevře platbu). Druhá možnost radí
+    vyměnit inzerát za jiný aktivní. Obě možnosti dělí „nebo", aby nevypadaly jako kroky.
+    Dole je jen „Vrátit se". Z hlášek v Inzerátech zmizely pomlčky „—" (Yasin je nechce).
+    `employer-pages3.jsx?v=205`.
+- **Testovací režim topování:** `E_LIMITY_OD_PRIHLASENI = true` v `employer-supabase.jsx`.
+  Limit topování se nepočítá za kalendářní měsíc, ale od posledního přihlášení: web při
+  přihlášení zapíše `makej-prihlaseni-od` do localStorage a `_eZacatekMesice()` od něj počítá.
+  Texty se přizpůsobí („obnoví se při dalším přihlášení"). **⚠️ PŘED SPUŠTĚNÍM dát `false`.**
+- **Urgentní** je zatím automatické (směna do 2 dnů → `status 'urgent'`), firma ho nenastavuje,
+  takže se nepočítá do tarifu. „Notifikace Urgent" z ceníku (Dynamický 1×, Maximální 2×,
+  Vlastní 3×) není postavená.
+- Verze: `employer-pages3.jsx?v=203`, `employer-supabase.jsx?v=26`, `employer-main.jsx?v=60`,
+  `employer-dashboard.jsx?v=47`, `script.js?v=77`.
+
+**17. (Dashboard) Tarify mají ceny a parametry podle tvého webu**
+- Dřív byly v dashboardu staré ceny 499 / 2 000 / 4 999 a Vlastní od 9 999 Kč (20–5 000).
+  Teď je všechno podle `pro-zamestnavatele.html` (#pricing):
+  - Výhodný 990 (bez roční slevy),
+  - Dynamický 3 990 měsíčně / 3 390 ročně, ušetříte 7 200,
+  - Maximální 9 990 / 8 490, ušetříte 18 000.
+- Kalkulačka Vlastní: `_KALK_ZAKLAD 18000`, pásma `[[50,810],[100,630]]`, kroky po 5 od 20 do
+  100, zaokrouhlení na tisíce − 10 a „· sleva X %" proti 900 Kč za inzerát. Při 20 inzerátech
+  17 990, při 100 inzerátech 73 990.
+- Srovnání: Vlastní 20–100 inzerátů, Topování 5×/měs+, Urgent 3×+. Popis Vlastní „Desítky
+  pozic…". V platbě se u Výhodného ročně neukazuje „ušetříte".
+- ⚠️ Na webu ve FAQ pořád stojí „Placené plány začínají na 499 Kč/měsíc" (`pro-zamestnavatele.html`,
+  FAQ „Kolik to stojí"). To je tvoje, neměnil jsem to.
+- `employer-pages3.jsx?v=206`.
+
+- Verze webu po bodech 10–14: `style.css?v=178`, `script.js?v=76`.
+
+---
+
 ## 2026-09-30 — dashboard: pás čísel pryč, nový Dashboard jako přehled všeho — čeká na nasazení
 
 > **Pro Samova Clauda:** jen `employer/`, žádná nová změna databáze — ale **spusť čekající `migration_profil_firmy.sql`** (níž). Nejsnáz převzít soubory

@@ -1,3 +1,8 @@
+// Zvětšení celé stránky na velkých monitorech (style.css, „VELKÉ OBRAZOVKY").
+// innerHeight, scrollY a getBoundingClientRect jsou ve skutečných px okna,
+// kdežto px zapsané do stylu se zoomem ještě zvětší — proto se dělí tímhle.
+function mkZoom() { return parseFloat(getComputedStyle(document.documentElement).zoom) || 1; }
+
 // ═══════════ NAVBAR SCROLL + SCROLLSPY ═══════════
 const navbar    = document.getElementById('navbar');
 const navActions = document.getElementById('nav-actions') || document.querySelector('.nav-actions');
@@ -14,7 +19,7 @@ function updateNav() {
 
   if (navActions) {
     const hero = document.getElementById('hero');
-    navActions.classList.toggle('nav-actions-visible', hero ? scrollY > hero.offsetHeight * 0.8 : true);
+    navActions.classList.toggle('nav-actions-visible', hero ? scrollY > hero.offsetHeight * mkZoom() * 0.8 : true);
   }
 
   // Navbar nad světlou (bílou) sekcí → ztmavit text
@@ -62,6 +67,7 @@ function setupNavDropdowns() {
       ['Časté dotazy',   '/pro-zamestnavatele#faq'],
     ],
     'hledam-si-praci': [
+      ['Jak to funguje', '/hledam-si-praci#how-it-works'],
       ['Vyzkoušej appku','/hledam-si-praci#features'],
       ['Stáhnout',       '/hledam-si-praci#download'],
     ],
@@ -96,7 +102,7 @@ window.addEventListener('load', function () {
   try { el = document.querySelector(location.hash); } catch (e) { return; }
   if (!el) return;
   requestAnimationFrame(function () {
-    var y = el.getBoundingClientRect().top + window.scrollY - 92;
+    var y = el.getBoundingClientRect().top + window.scrollY - 92 * mkZoom();
     window.scrollTo(0, y);
   });
 });
@@ -118,9 +124,14 @@ if (mobileMenu && menuBtns.length) {
   menuBtns.forEach(btn => {
     btn.addEventListener('click', () => setMenu(!mobileMenu.classList.contains('active')));
   });
-  mobileMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => setMenu(false));
-  });
+  // Výběr čehokoli v panelu menu zavře. Delegovaně na panelu, ne na odkazech:
+  // „Přihlásit se" / „Vytvořit účet" skript po načtení přepisuje (innerHTML)
+  // a nové odkazy by posluchač neměly — menu pak zůstalo otevřené.
+  // Ve fázi zachycení (true), aby se zavřelo dřív, než tlačítko otevře
+  // přihlašovací okno — jinak by setMenu(false) okno zase odemklo pro scroll.
+  mobileMenu.addEventListener('click', (e) => {
+    if (e.target.closest('a')) setMenu(false);
+  }, true);
   // klik mimo panel a Esc menu zavřou
   document.addEventListener('click', (e) => {
     if (!mobileMenu.classList.contains('active')) return;
@@ -350,7 +361,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_N_BIwMCTD6ZOTrtBl3juyw_CGIQ_lvh';
 
 function initAuth() {
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: true, storageKey: 'makej-auth' }
+    auth: { persistSession: true, storageKey: 'makej-auth', storage: window.mkAuthUloziste }
   });
 
   const overlay      = document.getElementById('modal-overlay');
@@ -360,6 +371,18 @@ function initAuth() {
   // true = po signUp NEpřesměrovávat (když je v Supabase vypnuté potvrzování e-mailu,
   // signUp uživatele rovnou přihlásí — nechceme ho hodit do dashboardu). Viz register-form.
   let skipAutoRedirect = false;
+  // Do dashboardu / na /worker/ přesměrovat JEN po přihlášení, které člověk
+  // právě udělal tady (formulář, Google). Supabase posílá SIGNED_IN i při
+  // obyčejném načtení stránky s uloženým přihlášením a po návratu do karty —
+  // firmu, která v dashboardu klikla na „Zavřít", to hned vracelo zpátky.
+  // Google přihlašuje přes přesměrování, proto pro něj značka v sessionStorage.
+  let prihlasujeSe = false;
+  try {
+    if (sessionStorage.getItem('makej-po-prihlaseni')) {
+      prihlasujeSe = true;
+      sessionStorage.removeItem('makej-po-prihlaseni');
+    }
+  } catch (e) {}
 
   // ── PŘÍSTUPOVÝ KLÍČ ──────────────────────────────────────────────────────
   // Web je před spuštěním: registrace běží pro všechny, ale PŘIHLÁSIT se (a jít
@@ -367,7 +390,7 @@ function initAuth() {
   //   ⇒ ZMĚNIT KLÍČ = uprav ACCESS_KEY.  ⇒ NAOSTRO = dej ACCESS_KEY na '' (pustí všechny).
   const ACCESS_KEY = '8939';
   const ACCESS_LOCKED_MSG =
-    'Spouštíme 1. 10. — zrovna na tom makáme. 💪 Jakmile bude hotovo, dáme ti vědět e-mailem.';
+    'Spouštíme brzy — zrovna na tom makáme. Jakmile bude hotovo, dáme ti vědět e-mailem.';
   function accessKeyOk() {
     if (!ACCESS_KEY) return true;
     const el = document.getElementById('login-key');
@@ -380,9 +403,6 @@ function initAuth() {
     if (type === 'login') {
       loginModal.classList.add('active');
       registerModal.classList.remove('active');
-      // Restart peeker animation
-      const p = document.getElementById('main-peeker');
-      if (p) { p.style.animation = 'none'; requestAnimationFrame(() => { p.style.animation = 'peekerIn 0.45s cubic-bezier(.2,.8,.2,1) both'; }); }
     } else {
       registerModal.classList.add('active');
       loginModal.classList.remove('active');
@@ -459,28 +479,23 @@ function initAuth() {
       navActions.classList.add('nav-actions-visible'); // always show when logged in
       const name = user.user_metadata?.name || user.email.split('@')[0];
       const role = user.user_metadata?.role;
+      // V liště jen barevný text s ikonkou, bez podkladu; ikonka je ta samá
+      // jako Statistiky v levém menu dashboardu (employer/ikony/analytika.svg). „Odhlásit se" na webu není — odhlašuje se
+      // v dashboardu (Yasin 1. 10.: na webu to bylo divné).
       const dashBtn = role === 'employer'
-        ? `<a href="/employer/" class="btn-primary" id="dashboard-btn">
-             <iconify-icon icon="solar:chart-square-bold" width="16"></iconify-icon>
-             Dashboard
+        ? `<a href="/employer/" class="nav-do-dash" id="dashboard-btn">
+             <span class="ik-statistiky" aria-hidden="true"></span>Dashboard
            </a>`
-        : `<a href="/worker/" class="btn-primary" id="worker-btn">
-             <iconify-icon icon="solar:case-round-bold" width="16"></iconify-icon>
-             Moje brigády
+        : `<a href="/worker/" class="nav-do-dash" id="worker-btn">
+             <iconify-icon icon="solar:case-round-linear" width="20"></iconify-icon>Moje brigády
            </a>`;
-      navActions.innerHTML = `
-        ${dashBtn}
-        <button class="btn-ghost" id="logout-btn">Odhlásit se</button>
-      `;
+      navActions.innerHTML = dashBtn;
       mobileActions.innerHTML = `
-        ${role === 'employer'
-          ? `<a href="/employer/" class="btn-primary">Dashboard</a>`
-          : `<a href="/worker/" class="btn-primary">Moje brigády</a>`}
         <span class="nav-user-greeting">Ahoj, ${name}!</span>
-        <button class="btn-ghost" id="logout-btn-mobile">Odhlásit se</button>
+        ${role === 'employer'
+          ? `<a href="/employer/" class="btn-primary"><span class="ik-statistiky" aria-hidden="true"></span>Dashboard</a>`
+          : `<a href="/worker/" class="btn-primary"><iconify-icon icon="solar:case-round-linear" width="20"></iconify-icon>Moje brigády</a>`}
       `;
-      document.getElementById('logout-btn').addEventListener('click', () => sb.auth.signOut());
-      document.getElementById('logout-btn-mobile').addEventListener('click', () => sb.auth.signOut());
 
       // Hero CTA: hide auth buttons, show the right dashboard/worker button
       if (heroCTAAuth)     heroCTAAuth.style.display     = 'none';
@@ -491,12 +506,15 @@ function initAuth() {
       // Lišta s jedinou akcí (hlavní stránka) registraci nemá — tu tam obstarává
       // „Vytvořit profil" v heru. Bez téhle větve by ji tenhle přepis vrátil zpět.
       const soloLogin = !!document.querySelector('#navbar.nav-single-action');
+      // Stránka může přihlášení z lišty vypnout (.nav-bez-prihlaseni na #navbar).
+      // Smazat tlačítko z HTML nestačí — tenhle přepis by ho vrátil zpět.
+      const bezLoginu = !!document.querySelector('#navbar.nav-bez-prihlaseni');
       navActions.innerHTML = `
-        <a href="javascript:void(0)" class="btn-ghost" id="nav-login-btn">Přihlásit se</a>
+        ${bezLoginu ? '' : '<a href="javascript:void(0)" class="btn-ghost" id="nav-login-btn">Přihlásit se</a>'}
         ${soloLogin ? '' : '<a href="javascript:void(0)" class="btn-primary" id="nav-register-btn">Vytvořit účet</a>'}
       `;
       mobileActions.innerHTML = `
-        <a href="javascript:void(0)" class="btn-ghost" id="mobile-login-btn">Přihlásit se</a>
+        ${bezLoginu ? '' : '<a href="javascript:void(0)" class="btn-ghost" id="mobile-login-btn">Přihlásit se</a>'}
         <a href="javascript:void(0)" class="btn-primary" id="mobile-register-btn">Vytvořit účet</a>
       `;
       // Bind jen čerstvě vytvořené nav prvky (employer btn se binduje zvlášť, jen jednou)
@@ -519,12 +537,15 @@ function initAuth() {
     }
   }
 
-  // Appka ještě neběží, takže „Vytvořit účet" nevede na registraci, ale na sběr
-  // e-mailů. Na úvodce je v sekci #brzy, na podstránkách v #download — použij
-  // ten na stránce, a když na ní žádný není, pošli člověka na /#brzy.
+  // Appka ještě neběží, takže „Vytvořit účet" ani „Vybrat tarif" nevedou na
+  // registraci, ale na sběr e-mailů. Čekací list je na úvodce v sekci #brzy,
+  // na podstránkách dole v #download — hledáme ho proto přes formulář, ne přes
+  // id sekce. Na úvodku posíláme jen z těch stránek, kde žádný není (podpora,
+  // právní stránky, blog).
   function goToEmailSignup() {
     closeModals();
-    const sec = document.getElementById('brzy') || document.querySelector('#download.cl-sekce');
+    const form = document.getElementById('wl-form1');
+    const sec  = form ? form.closest('section') : null;
     if (!sec) { window.location.href = '/#brzy'; return; }
     sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
     const input = sec.querySelector('.wl-in');
@@ -605,9 +626,13 @@ function initAuth() {
     const rb = btn.getBoundingClientRect();
     window.__prechodOd = { x: rb.left + rb.width / 2, y: rb.top + rb.height / 2 };
 
+    const pamatovat = document.getElementById('login-pamatovat');
+    if (window.mkNastavPamatovani) window.mkNastavPamatovani(!pamatovat || pamatovat.checked);
+    prihlasujeSe = true;
     const { error } = await sb.auth.signInWithPassword({ email, password });
 
     if (error) {
+      prihlasujeSe = false;
       showError('login-error',
         error.message === 'Invalid login credentials'
           ? 'Nesprávný email nebo heslo'
@@ -721,7 +746,7 @@ function initAuth() {
     // hned se odhlásíme, ať nikdo nespadne do nedodělaného dashboardu.
     let msg;
     if (data && data.session) {
-      try { await sb.auth.signOut(); } catch (e) {}
+      try { await sb.auth.signOut({ scope: 'local' }); } catch (e) {}
       msg = 'Účet byl úspěšně založen! 🎉 Spouštíme 1. 10. — dáme ti vědět, jakmile bude hotovo.';
     } else {
       msg = 'Účet byl úspěšně založen! Zkontroluj e-mail pro potvrzení.';
@@ -743,6 +768,9 @@ function initAuth() {
     }
     // Klíč prošel → poznač do session i pro Google (redirect na /worker/ ho pak nechce znovu).
     try { sessionStorage.setItem('makej-gate-ok', ACCESS_KEY); } catch (e) {}
+    const pamatovat = document.getElementById('login-pamatovat');
+    if (window.mkNastavPamatovani) window.mkNastavPamatovani(!pamatovat || pamatovat.checked);
+    try { sessionStorage.setItem('makej-po-prihlaseni', '1'); } catch (e) {}
     await sb.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.href }
@@ -809,10 +837,14 @@ function initAuth() {
   sb.auth.onAuthStateChange((event, session) => {
     updateNavAuth(session?.user || null);
 
-    // INITIAL_SESSION = obnova existující session při načtení stránky → nepřesměrovávat
-    // SIGNED_IN = aktivní přihlášení (formulář / Google OAuth callback) → přesměrovat
+    // Přesměrovat jen po přihlášení na téhle stránce (prihlasujeSe, viz výš).
+    // SIGNED_IN samo nestačí — chodí i při obnově uloženého přihlášení.
     if (event === 'SIGNED_IN' && session?.user) {
       if (skipAutoRedirect) { skipAutoRedirect = false; return; }   // registrace se odhlásí sama
+      if (!prihlasujeSe) return;
+      // Od kdy dashboard počítá limity topování v testovacím režimu
+      // (employer-supabase.jsx → E_LIMITY_OD_PRIHLASENI).
+      try { localStorage.setItem('makej-prihlaseni-od', String(Date.now())); } catch (e) {}
       const role = session.user.user_metadata?.role;
       // Univerzální předregistrace roli neposílá — chybějící role je tedy signál
       // „ještě si nevybral". Nemusíme se kvůli tomu ptát databáze.
@@ -854,103 +886,6 @@ function showToast(msg) {
 // ═══════════ COOKIE CONSENT ═══════════
 // Lišta a nastavení cookies žijí v consent.js (načítá ho hlavička každé stránky).
 
-// ═══════════ PEEKER (cursor-tracking face in login modal) ═══════════
-(function() {
-  var peeker = document.getElementById('main-peeker');
-  var eyeL   = document.getElementById('main-eyeL');
-  var eyeR   = document.getElementById('main-eyeR');
-  var pupilL = document.getElementById('main-pupilL');
-  var pupilR = document.getElementById('main-pupilR');
-  var browL  = document.getElementById('main-browL');
-  var browR  = document.getElementById('main-browR');
-  var lidL   = document.getElementById('main-lidL');
-  var lidR   = document.getElementById('main-lidR');
-  if (!peeker) return;
-
-  var isPwd = false;
-  var blinkTimer = null;
-  var peekTimers = [];
-
-  function movePupil(pupilEl, eyeEl, mx, my) {
-    var rect = eyeEl.getBoundingClientRect();
-    if (!rect.width) return;
-    var cx = rect.left + rect.width  / 2;
-    var cy = rect.top  + rect.height / 2;
-    var dx = mx - cx, dy = my - cy;
-    var dist = Math.sqrt(dx * dx + dy * dy);
-    var r = 4.5;
-    var s = Math.min(dist, r) / Math.max(dist, 0.001);
-    pupilEl.style.transform = 'translate(' + (dx * s).toFixed(2) + 'px,' + (dy * s).toFixed(2) + 'px)';
-  }
-
-  document.addEventListener('mousemove', function(e) {
-    if (!peeker || peeker.offsetParent === null) return;
-    movePupil(pupilL, eyeL, e.clientX, e.clientY);
-    movePupil(pupilR, eyeR, e.clientX, e.clientY);
-  });
-
-  function setLid(speed) {
-    if (!lidL || !lidR) return;
-    lidL.style.transition = 'height ' + speed + ' ease';
-    lidR.style.transition = 'height ' + speed + ' ease';
-  }
-
-  function scheduleBlink() {
-    blinkTimer = setTimeout(function() {
-      if (isPwd) return;
-      setLid('0.08s');
-      lidL.style.height = '21px'; lidR.style.height = '21px';
-      setTimeout(function() {
-        lidL.style.height = '0'; lidR.style.height = '0';
-        setTimeout(function() { setLid('0.28s'); scheduleBlink(); }, 120);
-      }, 100);
-    }, 5000);
-  }
-
-  function clearPeekTimers() { peekTimers.forEach(clearTimeout); peekTimers = []; }
-
-  function schedulePeek() {
-    peekTimers.push(setTimeout(function() {
-      lidR.style.height = '11px';
-      peekTimers.push(setTimeout(function() {
-        lidR.style.height = '21px';
-        peekTimers.push(setTimeout(schedulePeek, 5000));
-      }, 1000));
-    }, 3000));
-  }
-
-  function peekAtPassword() {
-    isPwd = true;
-    peeker.style.animation = 'none';
-    clearTimeout(blinkTimer);
-    clearPeekTimers();
-    peeker.style.transform = 'translateX(-50%)';
-    setLid('0.28s');
-    lidL.style.height = '21px'; lidR.style.height = '21px';
-    browL.style.transform = 'translateY(5px)';
-    browR.style.transform = 'translateY(5px)';
-    schedulePeek();
-  }
-
-  function stopPeeking() {
-    isPwd = false;
-    clearPeekTimers();
-    peeker.style.animation = 'none';
-    peeker.style.transform = 'translateX(-50%)';
-    setLid('0.28s');
-    lidL.style.height = '0'; lidR.style.height = '0';
-    browL.style.transform = ''; browR.style.transform = '';
-    scheduleBlink();
-  }
-
-  var pwdField = document.getElementById('login-password');
-  if (pwdField) {
-    pwdField.addEventListener('focus', peekAtPassword);
-    pwdField.addEventListener('blur',  stopPeeking);
-  }
-
-  scheduleBlink();
-})();
 
 /* ── Showcase toggle: switch between the interactive phone and the feature grid ── */
 (function () {
@@ -1055,8 +990,6 @@ function showToast(msg) {
 })();
 
 
-
-
 /* ═══════════ Scroll-driven kreslení spojnice „jak to funguje" (bolt-path) ═══════════ */
 /* Čára se postupně prodlužuje podle toho, jak uživatel scrolluje sekcí — jde s ním
    a dovede ho až k „Vytvořit účet". Funguje na /hledam-si-praci i /pro-zamestnavatele. */
@@ -1126,7 +1059,7 @@ function showToast(msg) {
   // Odhalovací maska nadpisu (mkMask) dojede v 1,1 s. Sundat ji musíme hned pak:
   // písmena vylétávající nahoru přesahují nad výšku řádku a do té doby by je
   // overflow:hidden / clip-path ořezával.
-  if (h1 && !document.documentElement.classList.contains('hero-uvod')) setTimeout(() => h1.classList.add('mk-hotovo'), 1200);
+  if (h1) setTimeout(() => h1.classList.add('mk-hotovo'), 1200);
 
   // Měřicí kopie: neviditelná, mimo tok, takže nic neposouvá.
   const merak = document.createElement('span');
@@ -1150,7 +1083,7 @@ function showToast(msg) {
       radka.appendChild(s);
     });
     merak.appendChild(radka);
-    box.style.width = radka.getBoundingClientRect().width + 'px';
+    box.style.width = radka.getBoundingClientRect().width / mkZoom() + 'px';
   }
 
   function vykresli(text, animovat) {
@@ -1181,8 +1114,17 @@ function showToast(msg) {
     return az;
   }
 
+  // Za čekacím listem je nadpis rozmazaný a slovo stejně nejde přečíst.
+  // Každá výměna by přitom přepočítala nadpis a prohlížeč by musel znovu
+  // rozmazat celé hero — na telefonu se pak scroll dolů k modrému pruhu
+  // pravidelně zasekával. Dokud je hero vzadu (data-vzadu nastavuje
+  // popredi() níž) nebo je karta prohlížeče na pozadí, slovo stojí.
+  const uvod = box.closest('.uvod');
+  const stoji = () => document.hidden || (uvod && uvod.hasAttribute('data-vzadu'));
+
   function cyklus() {
-    setTimeout(() => {
+    setTimeout(function dalsi() {
+      if (stoji()) { setTimeout(dalsi, 400); return; }
       i = (i + 1) % SLOVA.length;
       const az = vymen(SLOVA[i]);
       setTimeout(cyklus, az + PRICHOD * 0.4);
@@ -1191,7 +1133,7 @@ function showToast(msg) {
 
   function spust(animovat) {
     sirka(SLOVA[0]);
-    vykresli(SLOVA[0], !!animovat);
+    vykresli(SLOVA[0], animovat);
     let t;
     window.addEventListener('resize', () => {
       clearTimeout(t);
@@ -1239,9 +1181,11 @@ function showToast(msg) {
   // odroluje, až je hero celé vidět, a teprve pak se přilepí (CSS má záporný
   // top = --uvod-presah). O stejný kus se posouvá i start rozmazání, jinak by
   // se hero rozmazávalo, ještě než ho návštěvník celé uvidí.
+  // presah je v px okna (jako scrollY); do stylu jde v px stránky (÷ zoom)
   function zmer() {
-    presah = hero ? Math.max(0, hero.offsetHeight - window.innerHeight) : 0;
-    uvod.style.setProperty('--uvod-presah', presah + 'px');
+    const z = mkZoom();
+    presah = hero ? Math.max(0, hero.offsetHeight * z - window.innerHeight) : 0;
+    uvod.style.setProperty('--uvod-presah', presah / z + 'px');
   }
   function prepocti() {
     ceka = false;
@@ -1572,6 +1516,43 @@ function showToast(msg) {
   }
   accBtn.addEventListener('click', () => (acc.hasAttribute('data-open') ? zavri() : otevri()));
 
+  // Odkaz z uvítacího e-mailu (makej.eu/#predregistrace) rovnou rozbalí
+  // zakládání účtu — jinak člověk přistane na sbalené nabídce a musí hledat,
+  // kam kliknout. Stát to musí AŽ TADY: `acc` i `otevri` jsou o pár řádků výš,
+  // dřív by volání spadlo na dočasné mrtvé zóně `const`.
+  if (location.hash === '#predregistrace') {
+    function naPredregistraci() {
+      // Adresu nese sám odkaz z e-mailu (…/?e=…#predregistrace). Bez toho by
+      // web člověka poznal jen podle localStorage, takže po kliknutí na mobilu
+      // nebo v jiném prohlížeči by ho poslal znovu vyplňovat e-mail, který nám
+      // před chvílí dal. S adresou z odkazu první krok přeskočíme.
+      const zOdkazu = new URLSearchParams(location.search).get('e');
+      if (zOdkazu && /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(zOdkazu) && $('wl-2').hidden) {
+        zapamatuj({ email: zOdkazu });
+        $('wl-mail2').textContent = zOdkazu;
+        $('wl-typed').textContent = 'Seš na seznamu!';
+        $('wl-cur2').hidden = true;
+        $('wl-lead2').innerHTML = 'Zapsali jsme si <b>' + zOdkazu.replace(/[<>&]/g, '') +
+          '</b>. Zbývá dokončit předregistraci.';
+        $('wl-jiny').hidden = false;
+        ukaz('wl-2', true);
+        // Adresu z řádku prohlížeče uklidit — ať nezůstane v historii ani se
+        // omylem nešíří s odkazem dál. Na stav stránky to nemá vliv.
+        try { history.replaceState(null, '', location.pathname + '#predregistrace'); } catch (e) {}
+      }
+
+      if (sekceCL) sekceCL.scrollIntoView({ block: 'start' });
+      // Rozbalit jde jen krok 2. Kdo sem přijde bez adresy v odkazu i bez
+      // paměti, uvidí pole na e-mail a nabídka účtu se ukáže až po odeslání.
+      if (!$('wl-2').hidden && !acc.hidden) otevri();
+    }
+    // Až po `load`: dokud se nedotáhnou obrázky a fonty, má stránka jinou
+    // výšku a skok by skončil vedle. Ve stejnou chvíli mizí i úvodní loader,
+    // takže člověk uvidí, kam ho to poslalo.
+    if (document.readyState === 'complete') naPredregistraci();
+    else window.addEventListener('load', naPredregistraci, { once: true });
+  }
+
   // ── 2 · založení účtu ────────────────────────────────────────────────
   $('wl-form2').addEventListener('submit', async ev => {
     ev.preventDefault();
@@ -1623,32 +1604,6 @@ function showToast(msg) {
   });
 })();
 
-/* ═══════════ AURORA SE HÝBE, JEN KDYŽ JE VIDĚT ═══════════
-   Tři plující skvrny mají `animation: … infinite`, takže se překreslují
-   pořád — i když je sekce dávno odscrollovaná. Na podstránkách nad nimi
-   navíc leží mléčné sklo čekacího listu, a `backdrop-filter` musí kvůli
-   jejich pohybu přepočítat rozmazané pozadí každý snímek. Mimo obraz to
-   nikdo nevidí, tak ať to nestojí výkon: venku ze záběru se animace pauzne
-   (skvrny zůstanou, kde byly) a se skvrnami se zastaví i to přepočítávání. */
-(function auroraJenVObraze() {
-  if (!('IntersectionObserver' in window)) return;
-  const hlidac = new IntersectionObserver(zaznamy => {
-    zaznamy.forEach(z => z.target.classList.toggle('aurora--stoji', !z.isIntersecting));
-  }, { rootMargin: '140px' });
-  // Některá hera si aurora dokresluje až skriptem, takže jednorázový sběr při
-  // načtení by o ni přišel. Proto se seznam projde znovu po doběhnutí stránky;
-  // `data-hlidano` brání tomu, aby se jedna skvrna hlídala dvakrát.
-  function seber() {
-    document.querySelectorAll('.aurora:not([data-hlidano])').forEach(a => {
-      a.dataset.hlidano = '1';
-      hlidac.observe(a);
-    });
-  }
-  seber();
-  document.addEventListener('DOMContentLoaded', seber);
-  window.addEventListener('load', () => { seber(); setTimeout(seber, 1200); });
-})();
-
 // ═══════════ PRUH DŮVODŮ JEDE SÁM (a jde chytit) ═══════════
 // Posouváme scrollLeft, ne transformem — jen tak lze do pruhu zároveň sáhnout
 // myší, prstem nebo kolečkem. CSS animace by ruční posun přebíjela.
@@ -1660,35 +1615,53 @@ function showToast(msg) {
 // Smyčka: jakmile scroll přejede polovinu stopy (tedy konec originálů), odečte
 // se půlka. Obsah je za ní totožný, takže to oko nepozná.
 (function pruhyJedou() {
-  const RYCHLOST = 60;          // px za vteřinu
-  const KLID     = 1200;        // jak dlouho po dotyku zůstat stát (ms)
+  const RYCHLOST  = 60;         // px za vteřinu
+  const ZPOMALENI = 0.28;       // násobek rychlosti, když je kurzor nad pruhem
+  const NABEH     = 6;          // jak rychle se mezi plnou a zpomalenou rychlostí přechází
+  const KLID      = 1200;       // jak dlouho po dotyku zůstat stát (ms)
 
   document.querySelectorAll('.proc-pas').forEach(pas => {
     const pruh = pas.querySelector('.proc-pruh');
     if (!pruh || pruh.dataset.zdvojeno) return;
 
-    // Na mobilu stojí položky pod sebou jako seznam — nic se neposouvá.
-    // Kontrola MUSÍ být před zdvojením: jinak by se každý důvod na telefonu
-    // objevil dvakrát, protože klony se do seznamu přidají taky.
-    if (pas.scrollWidth <= pas.clientWidth + 4) return;
+    // Na mobilu (a u varianty --mrizka) stojí položky v mřížce pod sebou a nic
+    // se neposouvá. Pozná se to podle rozvržení, ne podle toho, jestli pruh
+    // přetéká: čtyři položky na /pro-zamestnavatele se od zhruba 1470 px vejdou
+    // celé a test na přetečení pruh na širokých monitorech vypnul úplně.
+    if (getComputedStyle(pruh).display !== 'flex') return;
 
-    Array.from(pruh.children).forEach(b => {
-      const kopie = b.cloneNode(true);
-      kopie.setAttribute('aria-hidden', 'true');
-      kopie.querySelectorAll('a, button, input').forEach(p => p.setAttribute('tabindex', '-1'));
-      pruh.appendChild(kopie);
-    });
+    // Sada se musí zopakovat tolikrát, aby se vedle viditelné části vešla ještě
+    // jedna celá — po skoku zpátky o jednu sadu tak vpravo nezůstane prázdno.
+    const puvodni = Array.from(pruh.children);
+    const sady = Math.max(2, Math.ceil((pas.clientWidth + pruh.scrollWidth) / pruh.scrollWidth));
+    for (let i = 1; i < sady; i++) {
+      puvodni.forEach(b => {
+        const kopie = b.cloneNode(true);
+        kopie.setAttribute('aria-hidden', 'true');
+        kopie.querySelectorAll('a, button, input').forEach(p => p.setAttribute('tabindex', '-1'));
+        pruh.appendChild(kopie);
+      });
+    }
     pruh.dataset.zdvojeno = '1';
+
+    // Délka jedné otáčky = odkud kam se pruh posune, než se zopakuje. Měří se
+    // z rozestupu prvních položek dvou sousedních sad, aby v ní byla i mezera
+    // mezi nimi — `scrollWidth` jedné sady ji v sobě nemá.
+    const otacka = pruh.children[puvodni.length].offsetLeft - pruh.children[0].offsetLeft;
 
     const tiche = matchMedia('(prefers-reduced-motion: reduce)');
     let stoji = 0;                                  // do kdy stojíme (timestamp)
+    let cil = 1, faktor = 1;                        // cílový a právě platný násobek rychlosti
     const pozastav = () => { stoji = performance.now() + KLID; };
 
     // Ruční posun kolečkem, prstem i tažením myši pruh na chvíli zastaví.
     ['pointerdown', 'wheel', 'touchstart'].forEach(u =>
       pas.addEventListener(u, pozastav, { passive: true }));
-    pas.addEventListener('pointerenter', () => { stoji = Infinity; });
-    pas.addEventListener('pointerleave', () => { stoji = 0; });
+    // Kurzor nad pruhem ho jen zpomalí, nezastaví — stát zůstane jen při
+    // ručním posouvání (výš) a při zaostření klávesnicí, kde by se pod čtoucím
+    // člověkem pohybovat neměl vůbec.
+    pas.addEventListener('pointerenter', () => { cil = ZPOMALENI; });
+    pas.addEventListener('pointerleave', () => { cil = 1; });
     pas.addEventListener('focusin',  () => { stoji = Infinity; });
     pas.addEventListener('focusout', () => { stoji = 0; });
 
@@ -1696,10 +1669,12 @@ function showToast(msg) {
     (function krok(ted) {
       const dt = Math.min(ted - minule, 100) / 1000;   // po návratu na záložku neskáče
       minule = ted;
-      if (!tiche.matches && ted >= stoji) pas.scrollLeft += RYCHLOST * dt;
-      const pul = pruh.scrollWidth / 2;
-      if (pas.scrollLeft >= pul) pas.scrollLeft -= pul;
-      else if (pas.scrollLeft < 0) pas.scrollLeft += pul;
+      // Exponenciální náběh: přechod mezi plnou a zpomalenou rychlostí je
+      // plynulý, ať pruh pod kurzorem neseknou skokem.
+      faktor += (cil - faktor) * Math.min(dt * NABEH, 1);
+      if (!tiche.matches && ted >= stoji) pas.scrollLeft += RYCHLOST * faktor * dt;
+      if (pas.scrollLeft >= otacka) pas.scrollLeft -= otacka;
+      else if (pas.scrollLeft < 0) pas.scrollLeft += otacka;
       requestAnimationFrame(krok);
     })(minule);
   });
@@ -1728,8 +1703,9 @@ function prechodDoDashboardu(cil) {
   // Kruh se rozlije od tlačítka, kterým se člověk přihlásil. Po přihlášení
   // přes Google (návrat přesměrováním) žádné tlačítko není — pak od středu.
   const tlacitko = window.__prechodOd;
-  const x = tlacitko ? tlacitko.x : innerWidth / 2;
-  const y = tlacitko ? tlacitko.y : innerHeight / 2;
+  const z = mkZoom();   // --x / --y jsou px stránky, změřené místo je v px okna
+  const x = (tlacitko ? tlacitko.x : innerWidth / 2) / z;
+  const y = (tlacitko ? tlacitko.y : innerHeight / 2) / z;
 
   // Jen modrá plocha, bez orbu a textu — ty naskočí až v dashboardu
   // (Yasin). Orb na obou stránkách by se musel při přechodu navazovat
@@ -1757,3 +1733,29 @@ document.addEventListener('click', e => {
   e.preventDefault();
   prechodDoDashboardu('/employer/');
 });
+
+/* ═══════════ AURORA SE HÝBE, JEN KDYŽ JE VIDĚT ═══════════
+   Tři plující skvrny mají `animation: … infinite`, takže se překreslují
+   pořád — i když je sekce dávno odscrollovaná. Na podstránkách nad nimi
+   navíc leží mléčné sklo čekacího listu, a `backdrop-filter` musí kvůli
+   jejich pohybu přepočítat rozmazané pozadí každý snímek. Mimo obraz to
+   nikdo nevidí, tak ať to nestojí výkon: venku ze záběru se animace pauzne
+   (skvrny zůstanou, kde byly) a se skvrnami se zastaví i to přepočítávání. */
+(function auroraJenVObraze() {
+  if (!('IntersectionObserver' in window)) return;
+  const hlidac = new IntersectionObserver(zaznamy => {
+    zaznamy.forEach(z => z.target.classList.toggle('aurora--stoji', !z.isIntersecting));
+  }, { rootMargin: '140px' });
+  // Některá hera si aurora dokresluje až skriptem, takže jednorázový sběr při
+  // načtení by o ni přišel. Proto se seznam projde znovu po doběhnutí stránky;
+  // `data-hlidano` brání tomu, aby se jedna skvrna hlídala dvakrát.
+  function seber() {
+    document.querySelectorAll('.aurora:not([data-hlidano])').forEach(a => {
+      a.dataset.hlidano = '1';
+      hlidac.observe(a);
+    });
+  }
+  seber();
+  document.addEventListener('DOMContentLoaded', seber);
+  window.addEventListener('load', () => { seber(); setTimeout(seber, 1200); });
+})();

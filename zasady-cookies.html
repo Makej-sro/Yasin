@@ -10,7 +10,7 @@
     gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', functionality_storage: 'denied', personalization_storage: 'denied', security_storage: 'granted', wait_for_update: 500 });
     gtag('set', 'ads_data_redaction', true);
   </script>
-  <link rel="stylesheet" href="/consent.css?v=2" />
+  <link rel="stylesheet" href="/consent.css?v=3" />
   <script src="/consent.js?v=4" defer></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -22,7 +22,7 @@
   <meta property="og:url" content="https://makej.eu/zasady-cookies" />
   <meta property="og:title" content="Zásady používání cookies — Makej" />
   <meta property="og:description" content="Co si web Makej ukládá do prohlížeče a jak to změnit." />
-  <meta property="og:image" content="https://makej.eu/og-image.png" />
+  <meta property="og:image" content="https://makej.eu/og-image.png?v=6" />
   <meta property="og:locale" content="cs_CZ" />
   <meta property="og:site_name" content="Makej" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="/fonts/LeagueSpartan-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     /* League Spartan — vlastní hosting (tahle stránka nenačítá style.css) */
     @font-face {
@@ -66,12 +66,11 @@
       --primary-soft: rgba(0,32,246,.07);
       --border: rgba(10,13,46,.10);
       --font-sans: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', sans-serif;
-      --font-heading: 'Bricolage Grotesque', 'Bricolage Grotesque Fallback', 'Plus Jakarta Sans', sans-serif;
+      /* Stejné písmo nadpisů jako zbytek webu (style.css). Dřív tu stál
+         Bricolage Grotesque, takže právní stránky vypadaly jinak než ostatní. */
+      --font-heading: 'Inter', 'Inter Fallback', 'Bricolage Grotesque', 'Plus Jakarta Sans', sans-serif;
     }
     html { scroll-behavior: smooth; }
-    /* bez posuvníku stránky (stejně jako style.css) — posouvání funguje dál */
-    html { scrollbar-width: none; -ms-overflow-style: none; }
-    html::-webkit-scrollbar { display: none; width: 0; height: 0; }
     body {
       background: radial-gradient(120% 60% at 50% 0%, #e3e8fb 0%, #eef1f9 55%);
       background-attachment: fixed;
