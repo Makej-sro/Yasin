@@ -16,7 +16,8 @@
 > **Srovnáno s tvým webem 1. 10.:** web (bez dashboardu) u nás odpovídá tvému `bd689ff`
 > (1. 10.) — ceny, sdílený ceník, OG obrázek, kotva Kontakt, kroky na /hledam-si-praci,
 > tvoje /lide. Navíc oproti tobě máme **jen body 1–17 níž** — nic dalšího.
-> Dashboard (`employer/`) jsme od tebe nebrali — ceny v něm jsou zatím staré.
+> Dashboard (`employer/`) jsme od tebe nebrali. Ceny v něm jsou ale srovnané s tvým webem
+> (bod 17). Všechno z 1. 10. (body 7–17) je v jednom commitu `ae89b7f`.
 
 **1. Nad velkým nadpisem byla před animací vidět řada čárek (kousky písmen)**
 - **Co uživatel viděl:** nadpis na začátku stránky (např. „Staň se Makačem / ještě dnes")
@@ -100,7 +101,7 @@
   zvětšením 125–150 % (okno 1280 × 590–720, 1366 × 768, 1536 × 730). Na 1280 × 720 byl
   vršek telefonu 52 px nad spodkem tlačítka, na 1280 × 590 dokonce 107 px. Na MacBooku
   (1440 × 900) to bylo v pořádku. Je to i na živém webu.
-- **Oprava:** 1. 10. 2026 (commit doplníme po pushi). Telefon se na nízkých oknech posadí
+- **Oprava:** 1. 10. 2026, commit `ae89b7f`. Telefon se na nízkých oknech posadí
   níž: v `hledam-si-praci.html` stupně `.mkj-visual` (CSS `@media (min-height: …)` i
   tabulka `STUPNE` ve skriptu pod herem) — `--dy` pro výšky pod 650 / 650 / 710 / 770 /
   830 px = 436 / 416 / 392 / 370 / 370 px (dřív 258 / 275 / 295 / 320 / 345) a nový stupeň
@@ -112,7 +113,7 @@
   do tlačítek „Vytvořit účet" / „Jak to funguje".
 - **Kdy a kde:** `/lide` na počítači s oknem nižším než ~650 px (Windows notebook se
   zvětšením 150 %, 1280 × 590 — překryv 29 px). Je to i na živém webu.
-- **Oprava:** 1. 10. 2026 (commit doplníme po pushi). V `lide.html` nové pravidlo
+- **Oprava:** 1. 10. 2026, commit `ae89b7f`. V `lide.html` nové pravidlo
   `@media (min-width: 601px) and (max-height: 700px)` — `.vx-heroimg` má šířku z `.74`
   výšky okna místo `.88`. Hledat: `vx-heroimg`, „Nízké okno na počítači".
 
@@ -123,7 +124,7 @@
   1920 × 1080 → ×1,15, 2240 × 1140 → ×1,25, 2560 × 1310 → ×1,45, 2880 × 1490 → ×1,6.
   Notebooky, Windows s oknem do 1920 × 950 a mobily se nemění. Ověřeno v Chrome i v jádře
   Safari (WebKit) na všech stránkách — nic nepřetéká, žádná chyba skriptu.
-- **Od kdy:** 1. 10. 2026 (commit doplníme po pushi).
+- **Od kdy:** 1. 10. 2026, commit `ae89b7f`.
 - **⚠️ Pro Samova Clauda — pravidla, jinak se to rozbije:**
   - `style.css` nahoře blok „VELKÉ OBRAZOVKY": `--z` podle `@media (min-width) and
     (min-height)` uvnitř `@supports (zoom: 1)` a `html { zoom: var(--z); }`.
@@ -148,7 +149,7 @@
   stála ~85 % obrazovky, (b) slovo v nadpisu se měnilo i rozmazané za kartou a telefon pokaždé
   znovu rozmazával celé hero, (c) `data-nav-blue` bylo na patičce, která je na úvodce bílá,
   a ne na modrém pruhu, (d) obrázek měl `loading="lazy"`.
-- **Oprava:** 1. 10. 2026 (commit doplníme po pushi). `style.css`: `@media (max-width: 700px)
+- **Oprava:** 1. 10. 2026, commit `ae89b7f`. `style.css`: `@media (max-width: 700px)
   { #brzy { min-height: 100svh } }` (desktop dál stojí). `script.js` heroTyper: `stoji()` —
   slovo se nemění, dokud má `.uvod` `data-vzadu` nebo je karta prohlížeče na pozadí.
   `index.html`: `data-nav-blue` přesunuto z `#footer` na `.vx-close--foto`; u `hsp-mockup.webp`
@@ -237,7 +238,7 @@
 - **Bezpečnost:** heslo se neukládá, jen token Supabase (access 1 h, sám se obnovuje).
   Po odhlášení ho Supabase zneplatní. Bez Pro tarifu Supabase délku přihlášení neomezuje,
   proto si 30 dní hlídáme sami v prohlížeči.
-- **Od kdy:** 1. 10. 2026 (commit doplníme po pushi). Verze: `employer-shell.jsx?v=70`,
+- **Od kdy:** 1. 10. 2026, commit `ae89b7f`. Verze: `employer-shell.jsx?v=70`,
   `employer-main.jsx?v=59`, `employer-pages3.jsx?v=197`, `worker-main.jsx?v=11`,
   `worker-profile.jsx?v=13`, `pamet-prihlaseni.js?v=2`.
 **15. (Dashboard, úprava) Záložka Inzeráty jen ve dvou řadách: Aktivní a Neaktivní**
