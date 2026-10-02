@@ -309,20 +309,77 @@
       .e-ram > div > *, .e-ram > div > :nth-child(2) > * { animation: none !important; }
     }
 
-    /* Profil firmy — řádky údajů upravované na místě (employer-firma.jsx) */
-    .e-pf-inp { width: 100%; font-size: 14px; font-weight: 600; color: #0B1233; background: transparent;
-      border: 1px solid transparent; border-radius: 9px; padding: 8px 10px; outline: none; transition: background .15s, border-color .15s; }
-    .e-pf-inp:hover { background: #F6F7FC; }
-    /* Profil firmy bez fotky pozadí: světlá plocha, při najetí zešedne (klik = nahrát) */
-    .e-pf-cover-prazdne { background: #F2F8FC; transition: background .15s ease; }
+    /* Profil firmy podle návrhu z Claude Design (employer-firma.jsx, Yasin 2. 10.).
+       Barvy a rozměry 1:1 z návrhu: modrá #1A3CFF (hover #1230D9), text #0B1220 / #3A4256 / #5B6478. */
+    .e-pf-telo { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; margin-top: 24px; align-items: start; }
+    @media (max-width: 1180px) { .e-pf-telo { grid-template-columns: minmax(0, 1fr); } }
+    /* Dvousloupcový seznam (Kontakt a údaje po řádcích, otevírací doba po sloupcích Po–Čt | Pá–Ne) */
+    .e-pf-dvojice { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; }
+    .e-pf-dny { grid-auto-flow: column; grid-template-rows: repeat(4, auto); }
+    @media (max-width: 900px) { .e-pf-dvojice { grid-template-columns: minmax(0, 1fr); } .e-pf-dny { grid-auto-flow: row; grid-template-rows: none; } }
+    .e-pf-odkaz { font: inherit; font-size: 14px; font-weight: 600; color: #1A3CFF; background: none; border: none; padding: 0; cursor: pointer; white-space: nowrap; }
+    .e-pf-odkaz:hover { color: #1230D9; }
+    .e-pf-doplnit { font: inherit; font-size: 15px; font-weight: 600; color: #1A3CFF; background: none; border: none; padding: 0; cursor: pointer; text-align: left; }
+    .e-pf-doplnit:hover { color: #1230D9; }
+    .e-pf-btn, .e-pf-btn2 { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 38px; padding: 0 16px;
+      border-radius: 12px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s, border-color .15s; }
+    .e-pf-btn { background: #1A3CFF; color: #fff; border: 1px solid #1A3CFF; }
+    .e-pf-btn:hover:not(:disabled) { background: #1230D9; border-color: #1230D9; }
+    .e-pf-btn2 { background: #fff; color: #0B1220; border: 1px solid #E1E4EB; }
+    .e-pf-btn2:hover:not(:disabled) { background: #F7F7F9; }
+    .e-pf-btn:disabled, .e-pf-btn2:disabled { opacity: .6; cursor: default; }
+    /* Tlačítko na úvodní fotce */
+    .e-pf-na-fotce { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #fff;
+      color: #0B1220; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .e-pf-na-fotce:hover { background: #F7F7F9; }
+    /* Políčko při úpravě karty */
+    .e-pf-pole { width: 100%; min-width: 0; font: inherit; font-size: 15px; color: #0B1220; background: #fff; border: 1px solid #E1E4EB;
+      border-radius: 10px; padding: 9px 12px; outline: none; transition: border-color .15s, box-shadow .15s; }
+    .e-pf-pole:focus { border-color: #1A3CFF; box-shadow: 0 0 0 3px rgba(26,60,255,.12); }
+    .e-pf-pole::placeholder { color: #A3AAB8; }
+    .e-pf-pole.chyba, .e-pf-pole.chyba:focus { border-color: #f43f5e; box-shadow: 0 0 0 3px rgba(244,63,94,.12); }
+    select.e-pf-pole { cursor: pointer; }
+    /* Čas otevírací doby: bez ikonky hodin, ať se dva časy vejdou vedle sebe */
+    .e-pf-pole[type=time] { width: 82px; flex: none; padding: 7px 9px; }
+    .e-pf-pole[type=time]::-webkit-calendar-picker-indicator { display: none; }
+    .e-pf-check { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; flex: none; margin: 0; border: 1.5px solid #C9CFDB;
+      border-radius: 5px; background: #fff; display: grid; place-content: center; cursor: pointer; transition: background .15s, border-color .15s; }
+    .e-pf-check:checked { background: #1A3CFF; border-color: #1A3CFF; }
+    .e-pf-check:checked::after { content: ''; width: 9px; height: 5px; border: 2px solid #fff; border-top: 0; border-right: 0; transform: translateY(-1px) rotate(-45deg); }
+    /* Záložky pod hlavičkou */
+    .e-pf-tab { font: inherit; font-size: 15px; font-weight: 600; color: #5B6478; background: none; border: none; border-bottom: 2px solid transparent;
+      padding: 16px 0 14px; cursor: pointer; white-space: nowrap; transition: color .15s; }
+    .e-pf-tab:hover, .e-pf-tab[data-on] { color: #0B1220; }
+    .e-pf-tab[data-on] { border-bottom-color: #1A3CFF; }
+    /* Logo: „Změnit logo" až při najetí */
+    .e-pf-logo-zmenit { position: absolute; left: 0; right: 0; bottom: 0; padding: 6px 0; background: rgba(11,18,32,.6); color: #fff;
+      font-size: 11.5px; font-weight: 700; text-align: center; opacity: 0; transition: opacity .15s; }
+    .e-pf-logo:hover .e-pf-logo-zmenit { opacity: 1; }
+    /* Bez úvodní fotky světlá plocha #F2F8FC, při najetí ztmavne (klik = nahrát). Tak to bylo od 30. 9.;
+       modrou plochu jako v appce Yasin 2. 10. nechtěl. */
+    .e-pf-cover-prazdne { background: #F2F8FC; cursor: pointer; transition: background .15s ease; }
     .e-pf-cover-prazdne:hover { background: #E3EAF0; }
+    /* Sociální sítě: vyplněná jako pilulka, nevyplněná čárkovaně */
+    .e-pf-sit { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 10px; border: 1px solid #E1E4EB;
+      font-size: 14px; font-weight: 600; color: #0B1220; text-decoration: none; transition: background .15s; }
+    .e-pf-sit:hover { background: #F7F7F9; color: #0B1220; }
+    .e-pf-sit-prazdna { display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 10px; border: 1.5px dashed #C9CFDB; background: none; font: inherit;
+      font-size: 14px; font-weight: 600; color: #5B6478; cursor: pointer; transition: border-color .15s, color .15s; }
+    .e-pf-sit-prazdna:hover { border-color: #1A3CFF; color: #1A3CFF; }
+    .e-pf-sit-prazdna img { filter: grayscale(1); opacity: .45; transition: filter .15s, opacity .15s; }
+    .e-pf-sit-prazdna:hover img { filter: none; opacity: 1; }
+    /* Síla profilu: nesplněný bod */
+    .e-pf-bod { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 0; border: none; border-top: 1px solid #F0F1F4;
+      background: none; font: inherit; font-size: 15px; font-weight: 600; color: #0B1220; cursor: pointer; }
+    .e-pf-bod:hover { color: #1A3CFF; }
+    /* Fotky: křížek až při najetí, přidání čárkovaně */
+    .e-pf-foto-x { opacity: 0; transition: opacity .15s ease; }
+    .e-pf-foto:hover .e-pf-foto-x, .e-pf-foto-x:focus-visible { opacity: 1; }
+    .e-pf-pridat { border: 1.5px dashed #C9CFDB; background: #FAFBFC; transition: border-color .15s, background .15s; }
+    .e-pf-pridat:hover { border-color: #1A3CFF; background: #F4F6FE; }
     /* Výběr úvodní fotky z Fotek firmy — při najetí modrý rámeček */
-    .e-pf-radek-loga > * { pointer-events: auto; }
     .e-pf-vyber { transition: box-shadow .15s ease; }
     .e-pf-vyber:hover, .e-pf-vyber:focus-visible { box-shadow: 0 0 0 3px #1B34F0; outline: none; }
-    .e-pf-inp:focus { background: #fff; border-color: #1B34F0; }
-    .e-pf-inp::placeholder { color: #1B34F0; opacity: .75; font-weight: 700; }
-    select.e-pf-inp { cursor: pointer; }
 
     /* Menu karty firmy v levém menu */
     @keyframes eKartaIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -899,7 +956,7 @@
     });
   </script>
 
-  <script type="text/babel" src="app.jsx?v=3"></script>
+  <script type="text/babel" src="app.jsx?v=4"></script>
   <script type="text/babel" src="employer-theme.jsx?v=5"></script>
   <script type="text/babel" src="employer-data.jsx?v=3"></script>
   <script type="text/babel" src="employer-plans.jsx?v=4"></script>
@@ -907,11 +964,11 @@
   <script type="text/babel" src="employer-dashboard.jsx?v=48"></script>
   <script type="text/babel" src="employer-pages.jsx?v=78"></script>
   <script type="text/babel" src="employer-demo.jsx?v=8"></script>   <!-- ukázkové inzeráty — PŘED RELEASEM smazat -->
-  <script type="text/babel" src="employer-pages3.jsx?v=227"></script>
+  <script type="text/babel" src="employer-pages3.jsx?v=230"></script>
   <script type="text/babel" src="_premium/kraje-map.jsx?v=19"></script>
   <script type="text/babel" src="_premium/analytics.jsx?v=40"></script>
-  <script type="text/babel" src="employer-firma.jsx?v=14"></script>
-  <script type="text/babel" src="employer-supabase.jsx?v=28"></script>
+  <script type="text/babel" src="employer-firma.jsx?v=43"></script>
+  <script type="text/babel" src="employer-supabase.jsx?v=36"></script>
   <script type="text/babel" src="employer-main.jsx?v=60"></script>
 </body>
 </html>

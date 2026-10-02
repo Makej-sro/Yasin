@@ -190,7 +190,9 @@ window.toggleMakejTheme = function() {
 // Helpers
 // ─────────────────────────────────────────────────────────────
 const Icon = ({ name, size = 20, color = 'currentColor' }) => (
-  <iconify-icon icon={`solar:${name}`} width={size} height={size} style={{ color, display: 'inline-flex', verticalAlign: 'middle' }}></iconify-icon>
+  // noobserver = vypne líný IntersectionObserver iconify-icon: ikonka se vykreslí hned a nemizí
+  // (stejně jako v appce; v dashboardu ikonky na tlačítkách mizely a naskakovaly, Yasin 2. 10.)
+  <iconify-icon icon={`solar:${name}`} width={size} height={size} noobserver="" style={{ color, display: 'inline-flex', verticalAlign: 'middle' }}></iconify-icon>
 );
 
 function fmtKc(n) {

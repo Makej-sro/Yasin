@@ -222,13 +222,6 @@ async function topovatJobE(jobId) {
 const E_URGENTNI  = [];        // urgentní označení v tomto měsíci: { job_id, started_at, ends_at }
 const E_URG_HODIN = 72;
 let _eUrgTabulka  = null;
-// DOČASNĚ, dokud Sam nespustí migration_urgentni.sql: když v DB chybí sloupec
-// jobs.urgent_until, uloží se označení jen v tomhle prohlížeči (localStorage), ať jde
-// urgentní vyzkoušet. Appka ho pak nevidí. Po migraci se to samo přestane používat
-// (zápis do DB projde) — pak tenhle kus smazat.
-const _E_URG_LOKAL = 'makej-urgent-test';
-const _eUrgLokal = () => { try { return JSON.parse(localStorage.getItem(_E_URG_LOKAL) || '{}') || {}; } catch (e) { return {}; } };
-const _eBezSloupce = e => /urgent_until|PGRST204|42703/i.test(((e && e.code) || '') + ' ' + ((e && e.message) || ''));
 // Do kdy bude inzerát urgentní: začátek směny, nebo E_URG_HODIN od teď, když budoucí termín nemá
 function _eUrgentDo(j) {
   const zac = j ? _eZacatekSmeny(j.date, j.timeText) : null;
@@ -244,14 +237,7 @@ async function urgentniJobE(jobId) {
   const j = E_JOBS.find(x => x.id === jobId);
   const zac = _eUrgentDo(j);
   const { error } = await sb.from('jobs').update({ urgent_until: zac.toISOString() }).eq('id', jobId);
-  if (error) {
-    if (!_eBezSloupce(error)) { console.error('urgentniJobE:', error); return null; }
-    console.warn('urgentniJobE: jobs.urgent_until v DB chybí (čeká na migration_urgentni.sql) — uloženo jen v prohlížeči');
-    try { const m = _eUrgLokal(); m[jobId] = zac.toISOString(); localStorage.setItem(_E_URG_LOKAL, JSON.stringify(m)); } catch (e) { return null; }
-    E_URGENTNI.push({ job_id: jobId, started_at: new Date().toISOString(), ends_at: zac.toISOString() });
-    if (j) { j.status = 'urgent'; j.urgentUntil = zac.toISOString(); }
-    return zac.toISOString();
-  }
+  if (error) { console.error('urgentniJobE:', error); return null; }
   const zaznam = { job_id: jobId, started_at: new Date().toISOString(), ends_at: zac.toISOString() };
   if (_eUrgTabulka !== false) {
     const { error: e2 } = await sb.from('job_urgentni').insert(zaznam);
@@ -294,14 +280,6 @@ async function fetchEmployerData(employerId) {
       if (_eBezTabulky(urgRes.error)) _eUrgTabulka = false; else console.warn('job_urgentni:', urgRes.error.message);
       jobs.forEach(j => { if (j.urgent_until && new Date(j.urgent_until) >= _eZacatekMesice()) E_URGENTNI.push({ job_id: j.id, started_at: null, ends_at: j.urgent_until }); });
     }
-    // DOČASNĚ (viz _E_URG_LOKAL): označení uložená jen v prohlížeči, dokud DB nemá urgent_until
-    const urgLokal = _eUrgLokal();
-    jobs.forEach(j => {
-      const u = urgLokal[j.id];
-      if (!u || j.urgent_until) return;
-      j.urgent_until = u;
-      if (new Date(u) >= _eZacatekMesice() && !E_URGENTNI.some(x => x.job_id === j.id)) E_URGENTNI.push({ job_id: j.id, started_at: null, ends_at: u });
-    });
 
     let matches = [], messages = [], reviews = [];
     const viewsByJob = {};
@@ -728,7 +706,43 @@ async function createJobE(employerId, fields) {
   return data;
 }
 
-Object.assign(window, { fetchEmployerData, acceptCandidate, rejectCandidate, updateEmployerProfile, createJobE, _strColor, _relTime, _fmtTime, E_LIMITY_OD_PRIHLASENI });
+Object.assign(window, { pripravFotkuE, jeObrazekE, fetchEmployerData, acceptCandidate, rejectCandidate, updateEmployerProfile, createJobE, _strColor, _relTime, _fmtTime, E_LIMITY_OD_PRIHLASENI });
+
+// ── Ověření firmy (Yasin 2. 10.): IČO z ARES → žádost do overeni_firem → e-mail na podpora@ ──
+// Odznak zapíná Yasin ručně (supabase/migration_overeni_firem.sql). IČO má kontrolní
+// číslici (mod 11), takže překlep se pozná hned bez dotazu do ARES.
+function icoPlatneE(ico) {
+  if (!/^\d{8}$/.test(ico)) return false;
+  const s = [...ico.slice(0, 7)].reduce((a, c, i) => a + (+c) * (8 - i), 0);
+  return (11 - s % 11) % 10 === +ico[7];
+}
+// ARES posílá CORS hlavičky, jde volat přímo z prohlížeče. null = v rejstříku není, výjimka = ARES neodpovídá.
+async function aresFirmaE(ico) {
+  const r = await fetch('https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/' + ico);
+  if (r.status === 404 || r.status === 400) return null;
+  if (!r.ok) throw new Error('ARES ' + r.status);
+  const d = await r.json();
+  return { nazev: String(d.obchodniJmeno || '').replace(/\s+/g, ' ').trim(), adresa: (d.sidlo && d.sidlo.textovaAdresa) || '', zanikla: !!d.datumZaniku };
+}
+// Stav poslední žádosti: 'ceka' | 'schvaleno' | 'zamitnuto' | null (žádná, nebo tabulka ještě není)
+async function overeniStavE() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session?.user) return null;
+  const { data, error } = await sb.from('overeni_firem').select('stav').eq('firma_id', session.user.id)
+    .order('created_at', { ascending: false }).limit(1);
+  if (error) { console.warn('overeni_firem:', error.message); return null; }
+  return (data && data[0] && data[0].stav) || null;
+}
+// 'ok' | 'uz-ceka' | 'limit' | 'chyba'
+async function odesliOvereniE({ ico, email, nazev, adresa }) {
+  const { error } = await sb.from('overeni_firem').insert({ ico, email, nazev_ares: nazev || null, adresa_ares: adresa || null });
+  if (!error) return 'ok';
+  if (error.code === '23505') return 'uz-ceka';
+  if (error.code === 'P0001') return 'limit';
+  console.error('odesliOvereniE:', error);
+  return 'chyba';
+}
+Object.assign(window, { icoPlatneE, aresFirmaE, overeniStavE, odesliOvereniE });
 
 // Zapnout / pozastavit inzerát. DB zná jen stavy active | filled | expired
 // (schema.sql CHECK), appka ve feedu ukazuje jen 'active' — pozastavený je
@@ -1031,10 +1045,48 @@ async function uploadChatFileE(matchId, file, fileType) {
   } catch (e) { console.error('uploadChatFileE:', e); return null; }
 }
 
-async function uploadImageE(userId, prefix, file, maxDim) {
+// ── Fotky z iPhonu (HEIC) ──
+// Safari HEIC otevře sám, Chrome / Edge / Firefox ne (Yasin 2. 10.: „ať mě to pustí vložit fotky
+// i z telefonu"). Takovou fotku převedeme na JPEG převodníkem heic-to (novější libheif — starší
+// heic2any fotky z dnešních iPhonů neuměl: „ERR_LIBHEIF format not supported"). Stáhne se až ve
+// chvíli, kdy je potřeba (~3 MB, jednou za návštěvu). Do úložiště jde vždy JPEG.
+const _E_HEIC_PRIPONA = /\.(heic|heif)$/i;
+const _eJeHeic = f => !!f && (/^image\/hei[cf]/i.test(f.type || '') || _E_HEIC_PRIPONA.test(f.name || ''));
+const jeObrazekE = f => !!f && (/^image\//.test(f.type || '') || _eJeHeic(f));
+let _eHeicKnihovna = null;
+function _eNactiHeic() {
+  if (typeof window.HeicTo === 'function') return Promise.resolve(window.HeicTo);
+  if (!_eHeicKnihovna) _eHeicKnihovna = new Promise((ok, chyba) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/heic-to@1.6.5/dist/iife/heic-to.js';
+    s.onload = () => typeof window.HeicTo === 'function' ? ok(window.HeicTo) : chyba(new Error('heic-to'));
+    s.onerror = () => { _eHeicKnihovna = null; chyba(new Error('heic-to')); };
+    document.head.appendChild(s);
+  });
+  return _eHeicKnihovna;
+}
+function _eUmiOtevrit(file) {   // zvládne prohlížeč fotku otevřít sám?
+  return new Promise(ok => {
+    const u = URL.createObjectURL(file), i = new Image();
+    i.onload = () => { URL.revokeObjectURL(u); ok(true); };
+    i.onerror = () => { URL.revokeObjectURL(u); ok(false); };
+    i.src = u;
+  });
+}
+// Vrátí fotku, kterou prohlížeč umí otevřít (HEIC převede na JPEG, ostatní nechá být)
+async function pripravFotkuE(file) {
+  if (!_eJeHeic(file) || await _eUmiOtevrit(file)) return file;
+  const heicTo = await _eNactiHeic();
+  const jpg = await heicTo({ blob: file, type: 'image/jpeg', quality: 0.92 });
+  return new File([jpg], (file.name || 'fotka').replace(_E_HEIC_PRIPONA, '') + '.jpg', { type: 'image/jpeg' });
+}
+
+// hotovyJpeg: soubor už je náš výřez v JPEG (úvodní fotka, logo) — nahrát, jak je.
+// Druhé zmenšení by fotku zbytečně podruhé zkomprimovalo (text a QR v banneru by se rozmazaly).
+async function uploadImageE(userId, prefix, file, maxDim, hotovyJpeg) {
   if (!userId || !file) return null;
   try {
-    const blob = await _eResizeImage(file, maxDim || 1400, 0.85);
+    const blob = hotovyJpeg && file.type === 'image/jpeg' ? file : await _eResizeImage(await pripravFotkuE(file), maxDim || 1400, 0.85);
     const path = `${userId}/${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.jpg`;
     const { error } = await sb.storage.from('uploads').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
     if (error) { console.error('uploadImageE:', error); return null; }

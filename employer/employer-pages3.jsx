@@ -3837,16 +3837,10 @@ function ESettings({ onTab, onNew, onSignOut } = {}) {
         avatar_url: form.avatar_url, logo_url: form.logo_url,
         socials: { instagram: form.ig, facebook: form.fb, linkedin: form.li, tiktok: form.tt },
         photos: form.photos.filter(u => u && u.trim()),
-        branding: { color: form.brand },
+        branding: { ...(P.branding || {}), color: form.brand },   // zachová ostatní klíče v branding
+        cover_url: form.cover_url,
       };
-      ok = await updateEmployerProfile({ ...zaklad, cover_url: form.cover_url });
-      // Sloupec profiles.cover_url zatím nemusí v databázi být (migrace
-      // supabase/migration_cover_firmy.sql čeká na Sama). Pak se uloží
-      // aspoň všechno ostatní a firma se to dozví.
-      if (!ok && form.cover_url) {
-        ok = await updateEmployerProfile(zaklad);
-        if (ok) { setSaving(false); setDirty(false); setToast('cover-db'); setTimeout(() => setToast(null), 4200); return; }
-      }
+      ok = await updateEmployerProfile(zaklad);
     }
     setSaving(false);
     if (ok) setDirty(false);
@@ -4027,7 +4021,7 @@ function ESettings({ onTab, onNew, onSignOut } = {}) {
       {/* Toasty */}
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', zIndex: 80, background: (toast === 'err' || toast === 'upload-err') ? '#B3261E' : '#0B1233', color: '#fff', fontSize: 13, fontWeight: 700, padding: '12px 18px', borderRadius: 11, boxShadow: '0 14px 34px -10px rgba(11,18,51,.5)' }}>
-          {toast === 'ok' ? 'Profil uložen' : toast === 'err' ? 'Uložení se nezdařilo, zkuste to znovu' : toast === 'verify' ? 'Žádost o ověření odeslána — ozveme se e-mailem.' : toast === 'export' ? 'Export se připravuje, přijde e-mailem.' : toast === 'dpa' ? 'Zpracovatelská smlouva odeslána e-mailem.' : toast === 'pause' ? 'Profil byl pozastaven.' : toast === 'deleted' ? 'Žádost o smazání přijata — účet odstraníme do 24 h.' : toast === 'upload-err' ? 'Fotku se nepodařilo nahrát, zkuste to znovu' : toast === 'cover-db' ? 'Profil uložen. Fotka pozadí se začne ukládat po úpravě databáze.' : ''}
+          {toast === 'ok' ? 'Profil uložen' : toast === 'err' ? 'Uložení se nezdařilo, zkuste to znovu' : toast === 'verify' ? 'Žádost o ověření odeslána — ozveme se e-mailem.' : toast === 'export' ? 'Export se připravuje, přijde e-mailem.' : toast === 'dpa' ? 'Zpracovatelská smlouva odeslána e-mailem.' : toast === 'pause' ? 'Profil byl pozastaven.' : toast === 'deleted' ? 'Žádost o smazání přijata — účet odstraníme do 24 h.' : toast === 'upload-err' ? 'Fotku se nepodařilo nahrát, zkuste to znovu' : ''}
         </div>
       )}
     </div>
@@ -4159,7 +4153,7 @@ function _NjFotky({ fotky, setFotky, onFocus }) {
   const zProfilu = [P.cover_url].concat(Array.isArray(P.photos) ? P.photos : []).filter(u => u && !fotky.includes(u));
   const volno = _NJ_MAX_FOTEK - fotky.length;
   async function nahraj(seznam) {
-    const files = Array.from(seznam || []).filter(f => /^image\//.test(f.type)).slice(0, volno);
+    const files = Array.from(seznam || []).filter(f => (typeof jeObrazekE === 'function' ? jeObrazekE(f) : /^image\//.test(f.type))).slice(0, volno);   // i HEIC z iPhonu (převede uploadImageE)
     if (!files.length || typeof uploadImageE !== 'function' || typeof sb === 'undefined') return;
     if (onFocus) onFocus();
     setNahravam(files.length);
@@ -4180,7 +4174,7 @@ function _NjFotky({ fotky, setFotky, onFocus }) {
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'stretch' }}
       onDragOver={e => { if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')) e.preventDefault(); }}
       onDrop={e => { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { e.preventDefault(); nahraj(e.dataTransfer.files); } }}>
-      <input ref={vstup} type="file" accept="image/*" multiple hidden onChange={e => { nahraj(e.target.files); e.target.value = ''; }} />
+      <input ref={vstup} type="file" accept="image/*,.heic,.heif" multiple hidden onChange={e => { nahraj(e.target.files); e.target.value = ''; }} />
       {fotky.map((u, i) => (
         <div key={u} className="nj-foto" draggable
           onDragStart={e => { setTahnu(i); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(i)); } catch (x) {} }}

@@ -11,22 +11,20 @@
 
 > **Commity:** web (`Makej-sro/Yasin`) `7e7b2db`, appka (`makej-aplikace-yasin`) `77365e0`.
 
-> **Pro Samova Clauda:** `employer/` + appka (níž). **Je tu změna databáze:** spusť
-> `supabase/migration_urgentni.sql` (sloupec `jobs.urgent_until` + tabulka `job_urgentni`),
-> jinak urgentní nepůjde uložit ani nikde nebude vidět. Nejsnáz převzít `employer-pages3.jsx`,
+> **Pro Samova Clauda:** `employer/` + appka (níž). **Databáze:** `supabase/migration_urgentni.sql`
+> (sloupec `jobs.urgent_until` + tabulka `job_urgentni`) už spustil Yasin 2. 10., nic nespouštěj. Nejsnáz převzít `employer-pages3.jsx`,
 > `employer-supabase.jsx`, `employer-pages.jsx`, `employer-demo.jsx`, `employer-dashboard.jsx`
 > a `index.html` celé. Předlohy od Yasina (`inzerat-stitky`, `listing-slot.css`,
 > `topovani-stickers.css`, `urgentni-stickers.css`) jsou převzaté 1:1, jen třídy mají předponu `e-`.
 
-- **Verze v `employer/index.html`:** pages3 v227, shell v73, supabase v28, pages v78, demo v8, dashboard v48.
+- **Verze v `employer/index.html`:** pages3 v229, shell v73, supabase v32, pages v78, demo v8, dashboard v48, firma v41
+  (pages3 v228+, supabase v29+ a firma v15+ jsou až po commitu `7e7b2db`).
 - **Urgentní teď označuje firma, počet podle tarifu** (dřív byl inzerát urgentní sám se směnou
   do 2 dnů — ten automat je pryč). V detailu inzerátu vedle Topovat fialové tlačítko
   **„Označit urgentní"** (`vyberUrg`; jen aktivní inzerát). Inzerát bez budoucího termínu
   (průběžný nábor, prošlé datum) je urgentní **72 hodin** (`E_URG_HODIN`, `_eUrgentDo`) a okno
-  má pro něj jiné dva body. **Dočasně, dokud nespustíš migraci:** když v DB chybí
-  `jobs.urgent_until`, uloží `urgentniJobE` označení jen v prohlížeči (localStorage
-  `makej-urgent-test`, `_E_URG_LOKAL`), ať to Yasin může vyzkoušet. Appka ho pak nevidí. Po
-  migraci se to samo přestane používat — kus s `_E_URG_LOKAL` pak smaž.
+  má pro něj jiné dva body. (Dočasné ukládání do localStorage, dokud DB neměla
+  `jobs.urgent_until`, je po spuštění migrace 2. 10. zase pryč.)
   Otevře okno **„Opravdu chcete inzerát označit jako urgentní?"** — stejné jako u topování, jen
   fialové: tři body (pilulka Urgentní, odpočet u termínu, zmizí se začátkem směny), fialové
   nálepky Urgentní (`.e-um*`, 64 × 28 px, `@property --e-um-d` 0 → 134), „Obnoví se 1. 11."
@@ -121,8 +119,76 @@
   `.e-jr-volno` pryč). Počítadlo u nadpisu Aktivní je teď **„4/5"** (aktivní / limit tarifu,
   dřív „4 z 5"); u neomezeného tarifu jen počet. `EJobRada` umí `pocet=''` = bez počítadla.
 
+- **Profil firmy podle návrhu z Claude Design** (Yasin 2. 10., předloha „Profil firmy.dc.html" +
+  README; `employer-firma.jsx` v22, CSS `.e-pf-*` v `index.html`). Drobečky a stav ukládání z návrhu
+  Yasin nechtěl („zbytečný"), chybu uložení hlásí hláška dole. Karta hlavičky:
+  úvodní fotka ve **facebookovém formátu 1640 × 624** (`_PF_COVER_W/_H`; firmy mají banner z FB a
+  v 4 : 1 jim z něj chyběl kus). Ukládá se přesně 1640 × 624 (`vyrez(maxW, pomer)`, menší fotka se
+  nezvětšuje), JPEG 92 % jen jednou: výřez úvodní fotky i loga jde do `uploadImageE(…, hotovyJpeg = true)`
+  bez druhého zmenšení (dřív se komprimoval dvakrát a text v banneru se rozmazával; supabase v33). V dashboardu má rám strop výšky 320 px (`_PF_COVER_MAX_H`, jinak by byl ~490 px) a fotka se
+  v něm jen ořízne pro náhled; při úpravě pozice strop není, firma vidí přesně ukládaný výřez. Bez fotky světlá plocha `#F2F8FC`, při najetí ztmavne `#E3EAF0` (jako od 30. 9.), tlačítko „Změnit / Přidat úvodní fotku", logo 108 px přes fotku („Změnit
+  logo" při najetí), název + štítek **Neověřená** / Ověřená firma (jen v dashboardu), obor · adresa,
+  zelená hvězda s hodnocením, **Upravit hlavičku** (název a obor přímo v řádku, Zrušit / Uložit).
+  Záložky **Přehled · Fotky N · Brigády N · Hodnocení N** a vpravo se zámkem **Pro nové brigádníky**
+  (`chat_rules`, na veřejném profilu není). Přehled: karty O firmě, Kontakt a údaje (2 sloupce:
+  Adresa, Kraj, Telefon, E-mail, Web, Kariéra, IČO, Založeno; prázdné „+ Doplnit"), Otevírací doba
+  (štítek **Teď otevřeno / Zavřeno** podle času v Praze, Po–Čt | Pá–Ne, dnešní den tučně; úprava =
+  zaškrtnutí dne + dva časy, ukládá se jako text „7:30 – 18:00", prázdné = zavřeno), Sociální sítě
+  (vyplněné jako pilulka s **ikonkou sítě** v její barvě a jménem účtu, prázdné čárkovaně se šedou ikonkou;
+  ikonky Remix Icon přímo v kódu `_PF_SIT_IKONY`, stejné v appce `_WE_SIT_IKONY`, worker-main v65). Vpravo **Otevírací doba** (dny pod sebou, štítek stavu pod nadpisem; Yasin
+  ji tam přesunul z levého sloupce) a pod ní **Dokončeno**
+  (dřív „Síla profilu"; nikdy pod 20 %: 20 + 80 × splněné/7, kruh i číslo plynule od tmavě oranžové
+  (20 %) do zelené (100 %), přechod po odstínu přes žlutozelenou, `barvaDokonceni`) (hotové body šedé a přeškrtnuté jako nákupní seznam, bez koleček) (kruh s %, 7 bodů: Logo a úvodní fotka, Popis, Otevírací doba, Kontakty, Ověřit firmu,
+  Další fotky N / 8, Kariérní stránka; klik na nesplněný otevře jeho úpravu, Ověřit firmu otevře
+  okno **Ověřit firmu**, viz bod níž). Každá karta má **Upravit** → úprava v kartě se Zrušit / Uložit, ukládá jen svoje
+  sloupce jedním zápisem. Když je rozepsaná jiná karta a firma klikne na „Upravit" jinde nebo
+  odejde ze záložky, rozepsané se **uloží samo** (`_pfZmeneno`, `_pfPatch`; dřív se tiše zahodilo a
+  Yasinovi tak 2. 10. zmizel napsaný popis firmy). Fotky (záložka): bez počítadla, pojistka 50 kusů (`_PF_FOTEK_MAX`), jeden soubor nejvýš
+  15 MB a jen obrázek (jinak hláška), nahrání, odebrání, **pořadí přetažením**, vše se ukládá hned.
+  Síla profilu: „Další fotky" splněno od 4 fotek.
+- **Ikonky v dashboardu nemizí:** `Icon` v `employer/app.jsx` (v4) má `noobserver` (jako appka) — líný
+  IntersectionObserver iconify-icon Yasinovi schovával ikonky na tlačítkách, když z nich odjel myší.
+  Fotoaparát a tužka na tlačítkách hlavičky Profilu firmy jsou navíc přímo v kódu (`PFIkona`, SVG 1:1 ze Solar).
+- **Fotky z iPhonu (HEIC) jdou nahrát v každém prohlížeči** (supabase v34, firma v33, pages3 v230):
+  `pripravFotkuE(file)` — když prohlížeč HEIC neotevře (Chrome, Edge, Firefox; Safari ano), stáhne
+  převodník `heic-to@1.6.5` z jsDelivr (~3 MB, jen jednou, až když je potřeba) a převede fotku na
+  JPEG. (`heic2any` fotky z dnešních iPhonů neuměl, „ERR_LIBHEIF format not supported"; supabase v35.) Platí pro
+  fotky firmy, inzerátu (`uploadImageE`), logo i úvodní fotku; `accept` má navíc `.heic,.heif`,
+  `jeObrazekE` pozná HEIC i bez MIME typu. Do úložiště jde vždy JPEG. Brigády: aktivní inzeráty jen ke čtení + „Spravovat inzeráty". Tlačítko „Zobrazit jako
+  brigádník" z návrhu záměrně není (Yasin: náhled v mobilu firmám nedáváme). Plovoucí lišta
+  „Uložit změny" pryč.
+- **Profil firmy se ukládá jedním zápisem** a urgentní bez náhradního ukládání do prohlížeče —
+  databáze už má všechny sloupce (`ulozCoverE`, `_E_URG_LOKAL`, `branding.cover_url` atd. pryč).
+  Ukládání `branding` v Profilu i Nastavení zachová ostatní klíče (dřív `{ color }` přepsalo celé).
+
 ### Appka (repo makej-aplikace-yasin, stejný den) — `worker-swipe.jsx?v=126`, `app.jsx?v=37`
 
+- **Profil firmy v appce předělaný podle mobilní části téhož návrhu** (`worker-main.jsx?v=60`,
+  `WEmployerModal`, zIndex 8700 = nad horní lištou feedu s kalendářem a filtrem (8500), Yasin 2. 10.: „to co otevřu na mobilu jako tu firmu vůbec není to, jak jsem ti
+  posílal"). Celá obrazovka: nahoře Zpět (`WZpet`), úvodní fotka **vždy celá** (dashboard ji ukládá
+  4 : 1; bez fotky klidná plocha), logo 88 px přes ni, název 26/700 (+ modrá fajfka u ověřené),
+  obor · adresa, zelená hvězda s průměrem a počtem hodnocení, **„Volné brigády (N)"** (aktivní
+  inzeráty firmy z `jobs`, při 0 schované) a záložky **Přehled · Fotky · Brigády · Hodnocení**
+  (při posunu drží nahoře). Přehled: O firmě (zkráceno na 160 znaků + „více"), Sociální sítě (hned za O firmě, Yasin 2. 10.), Kontakt a údaje
+  (Adresa, Telefon `tel:`, E-mail `mailto:`, Web, IČO, Založeno), Otevírací doba (štítek Teď
+  otevřeno / Zavřeno podle času v Praze, stejné dny za sebou sloučené „Úterý – Čtvrtek", dnešek
+  tučně „· dnes"), Sociální sítě (jen vyplněné). Prázdné řádky i celé sekce se nezobrazují.
+  Fotky = mřížka, ťuknutí = galerie `WGalerie` (černá přes celou obrazovku, listování tažením do
+  stran se zacvaknutím, přiblížení dvěma prsty 1–4× i dvojitým ťuknutím, posun přiblížené fotky,
+  ✕ vpravo nahoře, počítadlo „2 / 5" vlevo; worker-main v63); Brigády = seznam, ťuknutí otevře detail
+  inzerátu (`WJobDetailModal`, jako nabídka v chatu); Hodnocení = seznam. Otevření z hodnocení
+  (`reviewsOnly`) skočí rovnou na záložku Hodnocení. Z návrhu záměrně chybí „Sledovat", sdílení
+  a „více" — zatím za nimi nic není.
+  **Bez probliknutí:** data profilu (+ recenze, inzeráty) a obrázky nahoře se načítají dopředu a
+  pamatují (`_weNacti`, `_weCache`, `window.wPrefetchEmployer`) — volá to horní karta feedu (`WJobCard`),
+  detail inzerátu a otevřené vlákno chatu. Bez dat v paměti se do načtení ukáže jen prázdná stránka se
+  Zpět (po 450 ms „Načítám…"), pak všechno naráz; rám úvodní fotky má hned správnou výšku (`coverPomer`).
+  Dřív problikly údaje z karty a prázdné fotky. Verze: worker-main v60, worker-swipe v127, worker-messages v25.
+- **Logo firmy na kartě, v detailu inzerátu a v seznamu uložených** (`worker-supabase.jsx?v=16`,
+  `worker-swipe.jsx?v=128`): dřív tam byly jen iniciály. `get_feed_jobs` logo nevrací, tak ho
+  `_wDoplnLoga` po každé stránce feedu dotáhne z `profiles` (`id, logo_url`, veřejně čitelné), zapamatuje
+  a obrázek stáhne dopředu. Ostatní dotazy na inzeráty berou `logo_url` rovnou v `employer:profiles(…)`.
+  `jobToCard` → `logoUrl`; bez loga dál iniciály. Databáze beze změny (do RPC se dá `logo_url` přidat později).
 - **Karta (`WJobCard`) 1:1 s dashboardem:** `WTopBadge` smazaná, místo ní `WTopNalepka` (nálepka TOP
   vpravo nahoře) a `WUrgentBadge` (vlevo vedle úvazku). Urgentní = `_wUrgentni(job)`:
   `job.urgent_until` v budoucnu (z feedu, potřebuje migraci výš); odpočet `_wOdpocet(job)` do
@@ -140,6 +206,21 @@
 
 **Pozor při přenosu:** „Zakládající partner" se zatím ukazuje u topovaných (`job.boosted`), to je
 špatně — patří firmám z předběžného přístupu a dodělá se při onboardingu. Teď beze změny.
+
+- **Ověřit firmu** (2. 10. večer, `employer-firma.jsx` v43 `PFOvereni`, `employer-supabase.jsx` v36,
+  CSS `.e-pf-pole.chyba`). Okno s poli **E-mail** (kontaktní, `profiles.contact_email`) a **IČO**
+  (`profiles.ic`), předvyplněné z profilu. Bez obou žádost neodejde: „Zaslat požadavek" zastaví a pod
+  políčkem řekne, co chybí (Vyplňte e-mail / Zkontrolujte e-mail / Vyplňte IČO / IČO má 8 číslic /
+  Tohle IČO není platné, kontrolní číslice mod 11 v `icoPlatneE`). IČO se při psaní dohledá v **ARES**
+  (`aresFirmaE`, volá se přímo z prohlížeče, ARES posílá CORS) a pod políčkem ukáže název a sídlo;
+  nenalezené nebo zaniklé IČO žádost zastaví. E-mail a IČO se uloží do profilu a žádost do nové
+  tabulky **`overeni_firem`** (`odesliOvereniE`). Pak bod v Dokončeno ukazuje „Čeká na schválení" a
+  štítek v hlavičce „Čeká na ověření" (`overeniStavE`). **DB:** `supabase/migration_overeni_firem.sql`:
+  tabulka + RLS (firma žádost jen podá a vidí), jedna čekající na firmu, max. 3 za den; trigger pošle
+  e-mail přes `makej_posli_email` na **podpora@makej.eu** (název z profilu i z ARES, IČO, oba e-maily,
+  odkazy do ARES a OR). Schválení ručně: Table Editor → `overeni_firem` → `stav` = `schvaleno` → trigger
+  zapne `profiles.verified` (security definer, ochranný trigger ho pustí) a firmě pošle e-mail „Vaše
+  firma je ověřená". `zamitnuto` jen uzavře žádost. SMS ověření telefonu zatím není (Twilio, až bude účet).
 
 ---
 
@@ -945,13 +1026,15 @@ nekreslí. `style.css?v=126`.
 
 | Od kdy | Co | Kde je SQL |
 |---|---|---|
-| 2026-10-02 | Sloupec `jobs.urgent_until` + tabulka `job_urgentni` — urgentní inzerát teď označuje firma (počet podle tarifu) a platí do začátku směny. **Bez sloupce urgentní nejde uložit a nebude nikde vidět** (automatické „směna do 2 dnů" je pryč). | `makej-web-sam/supabase/migration_urgentni.sql` |
-| 2026-09-28 | **Ověřit** `job_views.created_at` — detail inzerátu v dashboardu teď kreslí graf zhlédnutí po dnech (posledních 14 dní) z data zápisu. Když sloupec chybí, dashboard graf neukáže (jen celkový počet). Pokud chybí: `alter table public.job_views add column if not exists created_at timestamptz not null default now();` — pozor, starým řádkům se doplní dnešek, takže graf bude mít první den špičku. | — |
-| 2026-09-28 | Sloupce `jobs.positions` a `jobs.hours_per_week` (appka je umí ukázat: „N volných míst", štítek úvazku) + volitelný převod starých názvů krajů na id. Dashboard je posílá už teď, dokud chybí, uloží inzerát bez nich. | `makej-web-sam/supabase/migration_jobs_pocet_a_hodiny.sql` |
-| 2026-09-28 | Funkce `worker_trust_stats(uuid[])` — počty dokončených a zrušených směn brigádníka pro odznak stupně důvěry u kandidátů v dashboardu. Dokud chybí, odznak se nezobrazí. | `makej-web-sam/supabase/migration_worker_trust.sql` |
-| 2026-09-26 | Nové sloupce `profiles` pro Profil firmy (fotka pozadí, založeno, kariéra, telefon, kontaktní e-mail, otevírací doba). | `makej-web-sam/supabase/migration_profil_firmy.sql` |
+| 2026-10-02 | Tabulka `overeni_firem` + triggery (žádost o ověření firmy, e-mail na podpora@makej.eu, schválení zapne `verified`). **Spouští Yasin sám.** | `makej-web-sam/supabase/migration_overeni_firem.sql` |
 | 2026-09-06 | `launch_list_pocet()` — počet zapsaných na čekacím listu. Dokud neexistuje, web řádek s počtem a postavičkami vůbec nezobrazí (nechceme vymyšlené číslo). | `makej-web-sam/supabase/migration_launch_pocet.sql` |
-| 2026-09-05 | Tabulka `blocks` + trigger — blokování uživatelů v appce. UI hotové, DB chybí. | `makej-aplikace/supabase/migration_blocks.sql` |
+
+**Spuštěno 2026-10-02 (Yasin sám v SQL Editoru, ověřeno přes REST):** `migration_profil_firmy.sql`
+(nové sloupce `profiles`), `migration_urgentni.sql`, `migration_topovani.sql` a `jobs.hours_per_week`.
+Týž den i `migration_worker_trust.sql`, `job_views.created_at`, převod krajů v `jobs.kraj`, ochranný
+trigger `profiles_chranene_sloupce` (firma si sama nezmění `verified`, `rating`, `plan`) a z appky
+`migration_karta_fotky.sql` + `migration_lide_strankovani.sql`. Tabulka `blocks` s triggerem už byla. Podrobně v `DATABASE.md` (repo appky).
+Dočasná náhradní řešení v dashboardu (urgentní v localStorage, údaje profilu v `branding`) jsou pryč.
 
 **Nasazeno 2026-09-28 (Yasin přes dashboard, ověřeno):** Edge Function `import-inzerat` + secret `ANTHROPIC_API_KEY` (vlastní klíč, s limitem útraty). Firma v okně Nový inzerát klikne „Vložit z odkazu" (nebo vloží text) → funkce stáhne stránku, rozebere ji (JSON-LD JobPosting + nadpisy) a přes Claude (`claude-sonnet-5`) ho buď přepíše do stylu appky, nebo převezme doslovně a jen roztřídí do sekcí — firma si vybere v okénku („Jak chcete text převzít?", parametr `styl: 'makej' | 'doslovne'`). Kód `makej-web-sam/supabase/functions/import-inzerat/index.ts` (jeden soubor). Při změně kódu nasadit znovu (dashboard → Edge Functions → import-inzerat → Code, nebo `supabase functions deploy import-inzerat --project-ref cxegfwfbgcgpwerfbvra`).
 
