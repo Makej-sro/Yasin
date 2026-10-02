@@ -10,6 +10,8 @@
 ## 2026-10-02 — dashboard: Urgentní označuje firma, nový vzhled Urgentní a Top, okna s nálepkami — čeká na nasazení
 
 > **Commity:** web (`Makej-sro/Yasin`) `7e7b2db`, appka (`makej-aplikace-yasin`) `77365e0`.
+> Profil firmy, Ověřit firmu, fotky z iPhonu a profil firmy v appce (večer): web `2b7a58a`, appka `5872143`.
+> **Databáze:** `migration_overeni_firem.sql` Yasin teprve spouští (viz tabulka „Čeká v Supabase" dole).
 
 > **Pro Samova Clauda:** `employer/` + appka (níž). **Databáze:** `supabase/migration_urgentni.sql`
 > (sloupec `jobs.urgent_until` + tabulka `job_urgentni`) už spustil Yasin 2. 10., nic nespouštěj. Nejsnáz převzít `employer-pages3.jsx`,
