@@ -5,6 +5,25 @@ argumentem — jinak se točíme dokola.*
 
 ---
 
+**2. 10. 2026 — Přechod mezi tarify uprostřed období (návrh, Yasin „super").** Vyšší
+tarif: datum obnovení zůstává, firma doplatí rozdíl za zbývající dny (Stripe proration).
+Běžící TOP a urgentní doběhnou. Nové limity platí hned, použité nálepky z období se
+počítají dál (nenulují se). Limity se obnovují podle data předplatného, ne 1. v měsíci.
+Nižší tarif až od dalšího období; aktivní inzeráty nad nový limit se 3 dny předem
+oznámí a v den změny se vypnou nejstarší. *Proč:* za zbytek měsíce firma platí jen
+poměrnou část, nulování by dalo víc, než zaplatila. Postaví se spolu se Stripem.
+
+**2. 10. 2026 — Urgentní označuje firma sama, počet podle tarifu.** Tlačítko „Označit
+urgentní" v detailu inzerátu, platí do začátku směny. Měsíčně: Dynamický 1, Maximální 2,
+Vlastní 3, nižší tarify nic (ceník „Notifikace Urgent"). Automatické urgentní (směna do
+2 dnů) je pryč. *Proč:* urgentní je výhoda tarifu stejně jako topování; kdyby se dávalo
+samo, nemělo by cenu a firma by nevěděla, proč ho inzerát má.
+
+**2. 10. 2026 — Topování a urgentní mají okno s nálepkami.** Každá nálepka je jedno
+použití z tarifu, po potvrzení se odlepí. Počet se nepíše, je vidět. Na kartě je TOP
+zlatá nálepka v rohu fotky (ne pilulka, ne šerpa) a Uložit je proto vpravo dole.
+*Proč:* firma na první pohled vidí, kolik jí zbývá, a odlepení je odměna za kliknutí.
+
 **1. 10. 2026 — Tarif hlídá počet aktivních inzerátů i u nového inzerátu.**
 Při plném tarifu se nový inzerát uloží jako neaktivní. Okno „Limit překročen" nabízí
 dvě rovnocenné možnosti: tarif o stupeň výš, kde tlačítko rovnou otevře platbu, nebo

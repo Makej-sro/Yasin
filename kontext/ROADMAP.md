@@ -35,11 +35,13 @@ Bez toho se nedá vydat nic, ani otestovat přihlášení přes Apple.
 - **Editor ceny v sekci Lidé** — částka plus jednotka (hodina, úkol, kus, den).
 - **Ukazatel spolehlivosti** na kartě člověka.
 - **Galerie fotek u inzerátu** — appka to umí zobrazit, dashboard neumí nahrát.
-- **Urgentní podle tarifu** — teď je inzerát urgentní sám (směna do 2 dnů). „Notifikace
-  Urgent" z ceníku (Dynamický 1×, Maximální 2×, Vlastní 3×), kterou by firma zapínala,
-  není postavená a potřebuje sloupec v databázi.
+- **Urgentní podle tarifu** — postavené 2. 10. (firma označí, platí do začátku směny),
+  čeká na Samovu migraci `migration_urgentni.sql`; bez ní urgentní nejde uložit. Notifikace
+  brigádníkům o urgentním inzerátu (název řádku v ceníku) zatím není.
 - **Platba za tarif** — ve Stripu má Výhodný 2 000 Kč, správně je 990. Dashboard zatím
-  jen předstírá zaplacení.
+  jen předstírá zaplacení a tarif nikam neukládá (po obnovení stránky je zase Výhodný).
+  Spolu s tím: tarif v DB (sloupec od Sama), přechod mezi tarify podle DECISION_LOG 2. 10.,
+  obnova limitů podle data předplatného, animace povýšení po skutečné platbě.
 
 ## 4. Po spuštění
 

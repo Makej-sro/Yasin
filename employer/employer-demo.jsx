@@ -56,7 +56,7 @@ function eDemoInzeraty() {
       pay: 180, location: 'Brno — Veveří', date: den(3), timeText: '7:00 – 15:00', contract: 'DPP', recurrence: 'Pravidelná', created_at: pred(4),
       tags: ['Gastro', 'Ranní směna', 'Bez zkušeností'], photos: [U('1495474472287-4d71bcdd2085'), U('1509042239860-f550ce710b93')],
       description: 'Hledáme parťáka do dopolední směny. Naučíme tě latte art, espresso a obsluhu hostů. Káva od pražírny Doubleshot.' },
-    { ...zaklad, id: 'demo-2', title: 'Hosteska na hudební festival', status: 'urgent', views: 310, viewsByDay: poDnech(310, 9, 2), matches: 18, candidates: zajemci(18, 9, 2), swipes: 18, pending: 7, hired: 3, daysLeft: 2,
+    { ...zaklad, id: 'demo-2', title: 'Hosteska na hudební festival', status: 'urgent', urgentUntil: new Date(den(2) + 'T12:00:00').toISOString(), views: 310, viewsByDay: poDnech(310, 9, 2), matches: 18, candidates: zajemci(18, 9, 2), swipes: 18, pending: 7, hired: 3, daysLeft: 2,
       kraj: 'jihomoravsky', payout: 'Hned po akci', positions: 6,
       expectations: ['Příjemné a komunikativní vystupování', 'Spolehlivost a dochvilnost', 'Zvládneš celý den na nohou venku', 'Věk 18+'],
       bonuses: ['Angličtina pro zahraniční návštěvníky', 'Zkušenost z eventů'],

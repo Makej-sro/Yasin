@@ -136,14 +136,18 @@ function TierMetalBadge({ plan, label = 'Tarif', onClick }) {
 // Název tarifu jako tekutý kov (metal-fx MetalText). Návrh je na tmavé pozadí
 // se světlým odstínem (label); na bílém ceníku bereme hlavní barvu (hex),
 // jinak by byl třeba Základní skoro neviditelný. Bez WebGL2 CSS náhrada.
-function _MkMetalTextGL({ lib, t, prefix, font, color }) {
+// Šedé „Tarif" před názvem: odraz z metal-fx (useMetalTextReflection) se v dashboardu
+// nevykreslí — prvek s odrazem knihovna do textu nevloží —, takže slovo stálo bez pohybu
+// (Yasin 2. 10.: „chybí ti animace slova Tarif"). Proto přejíždějící odlesk v CSS (.mk-sheen,
+// stejně jako v náhradě bez WebGL); na tmavém je odlesk silnější.
+function _MkMetalTextGL({ lib, t, prefix, font, color, tmave }) {
   const ref = useRefE(null);
   lib.useMetalTextReflection(ref);
   const MetalText = lib.MetalText;
   return (
     <span data-tier={t.id}>
       <span data-cell="text" style={{ display: 'inline-flex', gap: '0.25em', alignItems: 'baseline' }}>
-        {prefix && <span ref={ref} style={{ font, color: '#6b6b6b' }}>{prefix}</span>}
+        {prefix && <span ref={ref} className="mk-sheen" style={{ font, backgroundImage: 'linear-gradient(100deg, transparent 38%, rgba(255,255,255,' + (tmave ? '0.6' : '0.32') + ') 50%, transparent 62%), linear-gradient(#6b6b6b, #6b6b6b)' }}>{prefix}</span>}
         <MetalText font={font} color={color} strength={0.9} reflectionTargets={prefix ? [{ ref, strength: 0.64 }] : undefined}>{t.name}</MetalText>
       </span>
     </span>
@@ -154,7 +158,7 @@ function TierMetalText({ tier, prefix = null, size = 19, weight = 700, naSvetlem
   const lib = useMetalFx();
   const font = weight + ' ' + size + 'px/1.2 Inter, sans-serif';
   const color = naSvetlem ? t.hex : t.label;
-  if (lib) return <_MkMetalTextGL lib={lib} t={t} prefix={prefix} font={font} color={color} />;
+  if (lib) return <_MkMetalTextGL lib={lib} t={t} prefix={prefix} font={font} color={color} tmave={!naSvetlem} />;
   return (
     <span data-tier={t.id} style={{ display: 'inline-flex', gap: '0.25em', alignItems: 'baseline', font }}>
       {prefix && <span className="mk-sheen" style={{ backgroundImage: 'linear-gradient(100deg, transparent 38%, rgba(255,255,255,0.32) 50%, transparent 62%), linear-gradient(#6b6b6b, #6b6b6b)' }}>{prefix}</span>}

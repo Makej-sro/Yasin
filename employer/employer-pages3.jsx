@@ -941,7 +941,7 @@ function SettingsProfile() {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {activeJobs.map((j, i) => (
               <div key={j.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i < activeJobs.length - 1 ? '1px solid ' + T.cardBorder : 'none' }}>
-                <div style={{ width: 8, height: 8, borderRadius: 999, flexShrink: 0, background: j.status === 'urgent' ? '#8B3DFF' : '#5BD68A' }} />
+                <div style={{ width: 8, height: 8, borderRadius: 999, flexShrink: 0, background: j.status === 'urgent' ? '#7A41C8' : '#5BD68A' }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ color: T.cardText, fontFamily: T.fontUI, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{j.title}</div>
                   <div style={{ color: T.cardMuted, fontFamily: T.fontUI, fontSize: 11, marginTop: 2 }}>
@@ -1566,9 +1566,125 @@ function CenikVlastni({ plan, onPocet }) {
   );
 }
 
+// ── Povýšení tarifu (Yasin 2. 10.) ──
+// Po zaplacení vyššího tarifu obrazovka pomalu ztmavne jako v kině. Na černé se napíšou
+// jen obrysy „Tarif <nový>" a pak je zleva doprava zalije kov a barva tarifu (TierMetalText
+// na tmavém, jako ve sloupci „Metal text" v předloze). Chvíli to zůstane, pak celý nápis
+// proletí dopředu „do obrazovky" (zrychluje, roste, rozostří se a zmizí) a tma se za ním
+// rozplyne — firma je zpátky v dashboardu už s novým tarifem. Klik nebo Esc přeskočí na průlet.
+// Obrys se píše po znacích: pravé hrany znaků se změří (Range) a obrys se po nich odkrývá,
+// takže písmena sedí přesně na kovový text pod ním (rozdělit text na znaky by rozbilo kerning).
+const _POV_TMA = 1600, _POV_ZNAK = 75, _POV_PAUZA = 350, _POV_KOV = 1400, _POV_DRZET = 1700, _POV_PROLET = 850;
+// metal-fx počítá masku písmen z getBoundingClientRect, a ten u zvětšeného prvku
+// (transform: scale) vrací zvětšené rozměry, zatímco písmo nechá v původní velikosti —
+// kov pak ujel vedle písmen a nápis se při průletu „rozpojil". Po dobu průletu proto
+// prvkům uvnitř letícího nápisu vracíme rozměry bez zvětšení (kolem jeho středu). Kov tak
+// běží dál živý až do zmizení (Yasin 2. 10.: „podržet tu animaci až do kompletního zmizení").
+// Vrací funkci, která to vrátí zpátky.
+function _povBezZvetseni(el) {
+  const puvEl = Element.prototype.getBoundingClientRect, puvR = Range.prototype.getBoundingClientRect;
+  const r0 = puvEl.call(el), cx = r0.left + r0.width / 2, cy = r0.top + r0.height / 2;
+  const meritko = () => { const m = /matrix\(([^,]+)/.exec(getComputedStyle(el).transform || ''); return m ? (parseFloat(m[1]) || 1) : 1; };
+  const oprav = r => { const k = meritko(); return Math.abs(k - 1) < 1e-3 ? r : new DOMRect(cx + (r.left - cx) / k, cy + (r.top - cy) / k, r.width / k, r.height / k); };
+  Element.prototype.getBoundingClientRect = function () { const r = puvEl.call(this); return this !== el && el.contains(this) ? oprav(r) : r; };
+  Range.prototype.getBoundingClientRect = function () { const r = puvR.call(this); return el.contains(this.startContainer) ? oprav(r) : r; };
+  return () => { Element.prototype.getBoundingClientRect = puvEl; Range.prototype.getBoundingClientRect = puvR; };
+}
+function ETarifPovyseni({ tier, onKonec }) {
+  const t = (typeof _MK_TIER !== 'undefined' && _MK_TIER[tier]) || { name: tier };
+  const vel = Math.round(Math.min(96, Math.max(40, window.innerWidth * 0.06)));
+  const [faze, setFaze] = useStateE('start');   // start → tma → psani → kov → konec
+  const [n, setN] = useStateE(0);               // napsané znaky obrysu
+  const [hrany, setHrany] = useStateE(null);    // pravé hrany znaků v px od levého okraje obrysu
+  const obrysRef = useRefE(null);
+  const letRef = useRefE(null);      // nápis, který na konci proletí
+  const vratit = useRefE(null);      // vrátí getBoundingClientRect (_povBezZvetseni)
+  const casy = useRefE([]);
+  const bezPohybu = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pockej = (f, ms) => { casy.current.push(setTimeout(f, ms)); };
+  const konec = () => {
+    casy.current.forEach(clearTimeout); casy.current = [];
+    if (letRef.current && !vratit.current) vratit.current = _povBezZvetseni(letRef.current);
+    setFaze('konec'); pockej(onKonec, _POV_PROLET + 550);
+  };
+  useEffectE(() => () => { if (vratit.current) { vratit.current(); vratit.current = null; } }, []);
+  // Změřit hrany znaků obou slov („Tarif" a název)
+  useEffectE(() => {
+    const el = obrysRef.current; if (!el) return;
+    const zac = el.getBoundingClientRect().left, out = [];
+    el.querySelectorAll('span').forEach(sp => {
+      const uzel = sp.firstChild; if (!uzel) return;
+      for (let i = 1; i <= uzel.length; i++) {
+        const r = document.createRange(); r.setStart(uzel, 0); r.setEnd(uzel, i);
+        out.push(r.getBoundingClientRect().right - zac);
+      }
+    });
+    setHrany(out);
+  }, []);
+  useEffectE(() => {
+    if (!hrany) return;
+    requestAnimationFrame(() => setFaze('tma'));
+    if (bezPohybu) { setN(hrany.length); setFaze('kov'); pockej(konec, 1600); return; }
+    pockej(() => {
+      setFaze('psani');
+      let i = 0;
+      (function krok() { setN(++i); if (i < hrany.length) pockej(krok, _POV_ZNAK); else pockej(() => { setFaze('kov'); pockej(konec, _POV_KOV + _POV_DRZET); }, _POV_PAUZA); })();
+    }, _POV_TMA);
+    const esc = e => { if (e.key === 'Escape') konec(); };
+    window.addEventListener('keydown', esc);
+    return () => { window.removeEventListener('keydown', esc); casy.current.forEach(clearTimeout); };
+  }, [hrany]);
+  const sirka = hrany && hrany.length ? hrany[hrany.length - 1] : 0;
+  const odkryto = hrany && n > 0 ? hrany[n - 1] : 0;
+  const kov = faze === 'kov' || faze === 'konec';
+  const font = { font: '600 ' + vel + 'px/1.2 Inter, sans-serif', display: 'inline-flex', gap: '0.25em', alignItems: 'baseline', whiteSpace: 'nowrap' };
+  const maska = 'linear-gradient(90deg, #000 0%, #000 40%, transparent 60%, transparent 100%)';
+  const maskaObrys = 'linear-gradient(90deg, transparent 0%, transparent 40%, #000 60%, #000 100%)';
+  return (
+    <div className="e-povyseni" onClick={() => faze !== 'konec' && konec()} role="status" aria-live="polite" aria-label={'Váš tarif je teď ' + t.name}
+      style={faze === 'konec'
+        // Na konci zmizí jen černé pozadí (nápis musí zůstat vidět, jak letí). Černá drží, dokud
+        // nápis neodletí — přes rozsvícenou stránku se jeho kusy četly jako rozpadlé.
+        ? { background: 'rgba(0,0,0,0)', transition: 'background-color 550ms ease ' + Math.round(_POV_PROLET * .75) + 'ms' }
+        : { opacity: faze === 'start' ? 0 : 1, transition: 'opacity ' + _POV_TMA + 'ms cubic-bezier(.45,0,.25,1)' }}>
+      {/* Průlet: celý nápis jako jeden kus zrychleně letí k divákovi (zvětšení ×2,6) a cestou
+          slábne. Dřív ×9 s mizením až v druhé půlce: slova se rozjela od středu do stran
+          a nápis vypadal, že se rozpojil (Yasin 2. 10.). */}
+      {/* Bez rozostření a bez will-change (Yasin 2. 10.: „rozmazává se, ať je to kvalitní"):
+          s will-change Chrome vykreslí nápis jednou v původní velikosti a pak ho jen natahuje.
+          Bez něj ho pro animaci vykreslí rovnou ve výsledném zvětšení, takže zůstane ostrý. */}
+      <div ref={letRef} style={{ position: 'relative', display: 'inline-block',
+        ...(faze === 'konec' ? { transform: 'scale(2.6)', opacity: 0,
+          transition: 'transform ' + _POV_PROLET + 'ms cubic-bezier(.5,0,.85,.4), opacity ' + _POV_PROLET + 'ms cubic-bezier(.6,0,.9,.6)' } : null) }}>
+        {/* Obrysy písmen pod kovem — píšou se po znacích. Inter má v písmenech překrývající se
+            tahy (D, k, ý) a holý text-stroke by je ukázal jako čáry uvnitř. Proto dvojitý obrys
+            a přes něj stejný text černě: zůstane jen čistá vnější linka. */}
+        {/* Obrys mizí zároveň s tím, jak kov zleva přijíždí (Yasin 2. 10.): stejná maska jako
+            u kovu, jen obráceně — měkká hrana obou jede po stejné dráze ve stejném čase. */}
+        <div aria-hidden="true" style={{ position: 'absolute', left: 0, top: 0,
+          clipPath: hrany ? 'inset(-40% ' + Math.max(0, sirka - odkryto) + 'px -40% -10px)' : 'inset(0 100% 0 0)',
+          WebkitMaskImage: maskaObrys, maskImage: maskaObrys, WebkitMaskSize: '250% 100%', maskSize: '250% 100%', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+          WebkitMaskPosition: kov ? '0% 0' : '100% 0', maskPosition: kov ? '0% 0' : '100% 0',
+          transition: '-webkit-mask-position ' + _POV_KOV + 'ms cubic-bezier(.45,0,.25,1), mask-position ' + _POV_KOV + 'ms cubic-bezier(.45,0,.25,1)' }}>
+          <div ref={obrysRef} style={{ ...font, color: 'transparent', WebkitTextStroke: '2.4px rgba(255,255,255,.72)' }}><span>Tarif</span><span>{t.name}</span></div>
+          <div style={{ ...font, position: 'absolute', left: 0, top: 0, color: '#000' }}><span>Tarif</span><span>{t.name}</span></div>
+        </div>
+        {/* Kov nad obrysem — zleva doprava ho odkryje maska s měkkou hranou. fontSize: mezera mezi
+            „Tarif" a názvem je v TierMetalText 0.25em z rodiče; bez toho by nesedla na obrys. */}
+        <div style={{ position: 'relative', fontSize: vel, WebkitMaskImage: maska, maskImage: maska, WebkitMaskSize: '250% 100%', maskSize: '250% 100%', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+          WebkitMaskPosition: kov ? '0% 0' : '100% 0', maskPosition: kov ? '0% 0' : '100% 0',
+          transition: '-webkit-mask-position ' + _POV_KOV + 'ms cubic-bezier(.45,0,.25,1), mask-position ' + _POV_KOV + 'ms cubic-bezier(.45,0,.25,1)' }}>
+          {typeof TierMetalText !== 'undefined' ? <TierMetalText tier={tier} prefix="Tarif" size={vel} weight={600} naSvetlem={false} /> : <span style={font}>Tarif {t.name}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function EPricing({ onTab, onPlanChange }) {
   const [selected, setSelected] = useStateE(null);
   const [success, setSuccess]   = useStateE(false);
+  const [povyseni, setPovyseni] = useStateE(null);   // id nového vyššího tarifu → animace ETarifPovyseni
   const [annual, setAnnual]     = useStateE(true);      // návrh: výchozí Ročně
   const [showCompare, setShowCompare] = useStateE(false);
   const [kalkPocet, setKalkPocet] = useStateE(20);
@@ -1604,6 +1720,8 @@ function EPricing({ onTab, onPlanChange }) {
       ECOMPANY.plan = plan.name;
       if (onPlanChange) onPlanChange(plan.name);
     }
+    // Vyšší tarif: místo okénka „Váš tarif je teď…" animace povýšení (Yasin 2. 10.)
+    if (vyssi && plan) { setSelected(null); setPovyseni(plan.id); return; }
     setSuccess({ vyssi });
     setTimeout(() => { setSuccess(false); setSelected(null); }, 3000);
   }
@@ -1692,6 +1810,7 @@ function EPricing({ onTab, onPlanChange }) {
           co firma získá (nebo o co přijde při přechodu na nižší), kdy změna
           platí; dole Zrušit / Pokračovat k platbě. Po potvrzení stav „aktivní".
           POZOR: platba zatím není napojená (Stripe) — handlePay tarif jen přepne. */}
+      {povyseni && ReactDOM.createPortal(<ETarifPovyseni tier={povyseni} onKonec={() => setPovyseni(null)} />, document.body)}
       {(selected || success) && ReactDOM.createPortal(
         <div onClick={() => { if (!success) setSelected(null); }} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(11,16,51,.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, animation: 'eDotazIn .18s ease-out' }}>
         <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Změna tarifu" className="e-obj" style={{ width: 480, maxWidth: '100%' }}>
@@ -2483,10 +2602,11 @@ Object.assign(window, { ECandidates, ENabidkaInzeratu });
    ============================================================ */
 const _JB_STATES = {
   active:   { label: 'Aktivní',   color: '#0B7B4B', bg: '#E6F7EF', dot: '#0FA968' },
-  // „asap" = aktivní inzerát se směnou do 2 dnů (status 'urgent' z employer-supabase.jsx).
+  // „asap" = aktivní inzerát, který firma označila jako urgentní, do začátku směny
+  // (status 'urgent' z employer-supabase.jsx; do 2. 10. byl urgentní sám se směnou do 2 dnů).
   // Firmě se ukazuje jako „Urgentní" (Yasin 29. 9.: místo „ASAP"), výrazně fialově —
   // červená by vypadala jako chyba a zlatá patří topování.
-  asap:     { label: 'Urgentní',  color: '#6A1FD1', bg: '#F1E8FF', dot: '#8B3DFF' },
+  asap:     { label: 'Urgentní',  color: '#6634AE', bg: '#F2ECFB', dot: '#7A41C8' },
   inactive: { label: 'Neaktivní', color: '#7A82A6', bg: '#F1F3FB', dot: '#DDE1F0' },
 };
 // Průběh náboru v detailu inzerátu (28. 9. přepsáno — „Nabírá 3" nikomu nic neřeklo):
@@ -2518,7 +2638,7 @@ const _jbAge = v => { const d = new Date(v); return isNaN(d) ? 1 : Math.max(1, M
 const _jbShort = v => { const d = new Date(v); return isNaN(d) ? '' : d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' }); };
 // „pá 2. 10. v 14:30" — do kdy je inzerát topovaný
 const _jbKdyDo = iso => { const d = new Date(iso); return isNaN(d) ? '' : ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'][d.getDay()] + ' ' + d.getDate() + '. ' + (d.getMonth() + 1) + '. v ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); };
-const _jbTopZbyva = iso => { const h = Math.ceil((new Date(iso) - Date.now()) / 3600000); return h <= 0 ? '' : h < 24 ? 'ještě ' + h + ' h' : 'ještě ' + Math.floor(h / 24) + ' d' + (h % 24 ? ' ' + (h % 24) + ' h' : ''); };
+const _jbTopZbyva = iso => { const h = Math.ceil((new Date(iso) - Date.now()) / 3600000); return h <= 0 ? '' : h < 24 ? h + ' h' : Math.floor(h / 24) + ' d' + (h % 24 ? ' ' + (h % 24) + ' h' : ''); };
 const _jbEnd = days => new Date(Date.now() + (days || 0) * 86400000).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
 
 // ── Karta inzerátu ve stejné podobě jako swipovací karta v appce (28. 9.) ──
@@ -2562,15 +2682,36 @@ const _jbFirma = () => {
   const prumer = rec.length ? rec.reduce((a, r) => a + (r.rating || 0), 0) / rec.length : 0;
   return { jmeno, inicialy: jmeno.split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase() || '??', hodnoceni: P.rating != null ? Number(P.rating) || 0 : prumer, overena: !!P.verified };
 };
-const _JbIko = ({ d }) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B34F0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none' }}>{d}</svg>;
+const _JbIko = ({ d, c = '#1B34F0' }) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none' }}>{d}</svg>;
 const _JbOvereno = ({ s = 15 }) => <svg width={s} height={s} viewBox="0 0 24 24" style={{ flex: 'none' }}><path fill="#3B82F6" d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3 1 3-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3-1-3 2.6-1.9 1-3 3.2.1z"/><path d="M8 12.3l2.6 2.6L16.2 9" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-// Pilulka „TOP" u topovaného inzerátu — zlatý kov s leskem (.e-zlato v index.html,
-// jako odznáček „Byl jsem u toho" z waitlistu). 1:1 s WTopBadge v appce (www/worker-swipe.jsx).
-const _JbTop = () => (
-  <span className="e-zlato" style={{ display: 'inline-flex', alignItems: 'center', fontSize: 12, fontWeight: 800, letterSpacing: '.04em', padding: '5px 12px', borderRadius: 999, whiteSpace: 'nowrap' }}>
-    TOP<span className="e-zlato__lesk" aria-hidden="true" />
-  </span>
-);
+// Urgentní a Top na kartě (Yasin 2. 10., předloha Downloads/handoff/inzerat-stitky):
+// urgentní = fialová pilulka vedle úvazku + zvýrazněný řádek termínu s odpočtem,
+// topovaný = zlatá nálepka TOP přes pravý horní roh fotky (Yasin: „nálepka", ne pilulka ani šerpa).
+// Styly .e-urgent / .e-top-nalepka v index.html.
+// Pilulka TOP se už nepoužívá nikde (ani v celém inzerátu). 1:1 s appkou: WUrgentBadge,
+// WTopNalepka, _wUrgentni, _wOdpocet ve www/worker-swipe.jsx — při změně upravit obě.
+const _JbUrgent = () => <span className="e-urgent">Urgentní<span className="e-urgent__lesk" aria-hidden="true" /></span>;
+const _JbTopNalepka = () => <div className="e-top-nalepka">Top<span className="e-top-nalepka__lesk" aria-hidden="true" /></div>;
+// Urgentní = aktivní inzerát se směnou do 2 dnů. Načtený inzerát to má ve stavu, náhled
+// v okně Nový inzerát stav nemá — tam se to počítá z data stejně jako v employer-supabase.jsx.
+const _jbUrgentni = l => {
+  if (l._state) return l._state === 'asap';
+  if (l.status) return l.status === 'urgent';
+  return !!(l.urgentUntil && new Date(l.urgentUntil) > Date.now());
+};
+// „Zbývá 18 h" do začátku směny (datum + čas „od" z timeText)
+const _jbOdpocet = l => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(l.date || '');
+  const t = /(\d{1,2}):(\d{2})/.exec(l.timeText || '');
+  // urgentUntil = začátek směny uložený při označení; jinak z data a času od
+  const cil = l.urgentUntil ? new Date(l.urgentUntil) : m ? new Date(+m[1], +m[2] - 1, +m[3], t ? +t[1] : 0, t ? +t[2] : 0) : null;
+  if (!cil || isNaN(cil)) return '';
+  const min = Math.floor((cil - Date.now()) / 60000);
+  if (min <= 0) return '';
+  if (min < 60) return 'Zbývá ' + min + ' min';
+  const h = Math.floor(min / 60), dny = Math.floor(h / 24);
+  return h < 48 ? 'Zbývá ' + h + ' h' : 'Zbývá ' + dny + (dny < 5 ? ' dny' : ' dní');
+};
 const _JbPartner = () => <span style={{ fontSize: 10.5, fontWeight: 700, color: '#E9D9A6', padding: '3px 9px', borderRadius: 999, border: '1px solid #2A3E52', background: 'linear-gradient(105deg,#060A12,#2E4759 45%,#101A26)', whiteSpace: 'nowrap' }}>Zakládající partner</span>;
 
 // Výška náhledu karty — stejnou má i panel s čísly vedle ní v detailu inzerátu.
@@ -2583,22 +2724,24 @@ function EJobKartaApp({ l, onOpen, nahled }) {
   const tagy = (Array.isArray(l.tags) ? l.tags : []).slice(0, nahled ? 4 : 3);
   const smlouva = _jbSmlouvaTxt(l.contract);
   const ceka = l.pending || 0;
+  const urg = _jbUrgentni(l), odpocet = urg ? _jbOdpocet(l) : '';
   return (
     <div className={nahled ? undefined : 'e-jb-karta'} data-stav={nahled ? undefined : l._state} role={nahled ? undefined : 'button'} tabIndex={nahled ? undefined : 0} onClick={nahled ? undefined : onOpen} onKeyDown={nahled ? undefined : (e => { if (e.key === 'Enter') onOpen(); })}
-      style={{ position: 'relative', background: '#fff', border: '1px solid #E6E9F5', borderRadius: 22, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: nahled ? 'default' : 'pointer', height: nahled ? _JB_NAHLED_VYSKA : 500 }}>
+      style={{ position: 'relative', containerType: 'inline-size', background: '#fff', border: '1px solid #E6E9F5', borderRadius: 22, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: nahled ? 'default' : 'pointer', height: nahled ? _JB_NAHLED_VYSKA : 500 }}>
       {/* Fotka provozu */}
-      <div style={{ position: 'relative', height: 196, flex: 'none', background: 'linear-gradient(135deg,#1B34F0,#5C71FF)' }}>
+      <div style={{ position: 'relative', height: 196, flex: 'none', overflow: 'hidden', background: 'linear-gradient(135deg,#1B34F0,#5C71FF)' }}>
         {foto
           ? <img src={foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           : <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', fontSize: 110, fontWeight: 800, color: 'rgba(255,255,255,.14)', letterSpacing: -3 }}>{F.inicialy}</div>}
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(11,18,51,.42) 0%, rgba(11,18,51,0) 38%, rgba(11,18,51,.55) 100%)' }} />
-        {/* Vlevo nahoře úvazek (ze smlouvy) a u topovaného inzerátu TOP — jako v appce.
-            Stav, značka ukázky ani Uložit sem nepatří. */}
+        {/* Vlevo nahoře úvazek (ze smlouvy) a u urgentního inzerátu Urgentní, topovaný má
+            vpravo nahoře zlatou nálepku TOP. Stav ani značka ukázky sem nepatří. */}
         <div style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 12, fontWeight: 800, padding: '6px 11px', borderRadius: 999, color: '#0B1233', background: '#fff' }}>{_jbStitek(l.contract, l.hoursPerWeek)}</span>
-          {l.boosted && <_JbTop />}
+          {urg && <_JbUrgent />}
         </div>
-        <div style={{ position: 'absolute', left: 14, bottom: 13, right: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+        {l.boosted && <_JbTopNalepka />}
+        <div style={{ position: 'absolute', left: 14, bottom: 13, right: 58, display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ width: 40, height: 40, flex: 'none', borderRadius: 13, background: '#fff', color: '#1B34F0', fontSize: 15, fontWeight: 800, display: 'grid', placeItems: 'center' }}>{F.inicialy}</span>
           <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 800, color: '#fff', minWidth: 0 }}>
@@ -2613,6 +2756,10 @@ function EJobKartaApp({ l, onOpen, nahled }) {
             )}
           </span>
         </div>
+        {/* Uložit vpravo dole jako v appce (2. 10. tam přesunuté kvůli nálepce TOP) — jen ukázka, neklikací */}
+        <span aria-hidden="true" style={{ position: 'absolute', right: 14, bottom: 16, width: 34, height: 34, borderRadius: 999, background: '#fff', boxShadow: '0 2px 8px rgba(11,18,51,.16)', display: 'grid', placeItems: 'center' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6.5 3.75h11a1.25 1.25 0 0 1 1.25 1.25v15.5l-6.75-3.7-6.75 3.7V5A1.25 1.25 0 0 1 6.5 3.75z" stroke="#0B1233" strokeWidth="1.7" strokeLinejoin="round" /></svg>
+        </span>
       </div>
 
       {/* Tělo karty — jako v appce */}
@@ -2629,7 +2776,9 @@ function EJobKartaApp({ l, onOpen, nahled }) {
           {o.zaSmenu > 0 && <span style={{ fontSize: 12.5, fontWeight: 700, color: '#7A82A6', whiteSpace: 'nowrap' }}>{o.sazba} · {String(o.hod).replace('.', ',')} h</span>}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {(l.date || l.timeText) && <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, fontWeight: 700, color: '#0B1233' }}><_JbIko d={<><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></>} />{[_jbDatumKarta(l.date), l.timeText].filter(Boolean).join(' · ')}</div>}
+          {/* Termín. U urgentního je vpravo odpočet; na úzké kartě se pak nevejde celý čas,
+              tak zůstane jen začátek směny (konec .e-cas-konec schová @container v index.html) */}
+          {(l.date || l.timeText) && <div className={urg ? 'e-urgent-radek' : undefined} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, fontWeight: 700, color: urg ? '#3E1D74' : '#0B1233' }}><_JbIko c={urg ? '#7A41C8' : undefined} d={<><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></>} /><span style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{_jbDatumKarta(l.date)}{l.date && l.timeText ? ' · ' : ''}{odpocet && /^\s*\d{1,2}:\d{2}/.test(l.timeText || '') ? <>{l.timeText.match(/^\s*\d{1,2}:\d{2}/)[0]}<span className="e-cas-konec">{l.timeText.replace(/^\s*\d{1,2}:\d{2}/, '')}</span></> : l.timeText}</span>{odpocet && <span className="e-odpocet">{odpocet}</span>}</div>}
           {l.recurrence && <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, fontWeight: 700, color: '#0B1233' }}><_JbIko d={<><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/></>} />{l.recurrence}</div>}
           {smlouva && <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5, fontWeight: 700, color: '#0B1233' }}><_JbIko d={<><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></>} /><span>{smlouva}{l.hoursPerWeek ? <span style={{ fontWeight: 600, color: '#7A82A6' }}> · {l.hoursPerWeek} h/týden</span> : null}</span></div>}
         </div>
@@ -2662,9 +2811,11 @@ function EJobKartaApp({ l, onOpen, nahled }) {
 // zastavení vidět vždy jen celý počet karet.
 const _JR_MIN = 290, _JR_MEZERA = 16, _JR_PRESAH = 4;
 // volnych = kolik inzerátů ještě tarif dovolí zapnout — na konci řady tolik
-// prázdných míst „Nevyužito" (Yasin 1. 10.: firma na první pohled nevěděla,
-// jestli má tarif vyčerpaný). Klik na prázdné místo = nový inzerát.
-// pocet = co ukázat vedle nadpisu místo počtu karet (např. „3 z 5").
+// volných míst (Yasin 1. 10.: firma na první pohled nevěděla, jestli má tarif
+// vyčerpaný). Vzhled od 2. 10. podle Yasinovy předlohy (Downloads/handoff, listing-slot.css):
+// obrys karty, velké pořadové číslo místa v tarifu (4, 5…) a „+ Využít místo", styly .e-slot
+// v index.html. Klik na místo = nový inzerát.
+// pocet = co ukázat vedle nadpisu místo počtu karet ('' = nic).
 function EJobRada({ nazev, pozn, extra, jobs, onOpen, stavNad, volnych = 0, onVolny, pocet }) {
   const pasRef = React.useRef(null);
   const [sirka, setSirka] = React.useState(_JR_MIN);
@@ -2686,7 +2837,7 @@ function EJobRada({ nazev, pozn, extra, jobs, onOpen, stavNad, volnych = 0, onVo
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 34 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 9, rowGap: 2, minWidth: 0 }}>
           <span style={{ fontSize: 17, fontWeight: 800, color: '#0B1233', letterSpacing: '-.01em', whiteSpace: 'nowrap' }}>{nazev}</span>
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#A6ADCB' }}>{pocet != null ? pocet : jobs.length}</span>
+          {pocet !== '' && <span style={{ fontSize: 14, fontWeight: 700, color: '#A6ADCB' }}>{pocet != null ? pocet : jobs.length}</span>}
           {pozn && <span style={{ fontSize: 12.5, color: '#7A82A6' }}>{pozn}</span>}
           {extra}
         </div>
@@ -2709,12 +2860,24 @@ function EJobRada({ nazev, pozn, extra, jobs, onOpen, stavNad, volnych = 0, onVo
             </div>
           );
         })}
-        {Array.from({ length: volnych }, (_, i) => (
-          <button key={'volno' + i} type="button" className="e-jr-volno" onClick={onVolny}
-            style={{ flex: 'none', width: sirka, height: 500, scrollSnapAlign: 'start', borderRadius: 22, border: '2px dashed #D5DAEA', background: '#FAFBFE', color: '#A6ADCB', fontSize: 15, fontWeight: 700, fontFamily: 'inherit', cursor: onVolny ? 'pointer' : 'default', display: 'grid', placeItems: 'center' }}>
-            Nevyužito
-          </button>
-        ))}
+        {Array.from({ length: volnych }, (_, i) => {
+          const cislo = jobs.length + 1 + i;   // pořadí místa v tarifu (aktivní 3 z 5 → místa 4 a 5)
+          return (
+            <div key={'volno' + i} className="e-slot" onClick={onVolny} style={{ flex: 'none', width: sirka, height: 500, scrollSnapAlign: 'start' }}>
+              <div className="e-slot__foto"><span className="e-slot__cislo" aria-hidden="true">{cislo}</span></div>
+              <div className="e-slot__telo">
+                <div className="e-slot__cara e-slot__cara--nadpis" />
+                <div className="e-slot__cara e-slot__cara--meta" />
+                <div className="e-slot__cena" />
+                <div className="e-slot__cara e-slot__cara--radek" />
+                <div className="e-slot__cara e-slot__cara--kratky" />
+                <button type="button" className="e-slot__tl" aria-label={'Využít volné místo ' + cislo}>
+                  <span className="e-slot__plus" aria-hidden="true">+</span>Využít místo
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
@@ -2745,6 +2908,7 @@ function EJobDetailApp({ l, sekce }) {
     box.scrollTo({ top: Math.max(0, y - 16), behavior });
   }, [sekce]);
   const o = _jbOdmena(l);
+  const urg = _jbUrgentni(l);
   const fotky = (Array.isArray(l.photos) && l.photos.length) ? l.photos : (l.image ? [l.image] : []);
   const A = x => (Array.isArray(x) ? x : []).filter(s => String(s).trim());
   const pozadavky = A(l.requirements).filter(r => !/^smluvní vztah/i.test(r) && !/^hledáme/i.test(r)).map(r => r.replace(/^(jazyk|vhodné pro):\s*/i, ''));
@@ -2787,9 +2951,9 @@ function EJobDetailApp({ l, sekce }) {
       {/* Obsah */}
       <div style={{ position: 'relative', marginTop: -22, background: '#fff', borderRadius: '22px 22px 0 0', padding: '18px 17px 20px', display: 'flex', flexDirection: 'column', gap: 18, flex: 1 }}>
         <div data-sekce="zaklad" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {(l.positions > 1 || l.boosted) && (
+          {(l.positions > 1 || urg) && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              {l.boosted && <_JbTop />}
+              {urg && <_JbUrgent />}
               {l.positions > 1 && <span style={{ fontSize: 11, fontWeight: 800, padding: '5px 10px', borderRadius: 999, color: '#B96F06', background: '#FFF3E0' }}>{l.positions} volných míst</span>}
             </span>
           )}
@@ -3038,7 +3202,9 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
   const [stavMenu, setStavMenu] = React.useState(null);   // id inzerátu s otevřenou nabídkou stavu
   const [dotaz, setDotaz] = React.useState(null);         // { job, druh: 'pauza' | 'limit' | 'top' }
   const [topy, setTopy] = React.useState({});             // id → do kdy je topovaný (topnuto v této relaci)
+  const [urgy, setUrgy] = React.useState({});             // id → do kdy je urgentní (označeno v této relaci)
   const [ukladam, setUkladam] = React.useState(false);
+  const [odlepuji, setOdlepuji] = React.useState(null);   // index nálepky, která se v okně topování právě odlepuje
   const [upravuji, setUpravuji] = React.useState(null);   // inzerát otevřený v okně úprav
   const ulozUpravu = async fields => {
     const l = upravuji;
@@ -3056,7 +3222,11 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
   const limit = (typeof EMPLOYER_MAX_ACTIVE !== 'undefined' && EMPLOYER_MAX_ACTIVE[planTier] != null) ? EMPLOYER_MAX_ACTIVE[planTier] : Infinity;
   const vsechny = raw.map(j => {
     const topDo = topy[j.id] || j.topUntil || null;
-    return { ...j, _state: _jbStatusMap(overrides[j.id] || j.status), topUntil: topDo, boosted: !!j.boosted || !!(topDo && new Date(topDo) > new Date()) };
+    // Urgentní = zapnutý inzerát s označením, které ještě běží (i po vypnutí a zapnutí)
+    const urgDo = urgy[j.id] || j.urgentUntil || null;
+    const zap = (overrides[j.id] || j.status) === 'active' || (overrides[j.id] || j.status) === 'urgent';
+    const stav = zap ? (urgDo && new Date(urgDo) > new Date() ? 'urgent' : 'active') : (overrides[j.id] || j.status);
+    return { ...j, _state: _jbStatusMap(stav), topUntil: topDo, urgentUntil: urgDo, boosted: !!j.boosted || !!(topDo && new Date(topDo) > new Date()) };
   });
   // Ukázkové inzeráty taky drží tarif (Yasin 1. 10.: „Výhodný a 4 aktivní?"):
   // aktivní ukázky jen do volných míst, vlastní inzeráty mají přednost.
@@ -3120,7 +3290,7 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
   };
 
   // Topování (Yasin 29. 9.): inzerát je E_TOP_HODIN hodin v appce mezi prvními kartami
-  // (v každém filtru, kam spadá) a má zlatou pilulku TOP. Kolikrát za měsíc, určuje tarif.
+  // (v každém filtru, kam spadá) a má zlatou nálepku TOP v rohu fotky. Kolikrát za měsíc, určuje tarif.
   const topHodin = typeof E_TOP_HODIN !== 'undefined' ? E_TOP_HODIN : 72;
   const topLimit = typeof EMPLOYER_TOP_MESICNE !== 'undefined' ? (EMPLOYER_TOP_MESICNE[planTier] || 0) : 0;
   const topPouzito = (typeof E_TOPOVANI !== 'undefined' ? E_TOPOVANI : []).length;
@@ -3136,16 +3306,73 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
     }
     setDotaz({ job: l, druh: 'top' });
   };
+  // Po úspěšném uložení se v okně odlepí první volná nálepka (≈1,1 s, Yasinova předloha
+  // topovani-stickers.css) a teprve pak se okno zavře. Index se bere předem, protože
+  // topovatJobE hned zapíše do E_TOPOVANI a počet použitých vyskočí o jedna.
+  // Ukázkový inzerát se topuje jen naoko (nic se neukládá, po obnovení stránky zmizí),
+  // ať je i na něm vidět odlepení nálepky a TOP na kartě (Yasin 2. 10.).
   const potvrdTop = async l => {
-    if (l._demo) { setDotaz(null); window.empToast && window.empToast('Ukázkový inzerát', 'Ukázka se netopuje. Topování si vyzkoušíte na vlastním inzerátu.', 'ℹ️', 'info'); return; }
+    if (topZbyva === 0) return;
+    const nalepka = topPouzito;
     setUkladam(true);
-    const doKdy = typeof topovatJobE === 'function' ? await topovatJobE(l.id) : null;
+    let doKdy = null;
+    if (l._demo) {
+      doKdy = new Date(Date.now() + topHodin * 3600000).toISOString();
+      if (typeof E_TOPOVANI !== 'undefined') E_TOPOVANI.push({ job_id: l.id, started_at: new Date().toISOString(), ends_at: doKdy, _demo: true });
+    } else if (typeof topovatJobE === 'function') doKdy = await topovatJobE(l.id);
+    if (doKdy) {
+      setOdlepuji(nalepka);
+      await new Promise(r => setTimeout(r, 1150));
+      setOdlepuji(null);
+    }
     setUkladam(false); setDotaz(null);
     if (doKdy) {
       setTopy(t => ({ ...t, [l.id]: doKdy }));
-      window.empToast && window.empToast('Inzerát je topovaný', 'Inzerát „' + l.title + '“ uvidí brigádníci do ' + _jbKdyDo(doKdy) + ' mezi prvními kartami.', '✅', 'info');
+      if (l._demo) window.empToast && window.empToast('Ukázkový inzerát je topovaný', 'Jen na zkoušku, po obnovení stránky to zmizí.', '✅', 'info');
+      else window.empToast && window.empToast('Inzerát je topovaný', 'Inzerát „' + l.title + '“ uvidí brigádníci do ' + _jbKdyDo(doKdy) + ' mezi prvními kartami.', '✅', 'info');
     } else {
       window.empToast && window.empToast('Nepovedlo se', 'Topování se nepodařilo uložit. Zkuste to prosím znovu.', '⚠️', 'error');
+    }
+  };
+
+  // Urgentní (Yasin 2. 10.): firma inzerát označí sama, platí do začátku směny. Kolikrát
+  // za měsíc, určuje tarif (EMPLOYER_URGENT_MESICNE). Okno má fialové nálepky Urgentní
+  // (předloha urgentni-stickers.css) a po potvrzení se první volná odlepí, stejně jako u topování.
+  const urgLimit = typeof EMPLOYER_URGENT_MESICNE !== 'undefined' ? (EMPLOYER_URGENT_MESICNE[planTier] || 0) : 0;
+  const urgPouzito = (typeof E_URGENTNI !== 'undefined' ? E_URGENTNI : []).length;
+  const urgZbyva = Math.max(0, urgLimit - urgPouzito);
+  const _jbZacatek = l => typeof _eZacatekSmeny === 'function' ? _eZacatekSmeny(l.date, l.timeText) : null;
+  const _jbMaTermin = l => { const z = _jbZacatek(l); return !!(z && z > new Date()); };
+  const urgHodin = typeof E_URG_HODIN !== 'undefined' ? E_URG_HODIN : 72;
+  const vyberUrg = l => {
+    if (!(l._state === 'active' || l._state === 'asap')) {
+      window.empToast && window.empToast('Inzerát je vypnutý', 'Jako urgentní jde označit jen aktivní inzerát. Nejdřív ho zapněte.', 'ℹ️', 'info');
+      return;
+    }
+    setDotaz({ job: l, druh: 'urgent' });
+  };
+  // Ukázkový inzerát se označí jen naoko (nic se neukládá, po obnovení stránky zmizí).
+  const potvrdUrg = async l => {
+    if (urgZbyva === 0) return;
+    const nalepka = urgPouzito;
+    setUkladam(true);
+    let doKdy = null;
+    if (l._demo) {
+      doKdy = (typeof _eUrgentDo === 'function' ? _eUrgentDo(l) : new Date(Date.now() + urgHodin * 3600000)).toISOString();
+      if (typeof E_URGENTNI !== 'undefined') E_URGENTNI.push({ job_id: l.id, started_at: new Date().toISOString(), ends_at: doKdy, _demo: true });
+    } else if (typeof urgentniJobE === 'function') doKdy = await urgentniJobE(l.id);
+    if (doKdy) {
+      setOdlepuji(nalepka);
+      await new Promise(r => setTimeout(r, 1150));
+      setOdlepuji(null);
+    }
+    setUkladam(false); setDotaz(null);
+    if (doKdy) {
+      setUrgy(u => ({ ...u, [l.id]: doKdy }));
+      if (l._demo) window.empToast && window.empToast('Ukázkový inzerát je urgentní', 'Jen na zkoušku, po obnovení stránky to zmizí.', '✅', 'info');
+      else window.empToast && window.empToast('Inzerát je urgentní', 'Inzerát „' + l.title + '“ má v aplikaci pilulku Urgentní do ' + _jbKdyDo(doKdy) + '.', '✅', 'info');
+    } else {
+      window.empToast && window.empToast('Nepovedlo se', 'Urgentní označení se nepodařilo uložit. Zkuste to prosím znovu.', '⚠️', 'error');
     }
   };
 
@@ -3253,11 +3480,22 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
                         </span>
                     <button className="e-det-tl" onClick={() => { window.__empCandJob = l.id; onTab && onTab('candidates'); }} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, color: '#3A4266', background: '#fff', border: '1px solid #E6E9F5', padding: '9px 12px', borderRadius: 9, cursor: 'pointer' }}><EIkona src="kandidati.svg" size={16} />Kandidáti{waiting > 0 && <span title="Čekají na vaši odpověď" style={{ fontSize: 11.5, fontWeight: 700, color: '#B96F06', background: '#FFF3E0', padding: '2px 8px', borderRadius: 999, marginLeft: 2 }}>{waiting} čeká</span>}</button>
                     <button className="e-det-tl" onClick={() => setDetailStat(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700, color: '#3A4266', background: '#fff', border: '1px solid #E6E9F5', padding: '9px 12px', borderRadius: 9, cursor: 'pointer' }}><EIkona src="analytika.svg" size={16} />Statistiky</button>
-                    {/* Topovat (dřív „Boostnout" — Yasin 29. 9.) zlatě jako pilulka TOP, kterou topovaný inzerát dostane.
+                  </div>
+                  {/* Zvýraznění vpravo (2. 10.): Topovat a Urgentní. Když se vedle stavu a tlačítek
+                      nevejdou, zalomí se spolu na další řádek, pořád zarovnané doprava. */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginLeft: 'auto' }}>
+                    {/* Topovat (dřív „Boostnout" — Yasin 29. 9.) zlatě jako nálepka TOP, kterou topovaný inzerát dostane.
                         Už topovaný ukáže místo tlačítka, jak dlouho ještě. */}
+                    {/* Topovaný: místo Topovat odpočet, stejně zlatý (Yasin 2. 10.). Klik otevře stejné
+                        okno topování s nálepkami, jen místo tlačítka Topovat je v něm odpočet. */}
                     {l.boosted && l.topUntil && _jbTopZbyva(l.topUntil)
-                      ? <span title={'Topováno do ' + _jbKdyDo(l.topUntil)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 800, color: '#6B4E00', background: '#FFF6D6', border: '1px solid #F6DF8F', padding: '9px 13px', borderRadius: 9, whiteSpace: 'nowrap' }}>TOP · {_jbTopZbyva(l.topUntil)}</span>
+                      ? <button className="e-zlato" onClick={() => setDotaz({ job: l, druh: 'top', bezi: true })} title={'Topováno do ' + _jbKdyDo(l.topUntil)} style={{ display: 'flex', alignItems: 'center', fontSize: 13, fontWeight: 800, padding: '9px 16px', borderRadius: 9, whiteSpace: 'nowrap', cursor: 'pointer', fontFamily: 'inherit' }}>Zbývá {_jbTopZbyva(l.topUntil)}<span className="e-zlato__lesk" aria-hidden="true" /></button>
                       : <button className="e-zlato" onClick={() => vyberTop(l)} style={{ display: 'flex', alignItems: 'center', fontSize: 13, fontWeight: 800, padding: '9px 16px', borderRadius: 9, cursor: 'pointer', fontFamily: 'inherit' }}>Topovat<span className="e-zlato__lesk" aria-hidden="true" /></button>}
+                    {/* Urgentní (2. 10.) fialově jako pilulka Urgentní. Už urgentní ukáže odpočet do začátku
+                        směny; klik otevře stejné okno s nálepkami, jen bez tlačítka Označit. */}
+                    {l._state === 'asap' && _jbOdpocet(l)
+                      ? <button className="e-fialka" onClick={() => setDotaz({ job: l, druh: 'urgent', bezi: true })} title={l.urgentUntil ? 'Urgentní do ' + _jbKdyDo(l.urgentUntil) : undefined} style={{ display: 'flex', alignItems: 'center', fontSize: 13, fontWeight: 800, padding: '9px 16px', borderRadius: 9, whiteSpace: 'nowrap', cursor: 'pointer', fontFamily: 'inherit' }}>{_jbOdpocet(l)}<span className="e-fialka__lesk" aria-hidden="true" /></button>
+                      : <button className="e-fialka" onClick={() => vyberUrg(l)} style={{ display: 'flex', alignItems: 'center', fontSize: 13, fontWeight: 800, padding: '9px 16px', borderRadius: 9, whiteSpace: 'nowrap', cursor: 'pointer', fontFamily: 'inherit' }}>Označit urgentní<span className="e-fialka__lesk" aria-hidden="true" /></button>}
                   </div>
 
                 </div>
@@ -3293,14 +3531,15 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
         // Tělo: řady karet pod sebou (bez filtrů, 30. 9.)
         <div style={{ padding: '14px 24px 26px', display: 'flex', flexDirection: 'column', gap: 30, overflowX: 'hidden' }}>
           {rady.map(r => {
-            // Volná místa jen v Aktivních a jen s omezeným tarifem. Počítá se
+            // Volná místa jen v Aktivních a jen s omezeným tarifem. U nadpisu Aktivní
+            // počítadlo „4/5" (aktivní / limit tarifu, Yasin 2. 10.). Počítá se
             // to, co je v řadě vidět (i ukázkové inzeráty, dokud jsou zapnuté —
             // jinak by se karty a „Nevyužito" nesčítaly do tarifu).
             const volno = r.k === 'bezi' && jobs.length && isFinite(limit) ? Math.max(0, limit - r.jobs.length) : 0;
             if (!r.jobs.length && !volno) return null;
             return <EJobRada key={r.k} nazev={r.nazev} jobs={r.jobs} onOpen={l => setDetailId(l.id)}
               volnych={volno} onVolny={onNew}
-              pocet={r.k === 'bezi' && isFinite(limit) ? r.jobs.length + ' z ' + limit : undefined} />;
+              pocet={r.k === 'bezi' && isFinite(limit) ? r.jobs.length + '/' + limit : undefined} />;
           })}
 
           {/* Prázdný stav */}
@@ -3326,27 +3565,17 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
           <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" style={{ width: 440, maxWidth: '100%', background: '#fff', borderRadius: 18, boxShadow: '0 30px 80px -20px rgba(11,18,51,.45)', padding: '26px 26px 22px' }}>
             {dotaz.druh === 'top' ? (
               // Topování (Yasin 29. 9.): zeptat se, vysvětlit, co to udělá, a kolik jich zbývá
-              topLimit === 0 || topZbyva === 0 ? (
+              // dotaz.bezi = inzerát už je topovaný (klik na odpočet): stejné okno, jen bez Topovat
+              // Vždy stejné okno s nálepkami, i když už žádná nezbývá nebo je tarif nemá (Yasin 2. 10.):
+              // firma vidí prázdné stopy a kdy se obnoví, jen tlačítko Topovat nejde stisknout.
+              (
                 <>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', marginBottom: 10 }}>{topLimit === 0 ? 'Topování není ve vašem tarifu' : testLimity ? 'Topování došla' : 'Topování na tento měsíc došla'}</div>
-                  <div style={{ fontSize: 14, color: '#3A4266', lineHeight: 1.55, marginBottom: 22 }}>
-                    {topLimit === 0
-                      ? 'Topovaný inzerát je ' + topHodin + ' hodin v aplikaci mezi prvními kartami. Topování máte od tarifu Výhodný (1× měsíčně).'
-                      : 'Tarif ' + tarifNazev + ' má ' + topLimit + (testLimity ? '× topování a už jste je využili. Nová přibudou ' : '× topování měsíčně a tento měsíc jste je už využili. Nová přibudou ') + dalsiMesic + ', víc jich mají vyšší tarify.'}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                    <EBtnSek onClick={() => setDotaz(null)}>Zavřít</EBtnSek>
-                    <EBtnHl onClick={() => { setDotaz(null); onTab && onTab('pricing'); }}>Navýšit tarif</EBtnHl>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', marginBottom: 4 }}>Opravdu chcete inzerát topovat?</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', marginBottom: 4 }}>{dotaz.bezi ? 'Inzerát je topovaný' : 'Opravdu chcete inzerát topovat?'}</div>
                   <div style={{ fontSize: 13.5, fontWeight: 700, color: '#7A82A6', marginBottom: 14 }}>{dotaz.job.title}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
                     {[
                       'Na ' + topHodin + ' hodin ho brigádníci uvidí mezi prvními kartami, a to v každém filtru, do kterého inzerát spadá.',
-                      'Dostane zlatou pilulku TOP, takže se odliší i od ostatních karet.',
+                      'Dostane zlatou nálepku TOP, takže se odliší i od ostatních karet.',
                       'Po ' + topHodin + ' hodinách se sám vrátí mezi ostatní inzeráty.',
                     ].map(t => (
                       <div key={t} style={{ display: 'grid', gridTemplateColumns: '8px 1fr', columnGap: 12, alignItems: 'start' }}>
@@ -3355,13 +3584,74 @@ function EJobs({ onTab, onNew, period, onPeriod } = {}) {
                       </div>
                     ))}
                   </div>
-                  <div style={{ background: '#FFF8E1', border: '1px solid #F6E3A1', borderRadius: 12, padding: '11px 14px', marginBottom: 22, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span style={{ fontSize: 14, color: '#3A4266' }}>{testLimity ? 'Zbývá vám' : 'Tento měsíc vám zbývá'} <b style={{ color: '#0B1233' }}>{topZbyva} z {topLimit}</b> topování{topZbyva === 1 ? ', tohle bude poslední' : ''}</span>
-                    <span style={{ fontSize: 12.5, color: '#7A82A6' }}>{tarifNazev ? 'Tarif ' + tarifNazev + ' · ' : ''}nová přibudou {dalsiMesic}</span>
+                  {/* Nálepky TOP (Yasin 2. 10., předloha topovani-stickers.css): jedna = jedno topování
+                      v tarifu, použité jsou jen čárkovaná stopa. Počet se nevypisuje, je vidět z nálepek. */}
+                  <div className="e-tm" style={{ marginBottom: 22 }}>
+                    {topLimit === 0 ? <div className="e-tm__box e-tm__box--prazdny">Tarif {tarifNazev} topování nemá</div> :
+                    <div className="e-tm__box" role="img" aria-label={'Zbývá ' + topZbyva + ' z ' + topLimit + ' topování'}>
+                      {Array.from({ length: topLimit }, (_, i) => (
+                        <div key={i} className={'e-tm-slot' + (i === odlepuji ? ' is-peeling' : i < topPouzito ? ' is-used' : '')}>
+                          <div className="e-tm-nalepka">
+                            <div className="e-tm-nalepka__lic">TOP<span className="e-tm-nalepka__lesk" /></div>
+                            <div className="e-tm-nalepka__rub-obal"><div className="e-tm-nalepka__rub" /></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>}
+                    {topLimit > 0 && <div className="e-tm__obnova">Obnoví se {dalsiMesic}</div>}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                    <EBtnSek onClick={() => setDotaz(null)} disabled={ukladam}>Zrušit</EBtnSek>
-                    <button className="e-zlato" onClick={() => potvrdTop(dotaz.job)} disabled={ukladam} style={{ display: 'flex', alignItems: 'center', fontSize: 14, fontWeight: 800, padding: '10px 18px', borderRadius: 10, cursor: ukladam ? 'wait' : 'pointer', fontFamily: 'inherit' }}>{ukladam ? 'Topuji…' : 'Topovat na ' + topHodin + ' h'}<span className="e-zlato__lesk" aria-hidden="true" /></button>
+                    <EBtnSek onClick={() => setDotaz(null)} disabled={ukladam}>{dotaz.bezi ? 'Zavřít' : 'Zrušit'}</EBtnSek>
+                    {dotaz.bezi
+                      ? <span className="e-zlato" title={dotaz.job.topUntil ? 'Topováno do ' + _jbKdyDo(dotaz.job.topUntil) : undefined} style={{ display: 'flex', alignItems: 'center', fontSize: 14, fontWeight: 800, padding: '10px 18px', borderRadius: 10, whiteSpace: 'nowrap' }}>Zbývá {_jbTopZbyva(dotaz.job.topUntil) || '0 h'}<span className="e-zlato__lesk" aria-hidden="true" /></span>
+                      : <button className="e-zlato" onClick={() => potvrdTop(dotaz.job)} disabled={ukladam || topZbyva === 0} data-prazdne={topZbyva === 0 ? '' : undefined} style={{ display: 'flex', alignItems: 'center', fontSize: 14, fontWeight: 800, padding: '10px 18px', borderRadius: 10, cursor: ukladam ? 'wait' : topZbyva === 0 ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>Topovat<span className="e-zlato__lesk" aria-hidden="true" /></button>}
+                  </div>
+                </>
+              )
+            ) : dotaz.druh === 'urgent' ? (
+              // Urgentní (Yasin 2. 10.): stejné okno jako topování, jen fialové
+              // Vždy stejné okno, i bez zbývajících nálepek (tlačítko pak nejde stisknout)
+              (
+                <>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#0B1233', letterSpacing: '-.02em', marginBottom: 4 }}>{dotaz.bezi ? 'Inzerát je urgentní' : 'Opravdu chcete inzerát označit jako urgentní?'}</div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: '#7A82A6', marginBottom: 14 }}>{dotaz.job.title}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+                    {/* Inzerát bez budoucího termínu je urgentní urgHodin hodin (employer-supabase.jsx) */}
+                    {(_jbMaTermin(dotaz.job) ? [
+                      'Dostane fialovou pilulku Urgentní, takže brigádníci hned poznají, že spěcháte.',
+                      'U termínu se zobrazí odpočet do začátku směny.',
+                      'Označení zmizí, jakmile směna začne.',
+                    ] : [
+                      'Dostane fialovou pilulku Urgentní, takže brigádníci hned poznají, že spěcháte.',
+                      'Inzerát nemá budoucí termín směny, takže bude urgentní ' + urgHodin + ' hodin.',
+                      'Po ' + urgHodin + ' hodinách se označení samo zruší.',
+                    ]).map(t => (
+                      <div key={t} style={{ display: 'grid', gridTemplateColumns: '8px 1fr', columnGap: 12, alignItems: 'start' }}>
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7A41C8', marginTop: 8 }} />
+                        <span style={{ fontSize: 14, color: '#3A4266', lineHeight: 1.55 }}>{t}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Nálepky Urgentní (předloha urgentni-stickers.css): jedna = jedno označení v tarifu */}
+                  <div className="e-um" style={{ marginBottom: 22 }}>
+                    {urgLimit === 0 ? <div className="e-um__box e-tm__box--prazdny">Tarif {tarifNazev} urgentní nemá</div> :
+                    <div className="e-um__box" role="img" aria-label={'Zbývá ' + urgZbyva + ' z ' + urgLimit + ' urgentních označení'}>
+                      {Array.from({ length: urgLimit }, (_, i) => (
+                        <div key={i} className={'e-um-slot' + (i === odlepuji ? ' is-peeling' : i < urgPouzito ? ' is-used' : '')}>
+                          <div className="e-um-nalepka">
+                            <div className="e-um-nalepka__lic">Urgentní<span className="e-um-nalepka__lesk" /></div>
+                            <div className="e-um-nalepka__rub-obal"><div className="e-um-nalepka__rub" /></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>}
+                    {urgLimit > 0 && <div className="e-tm__obnova">Obnoví se {dalsiMesic}</div>}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                    <EBtnSek onClick={() => setDotaz(null)} disabled={ukladam}>{dotaz.bezi ? 'Zavřít' : 'Zrušit'}</EBtnSek>
+                    {dotaz.bezi
+                      ? <span className="e-fialka" style={{ display: 'flex', alignItems: 'center', fontSize: 14, fontWeight: 800, padding: '10px 18px', borderRadius: 10, whiteSpace: 'nowrap' }}>{_jbOdpocet(dotaz.job) || 'Zbývá 0 min'}<span className="e-fialka__lesk" aria-hidden="true" /></span>
+                      : <button className="e-fialka" onClick={() => potvrdUrg(dotaz.job)} disabled={ukladam || urgZbyva === 0} data-prazdne={urgZbyva === 0 ? '' : undefined} style={{ display: 'flex', alignItems: 'center', fontSize: 14, fontWeight: 800, padding: '10px 18px', borderRadius: 10, cursor: ukladam ? 'wait' : urgZbyva === 0 ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>Označit urgentní<span className="e-fialka__lesk" aria-hidden="true" /></button>}
                   </div>
                 </>
               )
@@ -4227,6 +4517,7 @@ function ENewJobModal({ onClose, onPublish, job } = {}) {
     description: desc, expectations, bonuses, offer, perks, requirements, tags, positions: people,
     photos, image: null,
     created_at: J.created_at || new Date().toISOString(), boosted: !!J.boosted,
+    _state: J._state, status: J.status, urgentUntil: J.urgentUntil || null,
   };
 
   // ── styly ──

@@ -7,6 +7,140 @@
 
 ---
 
+## 2026-10-02 — dashboard: Urgentní označuje firma, nový vzhled Urgentní a Top, okna s nálepkami — čeká na nasazení
+
+> **Pro Samova Clauda:** `employer/` + appka (níž). **Je tu změna databáze:** spusť
+> `supabase/migration_urgentni.sql` (sloupec `jobs.urgent_until` + tabulka `job_urgentni`),
+> jinak urgentní nepůjde uložit ani nikde nebude vidět. Nejsnáz převzít `employer-pages3.jsx`,
+> `employer-supabase.jsx`, `employer-pages.jsx`, `employer-demo.jsx`, `employer-dashboard.jsx`
+> a `index.html` celé. Předlohy od Yasina (`inzerat-stitky`, `listing-slot.css`,
+> `topovani-stickers.css`, `urgentni-stickers.css`) jsou převzaté 1:1, jen třídy mají předponu `e-`.
+
+- **Verze v `employer/index.html`:** pages3 v227, shell v73, supabase v28, pages v78, demo v8, dashboard v48.
+- **Urgentní teď označuje firma, počet podle tarifu** (dřív byl inzerát urgentní sám se směnou
+  do 2 dnů — ten automat je pryč). V detailu inzerátu vedle Topovat fialové tlačítko
+  **„Označit urgentní"** (`vyberUrg`; jen aktivní inzerát). Inzerát bez budoucího termínu
+  (průběžný nábor, prošlé datum) je urgentní **72 hodin** (`E_URG_HODIN`, `_eUrgentDo`) a okno
+  má pro něj jiné dva body. **Dočasně, dokud nespustíš migraci:** když v DB chybí
+  `jobs.urgent_until`, uloží `urgentniJobE` označení jen v prohlížeči (localStorage
+  `makej-urgent-test`, `_E_URG_LOKAL`), ať to Yasin může vyzkoušet. Appka ho pak nevidí. Po
+  migraci se to samo přestane používat — kus s `_E_URG_LOKAL` pak smaž.
+  Otevře okno **„Opravdu chcete inzerát označit jako urgentní?"** — stejné jako u topování, jen
+  fialové: tři body (pilulka Urgentní, odpočet u termínu, zmizí se začátkem směny), fialové
+  nálepky Urgentní (`.e-um*`, 64 × 28 px, `@property --e-um-d` 0 → 134), „Obnoví se 1. 11."
+  a tlačítko „Označit urgentní". Po uložení (`urgentniJobE` v `employer-supabase.jsx`) se první
+  volná nálepka odlepí a okno se zavře. Uloží se **`jobs.urgent_until` = začátek směny** (datum +
+  čas od, `_eZacatekSmeny`) a řádek do `job_urgentni`. Limit za měsíc: Dynamický 1, Maximální 2,
+  Vlastní 3, Základní a Výhodný 0 (`EMPLOYER_URGENT_MESICNE` v `employer-pages.jsx`, podle řádku
+  ceníku „Notifikace Urgent"). Už urgentní inzerát má místo tlačítka
+  fialový odpočet „Zbývá 26 h", klik otevře stejné okno jen ke čtení („Inzerát je urgentní",
+  „Zavřít"). Stav `status = 'urgent'` počítá `fetchEmployerData` z `urgent_until > now`
+  (`urgentUntil` na inzerátu); v seznamu ho drží i stav `urgy` po označení v relaci. Ukázkový
+  inzerát se označí naoko. Fialová tlačítka = třída `.e-fialka` (stavba jako `.e-zlato`).
+  Topovat a Urgentní jsou v patičce detailu ve vlastní skupině vpravo; když se nevejdou,
+  zalomí se spolu na další řádek.
+- **Urgentní na kartě** (`_state === 'asap'`): na fotce vedle štítku úvazku
+  fialová pilulka **Urgentní** s přelivem a přejíždějícím odleskem (`_JbUrgent`, `.e-urgent`,
+  `.e-urgent__lesk`, keyframes `eLcSheen`). Pulzující kruh kolem pilulky z předlohy Yasin nechtěl,
+  takže tam není. Řádek termínu
+  je fialově podbarvený a vpravo má odpočet do začátku směny **„Zbývá 18 h"**
+  (`.e-urgent-radek`, `.e-odpocet`, `_jbOdpocet`: pod hodinu minuty, pod 48 h hodiny, jinak dny).
+  Na úzké kartě (pod 325 px, `@container` na kartě, `containerType: 'inline-size'`) zůstane
+  u urgentního termínu jen začátek směny (`.e-cas-konec` se schová), jinak by se čas vedle
+  odpočtu usekl.
+- **Fialový rámeček urgentní karty zrušený** (`.e-jb-karta[data-stav="asap"]` pryč z
+  `index.html`). Podle předlohy je karta ve všech stavech stejná, urgentní se pozná podle
+  pilulky a řádku termínu.
+- **Topovaný** (`boosted`): pilulka TOP vlevo nahoře na kartě nahrazená **zlatou nálepkou TOP
+  přes pravý horní roh fotky** (Yasin: říkat „nálepka", ne pilulka ani šerpa; `_JbTopNalepka`,
+  `.e-top-nalepka`, `.e-top-nalepka__lesk`; fotka má teď
+  `overflow: hidden`). **Pilulka TOP se už nepoužívá nikde** — `_JbTop` smazaná, z celého
+  inzerátu (`EJobDetailApp`) zmizela; nad nadpisem je místo ní pilulka Urgentní, když je
+  inzerát urgentní. Třída `.e-zlato` zůstává (tlačítko Topovat, okno topování).
+- **Uložit vpravo dole na fotce** (jako v appce, viz níž): na kartě dashboardu jen neklikací
+  ukázka (bílé kolečko se záložkou), řádek firmy má teď `right: 58`, ať jméno nevleze pod něj.
+- **Náhled v okně Nový / Upravit inzerát:** `_jbUrgentni(l)` bere `_state` / `status` /
+  `urgentUntil` (náhled je dostává z upravovaného inzerátu), nový inzerát urgentní není.
+  `_jbOdpocet` počítá do `urgentUntil`, když je, jinak do data a času od.
+- **Nálepky v oknech topování a urgentního:** čárkovaná stopa pod ještě nalepenou nálepkou
+  prosvítala po okraji, ukazuje se až při odlepení (`:not(.is-used):not(.is-peeling)::before`).
+- Barvy stavu Urgentní srovnané s předlohou: `_JB_STATES.asap` je `#6634AE` / `#F2ECFB` /
+  tečka `#7A41C8` (dřív `#6A1FD1` / `#F1E8FF` / `#8B3DFF`), stejně tečka u inzerátu v Kandidátech.
+- `_JbIko` má nový prop `c` (barva ikonky), výchozí dál `#1B34F0`.
+- **Okno „Opravdu chcete inzerát topovat?" s nálepkami** (Yasinova předloha
+  `topovani-stickers.css`, převzato 1:1 s předponou `e-tm`): žlutý box „Zbývá vám X z Y
+  topování" nahrazený řadou zlatých nálepek TOP — jedna = jedno topování v tarifu, použité jsou
+  jen čárkovaná stopa (`.e-tm-slot.is-used`), počet se nevypisuje (je v `aria-label`). Pod
+  boxem „Obnoví se 1. 11." (v testovacím režimu „při dalším přihlášení", `dalsiMesic`). Po
+  úspěšném `topovatJobE` se první volná nálepka odlepí od pravého horního rohu (`.is-peeling`,
+  1,15 s, stav `odlepuji` = index nálepky braný před uložením) a teprve pak se okno zavře.
+  Odlepení stojí na `@property --e-tm-d` (Chrome, Safari 16.4+, Firefox 128+; ve starších
+  prohlížečích nálepka jen zmizí). Třetí bod v okně: „Dostane zlatou nálepku TOP…" (dřív pilulku).
+  Potvrzovací tlačítko je jen **„Topovat"** (dřív „Topovat na 72 h" / „Topuji…"). Ukázkový
+  inzerát (`_demo`) se topuje naoko — odlepí se nálepka, karta dostane TOP, do `E_TOPOVANI` jde
+  záznam s `_demo: true`, nic se neukládá do DB (dřív se okno jen zavřelo s hláškou).
+- **Topovaný inzerát v detailu:** místo béžového štítku „TOP · ještě 1 d 17 h" je zlatý
+  odpočet **„Zbývá 1 d 17 h"** ve stejném zlatém kovu s leskem jako tlačítko Topovat (`.e-zlato`,
+  `_jbTopZbyva` vrací jen „1 d 17 h"). Odpočet je tlačítko: otevře **stejné okno topování**
+  (`dotaz.bezi = true`) s nadpisem „Inzerát je topovaný", body a nálepkami, jen místo
+  tlačítka Topovat je v něm neklikací zlatý odpočet a vlevo „Zavřít".
+- **Okna „Topování došla" / „Topování není ve vašem tarifu" a stejná pro urgentní jsou pryč**
+  (Yasin: „pusť mě normálně na tu stránku"). Vždy se otevře okno s nálepkami: když žádná
+  nezbývá, jsou v boxu jen čárkované stopy a „Obnoví se …", tlačítko Topovat / Označit urgentní
+  je vypnuté (`disabled`, `data-prazdne` → průhlednost .45). Tarif bez topování / urgentního má
+  v boxu jen text „Tarif Výhodný urgentní nemá" (`.e-tm__box--prazdny`) a bez řádku obnovení.
+- **Animace povýšení tarifu** (`ETarifPovyseni` v pages3, `.e-povyseni` v `index.html`): po
+  zaplacení **vyššího** tarifu (`handlePay`, `vyssi`) místo okénka „Váš tarif je teď…"
+  obrazovka pomalu zčerná (1,6 s), napíšou se jen obrysy „Tarif <nový>" (po znacích, 75 ms;
+  pravé hrany znaků měřené přes `Range`, obrys se po nich odkrývá `clip-path`, ať sedí na kov),
+  pak je zleva doprava zalije kov a barva tarifu (`TierMetalText` s `naSvetlem={false}`, maska
+  s měkkou hranou přes `mask-position`, 1,4 s); obrys přitom mizí stejnou hranou obráceně
+  (`maskaObrys`), takže se vybarvení a zmizení obrysu dějí naráz. Chvíli to zůstane, pak celý
+  nápis jako jeden kus **proletí dopředu do obrazovky** (`scale(2.6)`, cestou slábne, 0,85 s; bez
+  rozostření a bez `will-change`, aby ho Chrome vykreslil ostře ve výsledném zvětšení) a černé
+  pozadí se rozplyne, až když nápis odletí. Kov z WebGL přitom běží dál živý až do zmizení.
+  **Pozor:** metal-fx počítá masku písmen z `getBoundingClientRect`, který u zvětšeného prvku
+  vrací zvětšené rozměry, zatímco písmo nechá — kov pak ujede vedle písmen (nápis se
+  „rozpojil"). Po dobu průletu proto `_povBezZvetseni(el)` dočasně přepíše
+  `Element/Range.prototype.getBoundingClientRect` tak, aby prvkům uvnitř letícího nápisu vracel
+  rozměry bez zvětšení (kolem středu nápisu); při odpojení animace se vrátí původní funkce (celkem ≈ 7 s). Klik nebo Esc přeskočí rovnou na průlet. Obrys je
+  dvojitá linka a přes ni stejný text černě — holý `text-stroke` ukazoval uvnitř písmen Interu
+  překrývající se tahy.
+- **Šedé „Tarif" před kovovým názvem má přejíždějící odlesk** (`_MkMetalTextGL` v
+  `employer-shell.jsx`, třída `.mk-sheen`): odraz z metal-fx (`useMetalTextReflection`) se
+  v dashboardu nikdy nevykreslil — knihovna prvek s odrazem do textu nevložila —, takže slovo
+  stálo. Platí i pro okno platby v Tarifech; na tmavém (`naSvetlem={false}`) je odlesk silnější. Nižší tarif dál
+  ukazuje původní okénko. Až se napojí Stripe, spustit stejnou animaci po potvrzení platby.
+- **Volná místa v tarifu nový vzhled** (Yasinova předloha `listing-slot.css`): místo čárkovaného
+  obdélníku „Nevyužito" je to obrys karty — šedá plocha místo fotky s velkým pořadovým číslem
+  místa v tarifu (aktivní 3 z 5 → místa 4 a 5), šedé čáry místo textu a dole tlačítko
+  **„+ Využít místo"**. Při najetí zmodrá čárkovaný okraj a tlačítko se vyplní. Klik dál otevře
+  Nový inzerát (logika beze změny). `EJobRada`, třídy `.e-slot*` v `index.html` (staré
+  `.e-jr-volno` pryč). Počítadlo u nadpisu Aktivní je teď **„4/5"** (aktivní / limit tarifu,
+  dřív „4 z 5"); u neomezeného tarifu jen počet. `EJobRada` umí `pocet=''` = bez počítadla.
+
+### Appka (repo makej-aplikace-yasin, stejný den) — `worker-swipe.jsx?v=126`, `app.jsx?v=37`
+
+- **Karta (`WJobCard`) 1:1 s dashboardem:** `WTopBadge` smazaná, místo ní `WTopNalepka` (nálepka TOP
+  vpravo nahoře) a `WUrgentBadge` (vlevo vedle úvazku). Urgentní = `_wUrgentni(job)`:
+  `job.urgent_until` v budoucnu (z feedu, potřebuje migraci výš); odpočet `_wOdpocet(job)` do
+  `urgent_until`, jinak do `date` + `time_start` / `time`. Řádek termínu je u urgentního fialový s odpočtem vpravo; na úzké
+  kartě (pod 335 px, `@container`, karta má `containerType: 'inline-size'`) zůstane jen
+  začátek směny (`.w-cas-konec`).
+- **Uložit přesunuté z pravého horního rohu dolů vpravo** (v řádku s logem a firmou,
+  `right: 14, bottom: 18`), protože nahoře je nálepka TOP. Chování i animace „Uloženo" beze změny,
+  pilulka roste doleva přes jméno firmy. Řádek firmy má `right: 58`.
+- **Celý inzerát (`WJobDetailModal`):** pilulka TOP pryč, místo ní Urgentní.
+- **Keyframes** v `www/index.html`: přelivy a odlesky používají stávající `wGoldFlow` a
+  `wSheenSweep`, nic nového (pulz kolem pilulky Urgentní není ani tady).
+- **Ukázka:** festival (`j2` v `app.jsx`) má `date` vždycky zítra a `urgent_until` zítra ve
+  12:00 (`_DEMO_ZITRA`), ať je v demu vidět urgentní + topovaný.
+
+**Pozor při přenosu:** „Zakládající partner" se zatím ukazuje u topovaných (`job.boosted`), to je
+špatně — patří firmám z předběžného přístupu a dodělá se při onboardingu. Teď beze změny.
+
+---
+
 ## 2026-10-01 — seznam opravených chyb na webu (co se dělo, kdy, v jakém commitu)
 
 > **Pro Sama:** chyby, které jsme u nás opravili a které jsou nejspíš pořád na živém
@@ -809,6 +943,7 @@ nekreslí. `style.css?v=126`.
 
 | Od kdy | Co | Kde je SQL |
 |---|---|---|
+| 2026-10-02 | Sloupec `jobs.urgent_until` + tabulka `job_urgentni` — urgentní inzerát teď označuje firma (počet podle tarifu) a platí do začátku směny. **Bez sloupce urgentní nejde uložit a nebude nikde vidět** (automatické „směna do 2 dnů" je pryč). | `makej-web-sam/supabase/migration_urgentni.sql` |
 | 2026-09-28 | **Ověřit** `job_views.created_at` — detail inzerátu v dashboardu teď kreslí graf zhlédnutí po dnech (posledních 14 dní) z data zápisu. Když sloupec chybí, dashboard graf neukáže (jen celkový počet). Pokud chybí: `alter table public.job_views add column if not exists created_at timestamptz not null default now();` — pozor, starým řádkům se doplní dnešek, takže graf bude mít první den špičku. | — |
 | 2026-09-28 | Sloupce `jobs.positions` a `jobs.hours_per_week` (appka je umí ukázat: „N volných míst", štítek úvazku) + volitelný převod starých názvů krajů na id. Dashboard je posílá už teď, dokud chybí, uloží inzerát bez nich. | `makej-web-sam/supabase/migration_jobs_pocet_a_hodiny.sql` |
 | 2026-09-28 | Funkce `worker_trust_stats(uuid[])` — počty dokončených a zrušených směn brigádníka pro odznak stupně důvěry u kandidátů v dashboardu. Dokud chybí, odznak se nezobrazí. | `makej-web-sam/supabase/migration_worker_trust.sql` |

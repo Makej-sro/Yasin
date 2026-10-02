@@ -229,7 +229,7 @@ function EDashboard({ period = '30d', onTab, onNew, onPeriod, onOpenChat }) {
     const m = minOd(c.createdAt);
     if (m != null && (s.min == null || m > s.min)) s.min = m;
   });
-  // Urgentní inzerát (termín do 2 dnů, employer-supabase.jsx) s neobsazenými místy
+  // Urgentní inzerát (firma ho označila, platí do začátku směny, employer-supabase.jsx) s neobsazenými místy
   const naborHori = j => j.status === 'urgent' && (j.hired || 0) < Math.max(1, j.positions || 0);
   const terminTxt = j => 'termín ' + (j.daysLeft === 1 ? 'zítra' : 'za ' + j.daysLeft + ' dny') + ', ' + (j.positions ? 'přijato ' + (j.hired || 0) + ' z ' + j.positions : 'zatím nikdo přijatý');
   Object.values(skupiny).forEach(s => {
