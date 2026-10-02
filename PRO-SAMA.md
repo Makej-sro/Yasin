@@ -19,7 +19,7 @@
 > a `index.html` celé. Předlohy od Yasina (`inzerat-stitky`, `listing-slot.css`,
 > `topovani-stickers.css`, `urgentni-stickers.css`) jsou převzaté 1:1, jen třídy mají předponu `e-`.
 
-- **Verze v `employer/index.html`:** pages3 v229, shell v73, supabase v32, pages v78, demo v8, dashboard v48, firma v41
+- **Verze v `employer/index.html`:** pages3 v230, shell v73, supabase v36, pages v78, demo v8, dashboard v48, firma v43, app v4
   (pages3 v228+, supabase v29+ a firma v15+ jsou až po commitu `7e7b2db`).
 - **Urgentní teď označuje firma, počet podle tarifu** (dřív byl inzerát urgentní sám se směnou
   do 2 dnů — ten automat je pryč). V detailu inzerátu vedle Topovat fialové tlačítko
