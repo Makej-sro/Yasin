@@ -9,6 +9,8 @@
 
 ## 2026-10-02 — dashboard: Urgentní označuje firma, nový vzhled Urgentní a Top, okna s nálepkami — čeká na nasazení
 
+> **Commity:** web (`Makej-sro/Yasin`) `7e7b2db`, appka (`makej-aplikace-yasin`) `77365e0`.
+
 > **Pro Samova Clauda:** `employer/` + appka (níž). **Je tu změna databáze:** spusť
 > `supabase/migration_urgentni.sql` (sloupec `jobs.urgent_until` + tabulka `job_urgentni`),
 > jinak urgentní nepůjde uložit ani nikde nebude vidět. Nejsnáz převzít `employer-pages3.jsx`,
